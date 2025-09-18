@@ -91,13 +91,6 @@ export const testMenuItems = {
 }
 
 export async function seedTestData() {
-  // Create test hotel
-  await prisma.hotel.upsert({
-    where: { id: testHotels.main.id },
-    update: testHotels.main,
-    create: testHotels.main,
-  })
-
   // Create test users
   for (const user of Object.values(testUsers)) {
     const hashedPassword = await bcrypt.hash(user.password, 12)
@@ -146,9 +139,6 @@ export async function cleanupTestData() {
     where: { id: { startsWith: 'test-' } },
   })
   await prisma.user.deleteMany({
-    where: { id: { startsWith: 'test-' } },
-  })
-  await prisma.hotel.deleteMany({
     where: { id: { startsWith: 'test-' } },
   })
 }

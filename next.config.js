@@ -9,10 +9,11 @@ const nextConfig = {
   experimental: {
     // Enable modern features
     optimizePackageImports: ['lucide-react', 'framer-motion'],
-    // Exclude test files from build
-    outputFileTracingExcludes: {
-      '*': ['./tests/**/*', './scripts/**/*'],
-    },
+  },
+  
+  // Exclude test files from build
+  outputFileTracingExcludes: {
+    '*': ['./tests/**/*', './scripts/**/*'],
   },
   
   // Build performance optimizations
