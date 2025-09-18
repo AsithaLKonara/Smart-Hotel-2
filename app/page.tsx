@@ -7,6 +7,9 @@ import { Badge } from '@/components/ui/badge'
 import StickyHeader from '@/components/sticky-header'
 import HeroSection from '@/components/hero-section'
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic'
+
 export default function HomePage() {
   return (
     <div className="min-h-screen">
