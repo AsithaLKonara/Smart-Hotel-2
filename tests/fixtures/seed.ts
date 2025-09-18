@@ -77,7 +77,7 @@ export const testMenuItems = {
     name: 'Margherita Pizza',
     description: 'Classic tomato and mozzarella',
     price: 15.99,
-    category: 'MAIN_COURSE',
+    category: 'MAIN_COURSE' as const,
     isAvailable: true,
   },
   burger: {
@@ -85,7 +85,7 @@ export const testMenuItems = {
     name: 'Cheeseburger',
     description: 'Beef patty with cheese',
     price: 12.99,
-    category: 'MAIN_COURSE',
+    category: 'MAIN_COURSE' as const,
     isAvailable: true,
   },
 }
