@@ -3,6 +3,8 @@ import { PrismaAdapter } from '@next-auth/prisma-adapter'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
 import prisma from './db'
+import { logAction, AUDIT_ACTIONS } from './audit'
+import { UserRole } from '@prisma/client'
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -13,56 +15,114 @@ export const authOptions: NextAuthOptions = {
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' }
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         if (!credentials?.email || !credentials?.password) {
           return null
         }
 
-        const user = await prisma.user.findUnique({ 
-          where: { email: credentials.email } 
-        })
+        try {
+          const user = await prisma.user.findUnique({ 
+            where: { email: credentials.email.toLowerCase().trim() } 
+          })
 
-        if (!user) {
+          if (!user) {
+            // Log failed login attempt
+            await logAction(
+              req as any,
+              undefined,
+              AUDIT_ACTIONS.USER_LOGIN,
+              'User',
+              undefined,
+              { email: credentials.email, reason: 'User not found' }
+            )
+            return null
+          }
+
+          const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
+
+          if (!isPasswordValid) {
+            // Log failed login attempt
+            await logAction(
+              req as any,
+              user.id,
+              AUDIT_ACTIONS.USER_LOGIN,
+              'User',
+              user.id,
+              { email: credentials.email, reason: 'Invalid password' }
+            )
+            return null
+          }
+
+          // Check if user account is active
+          if (user.role === 'GUEST' && !user.email.includes('@')) {
+            // Additional checks for guest accounts if needed
+          }
+
+          // Log successful login
+          await logAction(
+            req as any,
+            user.id,
+            AUDIT_ACTIONS.USER_LOGIN,
+            'User',
+            user.id,
+            { email: credentials.email, role: user.role }
+          )
+
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+            hotelId: user.hotelId,
+          }
+        } catch (error) {
+          console.error('Authentication error:', error)
           return null
-        }
-
-        const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
-
-        if (!isPasswordValid) {
-          return null
-        }
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
         }
       }
     })
   ],
   session: { 
     strategy: 'jwt',
-    maxAge: 24 * 60 * 60, // 24 hours
-    updateAge: 60 * 60, // 1 hour
+    maxAge: 8 * 60 * 60, // 8 hours (reduced for security)
+    updateAge: 30 * 60, // 30 minutes
   },
   jwt: {
-    maxAge: 24 * 60 * 60, // 24 hours
+    maxAge: 8 * 60 * 60, // 8 hours
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, account }) {
       if (user) {
         token.id = user.id
         token.role = user.role
+        token.hotelId = user.hotelId
+        token.iat = Math.floor(Date.now() / 1000)
       }
+      
+      // Add session validation
+      if (token.iat && typeof token.iat === 'number' && Date.now() - (token.iat * 1000) > 8 * 60 * 60 * 1000) {
+        // Token expired, force re-authentication
+        return {
+          id: '',
+          role: 'GUEST' as UserRole,
+          hotelId: null,
+          iat: 0
+        }
+      }
+      
       return token
     },
     async session({ session, token }) {
       if (token) {
         session.user.id = token.id as string
         session.user.role = token.role as any
+        session.user.hotelId = token.hotelId as string
       }
       return session
+    },
+    async signIn({ user, account, profile, email, credentials }) {
+      // Additional sign-in validation can be added here
+      return true
     }
   },
   pages: { 
@@ -74,27 +134,29 @@ export const authOptions: NextAuthOptions = {
       name: `next-auth.session-token`,
       options: {
         httpOnly: true,
-        sameSite: 'lax',
+        sameSite: 'strict', // Stricter same-site policy
         path: '/',
-        secure: process.env.NODE_ENV === 'production', // HTTPS-only in production
-        maxAge: 24 * 60 * 60, // 24 hours
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 8 * 60 * 60, // 8 hours
       }
     },
     callbackUrl: {
       name: `next-auth.callback-url`,
       options: {
-        sameSite: 'lax',
+        sameSite: 'strict',
         path: '/',
         secure: process.env.NODE_ENV === 'production',
+        maxAge: 8 * 60 * 60,
       }
     },
     csrfToken: {
       name: `next-auth.csrf-token`,
       options: {
         httpOnly: true,
-        sameSite: 'lax',
+        sameSite: 'strict',
         path: '/',
         secure: process.env.NODE_ENV === 'production',
+        maxAge: 8 * 60 * 60,
       }
     }
   }

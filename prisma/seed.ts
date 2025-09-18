@@ -233,36 +233,30 @@ async function main() {
       data: {
         name: 'Towels',
         description: 'Hotel towels',
+        category: 'Linens',
         quantity: 200,
         unit: 'pieces',
         minQuantity: 50,
-        price: 15.00,
-        supplier: 'Textile Supplies Co.',
-        location: 'Storage Room A',
       },
     }),
     prisma.inventory.create({
       data: {
         name: 'Toilet Paper',
         description: 'Premium toilet paper',
+        category: 'Bathroom',
         quantity: 500,
         unit: 'rolls',
         minQuantity: 100,
-        price: 2.50,
-        supplier: 'Paper Products Inc.',
-        location: 'Storage Room B',
       },
     }),
     prisma.inventory.create({
       data: {
         name: 'Coffee',
         description: 'Premium coffee beans',
+        category: 'Food & Beverage',
         quantity: 25,
         unit: 'kg',
         minQuantity: 10,
-        price: 45.00,
-        supplier: 'Coffee Roasters',
-        location: 'Kitchen Storage',
       },
     }),
   ])
@@ -272,28 +266,22 @@ async function main() {
     prisma.gallery.create({
       data: {
         title: 'Hotel Lobby',
-        description: 'Elegant hotel lobby with modern design',
         imageUrl: '/images/gallery/lobby.jpg',
-        category: 'Lobby',
-        isActive: true,
+        category: 'EXTERIOR',
       },
     }),
     prisma.gallery.create({
       data: {
         title: 'Swimming Pool',
-        description: 'Outdoor swimming pool with city view',
         imageUrl: '/images/gallery/pool.jpg',
-        category: 'Facilities',
-        isActive: true,
+        category: 'AMENITY',
       },
     }),
     prisma.gallery.create({
       data: {
         title: 'Restaurant',
-        description: 'Fine dining restaurant',
         imageUrl: '/images/gallery/restaurant.jpg',
-        category: 'Dining',
-        isActive: true,
+        category: 'FOOD',
       },
     }),
   ])
@@ -304,7 +292,7 @@ async function main() {
       data: {
         title: 'Clean Room 101',
         description: 'Standard cleaning and restocking',
-        roomId: rooms[0].id,
+        type: 'HOUSEKEEPING',
         assignedTo: receptionist.id,
         status: 'PENDING',
         priority: 'MEDIUM',
@@ -316,7 +304,7 @@ async function main() {
       data: {
         title: 'Fix TV in Room 201',
         description: 'TV not working properly',
-        roomId: rooms[2].id,
+        type: 'MAINTENANCE',
         assignedTo: receptionist.id,
         status: 'IN_PROGRESS',
         priority: 'HIGH',

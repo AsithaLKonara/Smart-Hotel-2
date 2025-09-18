@@ -45,11 +45,11 @@ export async function verifyQRToken(token: string): Promise<DecodedQR | null> {
     const { payload } = await jwtVerify(token, secret)
     
     // Check if token has expired
-    if (payload.expiresAt && Date.now() > payload.expiresAt) {
+    if (payload.expiresAt && typeof payload.expiresAt === 'number' && Date.now() > payload.expiresAt) {
       return null
     }
     
-    return payload as DecodedQR
+    return payload as unknown as DecodedQR
   } catch (error) {
     console.error('QR token verification failed:', error)
     return null

@@ -1,4 +1,4 @@
-// This is your Prisma schema file,
+// This is your Prisma schema file for MongoDB Atlas
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
@@ -6,18 +6,18 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  id        String   @id @default(cuid())
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   name      String
   email     String   @unique
   password  String
   phone     String?
   role      UserRole @default(GUEST)
-  hotelId   String?  // Added for multi-hotel support
+  hotelId   String?  @db.ObjectId // Added for multi-hotel support
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -25,12 +25,10 @@ model User {
   bookings  Booking[]
   tasks     Task[]
   auditLogs AuditLog[]
-
-  @@map("users")
 }
 
 model Staff {
-  id         String   @id @default(cuid())
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
   employeeId String   @unique
   name       String
   email      String   @unique
@@ -40,18 +38,16 @@ model Staff {
   hireDate   DateTime
   salary     Float
   isActive   Boolean  @default(true)
-  hotelId    String?  // Added for multi-hotel support
+  hotelId    String?  @db.ObjectId // Added for multi-hotel support
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
   // Relations
   tasks Task[]
-
-  @@map("staff")
 }
 
 model Room {
-  id          String     @id @default(cuid())
+  id          String     @id @default(auto()) @map("_id") @db.ObjectId
   number      String     @unique
   type        String
   price       Float
@@ -62,20 +58,18 @@ model Room {
   status      RoomStatus @default(AVAILABLE)
   floor       Int?
   size        Int?
-  hotelId     String?    // Added for multi-hotel support
+  hotelId     String?    @db.ObjectId // Added for multi-hotel support
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
   // Relations
   bookings Booking[]
-
-  @@map("rooms")
 }
 
 model Booking {
-  id              String        @id @default(cuid())
-  userId          String
-  roomId          String
+  id              String        @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String        @db.ObjectId
+  roomId          String        @db.ObjectId
   checkIn         DateTime
   checkOut        DateTime
   guests          Int
@@ -85,7 +79,7 @@ model Booking {
   paymentMethod   String?
   paymentIntentId String?
   specialRequests String?
-  hotelId         String?       // Added for multi-hotel support
+  hotelId         String?       @db.ObjectId // Added for multi-hotel support
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
@@ -94,54 +88,48 @@ model Booking {
   room    Room      @relation(fields: [roomId], references: [id], onDelete: Cascade)
   invoice Invoice?
   tasks   Task[]
-
-  @@map("bookings")
 }
 
 model Invoice {
-  id        String        @id @default(cuid())
-  bookingId String        @unique
+  id        String        @id @default(auto()) @map("_id") @db.ObjectId
+  bookingId String        @unique @db.ObjectId
   amount    Float
   tax       Float
   total     Float
   status    PaymentStatus @default(PENDING)
   dueDate   DateTime
-  hotelId   String?       // Added for multi-hotel support
+  hotelId   String?       @db.ObjectId // Added for multi-hotel support
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
 
   // Relations
   booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-
-  @@map("invoices")
 }
 
 model Task {
-  id          String       @id @default(cuid())
+  id          String       @id @default(auto()) @map("_id") @db.ObjectId
   title       String
   description String?
   type        TaskType
   priority    TaskPriority @default(MEDIUM)
   status      TaskStatus   @default(PENDING)
-  assignedTo  String?
-  bookingId   String?
+  assignedTo  String?      @db.ObjectId
+  bookingId   String?      @db.ObjectId
   dueDate     DateTime?
   completedAt DateTime?
-  createdBy   String
-  hotelId     String?      // Added for multi-hotel support
+  createdBy   String       @db.ObjectId
+  hotelId     String?      @db.ObjectId // Added for multi-hotel support
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
   // Relations
-  user   User   @relation(fields: [createdBy], references: [id], onDelete: Cascade)
-  staff  Staff? @relation(fields: [assignedTo], references: [id])
+  user    User    @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+  staff   Staff?  @relation(fields: [assignedTo], references: [id])
   booking Booking? @relation(fields: [bookingId], references: [id])
-
-  @@map("tasks")
 }
 
 model Inventory {
-  id          String           @id @default(cuid())
+  id          String           @id @default(auto()) @map("_id") @db.ObjectId
   name        String
   description String?
   category    String
@@ -149,50 +137,92 @@ model Inventory {
   unit        String
   minQuantity Int              @default(0)
   status      InventoryStatus  @default(IN_STOCK)
-  hotelId     String?          // Added for multi-hotel support
+  hotelId     String?          @db.ObjectId // Added for multi-hotel support
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
-
-  @@map("inventory")
 }
 
 model Gallery {
-  id       String          @id @default(cuid())
+  id       String          @id @default(auto()) @map("_id") @db.ObjectId
   title    String
   imageUrl String
   category GalleryCategory @default(ROOM)
-  hotelId  String?         // Added for multi-hotel support
+  hotelId  String?         @db.ObjectId // Added for multi-hotel support
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
-
-  @@map("gallery")
 }
 
 model Setting {
-  id    String @id @default(cuid())
-  key   String @unique
-  value String
-  hotelId String? // Added for multi-hotel support
-
-  @@map("settings")
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  key    String @unique
+  value  String
+  hotelId String? @db.ObjectId // Added for multi-hotel support
 }
 
 model AuditLog {
-  id          String   @id @default(cuid())
-  userId      String
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
   action      String
   entityType  String
   entityId    String
   details     Json?
   ipAddress   String?
   userAgent   String?
-  hotelId     String?  // Added for multi-hotel support
+  hotelId     String?  @db.ObjectId // Added for multi-hotel support
   createdAt   DateTime @default(now())
 
   // Relations
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
 
-  @@map("audit_logs")
+// Restaurant Ordering System Models
+model FoodMenu {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  description String?
+  price       Float
+  category    FoodCategory
+  image       String?
+  available   Boolean  @default(true)
+  preparationTime Int? // in minutes
+  hotelId     String?  @db.ObjectId // Added for multi-hotel support
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  orderItems OrderItem[]
+}
+
+model FoodOrder {
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  roomNumber  String        // Room number from booking
+  guestId     String        @db.ObjectId // Linked to booking user
+  bookingId   String?       @db.ObjectId // Optional: direct link to booking
+  status      OrderStatus   @default(PENDING)
+  totalAmount Float
+  specialRequests String?
+  deliveryTime DateTime?    // Expected delivery time
+  hotelId     String?       @db.ObjectId // Added for multi-hotel support
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Relations
+  items      OrderItem[]
+}
+
+model OrderItem {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  orderId   String   @db.ObjectId
+  menuId    String   @db.ObjectId
+  quantity  Int
+  unitPrice Float
+  notes     String?  // Guest special requests
+  hotelId   String?  @db.ObjectId // Added for multi-hotel support
+  createdAt DateTime @default(now())
+
+  // Relations
+  menu      FoodMenu  @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  order     FoodOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
 }
 
 // Enums
@@ -261,63 +291,6 @@ enum GalleryCategory {
   EVENT
   FOOD
   EXTERIOR
-}
-
-// Restaurant Ordering System Models
-model FoodMenu {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  price       Float
-  category    FoodCategory
-  image       String?
-  available   Boolean  @default(true)
-  preparationTime Int? // in minutes
-  hotelId     String?  // Added for multi-hotel support
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
-  orderItems OrderItem[]
-
-  @@map("food_menu")
-}
-
-model FoodOrder {
-  id          String        @id @default(cuid())
-  roomNumber  String        // Room number from booking
-  guestId     String        // Linked to booking user
-  bookingId   String?       // Optional: direct link to booking
-  status      OrderStatus   @default(PENDING)
-  totalAmount Float
-  specialRequests String?
-  deliveryTime DateTime?    // Expected delivery time
-  hotelId     String?       // Added for multi-hotel support
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-
-  // Relations
-  items      OrderItem[]
-  invoice    Invoice?       // Link to room billing
-
-  @@map("food_orders")
-}
-
-model OrderItem {
-  id        String   @id @default(cuid())
-  orderId   String
-  menuId    String
-  quantity  Int
-  unitPrice Float
-  notes     String?  // Guest special requests
-  hotelId   String?  // Added for multi-hotel support
-  createdAt DateTime @default(now())
-
-  // Relations
-  menu      FoodMenu  @relation(fields: [menuId], references: [id], onDelete: Cascade)
-  order     FoodOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
-
-  @@map("order_items")
 }
 
 // Restaurant Ordering Enums

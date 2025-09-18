@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import prisma from '@/lib/db'
 import { z } from 'zod'
-import { rateLimit, createRateLimitResponse } from '@/lib/rate-limit'
+import { apiLimiter } from '@/lib/rate-limit-enhanced'
 import { logAction, AUDIT_ACTIONS } from '@/lib/audit'
 import Stripe from 'stripe'
 import { sendBookingConfirmation, sendAdminBookingAlert } from '@/lib/email'
@@ -11,6 +11,14 @@ import { sendBookingConfirmation, sendAdminBookingAlert } from '@/lib/email'
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2023-10-16',
 })
+
+// Simple rate limit response function
+function createRateLimitResponse(result: any) {
+  return NextResponse.json(
+    { error: 'Too many requests', retryAfter: Math.ceil((result.resetTime - Date.now()) / 1000) },
+    { status: 429, headers: { 'Retry-After': Math.ceil((result.resetTime - Date.now()) / 1000).toString() } }
+  )
+}
 
 const bookingSchema = z.object({
   roomId: z.string().min(1, 'Room ID is required'),
@@ -23,9 +31,10 @@ const bookingSchema = z.object({
 
 export async function GET(request: NextRequest) {
   // Rate limiting
-  const rateLimitResult = rateLimit(request, 'api')
+  const identifier = request.ip || 'unknown'
+  const rateLimitResult = apiLimiter.isAllowed(identifier)
   if (!rateLimitResult.allowed) {
-    return createRateLimitResponse(rateLimitResult.remaining, rateLimitResult.resetTime)
+    return createRateLimitResponse(rateLimitResult)
   }
 
   const session = await getServerSession(authOptions)
@@ -82,9 +91,10 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   // Rate limiting for booking creation
-  const rateLimitResult = rateLimit(request, 'booking')
+  const identifier = request.ip || 'unknown'
+  const rateLimitResult = apiLimiter.isAllowed(identifier)
   if (!rateLimitResult.allowed) {
-    return createRateLimitResponse(rateLimitResult.remaining, rateLimitResult.resetTime)
+    return createRateLimitResponse(rateLimitResult)
   }
 
   const session = await getServerSession(authOptions)
