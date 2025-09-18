@@ -9,6 +9,10 @@ const nextConfig = {
   experimental: {
     // Enable modern features
     optimizePackageImports: ['lucide-react', 'framer-motion'],
+    // Exclude test files from build
+    outputFileTracingExcludes: {
+      '*': ['./tests/**/*', './scripts/**/*'],
+    },
   },
   
   // Build performance optimizations
@@ -59,6 +63,7 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: false,
   },
+  
 }
 
 module.exports = nextConfig
