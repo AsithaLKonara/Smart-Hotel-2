@@ -129,10 +129,6 @@ export const authOptions: NextAuthOptions = {
     signIn: '/auth/signin'
   },
   secret: process.env.NEXTAUTH_SECRET,
-  // Use static URL for production to avoid callback URL mismatches
-  url: process.env.NODE_ENV === 'production' 
-    ? 'https://smarthotel-demo.vercel.app'
-    : process.env.NEXTAUTH_URL,
   cookies: {
     sessionToken: {
       name: `next-auth.session-token`,
