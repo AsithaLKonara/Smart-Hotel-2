@@ -18,9 +18,10 @@ const taskUpdateSchema = z.object({
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
     
     if (!session) {
@@ -31,7 +32,7 @@ export async function GET(
     }
 
     const task = await prisma.task.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: {
         staff: {
           select: {
@@ -71,9 +72,10 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
     
     if (!session || !['SUPER_ADMIN', 'MANAGER'].includes(session.user.role)) {
@@ -87,7 +89,7 @@ export async function PUT(
     const validatedData = taskUpdateSchema.parse(body)
 
     const existingTask = await prisma.task.findUnique({
-      where: { id: params.id }
+      where: { id: id }
     })
 
     if (!existingTask) {
@@ -98,7 +100,7 @@ export async function PUT(
     }
 
     const updatedTask = await prisma.task.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         ...validatedData,
         assignedTo: validatedData.assignedTo || null,
@@ -129,7 +131,7 @@ export async function PUT(
       session.user.id,
       AUDIT_ACTIONS.TASK_UPDATE,
       'Task',
-      params.id,
+      id,
       {
         oldStatus: existingTask.status,
         newStatus: validatedData.status,
@@ -157,9 +159,10 @@ export async function PUT(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
     
     if (!session || !['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'].includes(session.user.role)) {
@@ -173,7 +176,7 @@ export async function PATCH(
     const validatedData = taskUpdateSchema.parse(body)
 
     const existingTask = await prisma.task.findUnique({
-      where: { id: params.id }
+      where: { id: id }
     })
 
     if (!existingTask) {
@@ -184,7 +187,7 @@ export async function PATCH(
     }
 
     const updatedTask = await prisma.task.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         ...validatedData,
         assignedTo: validatedData.assignedTo || null,
@@ -215,7 +218,7 @@ export async function PATCH(
       session.user.id,
       AUDIT_ACTIONS.TASK_UPDATE,
       'Task',
-      params.id,
+      id,
       {
         oldStatus: existingTask.status,
         newStatus: validatedData.status,
@@ -243,9 +246,10 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
     
     if (!session || session.user.role !== 'SUPER_ADMIN') {
@@ -256,7 +260,7 @@ export async function DELETE(
     }
 
     const task = await prisma.task.findUnique({
-      where: { id: params.id }
+      where: { id: id }
     })
 
     if (!task) {
@@ -267,7 +271,7 @@ export async function DELETE(
     }
 
     await prisma.task.delete({
-      where: { id: params.id }
+      where: { id: id }
     })
 
     // Log the action

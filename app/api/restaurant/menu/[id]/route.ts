@@ -6,11 +6,12 @@ import { prisma } from '@/lib/db'
 // GET /api/restaurant/menu/[id] - Get specific menu item
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const menuItem = await prisma.foodMenu.findUnique({
-      where: { id: params.id }
+      where: { id }
     })
 
     if (!menuItem) {
@@ -33,9 +34,10 @@ export async function GET(
 // PUT /api/restaurant/menu/[id] - Update menu item
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
     
     if (!session || !['SUPER_ADMIN', 'MANAGER'].includes(session.user.role)) {
@@ -56,7 +58,7 @@ export async function PUT(
     }
 
     const menuItem = await prisma.foodMenu.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         name,
         description,
@@ -81,9 +83,10 @@ export async function PUT(
 // DELETE /api/restaurant/menu/[id] - Delete menu item
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
     
     if (!session || !['SUPER_ADMIN', 'MANAGER'].includes(session.user.role)) {
@@ -95,7 +98,7 @@ export async function DELETE(
 
     // Check if item is used in any orders
     const orderItems = await prisma.orderItem.findMany({
-      where: { menuId: params.id }
+      where: { menuId: id }
     })
 
     if (orderItems.length > 0) {
@@ -106,7 +109,7 @@ export async function DELETE(
     }
 
     await prisma.foodMenu.delete({
-      where: { id: params.id }
+      where: { id: id }
     })
 
     return NextResponse.json({ message: 'Menu item deleted successfully' })
@@ -122,9 +125,10 @@ export async function DELETE(
 // PATCH /api/restaurant/menu/[id] - Partial update (e.g., availability toggle)
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
     
     if (!session || !['SUPER_ADMIN', 'MANAGER'].includes(session.user.role)) {
@@ -137,7 +141,7 @@ export async function PATCH(
     const body = await request.json()
     
     const menuItem = await prisma.foodMenu.update({
-      where: { id: params.id },
+      where: { id: id },
       data: body
     })
 

@@ -19,11 +19,12 @@ const roomUpdateSchema = z.object({
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const room = await prisma.room.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         bookings: {
           where: {
@@ -55,9 +56,10 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
     
     if (!session || !['SUPER_ADMIN', 'MANAGER'].includes(session.user.role)) {
@@ -75,7 +77,7 @@ export async function PUT(
       const existingRoom = await prisma.room.findFirst({
         where: {
           number: validatedData.number,
-          id: { not: params.id }
+          id: { not: id }
         }
       })
 
@@ -88,7 +90,7 @@ export async function PUT(
     }
 
     const room = await prisma.room.update({
-      where: { id: params.id },
+      where: { id: id },
       data: validatedData
     })
 
@@ -111,9 +113,10 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
     
     if (!session || session.user.role !== 'SUPER_ADMIN') {
@@ -126,7 +129,7 @@ export async function DELETE(
     // Check if room has active bookings
     const activeBookings = await prisma.booking.findFirst({
       where: {
-        roomId: params.id,
+        roomId: id,
         status: {
           in: ['CONFIRMED', 'CHECKED_IN']
         }
@@ -141,7 +144,7 @@ export async function DELETE(
     }
 
     await prisma.room.delete({
-      where: { id: params.id }
+      where: { id: id }
     })
 
     return NextResponse.json({ message: 'Room deleted successfully' })

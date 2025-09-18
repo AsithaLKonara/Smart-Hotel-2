@@ -32,7 +32,8 @@ export async function createAuditLog(data: AuditLogData) {
 
 export function getClientInfo(req: NextRequest) {
   const forwarded = req.headers.get('x-forwarded-for')
-  const ip = forwarded ? forwarded.split(',')[0] : req.ip || 'unknown'
+  const realIp = req.headers.get('x-real-ip')
+  const ip = forwarded ? forwarded.split(',')[0] : realIp || 'unknown'
   const userAgent = req.headers.get('user-agent') || 'unknown'
   
   return { ipAddress: ip, userAgent }

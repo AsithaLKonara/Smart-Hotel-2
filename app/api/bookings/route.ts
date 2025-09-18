@@ -31,7 +31,9 @@ const bookingSchema = z.object({
 
 export async function GET(request: NextRequest) {
   // Rate limiting
-  const identifier = request.ip || 'unknown'
+  const identifier = request.headers.get('x-forwarded-for') || 
+                     request.headers.get('x-real-ip') || 
+                     'unknown'
   const rateLimitResult = apiLimiter.isAllowed(identifier)
   if (!rateLimitResult.allowed) {
     return createRateLimitResponse(rateLimitResult)
@@ -91,7 +93,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   // Rate limiting for booking creation
-  const identifier = request.ip || 'unknown'
+  const identifier = request.headers.get('x-forwarded-for') || 
+                     request.headers.get('x-real-ip') || 
+                     'unknown'
   const rateLimitResult = apiLimiter.isAllowed(identifier)
   if (!rateLimitResult.allowed) {
     return createRateLimitResponse(rateLimitResult)

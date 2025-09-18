@@ -148,7 +148,8 @@ setInterval(() => {
 export function getClientIdentifier(req: NextRequest): string {
   // Use IP address as identifier with additional fingerprinting
   const forwarded = req.headers.get('x-forwarded-for')
-  const ip = forwarded ? forwarded.split(',')[0].trim() : req.ip || 'unknown'
+  const realIp = req.headers.get('x-real-ip')
+  const ip = forwarded ? forwarded.split(',')[0].trim() : realIp || 'unknown'
   
   // Add user agent hash for additional uniqueness (if available)
   const userAgent = req.headers.get('user-agent') || ''

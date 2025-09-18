@@ -15,9 +15,10 @@ const bookingUpdateSchema = z.object({
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
     
     if (!session) {
@@ -28,7 +29,7 @@ export async function GET(
     }
 
     const booking = await prisma.booking.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         user: {
           select: {
@@ -79,9 +80,10 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
     
     if (!session || !['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'].includes(session.user.role)) {
@@ -95,7 +97,7 @@ export async function PATCH(
     const validatedData = bookingUpdateSchema.parse(body)
 
     const booking = await prisma.booking.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: { 
         room: true,
         user: {
@@ -134,7 +136,7 @@ export async function PATCH(
     }
 
     const updatedBooking = await prisma.booking.update({
-      where: { id: params.id },
+      where: { id: id },
       data: validatedData,
       include: {
         user: {
@@ -207,9 +209,10 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
     
     if (!session || session.user.role !== 'SUPER_ADMIN') {
@@ -220,7 +223,7 @@ export async function DELETE(
     }
 
     const booking = await prisma.booking.findUnique({
-      where: { id: params.id }
+      where: { id: id }
     })
 
     if (!booking) {
@@ -239,7 +242,7 @@ export async function DELETE(
     }
 
     await prisma.booking.delete({
-      where: { id: params.id }
+      where: { id: id }
     })
 
     return NextResponse.json({ message: 'Booking deleted successfully' })
