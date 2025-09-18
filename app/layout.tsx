@@ -7,6 +7,9 @@ import { ThemeProvider } from '@/components/theme-provider'
 import { SessionProvider } from 'next-auth/react'
 import PWAInstallPrompt from '@/components/pwa-install-prompt'
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic'
+
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
