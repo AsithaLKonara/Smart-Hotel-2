@@ -1,4 +1,6 @@
 /** @type {import('next').NextConfig} */
+const webpack = require('webpack')
+
 const nextConfig = {
   // Production optimizations
   output: 'standalone',
@@ -36,20 +38,23 @@ const nextConfig = {
       }
     }
     
-    // Reduce bundle size
-    config.optimization.splitChunks = {
-      chunks: 'all',
-      cacheGroups: {
-        default: false,
-        vendors: false,
-        // Group vendor libraries
-        vendor: {
-          name: 'vendor',
-          chunks: 'all',
-          test: /node_modules/,
-        },
-      },
+    // Fix server-side rendering issues
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      "crypto": false,
+      "stream": false,
+      "util": false,
+      "buffer": false,
     }
+    
+    // Define global variables for server-side rendering
+    config.plugins.push(
+      new webpack.DefinePlugin({
+        'self': 'undefined',
+        'window': 'undefined',
+        'global': 'globalThis',
+      })
+    )
     
     return config
   },
