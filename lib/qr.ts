@@ -59,8 +59,13 @@ export async function verifyQRToken(token: string): Promise<DecodedQR | null> {
 /**
  * Generate QR code URL for room ordering
  */
-export function generateOrderingURL(token: string, baseURL: string = process.env.NEXTAUTH_URL || 'http://localhost:3000'): string {
-  return `${baseURL}/order?token=${token}`
+export function generateOrderingURL(token: string, baseURL?: string): string {
+  // Use static production URL for consistency
+  const defaultURL = process.env.NODE_ENV === 'production' 
+    ? 'https://smarthotel-demo.vercel.app'
+    : process.env.NEXTAUTH_URL || 'http://localhost:3000'
+  
+  return `${baseURL || defaultURL}/order?token=${token}`
 }
 
 /**
