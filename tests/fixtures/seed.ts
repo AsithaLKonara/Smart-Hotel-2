@@ -65,6 +65,7 @@ export const testBookings = {
     roomId: testRooms.deluxe.id,
     checkIn: new Date('2025-10-01'),
     checkOut: new Date('2025-10-03'),
+    guests: 2,
     status: 'CONFIRMED' as const,
     totalAmount: 300.00,
     paymentStatus: 'PAID' as const,
