@@ -314,6 +314,114 @@ async function main() {
     }),
   ])
 
+  // Create restaurant menu items
+  await Promise.all([
+    prisma.foodMenu.upsert({
+      where: { id: 'menu-breakfast-1' },
+      update: {},
+      create: {
+        id: 'menu-breakfast-1',
+        name: 'Continental Breakfast',
+        description: 'Fresh croissants, butter, jam, coffee, and orange juice',
+        price: 15.99,
+        category: 'BREAKFAST',
+        available: true,
+        preparationTime: 10,
+      },
+    }),
+    prisma.foodMenu.upsert({
+      where: { id: 'menu-breakfast-2' },
+      update: {},
+      create: {
+        id: 'menu-breakfast-2',
+        name: 'Full English Breakfast',
+        description: 'Eggs, bacon, sausage, beans, toast, and coffee',
+        price: 18.99,
+        category: 'BREAKFAST',
+        available: true,
+        preparationTime: 15,
+      },
+    }),
+    prisma.foodMenu.upsert({
+      where: { id: 'menu-lunch-1' },
+      update: {},
+      create: {
+        id: 'menu-lunch-1',
+        name: 'Caesar Salad',
+        description: 'Fresh romaine lettuce, parmesan cheese, croutons, and Caesar dressing',
+        price: 12.99,
+        category: 'LUNCH',
+        available: true,
+        preparationTime: 8,
+      },
+    }),
+    prisma.foodMenu.upsert({
+      where: { id: 'menu-lunch-2' },
+      update: {},
+      create: {
+        id: 'menu-lunch-2',
+        name: 'Club Sandwich',
+        description: 'Turkey, bacon, lettuce, tomato, and mayo on toasted bread',
+        price: 14.99,
+        category: 'LUNCH',
+        available: true,
+        preparationTime: 12,
+      },
+    }),
+    prisma.foodMenu.upsert({
+      where: { id: 'menu-dinner-1' },
+      update: {},
+      create: {
+        id: 'menu-dinner-1',
+        name: 'Grilled Salmon',
+        description: 'Fresh Atlantic salmon with herbs, served with vegetables and rice',
+        price: 24.99,
+        category: 'DINNER',
+        available: true,
+        preparationTime: 20,
+      },
+    }),
+    prisma.foodMenu.upsert({
+      where: { id: 'menu-dinner-2' },
+      update: {},
+      create: {
+        id: 'menu-dinner-2',
+        name: 'Beef Tenderloin',
+        description: '8oz beef tenderloin with red wine reduction and mashed potatoes',
+        price: 32.99,
+        category: 'DINNER',
+        available: true,
+        preparationTime: 25,
+      },
+    }),
+    prisma.foodMenu.upsert({
+      where: { id: 'menu-beverage-1' },
+      update: {},
+      create: {
+        id: 'menu-beverage-1',
+        name: 'Fresh Orange Juice',
+        description: 'Freshly squeezed orange juice',
+        price: 4.99,
+        category: 'BEVERAGES',
+        available: true,
+        preparationTime: 2,
+      },
+    }),
+    prisma.foodMenu.upsert({
+      where: { id: 'menu-beverage-2' },
+      update: {},
+      create: {
+        id: 'menu-beverage-2',
+        name: 'Premium Coffee',
+        description: 'Freshly brewed premium coffee',
+        price: 3.99,
+        category: 'BEVERAGES',
+        available: true,
+        preparationTime: 3,
+      },
+    }),
+  ])
+
   // Create settings
   await Promise.all([
     prisma.setting.upsert({

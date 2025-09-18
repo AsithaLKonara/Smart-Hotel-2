@@ -23,6 +23,7 @@
     "test:auth": "node scripts/test-auth.js",
     "test:production": "BASE_URL=https://smarthotel-demo.vercel.app node scripts/test-auth.js",
     "setup:vercel": "node scripts/setup-vercel-env.js",
+    "db:seed:production": "node scripts/seed-production.js",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",

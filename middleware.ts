@@ -14,8 +14,8 @@ export function middleware(request: NextRequest) {
   
   // Set secure headers
   const headers = {
-    // Content Security Policy
-    'Content-Security-Policy': [
+    // Content Security Policy (relaxed for development)
+    'Content-Security-Policy': process.env.NODE_ENV === 'production' ? [
       "default-src 'self'",
       "script-src 'self' 'unsafe-eval' 'unsafe-inline' 'nonce-" + nonce + "' https://js.stripe.com https://checkout.stripe.com",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
@@ -26,8 +26,17 @@ export function middleware(request: NextRequest) {
       "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self'",
-      "frame-ancestors 'none'",
-      "upgrade-insecure-requests"
+      "frame-ancestors 'none'"
+    ].join('; ') : [
+      "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https:",
+      "style-src 'self' 'unsafe-inline' https:",
+      "img-src 'self' data: https: blob:",
+      "connect-src 'self' https: ws: wss:",
+      "font-src 'self' https:",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'"
     ].join('; '),
     
     // Security headers
