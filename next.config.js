@@ -4,9 +4,10 @@ const nextConfig = {
   output: 'standalone',
   poweredByHeader: false,
   
-  // Force all pages to be dynamic
+  // Completely disable static generation
   experimental: {
-    staticPageGenerationTimeout: 1000,
+    // Disable static optimization
+    staticPageGenerationTimeout: 1,
   },
   
   // Environment variables
