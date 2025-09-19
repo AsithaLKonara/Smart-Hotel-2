@@ -27,8 +27,7 @@ export async function GET(request: NextRequest) {
         hotelId: session.user.hotelId
       },
       session: {
-        expires: session.expires,
-        accessToken: session.accessToken
+        expires: session.expires
       }
     })
 
