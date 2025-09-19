@@ -9,6 +9,9 @@ function generateNonce(): string {
 export function middleware(request: NextRequest) {
   const response = NextResponse.next()
   
+  // Temporarily disable middleware to test
+  return response
+  
   // Generate nonce for this request
   const nonce = generateNonce()
   
