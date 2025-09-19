@@ -9,9 +9,6 @@ function generateNonce(): string {
 export function middleware(request: NextRequest) {
   const response = NextResponse.next()
   
-  // Temporarily disable middleware to test
-  return response
-  
   // Generate nonce for this request
   const nonce = generateNonce()
   
@@ -68,30 +65,30 @@ export function middleware(request: NextRequest) {
   // Add nonce to request headers for use in pages
   response.headers.set('x-nonce', nonce)
 
-  // Rate limiting for API routes
-  if (request.nextUrl.pathname.startsWith('/api/')) {
-    let rateLimitType: 'auth' | 'booking' | 'api' | 'payment' = 'api'
-    
-    // Determine rate limit type based on endpoint
-    if (request.nextUrl.pathname.includes('/auth/')) {
-      rateLimitType = 'auth'
-    } else if (request.nextUrl.pathname.includes('/bookings/') || 
-               request.nextUrl.pathname.includes('/restaurant/orders')) {
-      rateLimitType = 'booking'
-    } else if (request.nextUrl.pathname.includes('/webhooks/stripe')) {
-      rateLimitType = 'payment'
-    }
+  // Rate limiting temporarily disabled for testing
+  // if (request.nextUrl.pathname.startsWith('/api/')) {
+  //   let rateLimitType: 'auth' | 'booking' | 'api' | 'payment' = 'api'
+  //   
+  //   // Determine rate limit type based on endpoint
+  //   if (request.nextUrl.pathname.includes('/auth/')) {
+  //     rateLimitType = 'auth'
+  //   } else if (request.nextUrl.pathname.includes('/bookings/') || 
+  //              request.nextUrl.pathname.includes('/restaurant/orders')) {
+  //     rateLimitType = 'booking'
+  //   } else if (request.nextUrl.pathname.includes('/webhooks/stripe')) {
+  //     rateLimitType = 'payment'
+  //   }
 
-    const rateLimitResult = enhancedRateLimit(request, rateLimitType)
-    
-    if (!rateLimitResult.allowed) {
-      return createEnhancedRateLimitResponse(rateLimitResult)
-    }
+  //   const rateLimitResult = enhancedRateLimit(request, rateLimitType)
+  //   
+  //   if (!rateLimitResult.allowed) {
+  //     return createEnhancedRateLimitResponse(rateLimitResult)
+  //   }
 
-    // Add rate limit headers to successful responses
-    response.headers.set('X-RateLimit-Remaining', rateLimitResult.remaining.toString())
-    response.headers.set('X-RateLimit-Reset', new Date(rateLimitResult.resetTime).toISOString())
-  }
+  //   // Add rate limit headers to successful responses
+  //   response.headers.set('X-RateLimit-Remaining', rateLimitResult.remaining.toString())
+  //   response.headers.set('X-RateLimit-Reset', new Date(rateLimitResult.resetTime).toISOString())
+  // }
 
   return response
 }
