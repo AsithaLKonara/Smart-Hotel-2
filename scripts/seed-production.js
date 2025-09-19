@@ -178,7 +178,6 @@ async function seedProduction() {
     await Promise.all([
       prisma.foodMenu.create({
         data: {
-          id: 'menu-breakfast-1',
           name: 'Continental Breakfast',
           description: 'Fresh croissants, butter, jam, coffee, and orange juice',
           price: 15.99,
@@ -189,7 +188,6 @@ async function seedProduction() {
       }),
       prisma.foodMenu.create({
         data: {
-          id: 'menu-breakfast-2',
           name: 'Full English Breakfast',
           description: 'Eggs, bacon, sausage, beans, toast, and coffee',
           price: 18.99,
@@ -200,7 +198,6 @@ async function seedProduction() {
       }),
       prisma.foodMenu.create({
         data: {
-          id: 'menu-lunch-1',
           name: 'Caesar Salad',
           description: 'Fresh romaine lettuce, parmesan cheese, croutons, and Caesar dressing',
           price: 12.99,
@@ -211,7 +208,6 @@ async function seedProduction() {
       }),
       prisma.foodMenu.create({
         data: {
-          id: 'menu-lunch-2',
           name: 'Club Sandwich',
           description: 'Turkey, bacon, lettuce, tomato, and mayo on toasted bread',
           price: 14.99,
@@ -222,7 +218,6 @@ async function seedProduction() {
       }),
       prisma.foodMenu.create({
         data: {
-          id: 'menu-dinner-1',
           name: 'Grilled Salmon',
           description: 'Fresh Atlantic salmon with herbs, served with vegetables and rice',
           price: 24.99,
@@ -233,7 +228,6 @@ async function seedProduction() {
       }),
       prisma.foodMenu.create({
         data: {
-          id: 'menu-dinner-2',
           name: 'Beef Tenderloin',
           description: '8oz beef tenderloin with red wine reduction and mashed potatoes',
           price: 32.99,

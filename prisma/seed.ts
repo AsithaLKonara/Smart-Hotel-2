@@ -316,11 +316,8 @@ async function main() {
 
   // Create restaurant menu items
   await Promise.all([
-    prisma.foodMenu.upsert({
-      where: { id: 'menu-breakfast-1' },
-      update: {},
-      create: {
-        id: 'menu-breakfast-1',
+    prisma.foodMenu.create({
+      data: {
         name: 'Continental Breakfast',
         description: 'Fresh croissants, butter, jam, coffee, and orange juice',
         price: 15.99,
