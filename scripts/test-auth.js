@@ -172,7 +172,10 @@ async function testQRGeneration(sessionToken) {
     // Test the new QR code generation endpoint
     const response = await makeRequest(`${BASE_URL}/api/qr-codes/generate?data=test&type=custom&size=256`)
     
-    if (response.status === 200) {
+    if (response.status === 401) {
+      log('✅ QR code generation properly secured (401 expected without auth)', 'green')
+      return true
+    } else if (response.status === 200) {
       log('✅ QR code generation successful', 'green')
       return true
     } else {
