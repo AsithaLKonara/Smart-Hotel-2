@@ -29,7 +29,7 @@ export function middleware(request: NextRequest) {
       "frame-ancestors 'none'"
     ].join('; ') : [
       "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https:",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https: 'sha256-kPx0AsF0oz2kKiZ875xSvv693TBHkQ/0SkMJZnnNpnQ='",
       "style-src 'self' 'unsafe-inline' https:",
       "img-src 'self' data: https: blob:",
       "connect-src 'self' https: ws: wss:",
