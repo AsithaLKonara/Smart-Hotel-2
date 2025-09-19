@@ -17,7 +17,7 @@ const nextConfig = {
   },
   
   // Build performance optimizations
-  webpack: (config, { isServer, webpack }) => {
+  webpack: (config, { isServer }) => {
     if (!isServer) {
       // Client-side fallbacks
       config.resolve.fallback = {
@@ -31,15 +31,6 @@ const nextConfig = {
         buffer: false,
       }
     }
-    
-    // Define global variables for server-side rendering
-    config.plugins.push(
-      new webpack.DefinePlugin({
-        'self': 'undefined',
-        'window': 'undefined',
-        'global': 'globalThis',
-      })
-    )
     
     return config
   },
