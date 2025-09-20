@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { motion } from 'framer-motion'
 import Image from 'next/image'
 import { Star, Shield, Award } from 'lucide-react'
 
@@ -25,17 +26,32 @@ export default function HomePage() {
         {/* Content */}
         <div className="relative z-10 flex items-center justify-center h-full">
           <div className="text-center text-white max-w-4xl px-4">
-            <h1 className="text-6xl md:text-7xl font-bold mb-6">
+            <motion.h1
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              className="text-6xl md:text-7xl font-bold mb-6"
+            >
               Welcome to <span className="text-amber-400">SmartHotel</span>
-            </h1>
+            </motion.h1>
             
-            <p className="text-xl md:text-2xl mb-8 text-white/90">
+            <motion.p
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="text-xl md:text-2xl mb-8 text-white/90"
+            >
               Experience luxury and comfort in the heart of the city. 
               Book your perfect stay today.
-            </p>
+            </motion.p>
             
             {/* Enhanced Search Overlay */}
-            <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 max-w-2xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+              className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 max-w-2xl mx-auto"
+            >
               <div className="bg-white/90 rounded-xl p-4">
                 <div className="flex flex-col sm:flex-row gap-4">
                   <div className="flex-1">
@@ -60,12 +76,17 @@ export default function HomePage() {
                   </button>
                 </div>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
         
         {/* Trust Indicators */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.6 }}
+          className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
+        >
           <div className="flex items-center gap-8 text-white/90">
             <div className="flex items-center gap-2">
               <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
@@ -80,7 +101,7 @@ export default function HomePage() {
               <span className="text-sm font-medium">Award Winning</span>
             </div>
           </div>
-        </div>
+        </motion.div>
       </section>
     </div>
   )
