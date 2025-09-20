@@ -29,6 +29,7 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
+    "db:setup:production": "node scripts/setup-production-database.js",
     "db:studio": "prisma studio",
     "db:migrate": "prisma db push",
     "db:migrate:deploy": "prisma db push",
