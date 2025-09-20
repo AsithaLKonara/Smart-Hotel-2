@@ -38,6 +38,9 @@ const nextConfig = {
     ],
   },
   
+  // Specify the correct workspace root
+  outputFileTracingRoot: __dirname,
+  
   // Build performance optimizations
   webpack: (config, { isServer, dev }) => {
     if (!isServer) {
