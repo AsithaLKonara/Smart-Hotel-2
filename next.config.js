@@ -114,14 +114,14 @@ const nextConfig = {
   
   // Image optimization
   images: {
-    domains: ['localhost', 'res.cloudinary.com'],
+    domains: ['localhost', 'res.cloudinary.com', 'images.unsplash.com', 'smarthotel-demo-7lyfxphkz-asithalkonaras-projects.vercel.app'],
     formats: ['image/webp', 'image/avif'],
     minimumCacheTTL: 60,
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
   
-  // Headers for performance
+  // Headers for performance and security
   async headers() {
     return [
       {
@@ -142,6 +142,10 @@ const nextConfig = {
           {
             key: 'Referrer-Policy',
             value: 'origin-when-cross-origin'
+          },
+          {
+            key: 'Content-Security-Policy',
+            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com https://checkout.stripe.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https:; frame-src https://checkout.stripe.com;"
           },
         ],
       },

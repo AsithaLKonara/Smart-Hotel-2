@@ -12,7 +12,7 @@ const heroSlides = [
     title: "Luxury Redefined",
     subtitle: "Experience unparalleled comfort and elegance",
     description: "Discover our world-class amenities and exceptional service in the heart of the city.",
-    image: "/images/hero-1.jpg",
+    image: "/images/hotel-hero-1.jpg",
     cta: "Book Now",
     ctaLink: "/booking"
   },
@@ -21,7 +21,7 @@ const heroSlides = [
     title: "Perfect Getaway",
     subtitle: "Your ideal destination for relaxation",
     description: "Escape to tranquility with our premium rooms and stunning city views.",
-    image: "/images/hero-2.jpg",
+    image: "/images/hotel-hero-1.jpg",
     cta: "View Rooms",
     ctaLink: "/rooms"
   },
@@ -30,7 +30,7 @@ const heroSlides = [
     title: "Exclusive Experience",
     subtitle: "Where luxury meets convenience",
     description: "Indulge in our signature services and create unforgettable memories.",
-    image: "/images/hero-3.jpg",
+    image: "/images/hotel-hero-1.jpg",
     cta: "Learn More",
     ctaLink: "/about"
   }
