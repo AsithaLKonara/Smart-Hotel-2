@@ -34,7 +34,7 @@ interface Booking {
 }
 
 export default function MyBookingsPage() {
-  const { data: session, status } = useSession()
+  const { data: session, status } = useSession() || { data: null, status: 'unauthenticated' }
   const router = useRouter()
   const [bookings, setBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)

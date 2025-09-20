@@ -3,7 +3,7 @@
 // Force dynamic rendering
 export const dynamic = 'force-dynamic'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { Calendar, Users, CreditCard, CheckCircle, ArrowLeft, Loader2 } from 'lucide-react'
@@ -14,10 +14,10 @@ import Navigation from '@/components/navigation'
 import { formatPrice } from '@/lib/utils'
 import toast from 'react-hot-toast'
 
-export default function BookingPage() {
+function BookingPageContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const { data: session, status } = useSession()
+  const { data: session, status } = useSession() || { data: null, status: 'unauthenticated' }
   const selectedRoomId = searchParams.get('room')
   
   const [step, setStep] = useState(1)
@@ -465,5 +465,13 @@ export default function BookingPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function BookingPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <BookingPageContent />
+    </Suspense>
   )
 } 

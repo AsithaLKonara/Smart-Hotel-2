@@ -1,15 +1,15 @@
 {
-  "name": "SmartHotel - Hotel Management System",
+  "name": "SmartHotel - Premium Hotel Management",
   "short_name": "SmartHotel",
-  "description": "Professional hotel management system with booking, room management, and guest services",
+  "description": "Premium hotel management system with booking, ordering, and analytics",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#2563eb",
+  "theme_color": "#f59e0b",
   "orientation": "portrait-primary",
   "scope": "/",
   "lang": "en",
-  "categories": ["business", "travel", "lifestyle"],
+  "categories": ["business", "travel", "productivity"],
   "icons": [
     {
       "src": "/icons/icon-72x72.png",
@@ -62,65 +62,63 @@
   ],
   "shortcuts": [
     {
-      "name": "Book a Room",
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "View hotel dashboard and analytics",
+      "url": "/dashboard",
+      "icons": [{ "src": "/icons/dashboard-96x96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Book Room",
       "short_name": "Book",
-      "description": "Quickly book a room",
+      "description": "Book a hotel room",
       "url": "/booking",
-      "icons": [
-        {
-          "src": "/icons/booking-96x96.png",
-          "sizes": "96x96"
-        }
-      ]
+      "icons": [{ "src": "/icons/booking-96x96.png", "sizes": "96x96" }]
     },
     {
-      "name": "My Bookings",
-      "short_name": "Bookings",
-      "description": "View your bookings",
-      "url": "/my-bookings",
-      "icons": [
-        {
-          "src": "/icons/bookings-96x96.png",
-          "sizes": "96x96"
-        }
-      ]
+      "name": "Order Food",
+      "short_name": "Order",
+      "description": "Order room service",
+      "url": "/order",
+      "icons": [{ "src": "/icons/order-96x96.png", "sizes": "96x96" }]
     },
     {
-      "name": "Admin Panel",
-      "short_name": "Admin",
-      "description": "Access admin dashboard",
-      "url": "/admin",
-      "icons": [
-        {
-          "src": "/icons/admin-96x96.png",
-          "sizes": "96x96"
-        }
-      ]
+      "name": "Kitchen Dashboard",
+      "short_name": "Kitchen",
+      "description": "Manage kitchen orders",
+      "url": "/admin/kitchen",
+      "icons": [{ "src": "/icons/kitchen-96x96.png", "sizes": "96x96" }]
     }
   ],
   "screenshots": [
     {
-      "src": "/screenshots/desktop-home.png",
+      "src": "/screenshots/desktop-dashboard.png",
       "sizes": "1280x720",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "SmartHotel Homepage"
+      "label": "Dashboard Overview"
     },
     {
-      "src": "/screenshots/mobile-home.png",
-      "sizes": "390x844",
+      "src": "/screenshots/mobile-booking.png",
+      "sizes": "375x812",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "SmartHotel Mobile Homepage"
+      "label": "Mobile Booking Flow"
     },
     {
-      "src": "/screenshots/desktop-admin.png",
-      "sizes": "1280x720",
+      "src": "/screenshots/mobile-ordering.png",
+      "sizes": "375x812",
       "type": "image/png",
-      "form_factor": "wide",
-      "label": "Admin Dashboard"
+      "form_factor": "narrow",
+      "label": "Mobile Food Ordering"
     }
   ],
   "related_applications": [],
-  "prefer_related_applications": false
-} 
+  "prefer_related_applications": false,
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  }
+}
