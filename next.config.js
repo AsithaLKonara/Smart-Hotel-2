@@ -18,12 +18,8 @@ const nextConfig = {
       'clsx',
       'tailwind-merge'
     ],
-    // Enable modern bundling
-    modernBuild: true,
     // Optimize CSS
     optimizeCss: true,
-    // Enable SWC minification
-    swcMinify: true,
   },
   
   // Exclude test files and unnecessary files from build
