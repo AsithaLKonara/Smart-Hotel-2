@@ -8,7 +8,7 @@ async function main() {
 
   // Create sample users
   const hashedPassword = await bcrypt.hash('password123', 12)
-  
+
   const adminUser = await prisma.user.upsert({
     where: { email: 'admin@smarthotel.com' },
     update: {},
@@ -94,8 +94,8 @@ async function main() {
 
   const staff3 = await prisma.staff.upsert({
     where: { employeeId: 'EMP003' },
-    update: {},
-    create: {
+      update: {},
+      create: {
       employeeId: 'EMP003',
       name: 'Lisa Rodriguez',
       email: 'lisa.rodriguez@smarthotel.com',
@@ -113,47 +113,47 @@ async function main() {
   // Create sample rooms
   const rooms = [
     {
-      number: '101',
+        number: '101',
       type: 'Standard Room',
       price: 150,
-      capacity: 2,
-      description: 'Comfortable standard room with city view',
+        capacity: 2,
+        description: 'Comfortable standard room with city view',
       amenities: ['wifi', 'tv', 'air-conditioning', 'safe'],
       images: ['/images/room-placeholder.jpg'],
-      floor: 1,
+        floor: 1,
       size: 25
     },
     {
-      number: '102',
+        number: '102',
       type: 'Deluxe Room',
       price: 200,
       capacity: 3,
       description: 'Spacious deluxe room with premium amenities',
       amenities: ['wifi', 'tv', 'air-conditioning', 'safe', 'minibar', 'balcony'],
       images: ['/images/room-placeholder.jpg'],
-      floor: 1,
+        floor: 1,
       size: 35
     },
     {
-      number: '201',
+        number: '201',
       type: 'Suite',
       price: 350,
       capacity: 4,
       description: 'Luxury suite with separate living area',
       amenities: ['wifi', 'tv', 'air-conditioning', 'safe', 'minibar', 'balcony', 'kitchen', 'jacuzzi'],
       images: ['/images/room-placeholder.jpg'],
-      floor: 2,
+        floor: 2,
       size: 60
     },
     {
-      number: '301',
+        number: '301',
       type: 'Presidential Suite',
       price: 500,
       capacity: 6,
       description: 'Ultimate luxury with panoramic city views',
       amenities: ['wifi', 'tv', 'air-conditioning', 'safe', 'minibar', 'balcony', 'kitchen', 'jacuzzi', 'concierge', 'butler'],
       images: ['/images/room-placeholder.jpg'],
-      floor: 3,
+        floor: 3,
       size: 100
     },
     {
@@ -306,7 +306,7 @@ async function main() {
       category: 'ROOM' as const
     },
     {
-      title: 'Hotel Lobby',
+        title: 'Hotel Lobby',
       imageUrl: '/images/hotel-hero-1.jpg',
       category: 'EXTERIOR' as const
     },
@@ -414,15 +414,15 @@ async function main() {
   // Create sample settings
   const settings = [
     {
-      key: 'hotel_name',
+        key: 'hotel_name',
       value: 'SmartHotel Premium'
     },
     {
-      key: 'hotel_address',
+        key: 'hotel_address',
       value: '123 Luxury Street, Downtown City, 12345'
     },
     {
-      key: 'hotel_phone',
+        key: 'hotel_phone',
       value: '+1-555-HOTEL-1'
     },
     {
@@ -474,4 +474,4 @@ main()
   })
   .finally(async () => {
     await prisma.$disconnect()
-  })
+  }) 

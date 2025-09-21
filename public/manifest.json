@@ -1,7 +1,7 @@
 {
-  "name": "SmartHotel - Premium Hotel Management",
-  "short_name": "SmartHotel",
-  "description": "Premium hotel management system with booking, ordering, and analytics",
+  "name": "Grand Palace Hotel - Luxury 5-Star Accommodation",
+  "short_name": "Grand Palace Hotel",
+  "description": "Experience unparalleled luxury at Grand Palace Hotel. 5-star accommodations, award-winning dining, and world-class amenities.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -9,7 +9,7 @@
   "orientation": "portrait-primary",
   "scope": "/",
   "lang": "en",
-  "categories": ["business", "travel", "productivity"],
+  "categories": ["travel", "lifestyle", "business"],
   "icons": [
     {
       "src": "/icons/icon-72x72.png",
@@ -62,41 +62,41 @@
   ],
   "shortcuts": [
     {
-      "name": "Dashboard",
-      "short_name": "Dashboard",
-      "description": "View hotel dashboard and analytics",
-      "url": "/dashboard",
-      "icons": [{ "src": "/icons/dashboard-96x96.png", "sizes": "96x96" }]
-    },
-    {
       "name": "Book Room",
       "short_name": "Book",
-      "description": "Book a hotel room",
+      "description": "Book your luxury stay",
       "url": "/booking",
       "icons": [{ "src": "/icons/booking-96x96.png", "sizes": "96x96" }]
     },
     {
-      "name": "Order Food",
-      "short_name": "Order",
-      "description": "Order room service",
+      "name": "Restaurant Menu",
+      "short_name": "Dining",
+      "description": "View our restaurant menu",
       "url": "/order",
       "icons": [{ "src": "/icons/order-96x96.png", "sizes": "96x96" }]
     },
     {
-      "name": "Kitchen Dashboard",
-      "short_name": "Kitchen",
-      "description": "Manage kitchen orders",
-      "url": "/admin/kitchen",
-      "icons": [{ "src": "/icons/kitchen-96x96.png", "sizes": "96x96" }]
+      "name": "Hotel Gallery",
+      "short_name": "Gallery",
+      "description": "Explore our hotel",
+      "url": "/gallery",
+      "icons": [{ "src": "/icons/gallery-96x96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Contact Us",
+      "short_name": "Contact",
+      "description": "Get in touch",
+      "url": "/contact",
+      "icons": [{ "src": "/icons/contact-96x96.png", "sizes": "96x96" }]
     }
   ],
   "screenshots": [
     {
-      "src": "/screenshots/desktop-dashboard.png",
+      "src": "/screenshots/desktop-homepage.png",
       "sizes": "1280x720",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "Dashboard Overview"
+      "label": "Luxury Hotel Homepage"
     },
     {
       "src": "/screenshots/mobile-booking.png",
@@ -106,11 +106,11 @@
       "label": "Mobile Booking Flow"
     },
     {
-      "src": "/screenshots/mobile-ordering.png",
+      "src": "/screenshots/mobile-restaurant.png",
       "sizes": "375x812",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "Mobile Food Ordering"
+      "label": "Restaurant Menu"
     }
   ],
   "related_applications": [],

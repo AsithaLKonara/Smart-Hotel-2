@@ -4,6 +4,8 @@ import "./globals.css"
 import { Toaster } from "@/components/ui/toaster"
 import ErrorBoundary from "@/components/error-boundary"
 import ClientScripts from "@/components/client-scripts"
+import HotelNavigation from "@/components/hotel-navigation"
+import HotelFooter from "@/components/hotel-footer"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -18,12 +20,12 @@ const playfair = Playfair_Display({
 })
 
 export const metadata: Metadata = {
-  title: "SmartHotel - Premium Hotel Management",
-  description: "Premium hotel management system with booking, ordering, and analytics",
-  keywords: ["hotel", "booking", "management", "restaurant", "analytics"],
-  authors: [{ name: "SmartHotel Team" }],
-  creator: "SmartHotel",
-  publisher: "SmartHotel",
+  title: "Grand Palace Hotel - Luxury 5-Star Accommodation",
+  description: "Experience unparalleled luxury at Grand Palace Hotel. 5-star accommodations, award-winning dining, and world-class amenities in the heart of the city.",
+  keywords: ["luxury hotel", "5 star hotel", "hotel booking", "grand palace hotel", "luxury accommodation", "city center hotel", "fine dining", "spa", "business hotel"],
+  authors: [{ name: "Grand Palace Hotel" }],
+  creator: "Grand Palace Hotel",
+  publisher: "Grand Palace Hotel",
   formatDetection: {
     email: false,
     address: false,
@@ -34,16 +36,16 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   openGraph: {
-    title: "SmartHotel - Premium Hotel Management",
-    description: "Premium hotel management system with booking, ordering, and analytics",
+    title: "Grand Palace Hotel - Luxury 5-Star Accommodation",
+    description: "Experience unparalleled luxury at Grand Palace Hotel. 5-star accommodations, award-winning dining, and world-class amenities in the heart of the city.",
     url: "/",
-    siteName: "SmartHotel",
+    siteName: "Grand Palace Hotel",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "SmartHotel - Premium Hotel Management",
+        alt: "Grand Palace Hotel - Luxury 5-Star Accommodation",
       },
     ],
     locale: "en_US",
@@ -51,8 +53,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "SmartHotel - Premium Hotel Management",
-    description: "Premium hotel management system with booking, ordering, and analytics",
+    title: "Grand Palace Hotel - Luxury 5-Star Accommodation",
+    description: "Experience unparalleled luxury at Grand Palace Hotel. 5-star accommodations, award-winning dining, and world-class amenities in the heart of the city.",
     images: ["/og-image.png"],
   },
   robots: {
@@ -82,12 +84,12 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "SmartHotel",
+    title: "Grand Palace Hotel",
   },
   other: {
     "mobile-web-app-capable": "yes",
     "apple-mobile-web-app-capable": "yes",
-    "application-name": "SmartHotel",
+    "application-name": "Grand Palace Hotel",
     "msapplication-TileColor": "#f59e0b",
     "msapplication-config": "/browserconfig.xml",
   },
@@ -126,7 +128,9 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen bg-background font-sans antialiased">
         <ErrorBoundary>
+          <HotelNavigation />
           {children}
+          <HotelFooter />
           <Toaster />
           <ClientScripts />
         </ErrorBoundary>

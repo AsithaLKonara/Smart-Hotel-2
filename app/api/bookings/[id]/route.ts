@@ -161,14 +161,15 @@ export async function PATCH(
     // Send email notifications for status changes
     try {
       if (validatedData.status && validatedData.status !== oldStatus) {
-        await sendBookingStatusUpdate(
-          booking.user.email,
-          booking.user.name || 'Guest',
-          booking.id,
-          booking.room.number,
-          validatedData.status,
-          booking.checkIn
-        )
+        await sendBookingStatusUpdate({
+          guestEmail: booking.user.email,
+          guestName: booking.user.name || 'Guest',
+          bookingId: booking.id,
+          roomNumber: booking.room.number,
+          status: validatedData.status,
+          checkIn: booking.checkIn,
+          checkOut: booking.checkOut
+        })
       }
     } catch (emailError) {
       console.error('Failed to send status update email:', emailError)

@@ -27,6 +27,11 @@ const bookingSchema = z.object({
   guests: z.number().min(1).max(10),
   specialRequests: z.string().optional(),
   paymentMethod: z.enum(['pay_now', 'pay_later']).default('pay_later'),
+  
+  // Guest checkout fields
+  guestName: z.string().optional(),
+  guestEmail: z.string().email().optional(),
+  guestPhone: z.string().optional(),
 })
 
 export async function GET(request: NextRequest) {
@@ -102,9 +107,6 @@ export async function POST(request: NextRequest) {
   }
 
   const session = await getServerSession(authOptions)
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
 
   try {
     const body = await request.json()
@@ -156,17 +158,59 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Handle guest checkout
+    let userId: string
+    let guestInfo: any = {}
+
+    if (session?.user?.id) {
+      // Authenticated user
+      userId = session.user.id
+    } else if (validatedData.guestEmail) {
+      // Guest checkout - check if user exists with this email
+      let user = await prisma.user.findUnique({
+        where: { email: validatedData.guestEmail },
+      })
+
+      if (!user) {
+        // Create guest user
+        user = await prisma.user.create({
+          data: {
+            name: validatedData.guestName || 'Guest',
+            email: validatedData.guestEmail,
+            password: '', // Will be set when they create account
+            phone: validatedData.guestPhone,
+            role: 'GUEST',
+          },
+        })
+      }
+
+      userId = user.id
+      guestInfo = {
+        guestName: validatedData.guestName,
+        guestEmail: validatedData.guestEmail,
+        guestPhone: validatedData.guestPhone,
+      }
+    } else {
+      return NextResponse.json(
+        { error: 'Authentication required or guest email must be provided' },
+        { status: 401 }
+      )
+    }
+
     // Calculate total amount
     const checkIn = new Date(validatedData.checkIn)
     const checkOut = new Date(validatedData.checkOut)
     const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24))
     const totalAmount = room.price * nights
 
+    // Generate confirmation code
+    const confirmationCode = `GP${Date.now().toString().slice(-6)}`
+
     // Create booking
     const booking = await prisma.booking.create({
       data: {
         roomId: validatedData.roomId,
-        userId: session.user.id,
+        userId,
         checkIn,
         checkOut,
         guests: validatedData.guests,
@@ -174,6 +218,8 @@ export async function POST(request: NextRequest) {
         specialRequests: validatedData.specialRequests,
         status: 'PENDING',
         paymentStatus: validatedData.paymentMethod === 'pay_now' ? 'PENDING' : 'PENDING',
+        confirmationCode,
+        ...guestInfo,
       },
       include: {
         room: true,
@@ -209,7 +255,7 @@ export async function POST(request: NextRequest) {
         metadata: {
           bookingId: booking.id,
           roomId: room.id,
-          userId: session.user.id,
+          userId: userId,
         },
         description: `Booking for Room ${room.number} - ${nights} nights`,
       })
@@ -223,51 +269,61 @@ export async function POST(request: NextRequest) {
 
                     // Send email notifications
                 try {
-                  // Send booking confirmation to guest
-                  await sendBookingConfirmation({
-                    guestName: session.user.name || 'Guest',
-                    guestEmail: session.user.email!,
-                    roomNumber: room.number,
-                    roomType: room.type,
-                    checkIn,
-                    checkOut,
-                    guests: validatedData.guests,
-                    totalAmount,
-                    bookingId: booking.id,
-                    specialRequests: validatedData.specialRequests,
-                  })
+                  const guestName = session?.user?.name || validatedData.guestName || 'Guest'
+                  const guestEmail = session?.user?.email || validatedData.guestEmail
 
-                  // Send admin alert
-                  await sendAdminBookingAlert({
-                    bookingId: booking.id,
-                    guestName: session.user.name || 'Guest',
-                    roomNumber: room.number,
-                    checkIn,
-                    checkOut,
-                    totalAmount,
-                  })
+                  if (guestEmail) {
+                    // Send booking confirmation to guest
+                    await sendBookingConfirmation({
+                      guestName,
+                      guestEmail,
+                      roomNumber: room.number,
+                      roomType: room.type,
+                      checkIn,
+                      checkOut,
+                      guests: validatedData.guests,
+                      totalAmount,
+                      bookingId: booking.id,
+                      confirmationCode,
+                      specialRequests: validatedData.specialRequests,
+                    })
+
+                    // Send admin alert
+                    await sendAdminBookingAlert({
+                      bookingId: booking.id,
+                      guestName,
+                      guestEmail,
+                      roomNumber: room.number,
+                      checkIn,
+                      checkOut,
+                      totalAmount,
+                    })
+                  }
                 } catch (emailError) {
                   console.error('Failed to send email notifications:', emailError)
                   // Don't fail the booking if email fails
                 }
 
                 // Log the action
-                await logAction(
-                  request,
-                  session.user.id,
-                  AUDIT_ACTIONS.BOOKING_CREATE,
-                  'Booking',
-                  booking.id,
-                  {
-                    roomId: room.id,
-                    roomNumber: room.number,
-                    checkIn: validatedData.checkIn,
-                    checkOut: validatedData.checkOut,
-                    guests: validatedData.guests,
-                    totalAmount,
-                    paymentMethod: validatedData.paymentMethod,
-                  }
-                )
+                if (userId) {
+                  await logAction(
+                    request,
+                    userId,
+                    AUDIT_ACTIONS.BOOKING_CREATE,
+                    'Booking',
+                    booking.id,
+                    {
+                      roomId: room.id,
+                      roomNumber: room.number,
+                      checkIn: validatedData.checkIn,
+                      checkOut: validatedData.checkOut,
+                      guests: validatedData.guests,
+                      totalAmount,
+                      paymentMethod: validatedData.paymentMethod,
+                      isGuestCheckout: !session,
+                    }
+                  )
+                }
 
                 return NextResponse.json({
                   booking: {

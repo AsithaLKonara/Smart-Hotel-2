@@ -25,6 +25,9 @@ model User {
   bookings  Booking[]
   tasks     Task[]
   auditLogs AuditLog[]
+  reviews   GuestReview[]
+  notifications Notification[]
+  wishlist  Wishlist[]
 }
 
 model Staff {
@@ -64,6 +67,9 @@ model Room {
 
   // Relations
   bookings Booking[]
+  roomImages RoomImage[]
+  reviews  GuestReview[]
+  wishlist Wishlist[]
 }
 
 model Booking {
@@ -80,14 +86,29 @@ model Booking {
   paymentIntentId String?
   specialRequests String?
   hotelId         String?       @db.ObjectId // Added for multi-hotel support
+  
+  // Guest Information (for guest checkout)
+  guestName       String?
+  guestEmail      String?
+  guestPhone      String?
+  
+  // Booking Details
+  confirmationCode String?       @unique
+  cancellationReason String?
+  refundAmount     Float?
+  
+  // Timestamps
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
+  confirmedAt     DateTime?
+  cancelledAt     DateTime?
 
   // Relations
   user    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   room    Room      @relation(fields: [roomId], references: [id], onDelete: Cascade)
   invoice Invoice?
   tasks   Task[]
+  reviews GuestReview[]
 }
 
 model Invoice {
@@ -313,4 +334,134 @@ enum OrderStatus {
   READY
   DELIVERED
   CANCELLED
+}
+
+// Enhanced Models for New Features
+
+model RoomFeature {
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  icon        String
+  description String
+  category    String // amenity, service, feature
+  isActive    Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model RoomImage {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  roomId   String @db.ObjectId
+  room     Room   @relation(fields: [roomId], references: [id])
+  url      String
+  alt      String
+  isMain   Boolean @default(false)
+  order    Int
+  createdAt DateTime @default(now())
+}
+
+model GuestReview {
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  bookingId   String @db.ObjectId
+  booking     Booking @relation(fields: [bookingId], references: [id])
+  userId      String @db.ObjectId
+  user        User @relation(fields: [userId], references: [id])
+  roomId      String @db.ObjectId
+  room        Room @relation(fields: [roomId], references: [id])
+  rating      Int // 1-5 stars
+  title       String
+  comment     String
+  isVerified  Boolean @default(false)
+  isPublic    Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Promotion {
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String
+  code        String @unique
+  type        PromotionType
+  value       Float
+  minAmount   Float?
+  maxDiscount Float?
+  startDate   DateTime
+  endDate     DateTime
+  isActive    Boolean @default(true)
+  usageLimit  Int?
+  usedCount   Int @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model EmailTemplate {
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  name        String @unique
+  subject     String
+  body        String
+  variables   String[] // Available template variables
+  isActive    Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model EmailLog {
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  to          String
+  subject     String
+  template    String?
+  status      EmailStatus
+  sentAt      DateTime?
+  error       String?
+  createdAt   DateTime @default(now())
+}
+
+model Notification {
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String @db.ObjectId
+  user        User @relation(fields: [userId], references: [id])
+  title       String
+  message     String
+  type        NotificationType
+  isRead      Boolean @default(false)
+  data        Json? // Additional data for the notification
+  createdAt   DateTime @default(now())
+}
+
+model Wishlist {
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String @db.ObjectId
+  user        User @relation(fields: [userId], references: [id])
+  roomId      String @db.ObjectId
+  room        Room @relation(fields: [roomId], references: [id])
+  createdAt   DateTime @default(now())
+}
+
+// Enums for new models
+enum PromotionType {
+  PERCENTAGE
+  FIXED_AMOUNT
+  FREE_NIGHT
+}
+
+enum EmailStatus {
+  PENDING
+  SENT
+  FAILED
+  DELIVERED
+  BOUNCED
+}
+
+enum NotificationType {
+  BOOKING_CONFIRMATION
+  BOOKING_REMINDER
+  BOOKING_CANCELLATION
+  PAYMENT_SUCCESS
+  PAYMENT_FAILED
+  ROOM_SERVICE_READY
+  CHECK_IN_REMINDER
+  CHECK_OUT_REMINDER
+  PROMOTION
+  GENERAL
 } 
