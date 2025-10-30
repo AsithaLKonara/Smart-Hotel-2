@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import { Menu, X, Phone, Mail, MapPin } from 'lucide-react'
+import { hotelData } from '@/lib/hotel-data'
 
 export default function HotelNavigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -18,22 +19,22 @@ export default function HotelNavigation() {
   return (
     <>
       {/* Top Bar */}
-      <div className="bg-amber-600 text-white py-2">
+      <div className="bg-amber-800 text-white py-2">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex flex-col sm:flex-row justify-between items-center text-sm">
             <div className="flex flex-col sm:flex-row items-center gap-4 mb-2 sm:mb-0">
               <div className="flex items-center gap-2">
                 <Phone className="w-4 h-4" />
-                <span>+1 (555) 123-4567</span>
+                <span>{hotelData.hotel.contact.phone}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="w-4 h-4" />
-                <span>info@grandpalacehotel.com</span>
+                <span>{hotelData.hotel.contact.email}</span>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <MapPin className="w-4 h-4" />
-              <span>123 Luxury Avenue, Downtown District</span>
+              <span>{hotelData.hotel.contact.address}</span>
             </div>
           </div>
         </div>
@@ -49,8 +50,8 @@ export default function HotelNavigation() {
                 <span className="text-white font-bold text-xl">GP</span>
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Grand Palace</h1>
-                <p className="text-sm text-gray-600">Luxury Hotel</p>
+                <h1 className="text-2xl font-bold text-gray-900">{hotelData.hotel.name}</h1>
+                <p className="text-sm text-gray-600">{hotelData.hotel.tagline}</p>
               </div>
             </Link>
 
@@ -67,7 +68,7 @@ export default function HotelNavigation() {
               ))}
               <Link
                 href="/booking"
-                className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+                className="bg-amber-800 hover:bg-amber-900 text-white px-6 py-2 rounded-lg font-medium transition-colors"
               >
                 Book Now
               </Link>
@@ -77,6 +78,8 @@ export default function HotelNavigation() {
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="md:hidden p-2 rounded-md text-gray-700 hover:text-amber-600"
+              aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={isMenuOpen}
             >
               {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>

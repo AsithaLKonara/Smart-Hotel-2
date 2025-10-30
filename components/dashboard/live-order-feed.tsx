@@ -315,263 +315,179 @@ function LiveOrderFeedContent({
     ready: 0
   })
 
-  // Mock data and real-time simulation
+  // Fetch real orders from API
   useEffect(() => {
-    const generateMockOrders = (): LiveOrder[] => {
-      const baseOrders: LiveOrder[] = [
-        {
-          id: 'ORD001',
-          roomNumber: '101',
-          guestName: 'John Smith',
-          items: [
-            { id: '1', name: 'Continental Breakfast', quantity: 2, status: 'preparing' },
-            { id: '2', name: 'Fresh Orange Juice', quantity: 1, status: 'ready' }
-          ],
-          totalAmount: 45.97,
-          status: 'PREPARING',
-          priority: 'high',
-          estimatedTime: 15,
-          createdAt: new Date(Date.now() - 15 * 60 * 1000),
-          updatedAt: new Date(Date.now() - 5 * 60 * 1000),
-          specialInstructions: 'Extra hot coffee'
-        },
-        {
-          id: 'ORD002',
-          roomNumber: '205',
-          guestName: 'Sarah Johnson',
-          items: [
-            { id: '3', name: 'Caesar Salad', quantity: 1, status: 'pending' },
-            { id: '4', name: 'Grilled Salmon', quantity: 1, status: 'pending', specialRequests: 'No salt' }
-          ],
-          totalAmount: 37.98,
-          status: 'CONFIRMED',
-          priority: 'normal',
-          estimatedTime: 25,
-          createdAt: new Date(Date.now() - 5 * 60 * 1000),
-          updatedAt: new Date(Date.now() - 2 * 60 * 1000)
-        },
-        {
-          id: 'ORD003',
-          roomNumber: '312',
-          guestName: 'Mike Davis',
-          items: [
-            { id: '5', name: 'Full English Breakfast', quantity: 1, status: 'ready' }
-          ],
-          totalAmount: 18.99,
-          status: 'READY',
-          priority: 'normal',
-          estimatedTime: 0,
-          createdAt: new Date(Date.now() - 30 * 60 * 1000),
-          updatedAt: new Date(Date.now() - 5 * 60 * 1000)
-        }
-      ]
-
-      return baseOrders
-    }
-
-    setOrders(generateMockOrders())
-
+    fetchOrders()
+    
     if (autoRefresh) {
       const interval = setInterval(() => {
-        // Simulate new orders coming in
-        if (Math.random() > 0.7) {
-          const newOrder: LiveOrder = {
-            id: `ORD${String(Math.random()).substr(2, 6).toUpperCase()}`,
-            roomNumber: String(Math.floor(Math.random() * 400) + 100),
-            guestName: 'New Guest',
-            items: [
-              { id: '6', name: 'Premium Coffee', quantity: 1, status: 'pending' }
-            ],
-            totalAmount: 3.99,
-            status: 'PENDING',
-            priority: 'normal',
-            estimatedTime: 10,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            isNew: true
-          }
-          
-          setOrders(prev => {
-            const updated = [newOrder, ...prev]
-            // Remove new flag after a few seconds
-            setTimeout(() => {
-              setOrders(prev => prev.map(order => 
-                order.id === newOrder.id ? { ...order, isNew: false } : order
-              ))
-            }, 3000)
-            return updated
-          })
-        }
-
-        // Simulate status updates
-        setOrders(prev => prev.map(order => {
-          if (Math.random() > 0.95 && order.status !== 'DELIVERED') {
-            const statuses = ['PENDING', 'CONFIRMED', 'PREPARING', 'READY', 'DELIVERED'] as const
-            const currentIndex = statuses.indexOf(order.status)
-            if (currentIndex < statuses.length - 1) {
-              return {
-                ...order,
-                status: statuses[currentIndex + 1],
-                updatedAt: new Date()
-              }
-            }
-          }
-          return order
-        }))
+        fetchOrders()
       }, refreshInterval)
-
       return () => clearInterval(interval)
     }
   }, [autoRefresh, refreshInterval])
 
-  // Update stats
-  useEffect(() => {
-    setStats({
-      total: orders.length,
-      pending: orders.filter(o => o.status === 'PENDING').length,
-      preparing: orders.filter(o => o.status === 'PREPARING').length,
-      ready: orders.filter(o => o.status === 'READY').length
-    })
-  }, [orders])
+  const fetchOrders = async () => {
+    try {
+      const response = await fetch('/api/restaurant/orders')
+      if (response.ok) {
+        const data = await response.json()
+        
+        const transformedOrders: LiveOrder[] = data.map((order: any) => {
+          const minutesOld = (Date.now() - new Date(order.createdAt).getTime()) / 1000 / 60
+          const priority = minutesOld > 30 ? 'urgent' : minutesOld > 15 ? 'high' : 'normal'
+          
+          return {
+            id: order.id,
+            roomNumber: order.roomNumber,
+            guestName: 'Guest',
+            items: order.items?.map((item: any) => ({
+              id: item.id,
+              name: item.menu?.name || 'Item',
+              quantity: item.quantity,
+              specialRequests: item.notes,
+              status: 'pending' as const
+            })) || [],
+            totalAmount: order.totalAmount,
+            status: order.status,
+            priority,
+            estimatedTime: order.deliveryTime ? 
+              Math.round((new Date(order.deliveryTime).getTime() - Date.now()) / 60000) : 20,
+            createdAt: new Date(order.createdAt),
+            updatedAt: new Date(order.updatedAt),
+            specialInstructions: order.specialRequests
+          }
+        })
+        
+        setOrders(transformedOrders)
+        
+        // Update stats
+        setStats({
+          total: transformedOrders.length,
+          pending: transformedOrders.filter(o => o.status === 'PENDING').length,
+          preparing: transformedOrders.filter(o => o.status === 'PREPARING').length,
+          ready: transformedOrders.filter(o => o.status === 'READY').length
+        })
+      }
+    } catch (error) {
+      console.error('Failed to fetch orders:', error)
+    }
+  }
 
-  const filteredOrders = selectedStatus === 'all' 
-    ? orders 
-    : orders.filter(order => order.status === selectedStatus)
+  // Remove duplicate stats - already handled in fetchOrders
 
-  const statusFilters = [
-    { key: 'all', label: 'All Orders', count: stats.total },
-    { key: 'PENDING', label: 'New', count: stats.pending },
-    { key: 'PREPARING', label: 'Preparing', count: stats.preparing },
-    { key: 'READY', label: 'Ready', count: stats.ready }
-  ]
+  const handleOrderClick = (orderId: string) => {
+    onOrderClick?.(orderId)
+  }
+
+  const handleStatusUpdate = async (orderId: string, newStatus: string) => {
+    try {
+      const response = await fetch(`/api/restaurant/orders/${orderId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      })
+      if (response.ok) {
+        fetchOrders() // Refresh orders
+        onStatusUpdate?.(orderId, newStatus)
+      }
+    } catch (error) {
+      console.error('Failed to update order:', error)
+    }
+  }
+
+  const activeOrders = orders.filter(o => 
+    o.status !== 'DELIVERED'
+  )
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-red-50">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
+    <div className="space-y-6">
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="bg-white rounded-xl shadow-md p-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Live Order Feed</h1>
-              <p className="text-gray-600">Real-time restaurant order management</p>
+              <p className="text-sm text-gray-600">Total Orders</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
             </div>
-            
-            <div className="flex items-center gap-3">
-              <div className={cn(
-                "w-3 h-3 rounded-full animate-pulse",
-                isLive ? "bg-green-500" : "bg-gray-400"
-              )}></div>
-              <span className="text-sm text-gray-600">
-                {isLive ? 'Live Updates' : 'Paused'}
-              </span>
-              <PremiumButton
-                variant="outline"
-                size="sm"
-                onClick={() => setIsLive(!isLive)}
-              >
-                {isLive ? 'Pause' : 'Resume'}
-              </PremiumButton>
-            </div>
+            <Bell className="w-8 h-8 text-gray-400" />
           </div>
-        </motion.div>
-
-        {/* Stats Cards */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8"
-        >
-          {statusFilters.map((filter) => (
-            <div key={filter.key} className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-2xl font-bold text-gray-900">{filter.count}</div>
-                  <div className="text-sm text-gray-600">{filter.label}</div>
-                </div>
-                <div className="w-12 h-12 bg-gradient-to-br from-amber-100 to-amber-200 rounded-xl flex items-center justify-center">
-                  {filter.key === 'all' && <Bell className="w-6 h-6 text-amber-600" />}
-                  {filter.key === 'PENDING' && <Clock className="w-6 h-6 text-yellow-600" />}
-                  {filter.key === 'PREPARING' && <ChefHat className="w-6 h-6 text-orange-600" />}
-                  {filter.key === 'READY' && <CheckCircle className="w-6 h-6 text-green-600" />}
-                </div>
-              </div>
+        </div>
+        
+        <div className="bg-yellow-50 rounded-xl shadow-md p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-yellow-700">Pending</p>
+              <p className="text-2xl font-bold text-yellow-900">{stats.pending}</p>
             </div>
-          ))}
-        </motion.div>
+            <Clock className="w-8 h-8 text-yellow-600" />
+          </div>
+        </div>
+        
+        <div className="bg-orange-50 rounded-xl shadow-md p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-orange-700">Preparing</p>
+              <p className="text-2xl font-bold text-orange-900">{stats.preparing}</p>
+            </div>
+            <ChefHat className="w-8 h-8 text-orange-600" />
+          </div>
+        </div>
+        
+        <div className="bg-green-50 rounded-xl shadow-md p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-green-700">Ready</p>
+              <p className="text-2xl font-bold text-green-900">{stats.ready}</p>
+            </div>
+            <CheckCircle className="w-8 h-8 text-green-600" />
+          </div>
+        </div>
+      </div>
 
-        {/* Filter Tabs */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="flex gap-2 mb-6 overflow-x-auto"
-        >
-          {statusFilters.map((filter) => (
-            <motion.button
-              key={filter.key}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setSelectedStatus(filter.key)}
-              className={cn(
-                "flex-shrink-0 px-4 py-2 rounded-lg border-2 transition-all font-medium flex items-center gap-2",
-                selectedStatus === filter.key
-                  ? "border-orange-500 bg-orange-500 text-white shadow-lg"
-                  : "border-gray-200 bg-white text-gray-700 hover:border-orange-300"
-              )}
+      {/* Orders List */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold text-gray-900">Active Orders ({activeOrders.length})</h3>
+        
+        <AnimatePresence mode="popLayout">
+          {activeOrders.length === 0 ? (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-center py-12 bg-white rounded-xl shadow-md"
             >
-              {filter.label}
-              {filter.count > 0 && (
-                <span className={cn(
-                  "px-2 py-1 rounded-full text-xs font-bold",
-                  selectedStatus === filter.key
-                    ? "bg-white/20 text-white"
-                    : "bg-orange-100 text-orange-600"
-                )}>
-                  {filter.count}
-                </span>
-              )}
-            </motion.button>
-          ))}
-        </motion.div>
-
-        {/* Orders Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-          <AnimatePresence>
-            {filteredOrders.map((order, index) => (
+              <Clock className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600">No active orders</p>
+            </motion.div>
+          ) : (
+            activeOrders.map((order, index) => (
               <OrderCard
                 key={order.id}
                 order={order}
                 index={index}
-                onClick={onOrderClick}
-                onStatusUpdate={onStatusUpdate}
+                onClick={handleOrderClick}
+                onStatusUpdate={handleStatusUpdate}
               />
-            ))}
-          </AnimatePresence>
-        </div>
-
-        {/* Empty State */}
-        {filteredOrders.length === 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center py-12"
-          >
-            <ChefHat className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-medium text-gray-900 mb-2">No orders found</h3>
-            <p className="text-gray-500">No orders match the current filter</p>
-          </motion.div>
-        )}
+            ))
+          )}
+        </AnimatePresence>
       </div>
     </div>
   )
 }
 
-// Export with error boundary
-export function LiveOrderFeed(props: LiveOrderFeedProps) {
-  return <LiveOrderFeedContent {...props} />
+export function LiveOrderFeed({ 
+  onOrderClick, 
+  onStatusUpdate, 
+  autoRefresh = true, 
+  refreshInterval = 5000 
+}: LiveOrderFeedProps) {
+  return (
+    <LiveOrderFeedContent
+      onOrderClick={onOrderClick}
+      onStatusUpdate={onStatusUpdate}
+      autoRefresh={autoRefresh}
+      refreshInterval={refreshInterval}
+    />
+  )
 }

@@ -1,188 +1,106 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
 import QRCode from 'qrcode'
-import { z } from 'zod'
-
-const qrGenerateSchema = z.object({
-  data: z.string().min(1, 'Data is required'),
-  type: z.enum(['room', 'booking', 'wifi', 'contact', 'custom']).default('custom'),
-  size: z.number().min(100).max(1000).default(256),
-  format: z.enum(['png', 'svg', 'utf8']).default('png'),
-})
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    
-    if (!session) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      )
-    }
-
-    // Only allow managers and admins to generate QR codes
-    if (!['SUPER_ADMIN', 'MANAGER'].includes(session.user.role)) {
-      return NextResponse.json(
-        { error: 'Insufficient permissions' },
-        { status: 403 }
-      )
-    }
-
     const body = await request.json()
-    const validatedData = qrGenerateSchema.parse(body)
+    const { data, type = 'room-service', roomNumber, guestId } = body
 
-    let qrData: string = validatedData.data
-
-    // Format data based on type
-    switch (validatedData.type) {
-      case 'room':
-        qrData = `SMARTHOTEL_ROOM:${validatedData.data}`
-        break
-      case 'booking':
-        qrData = `SMARTHOTEL_BOOKING:${validatedData.data}`
-        break
-      case 'wifi':
-        qrData = `WIFI:T:WPA;S:${validatedData.data};P:SmartHotel2024;;`
-        break
-      case 'contact':
-        qrData = `BEGIN:VCARD\nVERSION:3.0\nFN:${validatedData.data}\nORG:SmartHotel\nEND:VCARD`
-        break
-      default:
-        qrData = validatedData.data
-    }
-
-    let qrCodeResult: string
-
-    // Generate QR code based on format
-    switch (validatedData.format) {
-      case 'png':
-        qrCodeResult = await QRCode.toDataURL(qrData, {
-          width: validatedData.size,
-          margin: 2,
-          color: {
-            dark: '#000000',
-            light: '#FFFFFF'
-          }
-        })
-        break
-      case 'svg':
-        qrCodeResult = await QRCode.toString(qrData, {
-          type: 'svg',
-          width: validatedData.size,
-          margin: 2,
-          color: {
-            dark: '#000000',
-            light: '#FFFFFF'
-          }
-        })
-        break
-      case 'utf8':
-        qrCodeResult = await QRCode.toString(qrData, {
-          type: 'utf8',
-          width: validatedData.size,
-          margin: 2
-        })
-        break
-      default:
-        qrCodeResult = await QRCode.toDataURL(qrData, {
-          width: validatedData.size,
-          margin: 2
-        })
-    }
-
-    return NextResponse.json({
-      success: true,
-      qrCode: qrCodeResult,
-      data: qrData,
-      type: validatedData.type,
-      format: validatedData.format,
-      size: validatedData.size,
-      generatedAt: new Date().toISOString()
-    })
-
-  } catch (error) {
-    if (error instanceof z.ZodError) {
+    if (!data && (!roomNumber || !guestId)) {
       return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
+        { error: 'Missing required parameters. Provide either data or roomNumber + guestId' },
         { status: 400 }
       )
     }
 
-    console.error('Error generating QR code:', error)
-    return NextResponse.json(
-      { error: 'Failed to generate QR code' },
-      { status: 500 }
-    )
-  }
-}
-
-// GET endpoint for quick QR code generation with query parameters
-export async function GET(request: NextRequest) {
-  try {
-    const session = await getServerSession(authOptions)
-    
-    if (!session) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      )
+    // Generate the URL or data for QR code
+    let qrData = data
+    if (!qrData && roomNumber && guestId) {
+      // Generate room service ordering URL
+      const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
+      qrData = `${baseUrl}/order?room=${encodeURIComponent(roomNumber)}&guest=${encodeURIComponent(guestId)}&type=${type}`
     }
 
-    const { searchParams } = new URL(request.url)
-    const data = searchParams.get('data')
-    const type = searchParams.get('type') || 'custom'
-    const size = parseInt(searchParams.get('size') || '256')
-
-    if (!data) {
-      return NextResponse.json(
-        { error: 'Data parameter is required' },
-        { status: 400 }
-      )
-    }
-
-    let qrData: string = data
-
-    // Format data based on type
-    switch (type) {
-      case 'room':
-        qrData = `SMARTHOTEL_ROOM:${data}`
-        break
-      case 'booking':
-        qrData = `SMARTHOTEL_BOOKING:${data}`
-        break
-      case 'wifi':
-        qrData = `WIFI:T:WPA;S:${data};P:SmartHotel2024;;`
-        break
-      case 'contact':
-        qrData = `BEGIN:VCARD\nVERSION:3.0\nFN:${data}\nORG:SmartHotel\nEND:VCARD`
-        break
-      default:
-        qrData = data
-    }
-
-    const qrCodeResult = await QRCode.toDataURL(qrData, {
-      width: size,
-      margin: 2,
+    // Generate QR code as data URL
+    const qrCodeDataUrl = await QRCode.toDataURL(qrData, {
+      errorCorrectionLevel: 'M',
+      margin: 1,
+      width: 300,
       color: {
         dark: '#000000',
         light: '#FFFFFF'
       }
     })
 
-    return NextResponse.json({
-      success: true,
-      qrCode: qrCodeResult,
-      data: qrData,
-      type: type,
-      format: 'png',
-      size: size,
-      generatedAt: new Date().toISOString()
+    // Also generate as SVG for better quality
+    const qrCodeSvg = await QRCode.toString(qrData, {
+      type: 'svg',
+      errorCorrectionLevel: 'M',
+      margin: 1,
+      width: 300
     })
 
+    return NextResponse.json({
+      success: true,
+      qrCode: {
+        dataUrl: qrCodeDataUrl,
+        svg: qrCodeSvg,
+        url: qrData,
+        type,
+        roomNumber,
+        guestId
+      }
+    })
   } catch (error) {
-    console.error('Error generating QR code:', error)
+    console.error('QR Code Generation Error:', error)
+    return NextResponse.json(
+      { error: 'Failed to generate QR code', details: error instanceof Error ? error.message : 'Unknown error' },
+      { status: 500 }
+    )
+  }
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const searchParams = request.nextUrl.searchParams
+    const data = searchParams.get('data')
+    const roomNumber = searchParams.get('room')
+    const guestId = searchParams.get('guest')
+    const type = searchParams.get('type') || 'room-service'
+
+    if (!data && (!roomNumber || !guestId)) {
+      return NextResponse.json(
+        { error: 'Missing required parameters' },
+        { status: 400 }
+      )
+    }
+
+    let qrData = data
+    if (!qrData && roomNumber && guestId) {
+      const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
+      qrData = `${baseUrl}/order?room=${encodeURIComponent(roomNumber)}&guest=${encodeURIComponent(guestId)}&type=${type}`
+    }
+
+    if (!qrData) {
+      return NextResponse.json({ error: 'No QR data provided' }, { status: 400 })
+    }
+
+    // Generate QR code as PNG buffer
+    const qrCodeBuffer = await QRCode.toBuffer(qrData, {
+      errorCorrectionLevel: 'M',
+      margin: 1,
+      width: 300
+    })
+
+    return new NextResponse(qrCodeBuffer as any, {
+      status: 200,
+      headers: {
+        'Content-Type': 'image/png',
+        'Cache-Control': 'public, max-age=3600'
+      }
+    })
+  } catch (error) {
+    console.error('QR Code Generation Error:', error)
     return NextResponse.json(
       { error: 'Failed to generate QR code' },
       { status: 500 }

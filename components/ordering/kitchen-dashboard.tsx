@@ -85,89 +85,72 @@ export function KitchenDashboard({ onOrderUpdate }: KitchenDashboardProps) {
     averageTime: 25
   })
 
-  // Mock data - in real app, fetch from API and use WebSocket
+  // Fetch real orders from API
   useEffect(() => {
-    const mockOrders: KitchenOrder[] = [
-      {
-        id: 'ORD001',
-        roomNumber: '101',
-        guestName: 'John Smith',
-        items: [
-          { id: '1', menuItem: { name: 'Continental Breakfast', category: 'BREAKFAST' }, quantity: 2, status: 'preparing' },
-          { id: '2', menuItem: { name: 'Fresh Orange Juice', category: 'BEVERAGES' }, quantity: 1, status: 'ready' }
-        ],
-        totalAmount: 45.97,
-        status: 'PREPARING',
-        createdAt: new Date(Date.now() - 15 * 60 * 1000), // 15 minutes ago
-        estimatedTime: 15,
-        priority: 'high',
-        specialInstructions: 'Extra hot coffee'
-      },
-      {
-        id: 'ORD002',
-        roomNumber: '205',
-        guestName: 'Sarah Johnson',
-        items: [
-          { id: '3', menuItem: { name: 'Caesar Salad', category: 'LUNCH' }, quantity: 1, status: 'pending' },
-          { id: '4', menuItem: { name: 'Grilled Salmon', category: 'DINNER' }, quantity: 1, status: 'pending', specialRequests: 'No salt' }
-        ],
-        totalAmount: 37.98,
-        status: 'CONFIRMED',
-        createdAt: new Date(Date.now() - 5 * 60 * 1000), // 5 minutes ago
-        estimatedTime: 25,
-        priority: 'normal'
-      },
-      {
-        id: 'ORD003',
-        roomNumber: '312',
-        guestName: 'Mike Davis',
-        items: [
-          { id: '5', menuItem: { name: 'Full English Breakfast', category: 'BREAKFAST' }, quantity: 1, status: 'ready' }
-        ],
-        totalAmount: 18.99,
-        status: 'READY',
-        createdAt: new Date(Date.now() - 30 * 60 * 1000), // 30 minutes ago
-        priority: 'normal'
-      }
-    ]
+    fetchOrders()
     
-    setOrders(mockOrders)
-    
-    // Calculate stats
-    setStats({
-      totalOrders: mockOrders.length,
-      pendingOrders: mockOrders.filter(o => o.status === 'PENDING').length,
-      preparingOrders: mockOrders.filter(o => o.status === 'PREPARING').length,
-      readyOrders: mockOrders.filter(o => o.status === 'READY').length,
-      averageTime: 25
-    })
-
-    // Simulate new orders coming in
+    // Poll for new orders every 10 seconds
     const interval = setInterval(() => {
-      const newOrder: KitchenOrder = {
-        id: `ORD${String(Math.random()).substr(2, 6).toUpperCase()}`,
-        roomNumber: String(Math.floor(Math.random() * 400) + 100),
-        guestName: 'New Guest',
-        items: [
-          { id: '6', menuItem: { name: 'Premium Coffee', category: 'BEVERAGES' }, quantity: 1, status: 'pending' }
-        ],
-        totalAmount: 3.99,
-        status: 'PENDING',
-        createdAt: new Date(),
-        estimatedTime: 10,
-        priority: 'normal'
-      }
-      
-      setOrders(prev => [newOrder, ...prev])
-      setStats(prev => ({
-        ...prev,
-        totalOrders: prev.totalOrders + 1,
-        pendingOrders: prev.pendingOrders + 1
-      }))
-    }, 30000) // New order every 30 seconds
+      fetchOrders()
+    }, 10000)
 
     return () => clearInterval(interval)
   }, [])
+
+  const fetchOrders = async () => {
+    try {
+      const response = await fetch('/api/kitchen/orders?today=true')
+      if (response.ok) {
+        const data = await response.json()
+        
+        // Transform API data to component format
+        const transformedOrders: KitchenOrder[] = data.map((order: any) => ({
+          id: order.id,
+          roomNumber: order.roomNumber,
+          guestName: order.user?.name || 'Guest',
+          items: order.items.map((item: any) => ({
+            id: item.id,
+            menuItem: {
+              name: item.menu.name,
+              category: item.menu.category
+            },
+            quantity: item.quantity,
+            specialRequests: item.notes,
+            status: 'pending' as const
+          })),
+          totalAmount: order.totalAmount,
+          status: order.status,
+          createdAt: new Date(order.createdAt),
+          estimatedTime: order.items.reduce((total: number, item: any) => 
+            total + (item.menu.preparationTime || 15), 0),
+          priority: determinePriority(order.createdAt, order.totalAmount),
+          specialInstructions: order.specialRequests
+        }))
+        
+        setOrders(transformedOrders)
+        
+        // Calculate stats
+        setStats({
+          totalOrders: transformedOrders.length,
+          pendingOrders: transformedOrders.filter(o => o.status === 'PENDING').length,
+          preparingOrders: transformedOrders.filter(o => o.status === 'PREPARING').length,
+          readyOrders: transformedOrders.filter(o => o.status === 'READY').length,
+          averageTime: transformedOrders.length > 0 
+            ? Math.round(transformedOrders.reduce((sum, o) => sum + (o.estimatedTime || 0), 0) / transformedOrders.length)
+            : 25
+        })
+      }
+    } catch (error) {
+      console.error('Failed to fetch orders:', error)
+    }
+  }
+
+  const determinePriority = (createdAt: string, totalAmount: number): 'normal' | 'high' | 'urgent' => {
+    const minutesOld = (Date.now() - new Date(createdAt).getTime()) / 1000 / 60
+    if (minutesOld > 30) return 'urgent'
+    if (totalAmount > 50 || minutesOld > 15) return 'high'
+    return 'normal'
+  }
 
   const filteredOrders = selectedStatus === 'all' 
     ? orders 

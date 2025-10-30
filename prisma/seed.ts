@@ -6,17 +6,20 @@ const prisma = new PrismaClient()
 async function main() {
   console.log('🌱 Starting database seeding...')
 
-  // Create sample users
-  const hashedPassword = await bcrypt.hash('password123', 12)
+  // Create sample users with correct demo passwords
+  const adminHash = await bcrypt.hash('admin123', 12)
+  const managerHash = await bcrypt.hash('manager123', 12)
+  const receptionistHash = await bcrypt.hash('receptionist123', 12)
+  const guestHash = await bcrypt.hash('guest123', 12)
 
   const adminUser = await prisma.user.upsert({
     where: { email: 'admin@smarthotel.com' },
     update: {},
     create: {
-      name: 'Admin User',
+      name: 'Super Admin',
       email: 'admin@smarthotel.com',
-      password: hashedPassword,
-      phone: '+1-555-0100',
+      password: adminHash,
+      phone: '+1-800-555-0001',
       role: 'SUPER_ADMIN'
     }
   })
@@ -27,20 +30,20 @@ async function main() {
     create: {
       name: 'Hotel Manager',
       email: 'manager@smarthotel.com',
-      password: hashedPassword,
-      phone: '+1-555-0101',
+      password: managerHash,
+      phone: '+1-800-555-0002',
       role: 'MANAGER'
     }
   })
 
   const receptionistUser = await prisma.user.upsert({
-    where: { email: 'reception@smarthotel.com' },
+    where: { email: 'receptionist@smarthotel.com' },
     update: {},
     create: {
-      name: 'Reception Staff',
-      email: 'reception@smarthotel.com',
-      password: hashedPassword,
-      phone: '+1-555-0102',
+      name: 'Front Desk Receptionist',
+      email: 'receptionist@smarthotel.com',
+      password: receptionistHash,
+      phone: '+1-800-555-0003',
       role: 'RECEPTIONIST'
     }
   })
@@ -51,8 +54,8 @@ async function main() {
     create: {
       name: 'John Doe',
       email: 'guest@example.com',
-      password: hashedPassword,
-      phone: '+1-555-0103',
+      password: guestHash,
+      phone: '+1-555-0104',
       role: 'GUEST'
     }
   })
@@ -451,7 +454,7 @@ async function main() {
 
   console.log('🎉 Database seeding completed successfully!')
   console.log('\n📋 Sample Data Summary:')
-  console.log('- 4 Users (Admin, Manager, Reception, Guest)')
+  console.log('- 4 Users (Admin, Manager, Receptionist, Guest)')
   console.log('- 3 Staff Members')
   console.log('- 5 Rooms (Standard to Presidential Suite)')
   console.log('- 3 Bookings (Various statuses)')
@@ -460,11 +463,14 @@ async function main() {
   console.log('- 3 Tasks')
   console.log('- 3 Inventory Items')
   console.log('- 6 Settings')
-  console.log('\n🔐 Default Login Credentials:')
-  console.log('- Admin: admin@smarthotel.com / password123')
-  console.log('- Manager: manager@smarthotel.com / password123')
-  console.log('- Reception: reception@smarthotel.com / password123')
-  console.log('- Guest: guest@example.com / password123')
+  console.log('\n🔐 Demo Login Credentials:')
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+  console.log('👑 Admin: admin@smarthotel.com / admin123')
+  console.log('👨‍💼 Manager: manager@smarthotel.com / manager123')
+  console.log('👩‍💼 Receptionist: receptionist@smarthotel.com / receptionist123')
+  console.log('👤 Guest: guest@example.com / guest123')
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+  console.log('\n🚀 For comprehensive demo data, run: npm run db:seed:demo')
 }
 
 main()

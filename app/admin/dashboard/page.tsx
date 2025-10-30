@@ -386,12 +386,12 @@ function AdminDashboardContent() {
               <span>Room Management</span>
             </Button>
             <Button 
-              onClick={() => router.push('/admin/guests')}
+              onClick={() => router.push('/admin/staff')}
               variant="outline"
               className="h-16 flex flex-col items-center justify-center space-y-2"
             >
               <Users className="w-6 h-6" />
-              <span>Guest Management</span>
+              <span>Staff Management</span>
             </Button>
           </div>
         </Card>

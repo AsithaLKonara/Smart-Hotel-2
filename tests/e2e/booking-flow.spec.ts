@@ -37,7 +37,7 @@ test.describe('Booking Flow', () => {
     await page.goto('/rooms')
 
     // Check accessibility
-    const accessibilityScanResults = await new AxeBuilder({ page }).analyze()
+    const accessibilityScanResults = await new AxeBuilder({ page: page as any }).analyze()
     expect(accessibilityScanResults.violations).toEqual([])
 
     // Search for available rooms
@@ -104,7 +104,7 @@ test.describe('Booking Flow', () => {
     await page.goto('/my-bookings')
 
     // Check accessibility
-    const accessibilityScanResults = await new AxeBuilder({ page }).analyze()
+    const accessibilityScanResults = await new AxeBuilder({ page: page as any }).analyze()
     expect(accessibilityScanResults.violations).toEqual([])
 
     // Verify booking details are displayed
@@ -159,7 +159,7 @@ test.describe('Booking Flow', () => {
     await page.goto('/admin/bookings')
 
     // Check accessibility
-    const accessibilityScanResults = await new AxeBuilder({ page }).analyze()
+    const accessibilityScanResults = await new AxeBuilder({ page: page as any }).analyze()
     expect(accessibilityScanResults.violations).toEqual([])
 
     // Verify admin can see booking details
@@ -198,7 +198,7 @@ test.describe('Booking Flow', () => {
     await page.goto('/order')
 
     // Check accessibility
-    const accessibilityScanResults = await new AxeBuilder({ page }).analyze()
+    const accessibilityScanResults = await new AxeBuilder({ page: page as any }).analyze()
     expect(accessibilityScanResults.violations).toEqual([])
 
     // Add item to cart

@@ -84,65 +84,64 @@ export function OrderTracking({ orderId, onOrderComplete, onNewOrder }: OrderTra
   const [loading, setLoading] = useState(true)
   const [notifications, setNotifications] = useState<string[]>([])
 
-  // Mock order data - in real app, fetch from API and use WebSocket
+  // Fetch real order data from API
   useEffect(() => {
-    const mockOrder: OrderStatus = {
-      id: orderId,
-      status: 'PREPARING',
-      estimatedTime: 25,
-      items: [
-        { name: 'Continental Breakfast', quantity: 2 },
-        { name: 'Fresh Orange Juice', quantity: 1 },
-        { name: 'Premium Coffee', quantity: 1, specialRequests: 'Extra hot' }
-      ],
-      totalAmount: 45.97,
-      roomNumber: '101',
-      createdAt: new Date(Date.now() - 10 * 60 * 1000), // 10 minutes ago
-      updatedAt: new Date(Date.now() - 5 * 60 * 1000) // 5 minutes ago
-    }
+    fetchOrderStatus()
     
-    setTimeout(() => {
-      setOrder(mockOrder)
-      setLoading(false)
-    }, 1000)
+    // Poll for updates every 5 seconds
+    const interval = setInterval(() => {
+      fetchOrderStatus()
+    }, 5000)
 
-    // Simulate status updates
-    const statusProgression = ['PENDING', 'CONFIRMED', 'PREPARING', 'READY', 'DELIVERED'] as const
-    let currentIndex = 2 // Start at PREPARING
+    return () => clearInterval(interval)
+  }, [orderId])
 
-    const updateInterval = setInterval(() => {
-      if (currentIndex < statusProgression.length - 1) {
-        currentIndex++
-        const newStatus = statusProgression[currentIndex]
+  const fetchOrderStatus = async () => {
+    try {
+      const response = await fetch(`/api/restaurant/orders/${orderId}`)
+      if (response.ok) {
+        const data = await response.json()
         
-        setOrder(prev => prev ? {
-          ...prev,
-          status: newStatus,
-          updatedAt: new Date()
-        } : null)
-
-        // Add notification for status change
-        const config = statusConfig[newStatus]
-        setNotifications(prev => [...prev, `${config.label}: ${config.description}`])
-
-        // Clear notification after 5 seconds
-        setTimeout(() => {
-          setNotifications(prev => prev.slice(1))
-        }, 5000)
-
-        // Call completion callback when delivered
-        if (newStatus === 'DELIVERED') {
-          setTimeout(() => {
-            onOrderComplete?.()
-          }, 2000)
+        const transformedOrder: OrderStatus = {
+          id: data.id,
+          status: data.status,
+          estimatedTime: data.deliveryTime ? 
+            Math.round((new Date(data.deliveryTime).getTime() - Date.now()) / 60000) : 20,
+          items: data.items?.map((item: any) => ({
+            name: item.menu?.name || 'Item',
+            quantity: item.quantity,
+            specialRequests: item.notes
+          })) || [],
+          totalAmount: data.totalAmount,
+          roomNumber: data.roomNumber,
+          createdAt: new Date(data.createdAt),
+          updatedAt: new Date(data.updatedAt)
         }
-      } else {
-        clearInterval(updateInterval)
+        
+        // Check for status change and add notification
+        if (order && order.status !== transformedOrder.status) {
+          const config = statusConfig[transformedOrder.status]
+          setNotifications(prev => [...prev, `${config.label}: ${config.description}`])
+          
+          // Clear notification after 5 seconds
+          setTimeout(() => {
+            setNotifications(prev => prev.slice(1))
+          }, 5000)
+          
+          // Call completion callback when delivered
+          if (transformedOrder.status === 'DELIVERED' && onOrderComplete) {
+            setTimeout(() => onOrderComplete(), 2000)
+          }
+        }
+        
+        setOrder(transformedOrder)
       }
-    }, 15000) // Update every 15 seconds
-
-    return () => clearInterval(updateInterval)
-  }, [orderId, onOrderComplete])
+    } catch (error) {
+      console.error('Failed to fetch order:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   if (loading) {
     return (

@@ -287,8 +287,7 @@
 <a name='L222'></a><a href='#L222'>222</a>
 <a name='L223'></a><a href='#L223'>223</a>
 <a name='L224'></a><a href='#L224'>224</a>
-<a name='L225'></a><a href='#L225'>225</a>
-<a name='L226'></a><a href='#L226'>226</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L225'></a><a href='#L225'>225</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -314,7 +313,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -519,7 +517,7 @@ import { useState } from <span class="cstat-no" title="statement not covered" >'
 import { MapPin, Phone, Mail, Clock, Send } from <span class="cstat-no" title="statement not covered" >'lucide-react'</span>
 import { Button } from <span class="cstat-no" title="statement not covered" >'@/components/ui/button'</span>
 import { Card } from <span class="cstat-no" title="statement not covered" >'@/components/ui/card'</span>
-import Navigation from <span class="cstat-no" title="statement not covered" >'@/components/navigation'</span>
+import { hotelData } from <span class="cstat-no" title="statement not covered" >'@/lib/hotel-data'</span>
 &nbsp;
 export default function <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >ContactPage() {</span></span>
   const [formData, setFormData] = <span class="cstat-no" title="statement not covered" >useState({</span>
@@ -545,13 +543,12 @@ export default function <span class="cstat-no" title="statement not covered" ><s
   }
 &nbsp;
   return (
-    &lt;div className="min-h-screen bg-gray-50 dark:bg-gray-900"&gt;
-      &lt;Navigation /&gt;
+    &lt;div className="min-h-screen bg-gray-50"&gt;
       
       {/* Header */}
-      &lt;section className="pt-20 pb-12 bg-gradient-to-r from-primary-600 to-primary-800 text-white"&gt;
+      &lt;section className="pt-20 pb-12 bg-gradient-to-r from-amber-600 to-orange-600 text-white"&gt;
         &lt;div className="container mx-auto px-4 text-center"&gt;
-          &lt;h1 className="text-4xl md:text-5xl font-serif font-bold mb-4"&gt;Contact Us&lt;/h1&gt;
+          &lt;h1 className="text-4xl md:text-5xl font-bold mb-4"&gt;Contact Us&lt;/h1&gt;
           &lt;p className="text-xl opacity-90 max-w-2xl mx-auto"&gt;
             Get in touch with us for reservations, inquiries, or any assistance you need. 
             We're here to help make your stay perfect.
@@ -572,7 +569,7 @@ export default function <span class="cstat-no" title="statement not covered" ><s
                     type="text"
                     value={formData.name}
                     onChange={<span class="fstat-no" title="function not covered" >(e</span>) =&gt; <span class="cstat-no" title="statement not covered" >handleInputChange('name', e.target.value)}</span>
-                    className="input-field"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                     required
                   /&gt;
                 &lt;/div&gt;
@@ -582,7 +579,7 @@ export default function <span class="cstat-no" title="statement not covered" ><s
                     type="email"
                     value={formData.email}
                     onChange={<span class="fstat-no" title="function not covered" >(e</span>) =&gt; <span class="cstat-no" title="statement not covered" >handleInputChange('email', e.target.value)}</span>
-                    className="input-field"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                     required
                   /&gt;
                 &lt;/div&gt;
@@ -594,7 +591,7 @@ export default function <span class="cstat-no" title="statement not covered" ><s
                   type="text"
                   value={formData.subject}
                   onChange={<span class="fstat-no" title="function not covered" >(e</span>) =&gt; <span class="cstat-no" title="statement not covered" >handleInputChange('subject', e.target.value)}</span>
-                  className="input-field"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                   required
                 /&gt;
               &lt;/div&gt;
@@ -604,13 +601,13 @@ export default function <span class="cstat-no" title="statement not covered" ><s
                 &lt;textarea
                   value={formData.message}
                   onChange={<span class="fstat-no" title="function not covered" >(e</span>) =&gt; <span class="cstat-no" title="statement not covered" >handleInputChange('message', e.target.value)}</span>
-                  className="input-field"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                   rows={5}
                   required
                 /&gt;
               &lt;/div&gt;
               
-              &lt;Button type="submit" className="w-full btn-primary"&gt;
+              &lt;Button type="submit" className="w-full bg-amber-600 hover:bg-amber-700 text-white"&gt;
                 &lt;Send className="w-4 h-4 mr-2" /&gt;
                 Send Message
               &lt;/Button&gt;
@@ -623,52 +620,48 @@ export default function <span class="cstat-no" title="statement not covered" ><s
               &lt;h2 className="text-2xl font-bold mb-6"&gt;Get in Touch&lt;/h2&gt;
               &lt;div className="space-y-6"&gt;
                 &lt;div className="flex items-start space-x-4"&gt;
-                  &lt;div className="w-12 h-12 bg-primary-100 dark:bg-primary-900 rounded-full flex items-center justify-center flex-shrink-0"&gt;
-                    &lt;MapPin className="w-6 h-6 text-primary-600" /&gt;
+                  &lt;div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0"&gt;
+                    &lt;MapPin className="w-6 h-6 text-amber-600" /&gt;
                   &lt;/div&gt;
                   &lt;div&gt;
                     &lt;h3 className="font-semibold mb-1"&gt;Address&lt;/h3&gt;
-                    &lt;p className="text-gray-600 dark:text-gray-300"&gt;
-                      123 Luxury Avenue&lt;br /&gt;
-                      Downtown District&lt;br /&gt;
-                      City, State 12345
+                    &lt;p className="text-gray-600"&gt;
+                      {hotelData.hotel.contact.address}
                     &lt;/p&gt;
                   &lt;/div&gt;
                 &lt;/div&gt;
 &nbsp;
                 &lt;div className="flex items-start space-x-4"&gt;
-                  &lt;div className="w-12 h-12 bg-primary-100 dark:bg-primary-900 rounded-full flex items-center justify-center flex-shrink-0"&gt;
-                    &lt;Phone className="w-6 h-6 text-primary-600" /&gt;
+                  &lt;div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0"&gt;
+                    &lt;Phone className="w-6 h-6 text-amber-600" /&gt;
                   &lt;/div&gt;
                   &lt;div&gt;
                     &lt;h3 className="font-semibold mb-1"&gt;Phone&lt;/h3&gt;
-                    &lt;p className="text-gray-600 dark:text-gray-300"&gt;
-                      +1 (555) 123-4567&lt;br /&gt;
-                      +1 (555) 123-4568
+                    &lt;p className="text-gray-600"&gt;
+                      {hotelData.hotel.contact.phone}
                     &lt;/p&gt;
                   &lt;/div&gt;
                 &lt;/div&gt;
 &nbsp;
                 &lt;div className="flex items-start space-x-4"&gt;
-                  &lt;div className="w-12 h-12 bg-primary-100 dark:bg-primary-900 rounded-full flex items-center justify-center flex-shrink-0"&gt;
-                    &lt;Mail className="w-6 h-6 text-primary-600" /&gt;
+                  &lt;div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0"&gt;
+                    &lt;Mail className="w-6 h-6 text-amber-600" /&gt;
                   &lt;/div&gt;
                   &lt;div&gt;
                     &lt;h3 className="font-semibold mb-1"&gt;Email&lt;/h3&gt;
-                    &lt;p className="text-gray-600 dark:text-gray-300"&gt;
-                      info@smarthotel.com&lt;br /&gt;
-                      reservations@smarthotel.com
+                    &lt;p className="text-gray-600"&gt;
+                      {hotelData.hotel.contact.email}
                     &lt;/p&gt;
                   &lt;/div&gt;
                 &lt;/div&gt;
 &nbsp;
                 &lt;div className="flex items-start space-x-4"&gt;
-                  &lt;div className="w-12 h-12 bg-primary-100 dark:bg-primary-900 rounded-full flex items-center justify-center flex-shrink-0"&gt;
-                    &lt;Clock className="w-6 h-6 text-primary-600" /&gt;
+                  &lt;div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0"&gt;
+                    &lt;Clock className="w-6 h-6 text-amber-600" /&gt;
                   &lt;/div&gt;
                   &lt;div&gt;
                     &lt;h3 className="font-semibold mb-1"&gt;Hours&lt;/h3&gt;
-                    &lt;p className="text-gray-600 dark:text-gray-300"&gt;
+                    &lt;p className="text-gray-600"&gt;
                       Check-in: 3:00 PM&lt;br /&gt;
                       Check-out: 11:00 AM&lt;br /&gt;
                       Front Desk: 24/7
@@ -678,20 +671,24 @@ export default function <span class="cstat-no" title="statement not covered" ><s
               &lt;/div&gt;
             &lt;/Card&gt;
 &nbsp;
-            {/* Map Placeholder */}
+            {/* Google Maps */}
             &lt;Card className="p-8"&gt;
               &lt;h2 className="text-2xl font-bold mb-6"&gt;Location&lt;/h2&gt;
-              &lt;div className="bg-gray-200 dark:bg-gray-700 h-64 rounded-lg flex items-center justify-center"&gt;
-                &lt;div className="text-center"&gt;
-                  &lt;MapPin className="w-12 h-12 text-gray-400 mx-auto mb-4" /&gt;
-                  &lt;p className="text-gray-600 dark:text-gray-300"&gt;
-                    Interactive map would be embedded here
-                  &lt;/p&gt;
-                  &lt;p className="text-sm text-gray-500 dark:text-gray-400 mt-2"&gt;
-                    (Google Maps or similar service)
-                  &lt;/p&gt;
-                &lt;/div&gt;
+              &lt;div className="rounded-lg overflow-hidden h-64"&gt;
+                &lt;iframe
+                  src={`https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.2156!2d${hotelData.hotel.contact.coordinates.lng}!3d${hotelData.hotel.contact.coordinates.lat}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNDDCsDQ1JzMyLjAiTiA3M8KwNTknMDYuNCJX!5e0!3m2!1sen!2sus!4v1234567890123!5m2!1sen!2sus`}
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title="Grand Palace Hotel Location"
+                /&gt;
               &lt;/div&gt;
+              &lt;p className="text-sm text-gray-600 mt-4"&gt;
+                Located in the heart of Manhattan, Grand Palace Hotel offers easy access to Central Park, Times Square, and other iconic NYC attractions.
+              &lt;/p&gt;
             &lt;/Card&gt;
           &lt;/div&gt;
         &lt;/div&gt;
@@ -703,7 +700,7 @@ export default function <span class="cstat-no" title="statement not covered" ><s
             &lt;div className="grid grid-cols-1 md:grid-cols-2 gap-8"&gt;
               &lt;div&gt;
                 &lt;h3 className="font-semibold mb-2"&gt;What are your check-in and check-out times?&lt;/h3&gt;
-                &lt;p className="text-gray-600 dark:text-gray-300"&gt;
+                &lt;p className="text-gray-600"&gt;
                   Check-in is available from 3:00 PM, and check-out is until 11:00 AM. 
                   Early check-in and late check-out can be arranged based on availability.
                 &lt;/p&gt;
@@ -711,7 +708,7 @@ export default function <span class="cstat-no" title="statement not covered" ><s
               
               &lt;div&gt;
                 &lt;h3 className="font-semibold mb-2"&gt;Do you offer airport transportation?&lt;/h3&gt;
-                &lt;p className="text-gray-600 dark:text-gray-300"&gt;
+                &lt;p className="text-gray-600"&gt;
                   Yes, we provide airport shuttle service. Please contact us at least 24 hours 
                   in advance to arrange transportation.
                 &lt;/p&gt;
@@ -719,15 +716,15 @@ export default function <span class="cstat-no" title="statement not covered" ><s
               
               &lt;div&gt;
                 &lt;h3 className="font-semibold mb-2"&gt;Is parking available?&lt;/h3&gt;
-                &lt;p className="text-gray-600 dark:text-gray-300"&gt;
-                  Complimentary parking is available for all guests. We also offer valet 
-                  parking service for your convenience.
+                &lt;p className="text-gray-600"&gt;
+                  Complimentary valet parking is available for all guests. We also offer 
+                  self-parking options for your convenience.
                 &lt;/p&gt;
               &lt;/div&gt;
               
               &lt;div&gt;
                 &lt;h3 className="font-semibold mb-2"&gt;Do you accept pets?&lt;/h3&gt;
-                &lt;p className="text-gray-600 dark:text-gray-300"&gt;
+                &lt;p className="text-gray-600"&gt;
                   We are pet-friendly! A small fee applies, and we have designated pet-friendly 
                   rooms. Please inform us when booking.
                 &lt;/p&gt;
@@ -745,7 +742,7 @@ export default function <span class="cstat-no" title="statement not covered" ><s
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-09-19T19:45:25.044Z
+                at 2025-10-29T06:10:44.351Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

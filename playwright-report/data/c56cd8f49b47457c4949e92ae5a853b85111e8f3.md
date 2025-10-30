@@ -1,0 +1,339 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - img [ref=e7]
+        - generic [ref=e9]: +1 (212) 555-0123
+      - generic [ref=e10]:
+        - img [ref=e11]
+        - generic [ref=e14]: reservations@grandpalacehotel.com
+    - generic [ref=e15]:
+      - img [ref=e16]
+      - generic [ref=e19]: 1235 Park Avenue, New York, NY 10029
+  - navigation [ref=e20]:
+    - generic [ref=e22]:
+      - link "GP Grand Palace Hotel Luxury 5-Star Accommodation" [ref=e23] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e25]: GP
+        - generic [ref=e26]:
+          - heading "Grand Palace Hotel" [level=1] [ref=e27]
+          - paragraph [ref=e28]: Luxury 5-Star Accommodation
+      - button [ref=e29] [cursor=pointer]:
+        - img [ref=e30]
+  - generic [ref=e31]:
+    - generic [ref=e32]:
+      - generic [ref=e34]: Your browser does not support the video tag.
+      - generic [ref=e38]:
+        - button "Pause video" [ref=e39] [cursor=pointer]:
+          - img [ref=e40]
+        - button "Unmute video" [ref=e43] [cursor=pointer]:
+          - img [ref=e44]
+      - generic [ref=e49]:
+        - generic [ref=e50]:
+          - generic [ref=e51]:
+            - generic [ref=e52]:
+              - generic [ref=e53]:
+                - img [ref=e54]
+                - generic [ref=e56]: 5-Star Luxury Hotel
+              - heading "Luxurious Accommodations" [level=1] [ref=e57]
+              - heading "Your Perfect Stay Awaits" [level=2] [ref=e58]
+              - paragraph [ref=e59]: From elegant suites to cozy rooms, find your ideal space with premium amenities and stunning city views.
+            - generic [ref=e60]:
+              - link "View Rooms" [ref=e61] [cursor=pointer]:
+                - /url: /rooms
+                - button "View Rooms" [ref=e62]
+              - link "Contact Us" [ref=e63] [cursor=pointer]:
+                - /url: /contact
+                - button "Contact Us" [ref=e64]
+            - generic [ref=e65]:
+              - generic [ref=e66]:
+                - img [ref=e67]
+                - generic [ref=e70]:
+                  - paragraph [ref=e71]: Location
+                  - paragraph [ref=e72]: Downtown District
+              - generic [ref=e73]:
+                - img [ref=e74]
+                - generic [ref=e76]:
+                  - paragraph [ref=e77]: Call Us
+                  - paragraph [ref=e78]: +1 (555) 123-4567
+          - generic [ref=e79]:
+            - generic [ref=e80]:
+              - heading "Book Your Stay" [level=3] [ref=e81]
+              - paragraph [ref=e82]: Find the perfect room for your getaway
+            - generic [ref=e83]:
+              - generic [ref=e84]:
+                - generic [ref=e85]:
+                  - generic [ref=e86]:
+                    - img [ref=e87]
+                    - text: Check-in
+                  - textbox [ref=e89]
+                - generic [ref=e90]:
+                  - generic [ref=e91]:
+                    - img [ref=e92]
+                    - text: Check-out
+                  - textbox [ref=e94]
+              - generic [ref=e95]:
+                - generic [ref=e96]:
+                  - img [ref=e97]
+                  - text: Guests
+                - combobox [ref=e102]:
+                  - option "1 Guest"
+                  - option "2 Guests" [selected]
+                  - option "3 Guests"
+                  - option "4 Guests"
+                  - option "5 Guests"
+                  - option "6 Guests"
+              - button "Search Available Rooms" [disabled]
+            - generic [ref=e104]:
+              - generic [ref=e105]:
+                - paragraph [ref=e106]: 150+
+                - paragraph [ref=e107]: Luxury Rooms
+              - generic [ref=e108]:
+                - paragraph [ref=e109]: 24/7
+                - paragraph [ref=e110]: Concierge
+              - generic [ref=e111]:
+                - paragraph [ref=e112]: 5★
+                - paragraph [ref=e113]: Rating
+        - generic [ref=e114]:
+          - button "Previous slide" [ref=e115] [cursor=pointer]:
+            - img [ref=e116]
+          - generic [ref=e118]:
+            - button "Go to slide 1" [ref=e119] [cursor=pointer]
+            - button "Go to slide 2" [ref=e120] [cursor=pointer]
+            - button "Go to slide 3" [ref=e121] [cursor=pointer]
+          - button "Next slide" [ref=e122] [cursor=pointer]:
+            - img [ref=e123]
+    - generic [ref=e126]:
+      - generic [ref=e127]:
+        - heading "Welcome to Grand Palace Hotel" [level=2] [ref=e128]
+        - paragraph [ref=e129]: Experience unparalleled luxury at Grand Palace Hotel, where world-class amenities meet exceptional service in the heart of downtown. Our 5-star hotel offers elegant accommodations, award-winning dining, and unforgettable experiences.
+      - generic [ref=e130]:
+        - generic [ref=e131]:
+          - img [ref=e133]
+          - heading "5-Star Luxury" [level=3] [ref=e135]
+          - paragraph [ref=e136]: Experience world-class service and amenities in every detail.
+        - generic [ref=e137]:
+          - img [ref=e139]
+          - heading "Prime Location" [level=3] [ref=e142]
+          - paragraph [ref=e143]: Steps away from major attractions, business districts, and shopping.
+        - generic [ref=e144]:
+          - img [ref=e146]
+          - heading "Award-Winning" [level=3] [ref=e149]
+          - paragraph [ref=e150]: Recognized globally for excellence in hospitality and service.
+    - generic [ref=e152]:
+      - generic [ref=e153]:
+        - heading "Luxurious Accommodations" [level=2] [ref=e154]
+        - paragraph [ref=e155]: Choose from our elegant collection of rooms and suites, each designed to provide the ultimate in comfort and luxury.
+      - generic [ref=e156]:
+        - generic [ref=e157]:
+          - generic [ref=e159]: Deluxe King
+          - generic [ref=e160]:
+            - heading "Deluxe King" [level=3] [ref=e161]
+            - paragraph [ref=e162]: Spacious 450 sq ft room featuring a king-size bed, marble bathroom, and stunning city views. Includes premium amenities and 24/7 room service.
+            - generic [ref=e163]:
+              - generic [ref=e164]: $299
+              - generic [ref=e165]: /night
+        - generic [ref=e166]:
+          - generic [ref=e168]: Executive Suite
+          - generic [ref=e169]:
+            - heading "Executive Suite" [level=3] [ref=e170]
+            - paragraph [ref=e171]: Luxurious 650 sq ft suite with separate living area, premium furnishings, and panoramic city views. Perfect for business travelers and extended stays.
+            - generic [ref=e172]:
+              - generic [ref=e173]: $499
+              - generic [ref=e174]: /night
+        - generic [ref=e175]:
+          - generic [ref=e177]: Presidential Suite
+          - generic [ref=e178]:
+            - heading "Presidential Suite" [level=3] [ref=e179]
+            - paragraph [ref=e180]: Exclusive 1,200 sq ft suite featuring multiple rooms, private terrace, and butler service. The ultimate in luxury accommodation.
+            - generic [ref=e181]:
+              - generic [ref=e182]: $999
+              - generic [ref=e183]: /night
+      - link "View All Rooms" [ref=e185] [cursor=pointer]:
+        - /url: /rooms
+        - text: View All Rooms
+        - img [ref=e186]
+    - generic [ref=e189]:
+      - generic [ref=e190]:
+        - heading "World-Class Amenities" [level=2] [ref=e191]
+        - paragraph [ref=e192]: From fine dining to wellness facilities, we provide everything you need for an exceptional stay.
+      - generic [ref=e193]:
+        - generic [ref=e194]:
+          - img [ref=e196]
+          - heading "Fine Dining" [level=3] [ref=e199]
+          - paragraph [ref=e200]: Award-winning restaurants
+        - generic [ref=e201]:
+          - img [ref=e203]
+          - heading "Swimming Pool" [level=3] [ref=e207]
+          - paragraph [ref=e208]: Rooftop infinity pool
+        - generic [ref=e209]:
+          - img [ref=e211]
+          - heading "Fitness Center" [level=3] [ref=e219]
+          - paragraph [ref=e220]: State-of-the-art gym
+        - generic [ref=e221]:
+          - img [ref=e223]
+          - heading "Business Center" [level=3] [ref=e226]
+          - paragraph [ref=e227]: Meeting rooms & facilities
+        - generic [ref=e228]:
+          - img [ref=e230]
+          - heading "Free WiFi" [level=3] [ref=e234]
+          - paragraph [ref=e235]: High-speed internet
+        - generic [ref=e236]:
+          - img [ref=e238]
+          - heading "Valet Parking" [level=3] [ref=e242]
+          - paragraph [ref=e243]: Complimentary parking
+        - generic [ref=e244]:
+          - img [ref=e246]
+          - heading "24/7 Concierge" [level=3] [ref=e249]
+          - paragraph [ref=e250]: Round-the-clock service
+        - generic [ref=e251]:
+          - img [ref=e253]
+          - heading "Security" [level=3] [ref=e255]
+          - paragraph [ref=e256]: 24/7 security & safety
+    - generic [ref=e259]:
+      - generic [ref=e260]:
+        - heading "Culinary Excellence" [level=2] [ref=e261]
+        - paragraph [ref=e262]: Indulge in world-class cuisine at our award-winning restaurants. From fine dining to casual bites, we offer an exceptional culinary journey.
+        - generic [ref=e263]:
+          - generic [ref=e264]:
+            - img [ref=e265]
+            - generic [ref=e268]: Award-winning signature restaurant
+          - generic [ref=e269]:
+            - img [ref=e270]
+            - generic [ref=e273]: 24/7 room service
+          - generic [ref=e274]:
+            - img [ref=e275]
+            - generic [ref=e278]: Rooftop bar with city views
+          - generic [ref=e279]:
+            - img [ref=e280]
+            - generic [ref=e283]: Private dining experiences
+        - link "View Restaurant Menu" [ref=e284] [cursor=pointer]:
+          - /url: /order
+          - text: View Restaurant Menu
+          - img [ref=e285]
+      - generic [ref=e288]: Restaurant Gallery
+    - generic [ref=e290]:
+      - generic [ref=e291]:
+        - heading "Perfect Location" [level=2] [ref=e292]
+        - paragraph [ref=e293]: Located in the heart of the city, Grand Palace Hotel puts you within walking distance of major attractions, business districts, and entertainment venues.
+      - generic [ref=e294]:
+        - generic [ref=e295]:
+          - heading "Hotel Information" [level=3] [ref=e296]
+          - generic [ref=e297]:
+            - generic [ref=e298]:
+              - img [ref=e299]
+              - generic [ref=e302]:
+                - heading "Address" [level=4] [ref=e303]
+                - paragraph [ref=e304]:
+                  - text: 123 Luxury Avenue
+                  - text: Downtown District
+                  - text: City, State 12345
+            - generic [ref=e305]:
+              - img [ref=e306]
+              - generic [ref=e308]:
+                - heading "Phone" [level=4] [ref=e309]
+                - paragraph [ref=e310]: +1 (555) 123-4567
+            - generic [ref=e311]:
+              - img [ref=e312]
+              - generic [ref=e315]:
+                - heading "Email" [level=4] [ref=e316]
+                - paragraph [ref=e317]: info@grandpalacehotel.com
+          - generic [ref=e318]:
+            - heading "Nearby Attractions" [level=4] [ref=e319]
+            - list [ref=e320]:
+              - listitem [ref=e321]: • City Convention Center (5 min walk)
+              - listitem [ref=e322]: • Central Business District (3 min walk)
+              - listitem [ref=e323]: • Historic Downtown (10 min walk)
+              - listitem [ref=e324]: • Shopping Mall (7 min walk)
+              - listitem [ref=e325]: • Airport (20 min drive)
+        - generic [ref=e327]: Interactive Map
+    - generic [ref=e329]:
+      - heading "Ready to Experience Luxury?" [level=2] [ref=e330]
+      - paragraph [ref=e331]: Book your stay at Grand Palace Hotel and discover why we're the city's premier destination.
+      - generic [ref=e332]:
+        - link "Book Now" [ref=e333] [cursor=pointer]:
+          - /url: /booking
+        - link "Contact Us" [ref=e334] [cursor=pointer]:
+          - /url: /contact
+  - contentinfo [ref=e335]:
+    - generic [ref=e336]:
+      - generic [ref=e337]:
+        - generic [ref=e338]:
+          - generic [ref=e339]:
+            - generic [ref=e341]: GP
+            - generic [ref=e342]:
+              - heading "Grand Palace" [level=3] [ref=e343]
+              - paragraph [ref=e344]: Luxury Hotel
+          - paragraph [ref=e345]: Experience unparalleled luxury at Grand Palace Hotel. Our 5-star accommodations offer world-class amenities and exceptional service in the heart of the city.
+          - generic [ref=e346]:
+            - link [ref=e347] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e348]
+            - link [ref=e350] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e351]
+            - link [ref=e353] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e354]
+            - link [ref=e357] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e358]
+        - generic [ref=e361]:
+          - heading "Quick Links" [level=4] [ref=e362]
+          - list [ref=e363]:
+            - listitem [ref=e364]:
+              - link "Home" [ref=e365] [cursor=pointer]:
+                - /url: /
+            - listitem [ref=e366]:
+              - link "Rooms & Suites" [ref=e367] [cursor=pointer]:
+                - /url: /rooms
+            - listitem [ref=e368]:
+              - link "Restaurant & Dining" [ref=e369] [cursor=pointer]:
+                - /url: /order
+            - listitem [ref=e370]:
+              - link "Gallery" [ref=e371] [cursor=pointer]:
+                - /url: /gallery
+            - listitem [ref=e372]:
+              - link "Book Now" [ref=e373] [cursor=pointer]:
+                - /url: /booking
+        - generic [ref=e374]:
+          - heading "Services" [level=4] [ref=e375]
+          - list [ref=e376]:
+            - listitem [ref=e377]: Spa & Wellness
+            - listitem [ref=e378]: Fitness Center
+            - listitem [ref=e379]: Swimming Pool
+            - listitem [ref=e380]: Business Center
+            - listitem [ref=e381]: Concierge Service
+            - listitem [ref=e382]: Valet Parking
+            - listitem [ref=e383]: Room Service
+        - generic [ref=e384]:
+          - heading "Contact Info" [level=4] [ref=e385]
+          - generic [ref=e386]:
+            - generic [ref=e387]:
+              - img [ref=e388]
+              - paragraph [ref=e392]:
+                - text: 123 Luxury Avenue
+                - text: Downtown District
+                - text: City, State 12345
+            - generic [ref=e393]:
+              - img [ref=e394]
+              - paragraph [ref=e396]: +1 (555) 123-4567
+            - generic [ref=e397]:
+              - img [ref=e398]
+              - paragraph [ref=e401]: info@grandpalacehotel.com
+      - generic [ref=e403]:
+        - paragraph [ref=e404]: © 2024 Grand Palace Hotel. All rights reserved.
+        - generic [ref=e405]:
+          - link "Privacy Policy" [ref=e406] [cursor=pointer]:
+            - /url: /privacy
+          - link "Terms of Service" [ref=e407] [cursor=pointer]:
+            - /url: /terms
+          - link "Contact Us" [ref=e408] [cursor=pointer]:
+            - /url: /contact
+  - button "Open Next.js Dev Tools" [ref=e414] [cursor=pointer]:
+    - img [ref=e415]
+  - alert [ref=e418]
+```

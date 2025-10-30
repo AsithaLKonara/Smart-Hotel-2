@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { Filter, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import Navigation from '@/components/navigation'
+// Navigation is handled by layout.tsx
 
 export default function GalleryPage() {
   const [selectedCategory, setSelectedCategory] = useState('all')
@@ -27,7 +27,6 @@ export default function GalleryPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <Navigation />
       
       {/* Header */}
       <section className="pt-20 pb-12 bg-gradient-to-r from-primary-600 to-primary-800 text-white">

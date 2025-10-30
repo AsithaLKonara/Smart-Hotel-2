@@ -10,7 +10,7 @@ import { Search, Filter, Users, Star } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import Navigation from '@/components/navigation'
+// Navigation is handled by layout.tsx
 
 export default function RoomsPage() {
   const [searchTerm, setSearchTerm] = useState('')
@@ -28,7 +28,6 @@ export default function RoomsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <Navigation />
       
       {/* Header */}
       <section className="pt-20 pb-12 bg-gradient-to-r from-primary-600 to-primary-800 text-white">

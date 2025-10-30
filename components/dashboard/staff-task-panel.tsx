@@ -348,121 +348,77 @@ function StaffTaskPanelContent({ onTaskClick, onTaskUpdate, onCreateTask }: Staf
   const [searchQuery, setSearchQuery] = useState('')
   const [isLoading, setIsLoading] = useState(true)
 
-  // Mock data generation
+  // Fetch real data from API
   useEffect(() => {
-    setIsLoading(true)
-    
-    setTimeout(() => {
-      const mockTasks: Task[] = [
-        {
-          id: 'T001',
-          title: 'Clean Room 101',
-          description: 'Standard cleaning and restocking for checkout',
-          type: 'HOUSEKEEPING',
-          priority: 'HIGH',
-          status: 'PENDING',
-          assignedTo: {
-            id: 'S001',
-            name: 'Maria Garcia',
-            role: 'Housekeeping Staff'
-          },
+    fetchTasks()
+    fetchStaff()
+  }, [selectedType, selectedStatus])
+
+  const fetchTasks = async () => {
+    try {
+      setIsLoading(true)
+      const params = new URLSearchParams()
+      if (selectedType !== 'all') params.append('type', selectedType)
+      if (selectedStatus !== 'all') params.append('status', selectedStatus)
+      
+      const response = await fetch(`/api/tasks?${params.toString()}`)
+      if (response.ok) {
+        const data = await response.json()
+        // Transform API data to component format
+        const transformedTasks: Task[] = data.map((task: any) => ({
+          id: task.id,
+          title: task.title,
+          description: task.description || '',
+          type: task.type,
+          priority: task.priority,
+          status: task.status,
+          assignedTo: task.staff ? {
+            id: task.staff.id,
+            name: task.staff.name,
+            role: task.staff.position || 'Staff'
+          } : undefined,
           createdBy: {
-            id: 'M001',
-            name: 'John Manager',
+            id: task.user.id,
+            name: task.user.name,
             role: 'Manager'
           },
-          dueDate: new Date(Date.now() + 2 * 60 * 60 * 1000), // 2 hours from now
-          createdAt: new Date(Date.now() - 30 * 60 * 1000), // 30 minutes ago
-          roomNumber: '101',
-          estimatedTime: 45,
-          tags: ['checkout', 'deep-clean']
-        },
-        {
-          id: 'T002',
-          title: 'Fix TV in Room 205',
-          description: 'TV not responding to remote control',
-          type: 'MAINTENANCE',
-          priority: 'MEDIUM',
-          status: 'IN_PROGRESS',
-          assignedTo: {
-            id: 'S002',
-            name: 'Mike Davis',
-            role: 'Maintenance Engineer'
-          },
-          createdBy: {
-            id: 'M001',
-            name: 'John Manager',
-            role: 'Manager'
-          },
-          dueDate: new Date(Date.now() + 4 * 60 * 60 * 1000), // 4 hours from now
-          createdAt: new Date(Date.now() - 60 * 60 * 1000), // 1 hour ago
-          roomNumber: '205',
+          dueDate: task.dueDate ? new Date(task.dueDate) : undefined,
+          createdAt: new Date(task.createdAt),
+          roomNumber: undefined,
           estimatedTime: 30,
-          tags: ['electronics', 'guest-request']
-        },
-        {
-          id: 'T003',
-          title: 'VIP Welcome Amenities',
-          description: 'Prepare welcome basket for VIP guest in Suite 401',
-          type: 'GUEST_REQUEST',
-          priority: 'URGENT',
-          status: 'PENDING',
-          assignedTo: {
-            id: 'S003',
-            name: 'Sarah Johnson',
-            role: 'Concierge'
-          },
-          createdBy: {
-            id: 'R001',
-            name: 'David Receptionist',
-            role: 'Receptionist'
-          },
-          dueDate: new Date(Date.now() + 1 * 60 * 60 * 1000), // 1 hour from now
-          createdAt: new Date(Date.now() - 15 * 60 * 1000), // 15 minutes ago
-          roomNumber: '401',
-          estimatedTime: 20,
-          tags: ['vip', 'amenities', 'welcome']
-        }
-      ]
-
-      const mockStaff: StaffMember[] = [
-        {
-          id: 'S001',
-          name: 'Maria Garcia',
-          role: 'Housekeeping Staff',
-          department: 'Housekeeping',
-          tasks: 8,
-          completed: 6,
-          rating: 4.8,
-          isOnline: true
-        },
-        {
-          id: 'S002',
-          name: 'Mike Davis',
-          role: 'Maintenance Engineer',
-          department: 'Maintenance',
-          tasks: 5,
-          completed: 4,
-          rating: 4.9,
-          isOnline: true
-        },
-        {
-          id: 'S003',
-          name: 'Sarah Johnson',
-          role: 'Concierge',
-          department: 'Guest Services',
-          tasks: 3,
-          completed: 2,
-          rating: 4.7,
-          isOnline: false
-        }
-      ]
-
-      setTasks(mockTasks)
-      setStaff(mockStaff)
+          tags: []
+        }))
+        setTasks(transformedTasks)
+      }
+    } catch (error) {
+      console.error('Failed to fetch tasks:', error)
+    } finally {
       setIsLoading(false)
-    }, 1000)
-  }, [])
+    }
+  }
+
+  const fetchStaff = async () => {
+    try {
+      const response = await fetch('/api/staff')
+      if (response.ok) {
+        const data = await response.json()
+        // Transform API data to component format
+        const transformedStaff: StaffMember[] = data.map((member: any) => ({
+          id: member.id,
+          name: member.name,
+          role: member.position || 'Staff',
+          department: member.department || 'General',
+          tasks: 0,
+          completed: 0,
+          rating: 4.5,
+          isOnline: member.isActive
+        }))
+        setStaff(transformedStaff)
+      }
+    } catch (error) {
+      console.error('Failed to fetch staff:', error)
+    }
+  }
 
   // Filter tasks
   const filteredTasks = tasks.filter(task => {

@@ -7,7 +7,7 @@ import { Calendar, Users, DollarSign, CheckCircle, XCircle, Clock, Eye, Trash2, 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import Navigation from '@/components/navigation'
+// Navigation is handled by layout.tsx
 import { formatPrice, formatDate } from '@/lib/utils'
 import toast from 'react-hot-toast'
 
@@ -148,7 +148,6 @@ export default function MyBookingsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <Navigation />
       
       <div className="container mx-auto px-4 py-8 pt-24">
         <div className="mb-8">

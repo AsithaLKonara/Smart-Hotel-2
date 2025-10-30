@@ -1,0 +1,176 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - img [ref=e7]
+        - generic [ref=e9]: +1 (212) 555-0123
+      - generic [ref=e10]:
+        - img [ref=e11]
+        - generic [ref=e14]: reservations@grandpalacehotel.com
+    - generic [ref=e15]:
+      - img [ref=e16]
+      - generic [ref=e19]: 1235 Park Avenue, New York, NY 10029
+  - navigation [ref=e20]:
+    - generic [ref=e22]:
+      - link "GP Grand Palace Hotel Luxury 5-Star Accommodation" [ref=e23] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e25]: GP
+        - generic [ref=e26]:
+          - heading "Grand Palace Hotel" [level=1] [ref=e27]
+          - paragraph [ref=e28]: Luxury 5-Star Accommodation
+      - button [ref=e29] [cursor=pointer]:
+        - img [ref=e30]
+  - generic [ref=e31]:
+    - generic [ref=e33]:
+      - heading "Contact Us" [level=1] [ref=e34]
+      - paragraph [ref=e35]: Get in touch with us for reservations, inquiries, or any assistance you need. We're here to help make your stay perfect.
+    - generic [ref=e36]:
+      - generic [ref=e37]:
+        - generic [ref=e38]:
+          - heading "Send us a Message" [level=2] [ref=e39]
+          - generic [ref=e40]:
+            - generic [ref=e41]:
+              - generic [ref=e42]:
+                - generic [ref=e43]: Full Name
+                - textbox [ref=e44]
+              - generic [ref=e45]:
+                - generic [ref=e46]: Email
+                - textbox [ref=e47]
+            - generic [ref=e48]:
+              - generic [ref=e49]: Subject
+              - textbox [ref=e50]
+            - generic [ref=e51]:
+              - generic [ref=e52]: Message
+              - textbox [ref=e53]
+            - button "Send Message" [ref=e54] [cursor=pointer]:
+              - img [ref=e55]
+              - text: Send Message
+        - generic [ref=e58]:
+          - generic [ref=e59]:
+            - heading "Get in Touch" [level=2] [ref=e60]
+            - generic [ref=e61]:
+              - generic [ref=e62]:
+                - img [ref=e64]
+                - generic [ref=e67]:
+                  - heading "Address" [level=3] [ref=e68]
+                  - paragraph [ref=e69]: 1235 Park Avenue, New York, NY 10029
+              - generic [ref=e70]:
+                - img [ref=e72]
+                - generic [ref=e74]:
+                  - heading "Phone" [level=3] [ref=e75]
+                  - paragraph [ref=e76]: +1 (212) 555-0123
+              - generic [ref=e77]:
+                - img [ref=e79]
+                - generic [ref=e82]:
+                  - heading "Email" [level=3] [ref=e83]
+                  - paragraph [ref=e84]: reservations@grandpalacehotel.com
+              - generic [ref=e85]:
+                - img [ref=e87]
+                - generic [ref=e90]:
+                  - heading "Hours" [level=3] [ref=e91]
+                  - paragraph [ref=e92]:
+                    - text: "Check-in: 3:00 PM"
+                    - text: "Check-out: 11:00 AM"
+                    - text: "Front Desk: 24/7"
+          - generic [ref=e93]:
+            - heading "Location" [level=2] [ref=e94]
+            - iframe [ref=e96]:
+              
+            - paragraph [ref=e97]: Located in the heart of Manhattan, Grand Palace Hotel offers easy access to Central Park, Times Square, and other iconic NYC attractions.
+      - generic [ref=e99]:
+        - heading "Frequently Asked Questions" [level=2] [ref=e100]
+        - generic [ref=e101]:
+          - generic [ref=e102]:
+            - heading "What are your check-in and check-out times?" [level=3] [ref=e103]
+            - paragraph [ref=e104]: Check-in is available from 3:00 PM, and check-out is until 11:00 AM. Early check-in and late check-out can be arranged based on availability.
+          - generic [ref=e105]:
+            - heading "Do you offer airport transportation?" [level=3] [ref=e106]
+            - paragraph [ref=e107]: Yes, we provide airport shuttle service. Please contact us at least 24 hours in advance to arrange transportation.
+          - generic [ref=e108]:
+            - heading "Is parking available?" [level=3] [ref=e109]
+            - paragraph [ref=e110]: Complimentary valet parking is available for all guests. We also offer self-parking options for your convenience.
+          - generic [ref=e111]:
+            - heading "Do you accept pets?" [level=3] [ref=e112]
+            - paragraph [ref=e113]: We are pet-friendly! A small fee applies, and we have designated pet-friendly rooms. Please inform us when booking.
+  - contentinfo [ref=e114]:
+    - generic [ref=e115]:
+      - generic [ref=e116]:
+        - generic [ref=e117]:
+          - generic [ref=e118]:
+            - generic [ref=e120]: GP
+            - generic [ref=e121]:
+              - heading "Grand Palace" [level=3] [ref=e122]
+              - paragraph [ref=e123]: Luxury Hotel
+          - paragraph [ref=e124]: Experience unparalleled luxury at Grand Palace Hotel. Our 5-star accommodations offer world-class amenities and exceptional service in the heart of the city.
+          - generic [ref=e125]:
+            - link [ref=e126] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e127]
+            - link [ref=e129] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e130]
+            - link [ref=e132] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e133]
+            - link [ref=e136] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e137]
+        - generic [ref=e140]:
+          - heading "Quick Links" [level=4] [ref=e141]
+          - list [ref=e142]:
+            - listitem [ref=e143]:
+              - link "Home" [ref=e144] [cursor=pointer]:
+                - /url: /
+            - listitem [ref=e145]:
+              - link "Rooms & Suites" [ref=e146] [cursor=pointer]:
+                - /url: /rooms
+            - listitem [ref=e147]:
+              - link "Restaurant & Dining" [ref=e148] [cursor=pointer]:
+                - /url: /order
+            - listitem [ref=e149]:
+              - link "Gallery" [ref=e150] [cursor=pointer]:
+                - /url: /gallery
+            - listitem [ref=e151]:
+              - link "Book Now" [ref=e152] [cursor=pointer]:
+                - /url: /booking
+        - generic [ref=e153]:
+          - heading "Services" [level=4] [ref=e154]
+          - list [ref=e155]:
+            - listitem [ref=e156]: Spa & Wellness
+            - listitem [ref=e157]: Fitness Center
+            - listitem [ref=e158]: Swimming Pool
+            - listitem [ref=e159]: Business Center
+            - listitem [ref=e160]: Concierge Service
+            - listitem [ref=e161]: Valet Parking
+            - listitem [ref=e162]: Room Service
+        - generic [ref=e163]:
+          - heading "Contact Info" [level=4] [ref=e164]
+          - generic [ref=e165]:
+            - generic [ref=e166]:
+              - img [ref=e167]
+              - paragraph [ref=e171]:
+                - text: 123 Luxury Avenue
+                - text: Downtown District
+                - text: City, State 12345
+            - generic [ref=e172]:
+              - img [ref=e173]
+              - paragraph [ref=e175]: +1 (555) 123-4567
+            - generic [ref=e176]:
+              - img [ref=e177]
+              - paragraph [ref=e180]: info@grandpalacehotel.com
+      - generic [ref=e182]:
+        - paragraph [ref=e183]: © 2024 Grand Palace Hotel. All rights reserved.
+        - generic [ref=e184]:
+          - link "Privacy Policy" [ref=e185] [cursor=pointer]:
+            - /url: /privacy
+          - link "Terms of Service" [ref=e186] [cursor=pointer]:
+            - /url: /terms
+          - link "Contact Us" [ref=e187] [cursor=pointer]:
+            - /url: /contact
+  - button "Open Next.js Dev Tools" [ref=e193] [cursor=pointer]:
+    - img [ref=e194]
+  - alert [ref=e197]
+```

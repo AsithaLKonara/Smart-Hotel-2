@@ -174,106 +174,87 @@ function DashboardOverviewContent({ onNavigate }: DashboardOverviewProps) {
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
-  // Mock data - in real app, fetch from API
+  // Fetch real data from API
   useEffect(() => {
-    const mockMetrics: DashboardMetrics = {
-      occupancy: {
-        current: 45,
-        total: 50,
-        percentage: 90,
-        trend: 'up',
-        change: 12.5
-      },
-      revenue: {
-        today: 2847.50,
-        thisMonth: 45230.75,
-        lastMonth: 38950.25,
-        trend: 'up',
-        change: 16.1
-      },
-      bookings: {
-        today: 8,
-        thisWeek: 32,
-        pending: 3,
-        confirmed: 29,
-        trend: 'up',
-        change: 8.3
-      },
-      restaurant: {
-        ordersToday: 24,
-        revenueToday: 486.75,
-        averageOrderValue: 20.28,
-        popularItem: 'Grilled Salmon',
-        trend: 'up',
-        change: 15.2
-      },
-      tasks: {
-        total: 18,
-        completed: 12,
-        pending: 5,
-        overdue: 1,
-        completionRate: 66.7
-      },
-      guestSatisfaction: {
-        rating: 4.8,
-        reviews: 127,
-        trend: 'up',
-        change: 5.6
-      }
-    }
-
-    const mockActivity: RecentActivity[] = [
-      {
-        id: '1',
-        type: 'booking',
-        title: 'New Booking',
-        description: 'Room 205 - John Smith (2 guests)',
-        timestamp: new Date(Date.now() - 5 * 60 * 1000),
-        status: 'success',
-        amount: 245.50
-      },
-      {
-        id: '2',
-        type: 'order',
-        title: 'Food Order',
-        description: 'Room 101 - Continental Breakfast + Coffee',
-        timestamp: new Date(Date.now() - 12 * 60 * 1000),
-        status: 'success',
-        amount: 18.99
-      },
-      {
-        id: '3',
-        type: 'checkin',
-        title: 'Guest Check-in',
-        description: 'Room 312 - Sarah Johnson',
-        timestamp: new Date(Date.now() - 25 * 60 * 1000),
-        status: 'success'
-      },
-      {
-        id: '4',
-        type: 'task',
-        title: 'Task Completed',
-        description: 'Room 205 - Housekeeping completed',
-        timestamp: new Date(Date.now() - 35 * 60 * 1000),
-        status: 'success'
-      },
-      {
-        id: '5',
-        type: 'order',
-        title: 'Food Order',
-        description: 'Room 401 - Caesar Salad + Grilled Salmon',
-        timestamp: new Date(Date.now() - 45 * 60 * 1000),
-        status: 'warning',
-        amount: 37.98
-      }
-    ]
-
-    setTimeout(() => {
-      setMetrics(mockMetrics)
-      setRecentActivity(mockActivity)
-      setIsLoading(false)
-    }, 1000)
+    fetchDashboardData()
   }, [])
+
+  const fetchDashboardData = async () => {
+    try {
+      setIsLoading(true)
+      const response = await fetch('/api/analytics/dashboard')
+      
+      if (response.ok) {
+        const data = await response.json()
+        
+        // Transform API data to component format
+        const transformedMetrics: DashboardMetrics = {
+          occupancy: {
+            current: Math.round(data.summary.occupancyRate),
+            total: 100,
+            percentage: Math.round(data.summary.occupancyRate),
+            trend: data.summary.bookingGrowthRate > 0 ? 'up' : data.summary.bookingGrowthRate < 0 ? 'down' : 'stable',
+            change: Math.abs(data.summary.bookingGrowthRate)
+          },
+          revenue: {
+            today: data.summary.todayRevenue || 0,
+            thisMonth: data.summary.monthlyRevenue || 0,
+            lastMonth: data.summary.monthlyRevenue || 0,
+            trend: data.summary.bookingGrowthRate > 0 ? 'up' : 'down',
+            change: Math.abs(data.summary.bookingGrowthRate)
+          },
+          bookings: {
+            today: data.summary.todayBookings || 0,
+            thisWeek: data.summary.monthlyBookings || 0,
+            pending: data.recentActivity?.bookings?.filter((b: any) => b.status === 'PENDING').length || 0,
+            confirmed: data.recentActivity?.bookings?.filter((b: any) => b.status === 'CONFIRMED').length || 0,
+            trend: data.summary.bookingGrowthRate > 0 ? 'up' : 'down',
+            change: Math.abs(data.summary.bookingGrowthRate)
+          },
+          restaurant: {
+            ordersToday: 0,
+            revenueToday: 0,
+            averageOrderValue: 0,
+            popularItem: 'N/A',
+            trend: 'stable',
+            change: 0
+          },
+          tasks: {
+            total: 0,
+            completed: 0,
+            pending: 0,
+            overdue: 0,
+            completionRate: 0
+          },
+          guestSatisfaction: {
+            rating: 4.5,
+            reviews: 0,
+            trend: 'stable',
+            change: 0
+          }
+        }
+        
+        setMetrics(transformedMetrics)
+        
+        // Transform recent bookings to activity
+        const recentBookingsActivity: RecentActivity[] = (data.recentActivity?.bookings || []).slice(0, 5).map((booking: any, index: number) => ({
+          id: booking.id,
+          type: 'booking' as const,
+          title: 'New Booking',
+          description: `Room ${booking.roomNumber} - ${booking.guestName}`,
+          timestamp: new Date(booking.createdAt),
+          status: 'success' as const,
+          amount: booking.totalAmount
+        }))
+        
+        setRecentActivity(recentBookingsActivity)
+      }
+    } catch (error) {
+      console.error('Failed to fetch dashboard data:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   if (isLoading) {
     return (

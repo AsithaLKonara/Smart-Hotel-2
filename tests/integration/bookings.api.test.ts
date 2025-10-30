@@ -8,24 +8,7 @@ jest.mock('next-auth', () => ({
   getServerSession: jest.fn(),
 }))
 
-// Mock the database
-jest.mock('@/lib/db', () => ({
-  __esModule: true,
-  default: jest.fn(() => ({
-    booking: {
-      findMany: jest.fn(),
-      create: jest.fn(),
-      findUnique: jest.fn(),
-      update: jest.fn(),
-    },
-    room: {
-      findUnique: jest.fn(),
-    },
-    user: {
-      findUnique: jest.fn(),
-    },
-  })),
-}))
+// Note: This test uses a real in-memory MongoDB database, so we don't mock @/lib/db
 
 describe('Bookings API Integration Tests', () => {
   let mongod: MongoMemoryServer
