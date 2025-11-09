@@ -25,9 +25,11 @@ export function isDateInFuture(date: Date): boolean {
   }
   
   const today = new Date()
-  today.setHours(0, 0, 0, 0) // Reset time to start of day
-  
-  return date > today
+  today.setHours(0, 0, 0, 0)
+
+  const normalizedDate = new Date(date.getFullYear(), date.getMonth(), date.getDate())
+
+  return normalizedDate > today
 }
 
 /**
@@ -39,9 +41,11 @@ export function isDateInPast(date: Date): boolean {
   }
   
   const today = new Date()
-  today.setHours(0, 0, 0, 0) // Reset time to start of day
-  
-  return date < today
+  today.setHours(0, 0, 0, 0)
+
+  const normalizedDate = new Date(date.getFullYear(), date.getMonth(), date.getDate())
+
+  return normalizedDate < today
 }
 
 /**
@@ -52,8 +56,22 @@ export function getDaysBetween(startDate: Date, endDate: Date): number {
     return 0
   }
   
-  const timeDiff = endDate.getTime() - startDate.getTime()
-  return Math.ceil(timeDiff / (1000 * 60 * 60 * 24))
+  const MS_PER_DAY = 1000 * 60 * 60 * 24
+
+  const startUTC = Date.UTC(
+    startDate.getFullYear(),
+    startDate.getMonth(),
+    startDate.getDate()
+  )
+  const endUTC = Date.UTC(
+    endDate.getFullYear(),
+    endDate.getMonth(),
+    endDate.getDate()
+  )
+
+  const diff = (endUTC - startUTC) / MS_PER_DAY
+
+  return Math.round(diff)
 }
 
 /**
@@ -101,46 +119,52 @@ export function validateBookingDates(checkInStr: string, checkOutStr: string): D
     return { isValid: false, errors }
   }
   
-  try {
-    const { checkIn, checkOut } = parseBookingDates(checkInStr, checkOutStr)
-    
-    // Check if check-in is in the future
-    if (!isDateInFuture(checkIn)) {
-      errors.push('Check-in date cannot be in the past')
-    }
-    
-    // Check if check-out is after check-in
-    if (!isValidDateRange(checkIn, checkOut)) {
-      errors.push('Check-out date must be after check-in date')
-    }
-    
-    // Check if booking is too far in advance (12 months)
-    const maxAdvanceDate = new Date()
-    maxAdvanceDate.setFullYear(maxAdvanceDate.getFullYear() + 1)
-    if (checkIn > maxAdvanceDate) {
-      errors.push('Bookings cannot be made more than 12 months in advance')
-    }
-    
-    // Check if booking is too far in the past
-    const minDate = new Date()
-    minDate.setDate(minDate.getDate() - 1) // Allow yesterday for same-day bookings
-    if (checkIn < minDate) {
-      errors.push('Check-in date cannot be in the past')
-    }
-    
-    // Check minimum stay duration (1 night)
-    const nights = getDaysBetween(checkIn, checkOut)
-    if (nights < 1) {
-      errors.push('Minimum stay is 1 night')
-    }
-    
-    // Check maximum stay duration (30 nights)
-    if (nights > 30) {
-      errors.push('Maximum stay is 30 nights')
-    }
-    
-  } catch (error) {
+  const checkIn = new Date(checkInStr)
+  const checkOut = new Date(checkOutStr)
+
+  if (isNaN(checkIn.getTime())) {
     errors.push('Invalid date format')
+  }
+
+  if (isNaN(checkOut.getTime())) {
+    errors.push('Invalid date format')
+  }
+
+  if (errors.length) {
+    return {
+      isValid: false,
+      errors
+    }
+  }
+
+  const normalizedCheckIn = new Date(checkIn.getFullYear(), checkIn.getMonth(), checkIn.getDate())
+  const normalizedCheckOut = new Date(checkOut.getFullYear(), checkOut.getMonth(), checkOut.getDate())
+  const today = new Date()
+  const normalizedToday = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+
+  if (normalizedCheckIn < normalizedToday) {
+    errors.push('Check-in date cannot be in the past')
+  }
+
+  if (!isValidDateRange(normalizedCheckIn, normalizedCheckOut)) {
+    errors.push('Check-out date must be after check-in date')
+  }
+
+  const nights = getDaysBetween(normalizedCheckIn, normalizedCheckOut)
+
+  if (nights < 1) {
+    errors.push('Minimum stay is 1 night')
+  }
+
+  if (nights > 30) {
+    errors.push('Maximum stay is 30 nights')
+  }
+
+  const maxAdvanceDate = new Date(normalizedToday)
+  maxAdvanceDate.setFullYear(maxAdvanceDate.getFullYear() + 1)
+
+  if (normalizedCheckIn >= maxAdvanceDate) {
+    errors.push('Bookings cannot be made more than 12 months in advance')
   }
   
   return {

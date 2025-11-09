@@ -30,7 +30,7 @@ const PremiumButton = forwardRef<HTMLButtonElement, PremiumButtonProps>(
     const baseClasses = "relative inline-flex items-center justify-center font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none"
     
     const variants = {
-      primary: "bg-amber-500 hover:bg-amber-600 text-white shadow-lg hover:shadow-xl focus:ring-amber-500",
+      primary: "bg-amber-700 hover:bg-amber-800 text-white shadow-lg hover:shadow-xl focus:ring-amber-700",
       secondary: "bg-teal-500 hover:bg-teal-600 text-white shadow-lg hover:shadow-xl focus:ring-teal-500",
       ghost: "bg-transparent hover:bg-gray-100 text-gray-700 hover:text-gray-900 focus:ring-gray-500",
       outline: "border-2 border-gray-300 hover:border-amber-500 text-gray-700 hover:text-amber-600 focus:ring-amber-500",

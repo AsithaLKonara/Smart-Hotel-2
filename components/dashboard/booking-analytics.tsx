@@ -97,7 +97,51 @@ const sourceConfig = {
   'booking.com': { label: 'Booking.com', color: 'bg-blue-600' },
   expedia: { label: 'Expedia', color: 'bg-green-500' },
   agoda: { label: 'Agoda', color: 'bg-purple-500' },
-  airbnb: { label: 'Airbnb', color: 'bg-pink-500' }
+  airbnb: { label: 'Airbnb', color: 'bg-pink-500' },
+  unknown: { label: 'Direct', color: 'bg-blue-500' }
+}
+
+function getMonthRange() {
+  const endDate = new Date()
+  endDate.setHours(23, 59, 59, 999)
+  const startDate = new Date(endDate.getFullYear(), endDate.getMonth(), 1)
+  startDate.setHours(0, 0, 0, 0)
+  return { startDate, endDate }
+}
+
+function calculateGuestInsights(bookings: BookingData[], guestSources: Array<{ source: string; count: number }>, satisfaction?: { rating?: number }): GuestInsight {
+  const totalGuests = bookings.reduce((sum, booking) => sum + (booking.guests ?? 0), 0)
+  const guestCounts = bookings.reduce<Map<string, number>>((acc, booking) => {
+    const key = booking.guestName || booking.id
+    acc.set(key, (acc.get(key) || 0) + 1)
+    return acc
+  }, new Map())
+
+  let repeatGuests = 0
+  guestCounts.forEach(count => {
+    if (count > 1) repeatGuests += 1
+  })
+
+  const uniqueGuests = guestCounts.size
+  const newGuests = Math.max(0, uniqueGuests - repeatGuests)
+
+  const totalNights = bookings.reduce((sum, booking) => {
+    const diff = booking.checkOut.getTime() - booking.checkIn.getTime()
+    return sum + Math.max(1, Math.ceil(diff / (1000 * 60 * 60 * 24)))
+  }, 0)
+
+  const averageStay = bookings.length ? Number((totalNights / bookings.length).toFixed(1)) : 0
+  const topSource = guestSources && guestSources.length > 0 ? guestSources[0].source : 'Direct'
+  const satisfactionScore = satisfaction?.rating ?? 4.8
+
+  return {
+    totalGuests: totalGuests || bookings.length,
+    repeatGuests,
+    newGuests,
+    averageStay,
+    topSource,
+    satisfaction: Number(satisfactionScore.toFixed(1))
+  }
 }
 
 // Booking card component
@@ -111,7 +155,7 @@ function BookingCard({
   onClick?: (bookingId: string) => void
 }) {
   const statusConf = statusConfig[booking.status]
-  const sourceConf = sourceConfig[booking.source]
+  const sourceConf = sourceConfig[booking.source] || sourceConfig.unknown
   const StatusIcon = statusConf.icon
 
   const getNights = () => {
@@ -237,89 +281,92 @@ function OccupancySummary({ data }: { data: OccupancyData[] }) {
 
 // Main Booking Analytics Component
 function BookingAnalyticsContent({ onExport, onBookingClick }: BookingAnalyticsProps) {
-  const [bookings, setBookings] = useState<BookingData[]>([])
+  const [allBookings, setAllBookings] = useState<BookingData[]>([])
   const [occupancyData, setOccupancyData] = useState<OccupancyData[]>([])
   const [guestInsights, setGuestInsights] = useState<GuestInsight | null>(null)
   const [selectedStatus, setSelectedStatus] = useState<string>('all')
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  // Mock data generation
   useEffect(() => {
+    let isMounted = true
+
+    async function loadData() {
+      try {
     setIsLoading(true)
-    
-    setTimeout(() => {
-      // Generate mock bookings
-      const mockBookings: BookingData[] = [
-        {
-          id: 'BK001',
-          guestName: 'John Smith',
-          roomNumber: '101',
-          roomType: 'Deluxe Suite',
-          checkIn: new Date('2024-01-15'),
-          checkOut: new Date('2024-01-18'),
-          status: 'CHECKED_IN',
-          totalAmount: 450.00,
-          guests: 2,
-          source: 'direct',
-          createdAt: new Date('2024-01-10')
-        },
-        {
-          id: 'BK002',
-          guestName: 'Sarah Johnson',
-          roomNumber: '205',
-          roomType: 'Standard Room',
-          checkIn: new Date('2024-01-16'),
-          checkOut: new Date('2024-01-20'),
-          status: 'CONFIRMED',
-          totalAmount: 320.00,
-          guests: 1,
-          source: 'booking.com',
-          createdAt: new Date('2024-01-12')
-        },
-        {
-          id: 'BK003',
-          guestName: 'Mike Davis',
-          roomNumber: '312',
-          roomType: 'Presidential Suite',
-          checkIn: new Date('2024-01-17'),
-          checkOut: new Date('2024-01-19'),
-          status: 'PENDING',
-          totalAmount: 680.00,
-          guests: 4,
-          source: 'expedia',
-          createdAt: new Date('2024-01-14')
+        setError(null)
+
+        const { startDate, endDate } = getMonthRange()
+        const bookingsUrl = new URL('/api/bookings', window.location.origin)
+        bookingsUrl.searchParams.set('status', 'all')
+        bookingsUrl.searchParams.set('startDate', startDate.toISOString())
+        bookingsUrl.searchParams.set('endDate', endDate.toISOString())
+
+        const [bookingsResponse, analyticsResponse, dashboardResponse] = await Promise.all([
+          fetch(bookingsUrl.toString()),
+          fetch('/api/analytics?range=month'),
+          fetch(`/api/analytics/dashboard?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`)
+        ])
+
+        if (!bookingsResponse.ok) {
+          throw new Error('Failed to load bookings')
         }
-      ]
 
-      // Generate occupancy data for last 30 days
-      const mockOccupancy: OccupancyData[] = []
-      for (let i = 29; i >= 0; i--) {
-        const date = new Date()
-        date.setDate(date.getDate() - i)
-        
-        mockOccupancy.push({
-          date: date.toISOString().split('T')[0],
-          occupancy: Math.floor(Math.random() * 40 + 60), // 60-100%
-          revenue: Math.random() * 2000 + 1000,
-          bookings: Math.floor(Math.random() * 8 + 2),
-          cancellations: Math.floor(Math.random() * 3)
-        })
+        if (!analyticsResponse.ok) {
+          throw new Error('Failed to load analytics data')
+        }
+
+        const bookingsJson = await bookingsResponse.json()
+        const analyticsJson = await analyticsResponse.json()
+        const dashboardJson = dashboardResponse.ok ? await dashboardResponse.json() : null
+
+        if (!isMounted) return
+
+        const mappedBookings: BookingData[] = (bookingsJson.bookings || []).map((booking: any) => ({
+          id: booking.id,
+          guestName: booking.user?.name ?? booking.guestName ?? 'Guest',
+          roomNumber: booking.room?.number ?? 'N/A',
+          roomType: booking.room?.type ?? 'Room',
+          checkIn: new Date(booking.checkIn),
+          checkOut: new Date(booking.checkOut),
+          status: booking.status,
+          totalAmount: booking.invoice?.total ?? booking.totalAmount ?? 0,
+          guests: booking.guests ?? 1,
+          source: 'direct',
+          createdAt: new Date(booking.createdAt),
+        }))
+
+        const occupancySeries: OccupancyData[] = (analyticsJson.occupancy?.series || []).map((entry: any) => ({
+          date: entry.date,
+          occupancy: entry.occupancy ?? 0,
+          revenue: entry.revenue ?? 0,
+          bookings: entry.bookings ?? 0,
+          cancellations: 0,
+        }))
+
+        const guestSources = analyticsJson.guestSources ?? []
+        const guestSatisfaction = dashboardJson?.summary?.guestSatisfaction
+
+        setAllBookings(mappedBookings)
+        setOccupancyData(occupancySeries)
+        setGuestInsights(calculateGuestInsights(mappedBookings, guestSources, guestSatisfaction))
+      } catch (err) {
+        console.error(err)
+        if (isMounted) {
+          setError(err instanceof Error ? err.message : 'Unable to load booking analytics')
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false)
+        }
       }
+    }
 
-      const mockInsights: GuestInsight = {
-        totalGuests: 156,
-        repeatGuests: 42,
-        newGuests: 114,
-        averageStay: 2.3,
-        topSource: 'booking.com',
-        satisfaction: 4.8
-      }
+    loadData()
 
-      setBookings(mockBookings)
-      setOccupancyData(mockOccupancy)
-      setGuestInsights(mockInsights)
-      setIsLoading(false)
-    }, 1000)
+    return () => {
+      isMounted = false
+    }
   }, [])
 
   if (isLoading) {
@@ -339,16 +386,28 @@ function BookingAnalyticsContent({ onExport, onBookingClick }: BookingAnalyticsP
     )
   }
 
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+        <div className="container mx-auto px-4 py-16 text-center">
+          <h2 className="text-2xl font-semibold text-gray-900 mb-2">Booking analytics unavailable</h2>
+          <p className="text-gray-600">{error}</p>
+        </div>
+      </div>
+    )
+  }
+
   const filteredBookings = selectedStatus === 'all' 
-    ? bookings 
-    : bookings.filter(booking => booking.status === selectedStatus)
+    ? allBookings 
+    : allBookings.filter(booking => booking.status === selectedStatus)
 
   const statusFilters = [
-    { key: 'all', label: 'All Bookings', count: bookings.length },
-    { key: 'PENDING', label: 'Pending', count: bookings.filter(b => b.status === 'PENDING').length },
-    { key: 'CONFIRMED', label: 'Confirmed', count: bookings.filter(b => b.status === 'CONFIRMED').length },
-    { key: 'CHECKED_IN', label: 'Checked In', count: bookings.filter(b => b.status === 'CHECKED_IN').length },
-    { key: 'CHECKED_OUT', label: 'Checked Out', count: bookings.filter(b => b.status === 'CHECKED_OUT').length }
+    { key: 'all', label: 'All Bookings', count: allBookings.length },
+    { key: 'PENDING', label: 'Pending', count: allBookings.filter(b => b.status === 'PENDING').length },
+    { key: 'CONFIRMED', label: 'Confirmed', count: allBookings.filter(b => b.status === 'CONFIRMED').length },
+    { key: 'CHECKED_IN', label: 'Checked In', count: allBookings.filter(b => b.status === 'CHECKED_IN').length },
+    { key: 'CHECKED_OUT', label: 'Checked Out', count: allBookings.filter(b => b.status === 'CHECKED_OUT').length },
+    { key: 'CANCELLED', label: 'Cancelled', count: allBookings.filter(b => b.status === 'CANCELLED').length }
   ]
 
   return (
@@ -402,7 +461,7 @@ function BookingAnalyticsContent({ onExport, onBookingClick }: BookingAnalyticsP
                 <span className="text-sm font-medium">+12.5%</span>
               </div>
             </div>
-            <div className="text-2xl font-bold text-gray-900 mb-1">{bookings.length}</div>
+            <div className="text-2xl font-bold text-gray-900 mb-1">{allBookings.length}</div>
             <div className="text-gray-600">Total Bookings</div>
           </div>
 
@@ -512,7 +571,7 @@ function BookingAnalyticsContent({ onExport, onBookingClick }: BookingAnalyticsP
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.4 }}
           >
-            {guestInsights && <OccupancySummary data={occupancyData} />}
+            <OccupancySummary data={occupancyData} />
           </motion.div>
         </div>
 
@@ -526,9 +585,11 @@ function BookingAnalyticsContent({ onExport, onBookingClick }: BookingAnalyticsP
           <ChartCard
             title="Booking Sources"
             subtitle="Distribution of bookings by source"
-            data={Object.entries(sourceConfig).map(([source, config]) => ({
+            data={Object.entries(sourceConfig)
+              .filter(([key]) => key !== 'unknown')
+              .map(([source, config]) => ({
               label: config.label,
-              value: bookings.filter(b => b.source === source).length,
+                value: allBookings.filter(b => b.source === source).length,
               color: config.color
             }))}
             type="pie"

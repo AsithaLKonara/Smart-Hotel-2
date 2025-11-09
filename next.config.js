@@ -50,7 +50,12 @@ const nextConfig = {
   
   // Image optimization
   images: {
-    domains: ['localhost', 'res.cloudinary.com', 'images.unsplash.com', 'smarthotel-demo-7lyfxphkz-asithalkonaras-projects.vercel.app'],
+    remotePatterns: [
+      { protocol: 'https', hostname: 'images.unsplash.com' },
+      { protocol: 'https', hostname: 'res.cloudinary.com' },
+      { protocol: 'https', hostname: 'smarthotel-demo-7lyfxphkz-asithalkonaras-projects.vercel.app' },
+      { protocol: 'http', hostname: 'localhost' },
+    ],
     formats: ['image/webp', 'image/avif'],
     minimumCacheTTL: 60,
     dangerouslyAllowSVG: true,

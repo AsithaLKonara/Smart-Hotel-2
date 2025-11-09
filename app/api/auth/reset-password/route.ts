@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
+import prisma from '@/lib/db'
+import { sendPasswordResetConfirmation } from '@/lib/email'
 import bcrypt from 'bcryptjs'
 
 export async function POST(request: NextRequest) {
@@ -21,7 +22,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Find user
+    // Find user with token verification
     const user = await prisma.user.findUnique({
       where: { email }
     })
@@ -33,21 +34,44 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // TODO: Verify token and expiry from database
-    // For now, accepting token for demonstration
-    // In production, check against stored token and expiry
+    // Verify token and expiry from database
+    if (!user.resetToken || user.resetToken !== token) {
+      return NextResponse.json(
+        { error: 'Invalid or expired reset token' },
+        { status: 400 }
+      )
+    }
+
+    if (!user.resetTokenExpiry || user.resetTokenExpiry < new Date()) {
+      return NextResponse.json(
+        { error: 'Reset token has expired. Please request a new password reset.' },
+        { status: 400 }
+      )
+    }
 
     // Hash new password
-    const hashedPassword = await bcrypt.hash(newPassword, 10)
+    const hashedPassword = await bcrypt.hash(newPassword, 12)
 
-    // Update password
+    // Update password and clear reset token
     await prisma.user.update({
       where: { email },
-      data: { password: hashedPassword }
+      data: {
+        password: hashedPassword,
+        resetToken: null,
+        resetTokenExpiry: null
+      }
     })
 
-    // TODO: Clear reset token from database
-    // TODO: Send password changed confirmation email
+    // Send password changed confirmation email
+    try {
+      await sendPasswordResetConfirmation({
+        name: user.name,
+        email: user.email
+      })
+    } catch (emailError) {
+      console.error('Failed to send password reset confirmation:', emailError)
+      // Don't fail the request if email fails
+    }
 
     return NextResponse.json({
       success: true,

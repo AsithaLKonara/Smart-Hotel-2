@@ -37,22 +37,47 @@ interface RevenueBreakdown {
   bookings: number
 }
 
-interface TimeRange {
-  label: string
-  value: string
-  days: number
-}
-
 interface RevenueAnalyticsProps {
   onExport?: (format: 'pdf' | 'csv' | 'excel') => void
 }
 
-const timeRanges: TimeRange[] = [
-  { label: 'Last 7 Days', value: '7d', days: 7 },
-  { label: 'Last 30 Days', value: '30d', days: 30 },
-  { label: 'Last 90 Days', value: '90d', days: 90 },
-  { label: 'This Year', value: '1y', days: 365 }
+const timeRanges = [
+  { label: 'This Week', value: 'week' },
+  { label: 'This Month', value: 'month' },
+  { label: 'This Quarter', value: 'quarter' },
+  { label: 'This Year', value: 'year' }
 ]
+
+function computeRangeBounds(range: string): { startDate: Date; endDate: Date } {
+  const endDate = new Date()
+  const normalizedEnd = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate(), 23, 59, 59, 999)
+
+  switch (range) {
+    case 'week': {
+      const start = new Date(normalizedEnd)
+      start.setDate(start.getDate() - 6)
+      start.setHours(0, 0, 0, 0)
+      return { startDate: start, endDate: normalizedEnd }
+    }
+    case 'quarter': {
+      const start = new Date(normalizedEnd)
+      start.setMonth(start.getMonth() - 2, 1)
+      start.setHours(0, 0, 0, 0)
+      return { startDate: start, endDate: normalizedEnd }
+    }
+    case 'year': {
+      const start = new Date(normalizedEnd.getFullYear(), 0, 1)
+      start.setHours(0, 0, 0, 0)
+      return { startDate: start, endDate: normalizedEnd }
+    }
+    case 'month':
+    default: {
+      const start = new Date(normalizedEnd.getFullYear(), normalizedEnd.getMonth(), 1)
+      start.setHours(0, 0, 0, 0)
+      return { startDate: start, endDate: normalizedEnd }
+    }
+  }
+}
 
 const roomTypes = [
   { name: 'Standard', color: 'bg-blue-500' },
@@ -189,7 +214,7 @@ function TimeRangeSelector({
 
 // Main Revenue Analytics Component
 function RevenueAnalyticsContent({ onExport }: RevenueAnalyticsProps) {
-  const [selectedRange, setSelectedRange] = useState('30d')
+  const [selectedRange, setSelectedRange] = useState<string>('month')
   const [isLoading, setIsLoading] = useState(true)
   const [revenueData, setRevenueData] = useState<RevenueData[]>([])
   const [roomBreakdown, setRoomBreakdown] = useState<RevenueBreakdown[]>([])
@@ -200,65 +225,105 @@ function RevenueAnalyticsContent({ onExport }: RevenueAnalyticsProps) {
     totalBookings: 0,
     totalOrders: 0,
     averageOrderValue: 0,
-    occupancyRate: 0
+    occupancyRate: 0,
+    revenueChange: 0
   })
+  const [error, setError] = useState<string | null>(null)
 
-  // Mock data generation
   useEffect(() => {
+    let isMounted = true
+
+    async function fetchAnalytics() {
+      try {
     setIsLoading(true)
-    
-    // Simulate API call
-    setTimeout(() => {
-      const days = timeRanges.find(r => r.value === selectedRange)?.days || 30
-      const mockData: RevenueData[] = []
-      const mockRoomBreakdown: RevenueBreakdown[] = [
-        { roomType: 'Standard', revenue: 45230, percentage: 45.2, bookings: 89 },
-        { roomType: 'Deluxe', revenue: 32150, percentage: 32.1, bookings: 56 },
-        { roomType: 'Suite', revenue: 15680, percentage: 15.7, bookings: 23 },
-        { roomType: 'Presidential', revenue: 6940, percentage: 6.9, bookings: 8 }
-      ]
+        setError(null)
 
-      // Generate time series data
-      for (let i = days - 1; i >= 0; i--) {
-        const date = new Date()
-        date.setDate(date.getDate() - i)
-        
-        const roomRevenue = Math.random() * 2000 + 1500
-        const restaurantRevenue = Math.random() * 800 + 400
-        const bookings = Math.floor(Math.random() * 8 + 2)
-        const orders = Math.floor(Math.random() * 25 + 10)
+        const analyticsResponse = await fetch(`/api/analytics?range=${selectedRange}`)
 
-        mockData.push({
-          date: date.toISOString().split('T')[0],
-          roomRevenue,
-          restaurantRevenue,
-          totalRevenue: roomRevenue + restaurantRevenue,
-          bookings,
-          orders
+        if (!analyticsResponse.ok) {
+          throw new Error('Failed to load analytics data')
+        }
+
+        const analyticsData = await analyticsResponse.json()
+
+        const { startDate, endDate } = computeRangeBounds(selectedRange)
+        const dashboardResponse = await fetch(`/api/analytics/dashboard?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`)
+        const dashboardData = dashboardResponse.ok ? await dashboardResponse.json() : null
+
+        if (!isMounted) return
+
+        const revenueSeries: RevenueData[] = (analyticsData.dailyRevenue || []).map((entry: any) => ({
+          date: entry.date,
+          roomRevenue: entry.revenue,
+          restaurantRevenue: 0,
+          totalRevenue: entry.revenue,
+          bookings: entry.bookings ?? 0,
+          orders: 0
+        }))
+
+        const totalRevenue = analyticsData.revenue?.period?.current ?? analyticsData.revenue?.thisMonth ?? 0
+        const previousRevenue = analyticsData.revenue?.period?.previous ?? analyticsData.revenue?.thisWeek ?? 0
+        const revenueChange = previousRevenue === 0
+          ? (totalRevenue > 0 ? 100 : 0)
+          : ((totalRevenue - previousRevenue) / previousRevenue) * 100
+
+        const topRooms = analyticsData.topRooms || []
+        const roomsTotalRevenue = topRooms.reduce((sum: number, room: any) => sum + (room.revenue ?? 0), 0)
+        const roomBreakdownData: RevenueBreakdown[] = topRooms.map((room: any) => {
+          const percentage = roomsTotalRevenue > 0 ? (room.revenue / roomsTotalRevenue) * 100 : 0
+          return {
+            roomType: room.type,
+            revenue: room.revenue,
+            percentage,
+            bookings: room.bookings
+          }
         })
-      }
 
-      const totalRevenue = mockData.reduce((sum, d) => sum + d.totalRevenue, 0)
-      const roomRevenue = mockData.reduce((sum, d) => sum + d.roomRevenue, 0)
-      const restaurantRevenue = mockData.reduce((sum, d) => sum + d.restaurantRevenue, 0)
-      const totalBookings = mockData.reduce((sum, d) => sum + d.bookings, 0)
-      const totalOrders = mockData.reduce((sum, d) => sum + d.orders, 0)
+        const restaurantOrdersToday = dashboardData?.summary?.restaurantOrdersToday ?? 0
+        const restaurantRevenueToday = dashboardData?.summary?.restaurantRevenueToday ?? 0
+        const averageOrderValueToday = dashboardData?.summary?.averageOrderValueToday ?? 0
 
-      setRevenueData(mockData)
-      setRoomBreakdown(mockRoomBreakdown)
+        setRevenueData(revenueSeries)
+        setRoomBreakdown(roomBreakdownData)
       setSummary({
         totalRevenue,
-        roomRevenue,
-        restaurantRevenue,
-        totalBookings,
-        totalOrders,
-        averageOrderValue: restaurantRevenue / totalOrders,
-        occupancyRate: (totalBookings / (days * 50)) * 100
-      })
-      
+          roomRevenue: roomsTotalRevenue,
+          restaurantRevenue: restaurantRevenueToday,
+          totalBookings: analyticsData.bookings?.total ?? 0,
+          totalOrders: restaurantOrdersToday,
+          averageOrderValue: averageOrderValueToday,
+          occupancyRate: analyticsData.occupancy?.average ?? 0,
+          revenueChange
+        })
+      } catch (err) {
+        console.error(err)
+        if (isMounted) {
+          setError(err instanceof Error ? err.message : 'Unable to load analytics')
+        }
+      } finally {
+        if (isMounted) {
       setIsLoading(false)
-    }, 1000)
+        }
+      }
+    }
+
+    fetchAnalytics()
+
+    return () => {
+      isMounted = false
+    }
   }, [selectedRange])
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-blue-50">
+        <div className="container mx-auto px-4 py-16 text-center">
+          <h2 className="text-2xl font-semibold text-gray-900 mb-2">Analytics Unavailable</h2>
+          <p className="text-gray-600">{error}</p>
+        </div>
+      </div>
+    )
+  }
+
 
   if (isLoading) {
     return (
@@ -334,17 +399,17 @@ function RevenueAnalyticsContent({ onExport }: RevenueAnalyticsProps) {
           <RevenueSummaryCard
             title="Total Revenue"
             value={`$${summary.totalRevenue.toLocaleString()}`}
-            change={12.5}
-            trend="up"
-            subtitle={`${selectedRange} period`}
+            change={Math.abs(summary.revenueChange)}
+            trend={summary.revenueChange >= 0 ? 'up' : 'down'}
+            subtitle={`vs previous ${selectedRange}`}
             icon={DollarSign}
           />
           
           <RevenueSummaryCard
             title="Room Revenue"
             value={`$${summary.roomRevenue.toLocaleString()}`}
-            change={8.3}
-            trend="up"
+            change={summary.totalBookings}
+            trend={summary.totalBookings >= 0 ? 'up' : 'stable'}
             subtitle={`${summary.totalBookings} bookings`}
             icon={Bed}
           />
@@ -352,8 +417,8 @@ function RevenueAnalyticsContent({ onExport }: RevenueAnalyticsProps) {
           <RevenueSummaryCard
             title="Restaurant Revenue"
             value={`$${summary.restaurantRevenue.toLocaleString()}`}
-            change={18.7}
-            trend="up"
+            change={summary.totalOrders}
+            trend={summary.totalOrders > 0 ? 'up' : 'stable'}
             subtitle={`${summary.totalOrders} orders`}
             icon={Utensils}
           />
@@ -361,8 +426,8 @@ function RevenueAnalyticsContent({ onExport }: RevenueAnalyticsProps) {
           <RevenueSummaryCard
             title="Avg Order Value"
             value={`$${summary.averageOrderValue.toFixed(2)}`}
-            change={-2.1}
-            trend="down"
+            change={0}
+            trend="stable"
             subtitle="Restaurant orders"
             icon={BarChart3}
           />
@@ -456,11 +521,20 @@ function RevenueAnalyticsContent({ onExport }: RevenueAnalyticsProps) {
               <div className="text-amber-100">Average Occupancy Rate</div>
             </div>
             <div>
-              <div className="text-2xl font-bold">${(summary.totalRevenue / (timeRanges.find(r => r.value === selectedRange)?.days || 30)).toFixed(0)}</div>
+              <div className="text-2xl font-bold">
+                $
+                {revenueData.length
+                  ? (summary.totalRevenue / revenueData.length).toFixed(0)
+                  : summary.totalRevenue.toFixed(0)}
+              </div>
               <div className="text-amber-100">Daily Average Revenue</div>
             </div>
             <div>
-              <div className="text-2xl font-bold">{(summary.totalOrders / summary.totalBookings).toFixed(1)}</div>
+              <div className="text-2xl font-bold">
+                {summary.totalBookings > 0
+                  ? (summary.totalOrders / summary.totalBookings).toFixed(1)
+                  : '0.0'}
+              </div>
               <div className="text-amber-100">Orders per Booking</div>
             </div>
           </div>

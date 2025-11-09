@@ -39,7 +39,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/4</span>
+                <span class='fraction'>0/3</span>
             </div>
         
             
@@ -235,21 +235,7 @@
 <a name='L170'></a><a href='#L170'>170</a>
 <a name='L171'></a><a href='#L171'>171</a>
 <a name='L172'></a><a href='#L172'>172</a>
-<a name='L173'></a><a href='#L173'>173</a>
-<a name='L174'></a><a href='#L174'>174</a>
-<a name='L175'></a><a href='#L175'>175</a>
-<a name='L176'></a><a href='#L176'>176</a>
-<a name='L177'></a><a href='#L177'>177</a>
-<a name='L178'></a><a href='#L178'>178</a>
-<a name='L179'></a><a href='#L179'>179</a>
-<a name='L180'></a><a href='#L180'>180</a>
-<a name='L181'></a><a href='#L181'>181</a>
-<a name='L182'></a><a href='#L182'>182</a>
-<a name='L183'></a><a href='#L183'>183</a>
-<a name='L184'></a><a href='#L184'>184</a>
-<a name='L185'></a><a href='#L185'>185</a>
-<a name='L186'></a><a href='#L186'>186</a>
-<a name='L187'></a><a href='#L187'>187</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<a name='L173'></a><a href='#L173'>173</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -261,9 +247,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -342,14 +327,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -359,8 +336,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -375,9 +350,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -446,11 +418,10 @@ import {
   Car, 
   Coffee, 
   Briefcase,
-  Plane,
-  UserCheck
+  UserCheck,
 } from <span class="cstat-no" title="statement not covered" >'lucide-react'</span>
-import { hotelData } from '@/lib/hotel-data'
 import { Button } from <span class="cstat-no" title="statement not covered" >'@/components/ui/button'</span>
+import { FallbackImage } from <span class="cstat-no" title="statement not covered" >'@/components/ui/fallback-image'</span>
 &nbsp;
 export const <span class="cstat-no" title="statement not covered" >dynamic = <span class="cstat-no" title="statement not covered" >'</span>force-dynamic'</span>
 &nbsp;
@@ -461,7 +432,7 @@ const facilities = <span class="cstat-no" title="statement not covered" >[</span
     description: 'State-of-the-art gym with premium equipment, personal trainers, and group fitness classes.',
     icon: Dumbbell,
     image: '/images/hotel/hotel-gym.jpg',
-    features: ['24/7 Access', 'Personal Trainers', 'Group Classes', 'Yoga Studio']
+    features: ['24/7 Access', 'Personal Trainers', 'Group Classes', 'Yoga Studio'],
   },
   {
     id: 'pool',
@@ -469,7 +440,7 @@ const facilities = <span class="cstat-no" title="statement not covered" >[</span
     description: 'Stunning rooftop infinity pool with panoramic city views, cabanas, and poolside service.',
     icon: Waves,
     image: '/images/hotel/hotel-pool.jpg',
-    features: ['Infinity Pool', 'Cabanas', 'Poolside Bar', 'Sunning Deck']
+    features: ['Infinity Pool', 'Cabanas', 'Poolside Bar', 'Sunning Deck'],
   },
   {
     id: 'spa',
@@ -477,7 +448,7 @@ const facilities = <span class="cstat-no" title="statement not covered" >[</span
     description: 'Full-service spa offering massages, facials, body treatments, and wellness therapies.',
     icon: Heart,
     image: '/images/hotel/hotel-spa.jpg',
-    features: ['Massage Therapy', 'Facial Treatments', 'Body Wraps', 'Steam Room']
+    features: ['Massage Therapy', 'Facial Treatments', 'Body Wraps', 'Steam Room'],
   },
   {
     id: 'restaurant',
@@ -485,7 +456,7 @@ const facilities = <span class="cstat-no" title="statement not covered" >[</span
     description: 'Award-winning restaurant featuring contemporary American cuisine with international influences.',
     icon: Utensils,
     image: '/images/hotel/hotel-restaurant.jpg',
-    features: ['Breakfast', 'Lunch', 'Dinner', 'Private Dining']
+    features: ['Breakfast', 'Lunch', 'Dinner', 'Private Dining'],
   },
   {
     id: 'business',
@@ -493,7 +464,7 @@ const facilities = <span class="cstat-no" title="statement not covered" >[</span
     description: 'Fully equipped business facilities with meeting rooms, conference spaces, and modern technology.',
     icon: Briefcase,
     image: '/images/hotel/hotel-lobby.jpg',
-    features: ['Meeting Rooms', 'Conference Space', 'Printing Services', 'Secretarial Services']
+    features: ['Meeting Rooms', 'Conference Space', 'Printing Services', 'Secretarial Services'],
   },
   {
     id: 'lobby',
@@ -501,8 +472,8 @@ const facilities = <span class="cstat-no" title="statement not covered" >[</span
     description: 'Elegant lobby bar serving craft cocktails, fine wines, and light refreshments.',
     icon: Coffee,
     image: '/images/hotel/hotel-bar.jpg',
-    features: ['Craft Cocktails', 'Wine Selection', 'Live Music', '24/7 Service']
-  }
+    features: ['Craft Cocktails', 'Wine Selection', 'Live Music', '24/7 Service'],
+  },
 ]
 &nbsp;
 export default function <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >FacilitiesPage() {</span></span>
@@ -511,43 +482,33 @@ export default function <span class="cstat-no" title="statement not covered" ><s
       {/* Hero Section */}
       &lt;section className="relative h-96 overflow-hidden bg-gradient-to-r from-amber-600 to-orange-600"&gt;
         &lt;div className="absolute inset-0"&gt;
-          &lt;Image
-            src="/images/hotel/hotel-pool.jpg"
-            alt="Hotel Facilities"
-            fill
-            className="object-cover opacity-70"
-          /&gt;
+          &lt;Image src="/images/hotel/hotel-pool.jpg" alt="Hotel Facilities" fill className="object-cover opacity-70" /&gt;
           &lt;div className="absolute inset-0 bg-gradient-to-r from-amber-600/80 to-orange-600/80" /&gt;
         &lt;/div&gt;
         
         &lt;div className="relative z-10 flex items-center justify-center h-full"&gt;
           &lt;div className="text-center text-white max-w-4xl px-4"&gt;
             &lt;h1 className="text-5xl md:text-7xl font-bold mb-6"&gt;Our Facilities&lt;/h1&gt;
-            &lt;p className="text-xl md:text-2xl text-gray-100"&gt;
-              World-class amenities for your comfort and convenience
-            &lt;/p&gt;
+            &lt;p className="text-xl md:text-2xl text-gray-100"&gt;World-class amenities for your comfort and convenience&lt;/p&gt;
           &lt;/div&gt;
         &lt;/div&gt;
       &lt;/section&gt;
 &nbsp;
       {/* Main Content */}
       &lt;div className="max-w-7xl mx-auto px-4 py-20"&gt;
-        
         {/* Facilities Grid */}
         &lt;div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16"&gt;
-          {facilities.map(<span class="fstat-no" title="function not covered" >(f</span>acility) =&gt; {
+          {facilities.map(<span class="fstat-no" title="function not covered" >facility =&gt; {</span>
             const Icon = <span class="cstat-no" title="statement not covered" >facility.icon</span>
 <span class="cstat-no" title="statement not covered" >            return (</span>
               &lt;div key={facility.id} className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow"&gt;
                 &lt;div className="relative h-64"&gt;
-                  &lt;Image
+                  &lt;FallbackImage
                     src={facility.image}
+                    fallbackSrc="/images/hotel/hotel-lobby.jpg"
                     alt={facility.name}
                     fill
                     className="object-cover"
-                    onError={<span class="fstat-no" title="function not covered" >(e</span>) =&gt; {
-<span class="cstat-no" title="statement not covered" >                      e.currentTarget.src = '/images/hotel/hotel-lobby.jpg'</span>
-                    }}
                   /&gt;
                 &lt;/div&gt;
                 &lt;div className="p-6"&gt;
@@ -599,9 +560,7 @@ export default function <span class="cstat-no" title="statement not covered" ><s
         {/* CTA Section */}
         &lt;section className="bg-gradient-to-r from-amber-600 to-orange-600 rounded-2xl p-12 text-center text-white"&gt;
           &lt;h2 className="text-4xl font-bold mb-6"&gt;Experience Our World-Class Facilities&lt;/h2&gt;
-          &lt;p className="text-xl mb-8 text-amber-50"&gt;
-            Book your stay and enjoy access to all our luxury amenities
-          &lt;/p&gt;
+          &lt;p className="text-xl mb-8 text-amber-50"&gt;Book your stay and enjoy access to all our luxury amenities&lt;/p&gt;
           &lt;div className="flex gap-4 justify-center"&gt;
             &lt;Link href="/booking"&gt;
               &lt;Button size="lg" className="bg-white text-amber-600 hover:bg-amber-50"&gt;
@@ -615,7 +574,6 @@ export default function <span class="cstat-no" title="statement not covered" ><s
             &lt;/Link&gt;
           &lt;/div&gt;
         &lt;/section&gt;
-&nbsp;
       &lt;/div&gt;
     &lt;/div&gt;
   )
@@ -628,7 +586,7 @@ export default function <span class="cstat-no" title="statement not covered" ><s
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-10-29T06:10:44.351Z
+                at 2025-11-08T18:46:00.772Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

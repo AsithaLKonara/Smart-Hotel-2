@@ -30,13 +30,52 @@ export async function createAuditLog(data: AuditLogData) {
   }
 }
 
-export function getClientInfo(req: NextRequest) {
-  const forwarded = req.headers.get('x-forwarded-for')
-  const realIp = req.headers.get('x-real-ip')
-  const ip = forwarded ? forwarded.split(',')[0] : realIp || 'unknown'
-  const userAgent = req.headers.get('user-agent') || 'unknown'
-  
-  return { ipAddress: ip, userAgent }
+type RequestLike =
+  | NextRequest
+  | {
+      headers?: Headers | Record<string, string | string[] | undefined>
+      socket?: { remoteAddress?: string | null }
+    }
+
+export function getClientInfo(req?: RequestLike) {
+  if (!req) {
+    return { ipAddress: 'unknown', userAgent: 'unknown' }
+  }
+
+  const headers = (req as any).headers
+  let ip: string | undefined
+  let userAgent: string | undefined
+
+  if (headers) {
+    if (typeof headers.get === 'function') {
+      const forwarded = headers.get('x-forwarded-for')
+      const realIp = headers.get('x-real-ip')
+      ip = forwarded ? forwarded.split(',')[0]?.trim() : realIp ?? undefined
+      userAgent = headers.get('user-agent') ?? undefined
+    } else if (typeof headers === 'object') {
+      const lookup = (key: string) => {
+        const value = headers[key] ?? headers[key.toLowerCase()]
+        if (Array.isArray(value)) return value[0]
+        return value
+      }
+      const forwarded = lookup('x-forwarded-for')
+      const realIp = lookup('x-real-ip')
+      ip = forwarded ? forwarded.split(',')[0]?.trim() : realIp ?? undefined
+      userAgent = lookup('user-agent') ?? undefined
+    }
+  }
+
+  if (!ip) {
+    const socketIp = (req as any).socket?.remoteAddress
+    if (typeof socketIp === 'string' && socketIp.length > 0) {
+      ip = socketIp
+    }
+  }
+
+  return {
+    ipAddress: ip ?? 'unknown',
+    userAgent: userAgent ?? 'unknown',
+  }
 }
 
 // Predefined audit actions

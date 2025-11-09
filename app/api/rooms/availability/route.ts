@@ -1,19 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/db'
 
-const prisma = new PrismaClient()
+const MS_PER_DAY = 1000 * 60 * 60 * 24
+
+function getNightCount(checkInDate: Date, checkOutDate: Date): number {
+  const checkInUTC = Date.UTC(
+    checkInDate.getFullYear(),
+    checkInDate.getMonth(),
+    checkInDate.getDate()
+  )
+  const checkOutUTC = Date.UTC(
+    checkOutDate.getFullYear(),
+    checkOutDate.getMonth(),
+    checkOutDate.getDate()
+  )
+
+  return Math.max(0, Math.round((checkOutUTC - checkInUTC) / MS_PER_DAY))
+}
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const checkIn = searchParams.get('checkin')
-    const checkOut = searchParams.get('checkout')
+    const checkIn = searchParams.get('checkIn') ?? searchParams.get('checkin')
+    const checkOut = searchParams.get('checkOut') ?? searchParams.get('checkout')
     const guests = searchParams.get('guests')
     const roomType = searchParams.get('type')
 
     if (!checkIn || !checkOut) {
       return NextResponse.json(
-        { error: 'Check-in and check-out dates are required' },
+        { error: 'Missing required parameters' },
         { status: 400 }
       )
     }
@@ -21,17 +36,17 @@ export async function GET(request: NextRequest) {
     const checkInDate = new Date(checkIn)
     const checkOutDate = new Date(checkOut)
 
-    // Validate dates
-    if (checkInDate >= checkOutDate) {
+    if (Number.isNaN(checkInDate.getTime()) || Number.isNaN(checkOutDate.getTime())) {
       return NextResponse.json(
-        { error: 'Check-out date must be after check-in date' },
+        { error: 'Invalid date format' },
         { status: 400 }
       )
     }
 
-    if (checkInDate < new Date()) {
+    // Validate dates
+    if (checkInDate >= checkOutDate) {
       return NextResponse.json(
-        { error: 'Check-in date cannot be in the past' },
+        { error: 'Check-out date must be after check-in date' },
         { status: 400 }
       )
     }
@@ -62,7 +77,8 @@ export async function GET(request: NextRequest) {
     })
 
     // Check for conflicting bookings
-    const conflictingBookings = await prisma.booking.findMany({
+    const conflictingBookings =
+      (await prisma.booking.findMany({
       where: {
         status: {
           in: ['CONFIRMED', 'CHECKED_IN']
@@ -96,7 +112,7 @@ export async function GET(request: NextRequest) {
       select: {
         roomId: true
       }
-    })
+    })) ?? []
 
     const bookedRoomIds = new Set(conflictingBookings.map(b => b.roomId))
 
@@ -105,12 +121,14 @@ export async function GET(request: NextRequest) {
 
     // Calculate pricing for each room
     const roomsWithPricing = availableRooms.map(room => {
-      const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24))
+      const reviews = Array.isArray((room as any).reviews) ? (room as any).reviews : []
+      const images = Array.isArray((room as any).images) ? (room as any).images : []
+      const nights = getNightCount(checkInDate, checkOutDate)
       const basePrice = room.price * nights
 
       // Calculate average rating
-      const avgRating = room.reviews.length > 0 
-        ? room.reviews.reduce((sum, review) => sum + review.rating, 0) / room.reviews.length
+      const avgRating = reviews.length > 0 
+        ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
         : 0
 
       return {
@@ -118,21 +136,12 @@ export async function GET(request: NextRequest) {
         nights,
         totalPrice: basePrice,
         averageRating: Math.round(avgRating * 10) / 10,
-        reviewCount: room.reviews.length,
-        mainImage: room.roomImages.find(img => img.isMain)?.url || room.images[0] || '/images/room-placeholder.jpg'
+        reviewCount: reviews.length,
+        mainImage: room.roomImages?.find((img: any) => img.isMain)?.url || images[0] || '/images/room-placeholder.jpg'
       }
     })
 
-    return NextResponse.json({
-      availableRooms: roomsWithPricing,
-      searchCriteria: {
-        checkIn,
-        checkOut,
-        guests: guests ? parseInt(guests) : null,
-        roomType
-      },
-      totalResults: roomsWithPricing.length
-    })
+    return NextResponse.json({ availability: roomsWithPricing })
 
   } catch (error) {
     console.error('Availability check error:', error)
@@ -140,7 +149,5 @@ export async function GET(request: NextRequest) {
       { error: 'Failed to check room availability' },
       { status: 500 }
     )
-  } finally {
-    await prisma.$disconnect()
   }
 }

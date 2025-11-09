@@ -6,6 +6,16 @@ import {
   getNewsletterEmail
 } from '@/lib/email-templates'
 
+jest.mock('@/lib/settings', () => ({
+  getHotelContactInfo: jest.fn().mockResolvedValue({
+    name: 'Grand Palace Hotel',
+    tagline: 'Luxury 5-Star Accommodation',
+    phone: '+1 (212) 555-0123',
+    email: 'info@grandpalacehotel.com',
+    address: '350 Luxury Ave, New York, NY 10001',
+  }),
+}))
+
 describe('Email Templates', () => {
   const mockBookingData = {
     bookingId: 'booking-123',
@@ -33,8 +43,8 @@ describe('Email Templates', () => {
   }
 
   describe('Booking Confirmation Email', () => {
-    test('should generate valid HTML email', () => {
-      const email = getBookingConfirmationEmail(mockBookingData)
+    test('should generate valid HTML email', async () => {
+      const email = await getBookingConfirmationEmail(mockBookingData)
       
       expect(email).toBeDefined()
       expect(email.subject).toContain('Booking Confirmation')
@@ -44,8 +54,8 @@ describe('Email Templates', () => {
       expect(email.html).toContain(mockBookingData.roomType)
     })
 
-    test('should include all booking details', () => {
-      const email = getBookingConfirmationEmail(mockBookingData)
+    test('should include all booking details', async () => {
+      const email = await getBookingConfirmationEmail(mockBookingData)
       
       expect(email.html).toContain('Monday, January 15, 2024')
       expect(email.html).toContain('Thursday, January 18, 2024')
@@ -53,16 +63,16 @@ describe('Email Templates', () => {
       expect(email.html).toContain(mockBookingData.roomNumber)
     })
 
-    test('should include special requests if provided', () => {
-      const email = getBookingConfirmationEmail(mockBookingData)
+    test('should include special requests if provided', async () => {
+      const email = await getBookingConfirmationEmail(mockBookingData)
       
       expect(email.html).toContain('Late checkout requested')
     })
 
-    test('should handle missing special requests', () => {
+    test('should handle missing special requests', async () => {
       const bookingDataWithoutRequests = { ...mockBookingData, specialRequests: undefined }
       
-      const email = getBookingConfirmationEmail(bookingDataWithoutRequests)
+      const email = await getBookingConfirmationEmail(bookingDataWithoutRequests)
       
       expect(email.html).toBeDefined()
       expect(email.html).not.toContain('undefined')
@@ -70,8 +80,8 @@ describe('Email Templates', () => {
   })
 
   describe('Welcome Email', () => {
-    test('should generate valid welcome email', () => {
-      const email = getWelcomeEmail(mockWelcomeData)
+    test('should generate valid welcome email', async () => {
+      const email = await getWelcomeEmail(mockWelcomeData)
       
       expect(email).toBeDefined()
       expect(email.subject).toContain('Welcome')
@@ -79,8 +89,8 @@ describe('Email Templates', () => {
       expect(email.html).toContain(mockWelcomeData.guestName)
     })
 
-    test('should include loyalty information', () => {
-      const email = getWelcomeEmail(mockWelcomeData)
+    test('should include loyalty information', async () => {
+      const email = await getWelcomeEmail(mockWelcomeData)
       
       expect(email.html).toContain('1250')
       expect(email.html).toContain('Gold')
@@ -88,8 +98,8 @@ describe('Email Templates', () => {
   })
 
   describe('Check-in Reminder Email', () => {
-    test('should generate valid check-in reminder', () => {
-      const email = getCheckInReminderEmail(mockBookingData)
+    test('should generate valid check-in reminder', async () => {
+      const email = await getCheckInReminderEmail(mockBookingData)
       
       expect(email).toBeDefined()
       expect(email.subject).toContain('Reminder: Check-in Tomorrow')
@@ -97,8 +107,8 @@ describe('Email Templates', () => {
       expect(email.html).toContain(mockBookingData.checkIn)
     })
 
-    test('should include arrival instructions', () => {
-      const email = getCheckInReminderEmail(mockBookingData)
+    test('should include arrival instructions', async () => {
+      const email = await getCheckInReminderEmail(mockBookingData)
       
       expect(email.html).toContain('3:00 PM')
       expect(email.html).toContain('Valid government-issued photo ID')
@@ -106,8 +116,8 @@ describe('Email Templates', () => {
   })
 
   describe('Check-out Reminder Email', () => {
-    test('should generate valid check-out reminder', () => {
-      const email = getCheckOutReminderEmail(mockBookingData)
+    test('should generate valid check-out reminder', async () => {
+      const email = await getCheckOutReminderEmail(mockBookingData)
       
       expect(email).toBeDefined()
       expect(email.subject).toContain('Check-out Reminder')
@@ -115,8 +125,8 @@ describe('Email Templates', () => {
       expect(email.html).toContain('Thursday, January 18, 2024')
     })
 
-    test('should include departure instructions', () => {
-      const email = getCheckOutReminderEmail(mockBookingData)
+    test('should include departure instructions', async () => {
+      const email = await getCheckOutReminderEmail(mockBookingData)
       
       expect(email.html).toContain('11:00 AM')
       expect(email.html).toContain('front desk')
@@ -124,8 +134,8 @@ describe('Email Templates', () => {
   })
 
   describe('Newsletter Email', () => {
-    test('should generate valid newsletter', () => {
-      const email = getNewsletterEmail(mockNewsletterData)
+    test('should generate valid newsletter', async () => {
+      const email = await getNewsletterEmail(mockNewsletterData)
       
       expect(email).toBeDefined()
       expect(email.subject).toContain('Exclusive Offers')
@@ -133,8 +143,8 @@ describe('Email Templates', () => {
       expect(email.html).toContain(mockWelcomeData.guestName)
     })
 
-    test('should include current year', () => {
-      const email = getNewsletterEmail(mockNewsletterData)
+    test('should include current year', async () => {
+      const email = await getNewsletterEmail(mockNewsletterData)
       const currentYear = new Date().getFullYear()
       
       expect(email.html).toContain(currentYear.toString())
@@ -142,14 +152,14 @@ describe('Email Templates', () => {
   })
 
   describe('Email Template Validation', () => {
-    test('all templates should have valid HTML structure', () => {
-      const templates = [
+    test('all templates should have valid HTML structure', async () => {
+      const templates = await Promise.all([
         getBookingConfirmationEmail(mockBookingData),
         getWelcomeEmail(mockWelcomeData),
         getCheckInReminderEmail(mockBookingData),
         getCheckOutReminderEmail(mockBookingData),
         getNewsletterEmail(mockNewsletterData)
-      ]
+      ])
 
       templates.forEach(template => {
         expect(template.html).toContain('<!DOCTYPE html>')
@@ -160,14 +170,14 @@ describe('Email Templates', () => {
       })
     })
 
-    test('all templates should include hotel branding', () => {
-      const templates = [
+    test('all templates should include hotel branding', async () => {
+      const templates = await Promise.all([
         getBookingConfirmationEmail(mockBookingData),
         getWelcomeEmail(mockWelcomeData),
         getCheckInReminderEmail(mockBookingData),
         getCheckOutReminderEmail(mockBookingData),
         getNewsletterEmail(mockNewsletterData)
-      ]
+      ])
 
       templates.forEach(template => {
         expect(template.html).toContain('Grand Palace Hotel')
@@ -175,14 +185,14 @@ describe('Email Templates', () => {
       })
     })
 
-    test('all templates should have valid subjects', () => {
-      const templates = [
+    test('all templates should have valid subjects', async () => {
+      const templates = await Promise.all([
         getBookingConfirmationEmail(mockBookingData),
         getWelcomeEmail(mockWelcomeData),
         getCheckInReminderEmail(mockBookingData),
         getCheckOutReminderEmail(mockBookingData),
         getNewsletterEmail(mockNewsletterData)
-      ]
+      ])
 
       templates.forEach(template => {
         expect(template.subject).toBeDefined()

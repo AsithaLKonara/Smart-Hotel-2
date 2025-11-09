@@ -109,7 +109,7 @@ export default function RoomsPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredRooms.map((room) => (
-              <Card key={room.id} className="overflow-hidden hover:shadow-xl transition-shadow group">
+              <Card key={room.id} data-testid="room-card" className="overflow-hidden hover:shadow-xl transition-shadow group">
                 <div className="relative h-64">
                   <Image
                     src={room.image}
@@ -203,7 +203,7 @@ const rooms = [
     capacity: 4,
     size: 65,
     rating: 4.8,
-    image: "/images/room-deluxe.jpg",
+    image: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80",
     amenities: ["King Bed", "City View", "Balcony", "Mini Bar", "Free WiFi", "Room Service"]
   },
   {
@@ -215,7 +215,7 @@ const rooms = [
     capacity: 2,
     size: 45,
     rating: 4.6,
-    image: "/images/room-executive.jpg",
+    image: "https://images.unsplash.com/photo-1501117716987-c8e1ecb210f6?auto=format&fit=crop&w=1200&q=80",
     amenities: ["Queen Bed", "Work Desk", "City View", "Free WiFi", "Coffee Maker"]
   },
   {
@@ -227,7 +227,7 @@ const rooms = [
     capacity: 6,
     size: 120,
     rating: 4.9,
-    image: "/images/room-presidential.jpg",
+    image: "https://images.unsplash.com/photo-1543353071-873f17a7a088?auto=format&fit=crop&w=1200&q=80",
     amenities: ["King Bed", "Terrace", "Butler Service", "Jacuzzi", "Kitchen", "Living Room"]
   },
   {
@@ -239,7 +239,7 @@ const rooms = [
     capacity: 2,
     size: 35,
     rating: 4.4,
-    image: "/images/room-standard.jpg",
+    image: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=1200&q=80",
     amenities: ["Queen Bed", "Free WiFi", "TV", "Private Bathroom"]
   },
   {
@@ -251,7 +251,7 @@ const rooms = [
     capacity: 6,
     size: 85,
     rating: 4.7,
-    image: "/images/room-family.jpg",
+    image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=80",
     amenities: ["2 Bedrooms", "Living Room", "Kitchen", "Free WiFi", "Play Area"]
   },
   {
@@ -263,7 +263,7 @@ const rooms = [
     capacity: 2,
     size: 40,
     rating: 4.5,
-    image: "/images/room-garden.jpg",
+    image: "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?auto=format&fit=crop&w=1200&q=80",
     amenities: ["Queen Bed", "Garden View", "Balcony", "Free WiFi", "Coffee Maker"]
   }
 ] 

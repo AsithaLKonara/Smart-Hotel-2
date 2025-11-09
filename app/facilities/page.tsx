@@ -9,11 +9,10 @@ import {
   Car, 
   Coffee, 
   Briefcase,
-  Plane,
-  UserCheck
+  UserCheck,
 } from 'lucide-react'
-import { hotelData } from '@/lib/hotel-data'
 import { Button } from '@/components/ui/button'
+import { FallbackImage } from '@/components/ui/fallback-image'
 
 export const dynamic = 'force-dynamic'
 
@@ -24,7 +23,7 @@ const facilities = [
     description: 'State-of-the-art gym with premium equipment, personal trainers, and group fitness classes.',
     icon: Dumbbell,
     image: '/images/hotel/hotel-gym.jpg',
-    features: ['24/7 Access', 'Personal Trainers', 'Group Classes', 'Yoga Studio']
+    features: ['24/7 Access', 'Personal Trainers', 'Group Classes', 'Yoga Studio'],
   },
   {
     id: 'pool',
@@ -32,7 +31,7 @@ const facilities = [
     description: 'Stunning rooftop infinity pool with panoramic city views, cabanas, and poolside service.',
     icon: Waves,
     image: '/images/hotel/hotel-pool.jpg',
-    features: ['Infinity Pool', 'Cabanas', 'Poolside Bar', 'Sunning Deck']
+    features: ['Infinity Pool', 'Cabanas', 'Poolside Bar', 'Sunning Deck'],
   },
   {
     id: 'spa',
@@ -40,7 +39,7 @@ const facilities = [
     description: 'Full-service spa offering massages, facials, body treatments, and wellness therapies.',
     icon: Heart,
     image: '/images/hotel/hotel-spa.jpg',
-    features: ['Massage Therapy', 'Facial Treatments', 'Body Wraps', 'Steam Room']
+    features: ['Massage Therapy', 'Facial Treatments', 'Body Wraps', 'Steam Room'],
   },
   {
     id: 'restaurant',
@@ -48,7 +47,7 @@ const facilities = [
     description: 'Award-winning restaurant featuring contemporary American cuisine with international influences.',
     icon: Utensils,
     image: '/images/hotel/hotel-restaurant.jpg',
-    features: ['Breakfast', 'Lunch', 'Dinner', 'Private Dining']
+    features: ['Breakfast', 'Lunch', 'Dinner', 'Private Dining'],
   },
   {
     id: 'business',
@@ -56,7 +55,7 @@ const facilities = [
     description: 'Fully equipped business facilities with meeting rooms, conference spaces, and modern technology.',
     icon: Briefcase,
     image: '/images/hotel/hotel-lobby.jpg',
-    features: ['Meeting Rooms', 'Conference Space', 'Printing Services', 'Secretarial Services']
+    features: ['Meeting Rooms', 'Conference Space', 'Printing Services', 'Secretarial Services'],
   },
   {
     id: 'lobby',
@@ -64,8 +63,8 @@ const facilities = [
     description: 'Elegant lobby bar serving craft cocktails, fine wines, and light refreshments.',
     icon: Coffee,
     image: '/images/hotel/hotel-bar.jpg',
-    features: ['Craft Cocktails', 'Wine Selection', 'Live Music', '24/7 Service']
-  }
+    features: ['Craft Cocktails', 'Wine Selection', 'Live Music', '24/7 Service'],
+  },
 ]
 
 export default function FacilitiesPage() {
@@ -74,43 +73,33 @@ export default function FacilitiesPage() {
       {/* Hero Section */}
       <section className="relative h-96 overflow-hidden bg-gradient-to-r from-amber-600 to-orange-600">
         <div className="absolute inset-0">
-          <Image
-            src="/images/hotel/hotel-pool.jpg"
-            alt="Hotel Facilities"
-            fill
-            className="object-cover opacity-70"
-          />
+          <Image src="/images/hotel/hotel-pool.jpg" alt="Hotel Facilities" fill className="object-cover opacity-70" />
           <div className="absolute inset-0 bg-gradient-to-r from-amber-600/80 to-orange-600/80" />
         </div>
         
         <div className="relative z-10 flex items-center justify-center h-full">
           <div className="text-center text-white max-w-4xl px-4">
             <h1 className="text-5xl md:text-7xl font-bold mb-6">Our Facilities</h1>
-            <p className="text-xl md:text-2xl text-gray-100">
-              World-class amenities for your comfort and convenience
-            </p>
+            <p className="text-xl md:text-2xl text-gray-100">World-class amenities for your comfort and convenience</p>
           </div>
         </div>
       </section>
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-20">
-        
         {/* Facilities Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
-          {facilities.map((facility) => {
+          {facilities.map(facility => {
             const Icon = facility.icon
             return (
               <div key={facility.id} className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
                 <div className="relative h-64">
-                  <Image
+                  <FallbackImage
                     src={facility.image}
+                    fallbackSrc="/images/hotel/hotel-lobby.jpg"
                     alt={facility.name}
                     fill
                     className="object-cover"
-                    onError={(e) => {
-                      e.currentTarget.src = '/images/hotel/hotel-lobby.jpg'
-                    }}
                   />
                 </div>
                 <div className="p-6">
@@ -162,9 +151,7 @@ export default function FacilitiesPage() {
         {/* CTA Section */}
         <section className="bg-gradient-to-r from-amber-600 to-orange-600 rounded-2xl p-12 text-center text-white">
           <h2 className="text-4xl font-bold mb-6">Experience Our World-Class Facilities</h2>
-          <p className="text-xl mb-8 text-amber-50">
-            Book your stay and enjoy access to all our luxury amenities
-          </p>
+          <p className="text-xl mb-8 text-amber-50">Book your stay and enjoy access to all our luxury amenities</p>
           <div className="flex gap-4 justify-center">
             <Link href="/booking">
               <Button size="lg" className="bg-white text-amber-600 hover:bg-amber-50">
@@ -178,7 +165,6 @@ export default function FacilitiesPage() {
             </Link>
           </div>
         </section>
-
       </div>
     </div>
   )

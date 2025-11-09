@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { Calendar, Users, DollarSign, CheckCircle, XCircle, Clock, Eye, Trash2, Loader2 } from 'lucide-react'
@@ -41,21 +41,14 @@ export default function MyBookingsPage() {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
   const [cancellingBooking, setCancellingBooking] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (status === 'loading') return
+  const userId = session?.user?.id
     
-    if (!session) {
-      router.push('/auth/signin?callbackUrl=/my-bookings')
+  const fetchBookings = useCallback(async () => {
+    if (!userId) {
       return
     }
-
-    fetchBookings()
-  }, [session, status, router])
-
-  const fetchBookings = async () => {
     try {
-      const response = await fetch('/api/bookings?userId=' + session?.user.id)
+      const response = await fetch('/api/bookings?userId=' + userId)
       if (!response.ok) {
         throw new Error('Failed to fetch bookings')
       }
@@ -67,7 +60,18 @@ export default function MyBookingsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [userId])
+
+  useEffect(() => {
+    if (status === 'loading') return
+    
+    if (!session) {
+      router.push('/auth/signin?callbackUrl=/my-bookings')
+      return
+    }
+
+    fetchBookings()
+  }, [session, status, router, fetchBookings])
 
   const handleCancelBooking = async (bookingId: string) => {
     if (!confirm('Are you sure you want to cancel this booking?')) {
@@ -90,7 +94,7 @@ export default function MyBookingsPage() {
       }
 
       toast.success('Booking cancelled successfully')
-      fetchBookings() // Refresh the list
+      await fetchBookings() // Refresh the list
     } catch (error) {
       console.error('Error cancelling booking:', error)
       toast.error('Failed to cancel booking')

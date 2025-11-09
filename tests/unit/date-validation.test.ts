@@ -178,7 +178,7 @@ describe('Date Validation', () => {
     })
 
     test('should reject bookings too far in advance', () => {
-      const farFuture = new Date(today.getTime() + 365 * 24 * 60 * 60 * 1000)
+      const farFuture = new Date(today.getTime() + 366 * 24 * 60 * 60 * 1000)
       const farFutureStr = farFuture.toISOString().split('T')[0]
       const result = validateBookingDates(farFutureStr, farFutureStr)
       
@@ -212,16 +212,22 @@ describe('Date Validation', () => {
 
   describe('Edge Cases', () => {
     test('should handle leap year dates', () => {
-      const leapYearDate = new Date('2025-02-28') // Use future leap year date
-      const nextDay = new Date('2025-03-01')
+      let leapYearDate = new Date(today.getFullYear(), 1, 28)
+      if (leapYearDate <= today) {
+        leapYearDate = new Date(today.getFullYear() + 1, 1, 28)
+      }
+      const nextDay = new Date(leapYearDate.getTime() + 24 * 60 * 60 * 1000)
       const result = validateBookingDates(leapYearDate.toISOString().split('T')[0], nextDay.toISOString().split('T')[0])
       
       expect(result.isValid).toBe(true)
     })
 
     test('should handle year boundary', () => {
-      const yearEnd = new Date('2024-12-30') // Use future dates
-      const yearStart = new Date('2025-01-01')
+      let yearEnd = new Date(today.getFullYear(), 11, 30)
+      if (yearEnd <= today) {
+        yearEnd = new Date(today.getFullYear() + 1, 11, 30)
+      }
+      const yearStart = new Date(yearEnd.getFullYear() + 1, 0, 1)
       const result = validateBookingDates(yearEnd.toISOString().split('T')[0], yearStart.toISOString().split('T')[0])
       
       expect(result.isValid).toBe(true)

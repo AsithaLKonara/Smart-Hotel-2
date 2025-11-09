@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/5</span>
+                <span class='fraction'>0/6</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/4</span>
+                <span class='fraction'>0/5</span>
             </div>
         
             
@@ -272,12 +272,16 @@
 <a name='L207'></a><a href='#L207'>207</a>
 <a name='L208'></a><a href='#L208'>208</a>
 <a name='L209'></a><a href='#L209'>209</a>
-<a name='L210'></a><a href='#L210'>210</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<a name='L210'></a><a href='#L210'>210</a>
+<a name='L211'></a><a href='#L211'>211</a>
+<a name='L212'></a><a href='#L212'>212</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -482,11 +486,13 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { Cookie, Settings, Shield, Eye } from <span class="cstat-no" title="statement not covered" >'lucide-react'</span>
-import { hotelData } from <span class="cstat-no" title="statement not covered" >'@/lib/hotel-data'</span>
+import { getHotelContactInfo } from <span class="cstat-no" title="statement not covered" >'@/lib/settings'</span>
 &nbsp;
 export const <span class="cstat-no" title="statement not covered" >dynamic = <span class="cstat-no" title="statement not covered" >'</span>force-dynamic'</span>
 &nbsp;
-export default function <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >CookiePolicyPage() {</span></span>
+export default async function <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >CookiePolicyPage() {</span></span>
+  const contact = <span class="cstat-no" title="statement not covered" >await getHotelContactInfo()</span>
+&nbsp;
   return (
     &lt;div className="min-h-screen bg-gray-50"&gt;
       &lt;div className="max-w-4xl mx-auto px-4 py-16"&gt;
@@ -509,7 +515,7 @@ export default function <span class="cstat-no" title="statement not covered" ><s
               Cookies are small text files that are stored on your device when you visit our website. They help us provide you with a better experience by remembering your preferences and enabling certain website functions.
             &lt;/p&gt;
             &lt;p className="text-gray-700"&gt;
-              {hotelData.hotel.name} uses cookies to enhance your browsing experience, analyze website traffic, and provide personalized content and services.
+              {contact.name} uses cookies to enhance your browsing experience, analyze website traffic, and provide personalized content and services.
             &lt;/p&gt;
           &lt;/section&gt;
 &nbsp;
@@ -679,9 +685,9 @@ export default function <span class="cstat-no" title="statement not covered" ><s
               If you have any questions about our use of cookies or this Cookie Policy, please contact us:
             &lt;/p&gt;
             &lt;div className="bg-gray-50 rounded-lg p-4"&gt;
-              &lt;p className="text-gray-700"&gt;&lt;strong&gt;Email:&lt;/strong&gt; privacy@grandpalacehotel.com&lt;/p&gt;
-              &lt;p className="text-gray-700"&gt;&lt;strong&gt;Phone:&lt;/strong&gt; {hotelData.hotel.contact.phone}&lt;/p&gt;
-              &lt;p className="text-gray-700"&gt;&lt;strong&gt;Address:&lt;/strong&gt; {hotelData.hotel.contact.address}&lt;/p&gt;
+              &lt;p className="text-gray-700"&gt;&lt;strong&gt;Email:&lt;/strong&gt; {contact.email}&lt;/p&gt;
+              &lt;p className="text-gray-700"&gt;&lt;strong&gt;Phone:&lt;/strong&gt; {contact.phone}&lt;/p&gt;
+              &lt;p className="text-gray-700"&gt;&lt;strong&gt;Address:&lt;/strong&gt; {contact.address}&lt;/p&gt;
               &lt;p className="text-gray-700 mt-2"&gt;&lt;strong&gt;Data Protection Officer:&lt;/strong&gt; dpo@grandpalacehotel.com&lt;/p&gt;
             &lt;/div&gt;
           &lt;/section&gt;
@@ -697,7 +703,7 @@ export default function <span class="cstat-no" title="statement not covered" ><s
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-10-29T06:10:44.351Z
+                at 2025-11-08T18:46:00.772Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

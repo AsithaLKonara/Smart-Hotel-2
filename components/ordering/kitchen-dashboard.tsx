@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Clock, CheckCircle, ChefHat, Truck, AlertCircle, Bell, Timer, Users } from "lucide-react"
 import { PremiumButton } from "../ui/premium-button"
@@ -85,19 +85,14 @@ export function KitchenDashboard({ onOrderUpdate }: KitchenDashboardProps) {
     averageTime: 25
   })
 
-  // Fetch real orders from API
-  useEffect(() => {
-    fetchOrders()
-    
-    // Poll for new orders every 10 seconds
-    const interval = setInterval(() => {
-      fetchOrders()
-    }, 10000)
+  const determinePriority = (createdAt: string, totalAmount: number): 'normal' | 'high' | 'urgent' => {
+    const minutesOld = (Date.now() - new Date(createdAt).getTime()) / 1000 / 60
+    if (minutesOld > 30) return 'urgent'
+    if (totalAmount > 50 || minutesOld > 15) return 'high'
+    return 'normal'
+  }
 
-    return () => clearInterval(interval)
-  }, [])
-
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     try {
       const response = await fetch('/api/kitchen/orders?today=true')
       if (response.ok) {
@@ -143,14 +138,19 @@ export function KitchenDashboard({ onOrderUpdate }: KitchenDashboardProps) {
     } catch (error) {
       console.error('Failed to fetch orders:', error)
     }
-  }
+  }, [])
 
-  const determinePriority = (createdAt: string, totalAmount: number): 'normal' | 'high' | 'urgent' => {
-    const minutesOld = (Date.now() - new Date(createdAt).getTime()) / 1000 / 60
-    if (minutesOld > 30) return 'urgent'
-    if (totalAmount > 50 || minutesOld > 15) return 'high'
-    return 'normal'
-  }
+  // Fetch real orders from API
+  useEffect(() => {
+    fetchOrders()
+    
+    // Poll for new orders every 10 seconds
+    const interval = setInterval(() => {
+      fetchOrders()
+    }, 10000)
+
+    return () => clearInterval(interval)
+  }, [fetchOrders])
 
   const filteredOrders = selectedStatus === 'all' 
     ? orders 

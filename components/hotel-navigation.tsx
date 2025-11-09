@@ -1,12 +1,57 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Menu, X, Phone, Mail, MapPin } from 'lucide-react'
-import { hotelData } from '@/lib/hotel-data'
+
+interface NavigationContact {
+  name: string
+  email: string
+  phone: string
+  address: string
+  tagline: string
+}
+
+const defaultContact: NavigationContact = {
+  name: 'SmartHotel Grand Palace',
+  email: 'info@smarthotel.com',
+  phone: '+1 (800) 555-HOTEL',
+  address: '123 Grand Boulevard, City Center, Metropolitan Area, ST 10001',
+  tagline: 'Luxury 5-Star Accommodation',
+}
 
 export default function HotelNavigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [contactInfo, setContactInfo] = useState<NavigationContact>(defaultContact)
+
+  useEffect(() => {
+    let isMounted = true
+
+    async function loadContactInfo() {
+      try {
+        const response = await fetch('/api/settings/contact')
+        if (!response.ok) return
+        const data = await response.json()
+        if (isMounted) {
+          setContactInfo({
+            name: data.name ?? defaultContact.name,
+            email: data.email ?? defaultContact.email,
+            phone: data.phone ?? defaultContact.phone,
+            address: data.address ?? defaultContact.address,
+            tagline: data.tagline ?? defaultContact.tagline,
+          })
+        }
+      } catch (error) {
+        console.error('Failed to load contact info for navigation:', error)
+      }
+    }
+
+    loadContactInfo()
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
 
   const navigation = [
     { name: 'Home', href: '/' },
@@ -17,7 +62,7 @@ export default function HotelNavigation() {
   ]
 
   return (
-    <>
+    <header role="banner" className="bg-white shadow-sm">
       {/* Top Bar */}
       <div className="bg-amber-800 text-white py-2">
         <div className="max-w-7xl mx-auto px-4">
@@ -25,23 +70,23 @@ export default function HotelNavigation() {
             <div className="flex flex-col sm:flex-row items-center gap-4 mb-2 sm:mb-0">
               <div className="flex items-center gap-2">
                 <Phone className="w-4 h-4" />
-                <span>{hotelData.hotel.contact.phone}</span>
+                <span>{contactInfo.phone}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="w-4 h-4" />
-                <span>{hotelData.hotel.contact.email}</span>
+                <span>{contactInfo.email}</span>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <MapPin className="w-4 h-4" />
-              <span>{hotelData.hotel.contact.address}</span>
+              <span>{contactInfo.address}</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* Main Navigation */}
-      <nav className="bg-white shadow-lg sticky top-0 z-50">
+      <nav className="bg-white shadow-lg sticky top-0 z-50" aria-label="Primary navigation">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex justify-between items-center h-20">
             {/* Logo */}
@@ -50,8 +95,8 @@ export default function HotelNavigation() {
                 <span className="text-white font-bold text-xl">GP</span>
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">{hotelData.hotel.name}</h1>
-                <p className="text-sm text-gray-600">{hotelData.hotel.tagline}</p>
+                <h1 className="text-2xl font-bold text-gray-900">{contactInfo.name}</h1>
+                <p className="text-sm text-gray-600">{contactInfo.tagline}</p>
               </div>
             </Link>
 
@@ -80,6 +125,7 @@ export default function HotelNavigation() {
               className="md:hidden p-2 rounded-md text-gray-700 hover:text-amber-600"
               aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
               aria-expanded={isMenuOpen}
+              data-testid="mobile-menu-toggle"
             >
               {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -87,7 +133,7 @@ export default function HotelNavigation() {
 
           {/* Mobile Navigation */}
           {isMenuOpen && (
-            <div className="md:hidden py-4 border-t border-gray-200">
+            <div className="md:hidden py-4 border-t border-gray-200" data-testid="mobile-menu">
               <div className="flex flex-col space-y-4">
                 {navigation.map((item) => (
                   <Link
@@ -101,7 +147,7 @@ export default function HotelNavigation() {
                 ))}
                 <Link
                   href="/booking"
-                  className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-2 rounded-lg font-medium transition-colors text-center"
+                  className="bg-amber-700 hover:bg-amber-800 text-white px-6 py-2 rounded-lg font-medium transition-colors text-center"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Book Now
@@ -111,6 +157,6 @@ export default function HotelNavigation() {
           )}
         </div>
       </nav>
-    </>
+    </header>
   )
 }

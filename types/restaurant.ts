@@ -66,7 +66,7 @@ export type OrderStatus =
 
 export interface CreateOrderRequest {
   roomNumber: string
-  guestId: string
+  guestId?: string
   bookingId?: string
   items: {
     menuId: string

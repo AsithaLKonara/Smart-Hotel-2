@@ -98,7 +98,7 @@ export default function EnhancedHeroSection() {
 
             <div className="flex flex-col sm:flex-row gap-4">
               <Link href={currentSlideData.ctaLink}>
-                <Button size="lg" className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-4 text-lg font-semibold">
+                <Button size="lg" className="bg-amber-700 hover:bg-amber-800 text-white px-8 py-4 text-lg font-semibold">
                   {currentSlideData.cta}
                 </Button>
               </Link>
@@ -140,11 +140,12 @@ export default function EnhancedHeroSection() {
             <div className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="hero-check-in" className="block text-sm font-medium text-gray-700 mb-2">
                     <Calendar className="w-4 h-4 inline mr-2" />
                     Check-in
                   </label>
                   <input
+                    id="hero-check-in"
                     type="date"
                     value={bookingDates.checkIn}
                     onChange={(e) => setBookingDates(prev => ({ ...prev, checkIn: e.target.value }))}
@@ -153,11 +154,12 @@ export default function EnhancedHeroSection() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="hero-check-out" className="block text-sm font-medium text-gray-700 mb-2">
                     <Calendar className="w-4 h-4 inline mr-2" />
                     Check-out
                   </label>
                   <input
+                    id="hero-check-out"
                     type="date"
                     value={bookingDates.checkOut}
                     onChange={(e) => setBookingDates(prev => ({ ...prev, checkOut: e.target.value }))}
@@ -167,11 +169,12 @@ export default function EnhancedHeroSection() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="hero-guests" className="block text-sm font-medium text-gray-700 mb-2">
                   <Users className="w-4 h-4 inline mr-2" />
                   Guests
                 </label>
                 <select
+                  id="hero-guests"
                   value={bookingDates.guests}
                   onChange={(e) => setBookingDates(prev => ({ ...prev, guests: parseInt(e.target.value) }))}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
@@ -186,7 +189,7 @@ export default function EnhancedHeroSection() {
 
               <Button
                 onClick={handleBookingSearch}
-                className="w-full bg-amber-600 hover:bg-amber-700 text-white py-4 text-lg font-semibold"
+                className="w-full bg-amber-700 hover:bg-amber-800 text-white py-4 text-lg font-semibold"
                 disabled={!bookingDates.checkIn || !bookingDates.checkOut}
               >
                 Search Available Rooms

@@ -13,15 +13,17 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  name      String
-  email     String   @unique
-  password  String
-  phone     String?
-  role      UserRole @default(GUEST)
-  hotelId   String?  @db.ObjectId // Added for multi-hotel support
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  name             String
+  email            String   @unique
+  password         String
+  phone            String?
+  role             UserRole @default(GUEST)
+  hotelId          String?  @db.ObjectId // Added for multi-hotel support
+  resetToken       String?  // Password reset token
+  resetTokenExpiry DateTime? // Password reset token expiry
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   // Relations
   bookings  Booking[]
@@ -111,6 +113,11 @@ model Booking {
   invoice Invoice?
   tasks   Task[]
   reviews GuestReview[]
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([userId])
+  @@index([checkIn, checkOut])
 }
 
 model Invoice {
@@ -127,6 +134,9 @@ model Invoice {
 
   // Relations
   booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([createdAt])
 }
 
 model Task {
@@ -149,6 +159,9 @@ model Task {
   user    User    @relation(fields: [createdBy], references: [id], onDelete: Cascade)
   staff   Staff?  @relation(fields: [assignedTo], references: [id])
   booking Booking? @relation(fields: [bookingId], references: [id])
+
+  @@index([status])
+  @@index([dueDate])
 }
 
 model Inventory {
@@ -231,6 +244,10 @@ model FoodOrder {
 
   // Relations
   items      OrderItem[]
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([roomNumber])
 }
 
 model OrderItem {

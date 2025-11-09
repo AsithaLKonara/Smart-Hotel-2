@@ -61,6 +61,9 @@ Visit: **http://localhost:3000** 🎉
 | `SMTP_PORT` | SMTP port | `2525` |
 | `SMTP_USER` | SMTP username | Your Mailtrap username |
 | `SMTP_PASS` | SMTP password | Your Mailtrap password |
+| `SMTP_FROM_EMAIL` | From-address for outbound messages | `noreply@smarthotel.com` |
+| `SMTP_FROM_NAME` | Display name for outbound messages | `SmartHotel` |
+| `ADMIN_EMAIL` | Back-office alerts/contact recipients | `admin@smarthotel.com` |
 
 ## 🔍 Validation
 
@@ -103,6 +106,7 @@ npm run setup:demo      # Setup demo environment
 - **Full Setup Guide**: See `DEMO_SETUP.md`
 - **Testing Plan**: See `deep-testing-plan.plan.md`
 - **API Documentation**: Check `/app/api` routes
+- **Email Templates**: Review `lib/email.ts` for booking/contact/reset layouts
 
 ## 🆘 Troubleshooting
 
@@ -152,6 +156,7 @@ npm run build
 - **Always use test/demo credentials** in development
 - **Never commit** `.env.local` to git (it's ignored)
 - **Rotate secrets** regularly for security
+- **Use `SMTP_FROM_EMAIL/NAME`** to control branding in transactional emails
 - **Use Mailtrap** for email testing (no real emails sent)
 - **Use Stripe test mode** (no real charges)
 
@@ -165,5 +170,14 @@ npm run build
 ---
 
 **Ready to go?** Run `npm run dev` and visit http://localhost:3000! 🚀
+
+## 📧 Email Testing Checklist
+
+- Run `npx tsx -e "import { testEmailConfiguration } from './lib/email'; testEmailConfiguration()"` to verify SMTP credentials.
+- Trigger the contact form (`/contact`) to confirm admin alerts are stored in the database and mailed to `ADMIN_EMAIL`.
+- Booking events (`sendBookingConfirmation`, `sendAdminBookingAlert`) live in `lib/email.ts`; update templates as needed to match your branding.
+
+
+
 
 

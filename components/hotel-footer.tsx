@@ -1,7 +1,10 @@
 import Link from 'next/link'
 import { Phone, Mail, MapPin, Facebook, Twitter, Instagram, Youtube } from 'lucide-react'
+import { getHotelContactInfo } from '@/lib/settings'
 
-export default function HotelFooter() {
+export default async function HotelFooter() {
+  const contact = await getHotelContactInfo()
+
   return (
     <footer className="bg-gray-900 text-white">
       <div className="max-w-7xl mx-auto px-4 py-16">
@@ -13,14 +16,12 @@ export default function HotelFooter() {
                 <span className="text-white font-bold text-xl">GP</span>
               </div>
               <div>
-                <h3 className="text-xl font-bold">Grand Palace</h3>
-                <p className="text-sm text-gray-400">Luxury Hotel</p>
+                <h3 className="text-xl font-bold">{contact.name}</h3>
+                <p className="text-sm text-gray-400">{contact.tagline}</p>
               </div>
             </div>
             <p className="text-gray-400 mb-6">
-              Experience unparalleled luxury at Grand Palace Hotel. 
-              Our 5-star accommodations offer world-class amenities 
-              and exceptional service in the heart of the city.
+              {contact.description}
             </p>
             <div className="flex space-x-4">
               <a href="#" className="text-gray-400 hover:text-white transition-colors" aria-label="Follow us on Facebook">
@@ -91,20 +92,16 @@ export default function HotelFooter() {
               <div className="flex items-start space-x-3">
                 <MapPin className="w-5 h-5 text-amber-500 mt-1" />
                 <div>
-                  <p className="text-gray-400">
-                    123 Luxury Avenue<br />
-                    Downtown District<br />
-                    City, State 12345
-                  </p>
+                  <p className="text-gray-400">{contact.address}</p>
                 </div>
               </div>
               <div className="flex items-center space-x-3">
                 <Phone className="w-5 h-5 text-amber-500" />
-                <p className="text-gray-400">+1 (555) 123-4567</p>
+                <p className="text-gray-400">{contact.phone}</p>
               </div>
               <div className="flex items-center space-x-3">
                 <Mail className="w-5 h-5 text-amber-500" />
-                <p className="text-gray-400">info@grandpalacehotel.com</p>
+                <p className="text-gray-400">{contact.email}</p>
               </div>
             </div>
           </div>
@@ -114,7 +111,7 @@ export default function HotelFooter() {
         <div className="border-t border-gray-800 mt-12 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-400 text-sm">
-              © 2024 Grand Palace Hotel. All rights reserved.
+              © {new Date().getFullYear()} {contact.name}. All rights reserved.
             </p>
             <div className="flex space-x-6 mt-4 md:mt-0">
               <Link href="/privacy" className="text-gray-400 hover:text-white text-sm transition-colors">

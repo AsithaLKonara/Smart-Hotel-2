@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { Bell, X, CheckCircle, AlertCircle, Info, CreditCard, Calendar } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -24,17 +24,8 @@ export default function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
-  useEffect(() => {
-    if (session) {
-      fetchNotifications()
-      // Poll for new notifications every 30 seconds
-      const interval = setInterval(fetchNotifications, 30000)
-      return () => clearInterval(interval)
-    }
-  }, [session])
-
-  const fetchNotifications = async () => {
-    if (!session) return
+  const fetchNotifications = useCallback(async () => {
+    if (!session?.user?.id) return
 
     try {
       const response = await fetch('/api/notifications?limit=10')
@@ -47,7 +38,16 @@ export default function NotificationBell() {
     } catch (error) {
       console.error('Failed to fetch notifications:', error)
     }
-  }
+  }, [session?.user?.id])
+
+  useEffect(() => {
+    if (session?.user?.id) {
+      fetchNotifications()
+      // Poll for new notifications every 30 seconds
+      const interval = setInterval(fetchNotifications, 30000)
+      return () => clearInterval(interval)
+    }
+  }, [session?.user?.id, fetchNotifications])
 
   const markAsRead = async (notificationId: string) => {
     try {

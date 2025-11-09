@@ -1,7 +1,6 @@
 import { Server as NetServer } from 'http'
 import { NextApiResponse } from 'next'
 import { Server as ServerIO } from 'socket.io'
-import { useState, useEffect } from 'react'
 
 export type NextApiResponseServerIO = NextApiResponse & {
   socket: {
@@ -203,35 +202,4 @@ export class SocketEvents {
   }
 }
 
-// Client-side socket hook
-export function useSocket() {
-  const [socket, setSocket] = useState<any>(null)
-  const [isConnected, setIsConnected] = useState(false)
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-
-    const { io } = require('socket.io-client')
-    const socketInstance = io(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000', {
-      transports: ['websocket', 'polling']
-    })
-
-    socketInstance.on('connect', () => {
-      setIsConnected(true)
-      console.log('Connected to server')
-    })
-
-    socketInstance.on('disconnect', () => {
-      setIsConnected(false)
-      console.log('Disconnected from server')
-    })
-
-    setSocket(socketInstance)
-
-    return () => {
-      socketInstance.close()
-    }
-  }, [])
-
-  return { socket, isConnected }
-}
+// Client-side socket hook moved to hooks/use-socket.ts

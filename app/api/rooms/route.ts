@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import prisma from '@/lib/db'
+import { prisma } from '@/lib/db'
 import { z } from 'zod'
+import { RoomStatus } from '@prisma/client'
 
 const roomSchema = z.object({
   number: z.string().min(1, 'Room number is required'),
@@ -23,21 +24,74 @@ export async function GET(request: NextRequest) {
     const minPrice = searchParams.get('minPrice')
     const maxPrice = searchParams.get('maxPrice')
     const available = searchParams.get('available')
+    const status = searchParams.get('status')
 
     const where: any = {}
 
     if (type && type !== 'all') {
-      where.type = type
+      where.type = {
+        equals: type,
+        mode: 'insensitive',
+      }
     }
 
     if (minPrice || maxPrice) {
       where.price = {}
-      if (minPrice) where.price.gte = parseFloat(minPrice)
-      if (maxPrice) where.price.lte = parseFloat(maxPrice)
+      if (minPrice) {
+        const parsedMin = Number(minPrice)
+        if (Number.isNaN(parsedMin)) {
+          return NextResponse.json(
+            { error: 'minPrice must be a valid number' },
+            { status: 400 }
+          )
+        }
+        where.price.gte = parsedMin
+      }
+      if (maxPrice) {
+        const parsedMax = Number(maxPrice)
+        if (Number.isNaN(parsedMax)) {
+          return NextResponse.json(
+            { error: 'maxPrice must be a valid number' },
+            { status: 400 }
+          )
+        }
+        where.price.lte = parsedMax
+      }
+      if (where.price.gte !== undefined && where.price.lte !== undefined && where.price.gte > where.price.lte) {
+        return NextResponse.json(
+          { error: 'minPrice cannot be greater than maxPrice' },
+          { status: 400 }
+        )
+      }
+    }
+
+    if (status) {
+      const allowedStatuses = RoomStatus ? Object.values(RoomStatus) : ['AVAILABLE', 'OCCUPIED', 'MAINTENANCE', 'CLEANING']
+      const normalizedStatus = status.toUpperCase()
+      if (!allowedStatuses.includes(normalizedStatus as RoomStatus)) {
+        return NextResponse.json(
+          { error: 'Invalid status filter' },
+          { status: 400 }
+        )
+      }
+      where.status = normalizedStatus
     }
 
     if (available === 'true') {
-      where.isAvailable = true
+      const rooms = await prisma.room.findMany({
+        include: {
+          bookings: {
+            where: {
+              status: {
+                in: ['CONFIRMED', 'CHECKED_IN']
+              }
+            }
+          }
+        }
+      })
+
+      const availableRooms = rooms.filter(room => !room.bookings || room.bookings.length === 0)
+      return NextResponse.json(availableRooms)
     }
 
     const rooms = await prisma.room.findMany({

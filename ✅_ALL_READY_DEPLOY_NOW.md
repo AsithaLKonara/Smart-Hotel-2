@@ -1,7 +1,36 @@
 # ✅ SmartHotel - ALL READY! Deploy Your Demo Now!
 
-**Date:** October 1, 2025  
-**Final Status:** ✅ **100% COMPLETE - DEPLOY NOW!**
+**Date:** November 8, 2025  
+**Final Status:** ✅ **100% COMPLETE - Deploy Now!**
+
+---
+
+## ✅ Release Checklist – November 8, 2025
+
+1. **Environment**
+   - [ ] Confirm `.env.local` uses the Atlas URL with database name (`.../smarthotel?...`).
+   - [ ] Set `SMTP_FROM_EMAIL`, `SMTP_FROM_NAME`, and `ADMIN_EMAIL` for branded emails.
+   - [ ] Verify `NEXTAUTH_SECRET` is a 32+ char value (regen if blank).
+2. **Database**
+   - [ ] `npx prisma generate`
+   - [ ] `npm run db:seed:demo`
+   - [ ] Spot-check seed counts via `npx prisma studio` (rooms, bookings, invoices, orders).
+3. **Tests**
+   - [ ] Unit: `npx jest tests/unit --runInBand`
+   - [ ] Integration: `npx jest tests/integration/rooms.api.test.ts --runInBand`
+   - [ ] Lint/type: `npm run lint && npm run type-check`
+4. **Smoke Verification**
+   - [ ] Contact form POST → confirm `EmailLog` entry + Mailtrap delivery.
+   - [ ] `npx tsx -e "import { computeDashboardAnalytics } from './lib/analytics/dashboard'; computeDashboardAnalytics().then(r => console.log(r.summary))"`
+   - [ ] Generate analytics export: `curl -H "Cookie: session=..." "http://localhost:3000/api/analytics/export?type=pdf&range=month"` (or use admin UI).
+5. **Monitoring & Alerts**
+   - [ ] Enable Sentry/LogRocket (if configured) and verify DSN env vars.
+   - [ ] Configure uptime ping (Pingdom/Cronitor) against `/api/health` endpoint.
+   - [ ] Set Mailtrap inbox notifications for delivery failures.
+6. **Deployment**
+   - [ ] `git status` clean → `git commit -m "release: smarthotel production build"`
+   - [ ] Push to main → Vercel auto deploy or `vercel --prod`.
+   - [ ] After deploy: run `/api/analytics/dashboard` request in production & check logs for Prisma errors.
 
 ---
 

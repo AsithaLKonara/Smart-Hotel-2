@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { 
   Users, 
@@ -348,13 +348,7 @@ function StaffTaskPanelContent({ onTaskClick, onTaskUpdate, onCreateTask }: Staf
   const [searchQuery, setSearchQuery] = useState('')
   const [isLoading, setIsLoading] = useState(true)
 
-  // Fetch real data from API
-  useEffect(() => {
-    fetchTasks()
-    fetchStaff()
-  }, [selectedType, selectedStatus])
-
-  const fetchTasks = async () => {
+  const fetchTasks = useCallback(async () => {
     try {
       setIsLoading(true)
       const params = new URLSearchParams()
@@ -395,9 +389,9 @@ function StaffTaskPanelContent({ onTaskClick, onTaskUpdate, onCreateTask }: Staf
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [selectedType, selectedStatus])
 
-  const fetchStaff = async () => {
+  const fetchStaff = useCallback(async () => {
     try {
       const response = await fetch('/api/staff')
       if (response.ok) {
@@ -418,7 +412,13 @@ function StaffTaskPanelContent({ onTaskClick, onTaskUpdate, onCreateTask }: Staf
     } catch (error) {
       console.error('Failed to fetch staff:', error)
     }
-  }
+  }, [])
+
+  // Fetch real data from API
+  useEffect(() => {
+    fetchTasks()
+    fetchStaff()
+  }, [fetchTasks, fetchStaff])
 
   // Filter tasks
   const filteredTasks = tasks.filter(task => {

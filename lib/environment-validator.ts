@@ -1,5 +1,29 @@
 import { PrismaClient } from '@prisma/client'
 import nodemailer from 'nodemailer'
+function resolveNodemailer() {
+  const candidate = nodemailer as unknown as {
+    createTransport?: typeof nodemailer.createTransport
+    createTransporter?: typeof nodemailer.createTransport
+    default?: typeof nodemailer
+  }
+
+  if (typeof candidate.createTransport === 'function') {
+    return candidate as typeof nodemailer
+  }
+
+  if (typeof candidate.createTransporter === 'function') {
+    return {
+      ...candidate,
+      createTransport: candidate.createTransporter,
+    } as typeof nodemailer
+  }
+
+  if (candidate.default && typeof candidate.default.createTransport === 'function') {
+    return candidate.default
+  }
+
+  throw new Error('Failed to resolve nodemailer module')
+}
 import Stripe from 'stripe'
 
 // Environment validation utility
@@ -115,7 +139,7 @@ export class EnvironmentValidator {
     // Test SMTP connection
     if (smtpHost && smtpPort && smtpUser && smtpPass) {
       try {
-        const transporter = nodemailer.createTransport({
+        const transporter = resolveNodemailer().createTransport({
           host: smtpHost,
           port: Number(smtpPort),
           secure: false,
@@ -172,7 +196,7 @@ export async function testStripeConnection(): Promise<boolean> {
 // Test email connection
 export async function testEmailConnection(): Promise<boolean> {
   try {
-    const transporter = nodemailer.createTransport({
+    const transporter = resolveNodemailer().createTransport({
       host: process.env.SMTP_HOST,
       port: Number(process.env.SMTP_PORT),
       secure: false,

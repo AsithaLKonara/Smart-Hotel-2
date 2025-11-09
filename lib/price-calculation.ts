@@ -25,14 +25,18 @@ export function calculateBookingPrice(room: Room, booking: Booking): number {
   const checkInDate = new Date(booking.checkIn)
   const checkOutDate = new Date(booking.checkOut)
   
-  if (checkOutDate <= checkInDate) {
+  if (isNaN(checkInDate.getTime()) || isNaN(checkOutDate.getTime())) {
+    throw new Error('Invalid booking dates')
+  }
+
+  if (checkOutDate < checkInDate) {
     throw new Error('Check-out date must be after check-in date')
   }
   
-  const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24))
+  const nights = calculateNights(booking.checkIn, booking.checkOut)
   const basePrice = room.price * nights
   
-  return Math.round(basePrice * 100) / 100 // Round to 2 decimal places
+  return Number(basePrice.toFixed(2))
 }
 
 /**
@@ -42,7 +46,7 @@ export function calculateTotalPrice(basePrice: number, discount: number, tax: nu
   const discountedPrice = basePrice - discount
   const totalPrice = discountedPrice + tax
   
-  return Math.round(totalPrice * 100) / 100 // Round to 2 decimal places
+  return Number(totalPrice.toFixed(2))
 }
 
 /**
@@ -78,11 +82,29 @@ export function calculateNights(checkIn: string, checkOut: string): number {
   const checkInDate = new Date(checkIn)
   const checkOutDate = new Date(checkOut)
   
-  if (checkOutDate <= checkInDate) {
+  if (isNaN(checkInDate.getTime()) || isNaN(checkOutDate.getTime())) {
+    return 0
+  }
+
+  if (checkOutDate < checkInDate) {
     return 0
   }
   
-  return Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24))
+  const MS_PER_DAY = 1000 * 60 * 60 * 24
+  const checkInUTC = Date.UTC(
+    checkInDate.getFullYear(),
+    checkInDate.getMonth(),
+    checkInDate.getDate()
+  )
+  const checkOutUTC = Date.UTC(
+    checkOutDate.getFullYear(),
+    checkOutDate.getMonth(),
+    checkOutDate.getDate()
+  )
+
+  const diffDays = Math.round((checkOutUTC - checkInUTC) / MS_PER_DAY)
+
+  return Math.max(1, diffDays)
 }
 
 /**

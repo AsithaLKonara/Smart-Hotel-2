@@ -1,6 +1,7 @@
 import { NextAuthOptions } from 'next-auth'
 import { PrismaAdapter } from '@next-auth/prisma-adapter'
 import CredentialsProvider from 'next-auth/providers/credentials'
+import GoogleProvider from 'next-auth/providers/google'
 import bcrypt from 'bcryptjs'
 import prisma from './db'
 import { logAction, AUDIT_ACTIONS } from './audit'
@@ -9,6 +10,11 @@ import { UserRole } from '@prisma/client'
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID || '',
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+      allowDangerousEmailAccountLinking: true, // Allow linking accounts with same email
+    }),
     CredentialsProvider({
       name: 'credentials',
       credentials: {
@@ -17,13 +23,16 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials, req) {
         if (!credentials?.email || !credentials?.password) {
+          console.warn('Credentials authorize: missing email or password')
           return null
         }
 
         try {
+          console.info('Credentials authorize: lookup user', credentials.email)
           const user = await prisma.user.findUnique({ 
             where: { email: credentials.email.toLowerCase().trim() } 
           })
+          console.info('Credentials authorize: user found', !!user)
 
           if (!user) {
             // Log failed login attempt
@@ -39,6 +48,7 @@ export const authOptions: NextAuthOptions = {
           }
 
           const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
+          console.info('Credentials authorize: password valid', isPasswordValid)
 
           if (!isPasswordValid) {
             // Log failed login attempt

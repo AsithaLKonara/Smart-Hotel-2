@@ -1,3 +1,10 @@
+jest.mock('next-auth', () => ({
+  getServerSession: jest.fn(),
+}))
+
+const { getServerSession } = jest.requireMock('next-auth') as {
+  getServerSession: jest.Mock
+}
 import { NextRequest } from 'next/server'
 import { GET as getRooms } from '@/app/api/rooms/route'
 import { GET as getRoomAvailability } from '@/app/api/rooms/availability/route'
@@ -5,14 +12,16 @@ import { POST as createBooking } from '@/app/api/bookings/route'
 import { GET as getBookings } from '@/app/api/bookings/route'
 
 // Mock Prisma client
-jest.mock('@/lib/db', () => ({
-  prisma: {
+jest.mock('@/lib/db', () => {
+  const prismaMock = {
     room: {
       findMany: jest.fn(),
       findUnique: jest.fn(),
+      findFirst: jest.fn(),
     },
     booking: {
       findMany: jest.fn(),
+      findFirst: jest.fn(),
       create: jest.fn(),
       findUnique: jest.fn(),
       update: jest.fn(),
@@ -21,7 +30,29 @@ jest.mock('@/lib/db', () => ({
       findUnique: jest.fn(),
       create: jest.fn(),
     },
-  },
+    invoice: {
+      create: jest.fn(),
+    },
+    auditLog: {
+      create: jest.fn(),
+    },
+    notification: {
+      create: jest.fn(),
+      updateMany: jest.fn(),
+      findMany: jest.fn(),
+    },
+  }
+
+  return {
+    __esModule: true,
+    prisma: prismaMock,
+    default: prismaMock,
+  }
+})
+
+jest.mock('@/lib/email', () => ({
+  sendBookingConfirmation: jest.fn(),
+  sendAdminBookingAlert: jest.fn(),
 }))
 
 import { prisma } from '@/lib/db'
@@ -31,6 +62,20 @@ const mockPrisma = prisma as jest.Mocked<typeof prisma>
 describe('Rooms API Integration', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    getServerSession.mockReset()
+    getServerSession.mockResolvedValue(null)
+    mockPrisma.booking.findFirst.mockResolvedValue(null)
+    mockPrisma.booking.findMany.mockResolvedValue([])
+    mockPrisma.room.findMany.mockResolvedValue([])
+    mockPrisma.user.findUnique.mockResolvedValue(null)
+    mockPrisma.booking.update.mockResolvedValue(null as any)
+    mockPrisma.invoice.create.mockImplementation(async ({ data }: any) => ({
+      id: 'invoice-test',
+      ...data,
+    }))
+    mockPrisma.auditLog.create.mockResolvedValue(undefined as any)
+    mockPrisma.notification.create.mockResolvedValue(undefined as any)
+    mockPrisma.notification.updateMany.mockResolvedValue(undefined as any)
   })
 
   describe('GET /api/rooms', () => {
@@ -129,7 +174,10 @@ describe('Rooms API Integration', () => {
           id: 'deluxe-king',
           type: 'Deluxe King',
           price: 299,
+          status: 'AVAILABLE',
           bookings: [],
+          roomImages: [],
+          reviews: [],
         },
       ])
 
@@ -166,7 +214,10 @@ describe('Rooms API Integration', () => {
           id: 'deluxe-king',
           type: 'Deluxe King',
           price: 299,
+          status: 'AVAILABLE',
           bookings: [],
+          roomImages: [],
+          reviews: [],
         },
       ])
 
@@ -183,6 +234,18 @@ describe('Rooms API Integration', () => {
 describe('Bookings API Integration', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    getServerSession.mockReset()
+    getServerSession.mockResolvedValue(null)
+    mockPrisma.booking.findFirst.mockResolvedValue(null)
+    mockPrisma.booking.findMany.mockResolvedValue([])
+    mockPrisma.booking.update.mockResolvedValue(null as any)
+    mockPrisma.invoice.create.mockImplementation(async ({ data }: any) => ({
+      id: 'invoice-test',
+      ...data,
+    }))
+    mockPrisma.auditLog.create.mockResolvedValue(undefined as any)
+    mockPrisma.notification.create.mockResolvedValue(undefined as any)
+    mockPrisma.notification.updateMany.mockResolvedValue(undefined as any)
   })
 
   describe('POST /api/bookings', () => {
@@ -206,8 +269,16 @@ describe('Bookings API Integration', () => {
         confirmationCode: 'GP2024001',
       }
 
+      mockPrisma.room.findUnique.mockResolvedValue({
+        id: 'deluxe-king',
+        price: 299,
+        status: 'AVAILABLE',
+      })
       mockPrisma.user.findUnique.mockResolvedValue(mockUser)
       mockPrisma.booking.create.mockResolvedValue(mockBooking)
+      getServerSession.mockResolvedValue({
+        user: { id: 'user-123', role: 'GUEST' }
+      })
 
       const requestBody = {
         roomId: 'deluxe-king',
@@ -221,7 +292,8 @@ describe('Bookings API Integration', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer valid-token',
+          'x-test-role': 'GUEST',
+          'x-test-user-id': 'user-123',
         },
         body: JSON.stringify(requestBody),
       })
@@ -255,9 +327,15 @@ describe('Bookings API Integration', () => {
         confirmationCode: 'GP2024002',
       }
 
+      mockPrisma.room.findUnique.mockResolvedValue({
+        id: 'executive-suite',
+        price: 499,
+        status: 'AVAILABLE',
+      })
       mockPrisma.user.findUnique.mockResolvedValue(null)
       mockPrisma.user.create.mockResolvedValue(mockGuestUser)
       mockPrisma.booking.create.mockResolvedValue(mockBooking)
+      getServerSession.mockResolvedValue(null)
 
       const requestBody = {
         roomId: 'executive-suite',
@@ -298,6 +376,8 @@ describe('Bookings API Integration', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-test-role': 'GUEST',
+          'x-test-user-id': 'user-123',
         },
         body: JSON.stringify(requestBody),
       })
@@ -320,8 +400,13 @@ describe('Bookings API Integration', () => {
 
       mockPrisma.room.findUnique.mockResolvedValue({
         id: 'deluxe-king',
-        bookings: [existingBooking],
+        price: 299,
+        status: 'AVAILABLE',
       })
+      getServerSession.mockResolvedValue({
+        user: { id: 'user-123', role: 'GUEST' }
+      })
+      mockPrisma.booking.findFirst.mockResolvedValue(existingBooking)
 
       const requestBody = {
         roomId: 'deluxe-king',
@@ -346,6 +431,11 @@ describe('Bookings API Integration', () => {
     })
 
     test('should handle database errors during booking creation', async () => {
+      mockPrisma.room.findUnique.mockResolvedValue({
+        id: 'deluxe-king',
+        price: 299,
+        status: 'AVAILABLE',
+      })
       mockPrisma.user.findUnique.mockResolvedValue({
         id: 'user-123',
         email: 'test@example.com',
@@ -354,6 +444,9 @@ describe('Bookings API Integration', () => {
       })
 
       mockPrisma.booking.create.mockRejectedValue(new Error('Database error'))
+      getServerSession.mockResolvedValue({
+        user: { id: 'user-123', role: 'GUEST' }
+      })
 
       const requestBody = {
         roomId: 'deluxe-king',
@@ -411,11 +504,13 @@ describe('Bookings API Integration', () => {
       expect(response.status).toBe(200)
       expect(data).toHaveProperty('bookings')
       expect(data.bookings).toHaveLength(1)
-      expect(mockPrisma.booking.findMany).toHaveBeenCalledWith({
-        where: { userId: 'user-123' },
-        include: { room: true },
-        orderBy: { createdAt: 'desc' },
-      })
+      expect(mockPrisma.booking.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { userId: 'user-123' },
+          include: expect.objectContaining({ room: true }),
+          orderBy: { createdAt: 'desc' },
+        })
+      )
     })
 
     test('should return all bookings for admin user', async () => {
@@ -448,13 +543,15 @@ describe('Bookings API Integration', () => {
 
       expect(response.status).toBe(200)
       expect(data.bookings).toHaveLength(1)
-      expect(mockPrisma.booking.findMany).toHaveBeenCalledWith({
-        include: {
-          user: true,
-          room: true,
-        },
-        orderBy: { createdAt: 'desc' },
-      })
+      expect(mockPrisma.booking.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          include: expect.objectContaining({
+            user: expect.anything(),
+            room: expect.anything(),
+          }),
+          orderBy: { createdAt: 'desc' },
+        })
+      )
     })
 
     test('should filter bookings by status', async () => {

@@ -134,7 +134,7 @@ SOCKET_IO_URL=http://localhost:3000
 
 ```env
 # Database
-DATABASE_URL=mongodb+srv://username:password@cluster.mongodb.net/smarthotel?retryWrites=true&w=majority
+DATABASE_URL=mongodb+srv://username:password@cluster.mongodb.net/smarthotel?retryWrites=true&w=majority&appName=Cluster0
 
 # NextAuth
 NEXTAUTH_URL=http://localhost:3000
@@ -160,6 +160,25 @@ SOCKET_IO_URL=http://localhost:3000
 NODE_ENV=development
 ```
 
+## Seed & Verify Demo Data
+
+Once your `.env.local` is configured, regenerate the Prisma client and load the comprehensive demo dataset:
+
+```bash
+npx prisma generate
+npm run db:seed:demo
+```
+
+The seed script will rebuild the SmartHotel dataset (users, rooms, bookings, invoices, tasks, menu items, reviews, etc.) from scratch. All records are recreated on each run, so you can reseed safely when you need a clean slate.
+
+After seeding you can spot-check the data either via Prisma Studio or a quick script:
+
+```bash
+npx prisma studio
+# or
+npx tsx -e "import prisma from './lib/db'; prisma.booking.count().then(c => console.log('Bookings:', c)).finally(() => prisma.$disconnect())"
+```
+
 ## Verification
 
 After setting up, verify your configuration:
@@ -169,7 +188,7 @@ After setting up, verify your configuration:
 npm run type-check
 
 # Test database connection
-node -e "const { PrismaClient } = require('@prisma/client'); const p = new PrismaClient(); p.\$connect().then(() => console.log('✅ Database connected')).catch(e => console.error('❌ Database error:', e.message))"
+node -e "const { PrismaClient } = require('@prisma/client'); const p = new PrismaClient(); p.$connect().then(() => console.log('✅ Database connected')).catch(e => console.error('❌ Database error:', e.message))"
 
 # Run the app
 npm run dev
@@ -217,5 +236,8 @@ For issues:
 - Check the main README.md
 - Review error messages in console
 - Verify all environment variables are set correctly
+
+
+
 
 

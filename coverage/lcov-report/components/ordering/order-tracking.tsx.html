@@ -551,18 +551,6 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -608,6 +596,18 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -869,7 +869,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">"use client"
 &nbsp;
-import { useState, useEffect } from <span class="cstat-no" title="statement not covered" >"react"</span>
+import { useState, useEffect, useCallback } from <span class="cstat-no" title="statement not covered" >"react"</span>
 import { motion, AnimatePresence } from <span class="cstat-no" title="statement not covered" >"framer-motion"</span>
 import { Clock, CheckCircle, ChefHat, Truck, Bell, MapPin, Phone } from <span class="cstat-no" title="statement not covered" >"lucide-react"</span>
 import { PremiumButton } from <span class="cstat-no" title="statement not covered" >"../ui/premium-button"</span>
@@ -953,19 +953,7 @@ export function <span class="cstat-no" title="statement not covered" ><span clas
   const [loading, setLoading] = <span class="cstat-no" title="statement not covered" >useState(true)</span>
   const [notifications, setNotifications] = <span class="cstat-no" title="statement not covered" >useState&lt;string[]&gt;([])</span>
 &nbsp;
-  // Fetch real order data from API
-<span class="cstat-no" title="statement not covered" >  useEffect(<span class="fstat-no" title="function not covered" >() =&gt; {</span></span>
-<span class="cstat-no" title="statement not covered" >    fetchOrderStatus()</span>
-    
-    // Poll for updates every 5 seconds
-    const interval = <span class="cstat-no" title="statement not covered" >setInterval(<span class="fstat-no" title="function not covered" >() =&gt; {</span></span>
-<span class="cstat-no" title="statement not covered" >      fetchOrderStatus()</span>
-    }, 5000)
-&nbsp;
-<span class="cstat-no" title="statement not covered" >    return <span class="fstat-no" title="function not covered" >() =&gt; <span class="cstat-no" title="statement not covered" >c</span>learInterval(interval)</span></span>
-  }, [orderId])
-&nbsp;
-  const fetchOrderStatus = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >async () =&gt; {</span></span>
+  const fetchOrderStatus = <span class="cstat-no" title="statement not covered" >useCallback(<span class="fstat-no" title="function not covered" >async () =&gt; {</span></span>
 <span class="cstat-no" title="statement not covered" >    try {</span>
       const response = <span class="cstat-no" title="statement not covered" >await fetch(`/api/restaurant/orders/${orderId}`)</span>
 <span class="cstat-no" title="statement not covered" >      <span class="missing-if-branch" title="if path not taken" >I</span>if (response.ok) {</span>
@@ -1010,7 +998,19 @@ export function <span class="cstat-no" title="statement not covered" ><span clas
     } finally {
 <span class="cstat-no" title="statement not covered" >      setLoading(false)</span>
     }
-  }
+  }, [orderId, order, onOrderComplete])
+&nbsp;
+  // Fetch real order data from API
+<span class="cstat-no" title="statement not covered" >  useEffect(<span class="fstat-no" title="function not covered" >() =&gt; {</span></span>
+<span class="cstat-no" title="statement not covered" >    fetchOrderStatus()</span>
+    
+    // Poll for updates every 5 seconds
+    const interval = <span class="cstat-no" title="statement not covered" >setInterval(<span class="fstat-no" title="function not covered" >() =&gt; {</span></span>
+<span class="cstat-no" title="statement not covered" >      fetchOrderStatus()</span>
+    }, 5000)
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    return <span class="fstat-no" title="function not covered" >() =&gt; <span class="cstat-no" title="statement not covered" >c</span>learInterval(interval)</span></span>
+  }, [fetchOrderStatus])
 &nbsp;
 <span class="cstat-no" title="statement not covered" >  <span class="missing-if-branch" title="if path not taken" >I</span>if (loading) {</span>
     return (
@@ -1276,7 +1276,7 @@ export function <span class="cstat-no" title="statement not covered" ><span clas
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-10-29T06:10:44.351Z
+                at 2025-11-08T18:46:00.772Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

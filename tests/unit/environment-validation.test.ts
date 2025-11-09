@@ -184,7 +184,7 @@ describe('Environment Validation', () => {
       }
 
       jest.doMock('nodemailer', () => ({
-        createTransporter: jest.fn(() => mockTransporter),
+        createTransport: jest.fn(() => mockTransporter),
       }))
 
       const result = await testEmailConnection()

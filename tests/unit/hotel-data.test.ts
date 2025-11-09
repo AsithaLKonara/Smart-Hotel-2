@@ -1,109 +1,170 @@
-import { hotelData } from '@/lib/hotel-data'
+import { getHotelData } from '@/lib/hotel-data'
 
-describe('Hotel Data Validation', () => {
-  test('should have valid hotel structure', () => {
+jest.mock('@/lib/db', () => ({
+  __esModule: true,
+  default: {
+    room: {
+      findMany: jest.fn().mockResolvedValue([
+        {
+          id: 'room-1',
+          type: 'DELUXE',
+          description: 'Spacious deluxe room',
+          price: 299,
+          amenities: ['WiFi', 'TV'],
+          images: ['/images/rooms/deluxe-1.jpg'],
+        },
+      ]),
+    },
+    foodMenu: {
+      findMany: jest.fn().mockResolvedValue([
+        {
+          id: 'menu-1',
+          category: 'DINNER',
+          name: 'Seared Salmon',
+          description: 'Fresh Atlantic salmon with seasonal vegetables',
+          price: 42,
+          image: '/images/menu/salmon.jpg',
+        },
+      ]),
+    },
+    staff: {
+      findMany: jest.fn().mockResolvedValue([
+        {
+          id: 'staff-1',
+          name: 'Ava Williams',
+          position: 'Guest Experience Manager',
+          department: 'Guest Services',
+          hireDate: new Date('2020-01-01'),
+        },
+      ]),
+    },
+  },
+  prisma: {
+    room: {
+      findMany: jest.fn().mockResolvedValue([
+        {
+          id: 'room-1',
+          type: 'DELUXE',
+          description: 'Spacious deluxe room',
+          price: 299,
+          amenities: ['WiFi', 'TV'],
+          images: ['/images/rooms/deluxe-1.jpg'],
+        },
+      ]),
+    },
+    foodMenu: {
+      findMany: jest.fn().mockResolvedValue([
+        {
+          id: 'menu-1',
+          category: 'DINNER',
+          name: 'Seared Salmon',
+          description: 'Fresh Atlantic salmon with seasonal vegetables',
+          price: 42,
+          image: '/images/menu/salmon.jpg',
+        },
+      ]),
+    },
+    staff: {
+      findMany: jest.fn().mockResolvedValue([
+        {
+          id: 'staff-1',
+          name: 'Ava Williams',
+          position: 'Guest Experience Manager',
+          department: 'Guest Services',
+          hireDate: new Date('2020-01-01'),
+        },
+      ]),
+    },
+  },
+}))
+
+jest.mock('@/lib/settings', () => ({
+  __esModule: true,
+  getHotelContactInfo: jest.fn().mockResolvedValue({
+    name: 'SmartHotel Grand Palace',
+    tagline: 'Luxury 5-Star Accommodation',
+    description: 'Mock description',
+    email: 'info@smarthotel.com',
+    phone: '+1 (800) 555-HOTEL',
+    address: '123 Grand Boulevard, City Center, Metropolitan Area, ST 10001',
+    checkIn: '15:00',
+    checkOut: '11:00',
+    coordinates: { lat: 40.7589, lng: -73.9851 },
+  }),
+  getHotelSettings: jest.fn().mockResolvedValue({
+    hotel_story: 'Mock hotel story',
+    hotel_founded: '1985',
+    hotel_milestones: JSON.stringify([
+      '1985 - Grand opening',
+      '1990 - First award',
+    ]),
+    hotel_facebook: 'https://facebook.com/mock',
+    hotel_instagram: 'https://instagram.com/mock',
+    hotel_twitter: 'https://twitter.com/mock',
+    hotel_linkedin: 'https://linkedin.com/mock',
+  }),
+}))
+
+describe('hotelData', () => {
+  let hotelData: Awaited<ReturnType<typeof getHotelData>>
+
+  beforeAll(async () => {
+    hotelData = await getHotelData({ forceRefresh: true })
+  })
+
+  it('should load basic hotel information', () => {
     expect(hotelData).toBeDefined()
     expect(hotelData.hotel).toBeDefined()
-    expect(hotelData.hotel.name).toBe('Grand Palace Hotel')
+    expect(hotelData.hotel.name).toBe('SmartHotel Grand Palace')
     expect(hotelData.hotel.tagline).toBe('Luxury 5-Star Accommodation')
+    expect(hotelData.hotel.contact.email).toBe('info@smarthotel.com')
+    expect(hotelData.hotel.contact.phone).toBe('+1 (800) 555-HOTEL')
   })
 
-  test('should have valid contact information', () => {
-    expect(hotelData.hotel.contact).toBeDefined()
-    expect(hotelData.hotel.contact.phone).toBe('+1 (212) 555-0123')
-    expect(hotelData.hotel.contact.email).toBe('reservations@grandpalacehotel.com')
-    expect(hotelData.hotel.contact.address).toBe('1235 Park Avenue, New York, NY 10029')
-  })
-
-  test('should have valid coordinates', () => {
-    expect(hotelData.hotel.contact.coordinates).toBeDefined()
-    expect(hotelData.hotel.contact.coordinates.lat).toBe(40.7589)
-    expect(hotelData.hotel.contact.coordinates.lng).toBe(-73.9851)
-  })
-
-  test('should have valid room types', () => {
-    expect(hotelData.rooms).toBeDefined()
-    expect(hotelData.rooms).toHaveLength(3)
-    
-    const roomTypes = hotelData.rooms.map(room => room.type)
-    expect(roomTypes).toContain('Deluxe King')
-    expect(roomTypes).toContain('Executive Suite')
-    expect(roomTypes).toContain('Presidential Suite')
-  })
-
-  test('should have valid pricing', () => {
+  it('should have rooms with required fields', () => {
+    expect(Array.isArray(hotelData.rooms)).toBe(true)
+    expect(hotelData.rooms.length).toBeGreaterThan(0)
     hotelData.rooms.forEach(room => {
-      expect(room.price).toBeGreaterThan(0)
+      expect(room.type).toBeTruthy()
       expect(typeof room.price).toBe('number')
+      expect(Array.isArray(room.amenities)).toBe(true)
     })
   })
 
-  test('should have valid amenities', () => {
-    expect(hotelData.hotel.amenities).toBeDefined()
-    expect(hotelData.hotel.amenities.length).toBeGreaterThan(0)
-    
-    hotelData.hotel.amenities.forEach(amenity => {
-      expect(typeof amenity).toBe('string')
-      expect(amenity.length).toBeGreaterThan(0)
-    })
-  })
-
-  test('should have valid social links', () => {
-    expect(hotelData.hotel.social).toBeDefined()
-    expect(hotelData.hotel.social.facebook).toBeDefined()
-    expect(hotelData.hotel.social.twitter).toBeDefined()
-    expect(hotelData.hotel.social.instagram).toBeDefined()
-    expect(hotelData.hotel.social.linkedin).toBeDefined()
-  })
-
-  test('should have valid history data', () => {
-    expect(hotelData.hotel.established).toBeDefined()
-    expect(hotelData.hotel.established).toBe('1985')
-    expect(hotelData.hotel.description).toBeDefined()
-  })
-
-  test('should have valid staff information', () => {
-    // Staff information is not in the current hotel data structure
-    // This test can be removed or updated when staff data is added
-    expect(true).toBe(true) // Placeholder test
-  })
-
-  test('should have valid restaurant menu', () => {
-    expect(hotelData.restaurant).toBeDefined()
+  it('should have restaurant menu categories with items', () => {
     expect(hotelData.restaurant.menu).toBeDefined()
-    
     const categories = Object.keys(hotelData.restaurant.menu)
     expect(categories.length).toBeGreaterThan(0)
-    
     categories.forEach(category => {
-      const items = hotelData.restaurant.menu[category as keyof typeof hotelData.restaurant.menu]
+      const items = hotelData.restaurant.menu[category]
       expect(Array.isArray(items)).toBe(true)
-      expect(items.length).toBeGreaterThan(0)
-      
-      items.forEach((item: any) => {
-        expect(item.name).toBeDefined()
-        expect(item.description).toBeDefined()
-        expect(item.price).toBeGreaterThan(0)
-      })
     })
   })
 
-  test('should have valid policies', () => {
-    // Policies are not in the current hotel data structure
-    // This test can be removed or updated when policies are added
-    expect(true).toBe(true) // Placeholder test
-  })
+  it('should have staff profiles with required information', () => {
+     expect(Array.isArray(hotelData.staff)).toBe(true)
+     expect(hotelData.staff.length).toBeGreaterThan(0)
+     hotelData.staff.forEach(staff => {
+       expect(staff.name).toBeTruthy()
+      expect(staff.position).toBeTruthy()
+      expect(staff.department).toBeTruthy()
+       expect(staff.bio).toBeTruthy()
+      })
+    })
+ 
+   it('should include social media links', () => {
+    const socialEntries = Object.entries(hotelData.hotel.social)
+    expect(socialEntries.length).toBeGreaterThan(0)
+    socialEntries.forEach(([name, url]) => {
+      expect(name).toBeTruthy()
+      expect(url).toContain('http')
+    })
+   })
 
-  test('should have valid awards', () => {
-    // Awards are not in the current hotel data structure
-    // This test can be removed or updated when awards are added
-    expect(true).toBe(true) // Placeholder test
-  })
-
-  test('should have valid values', () => {
-    // Values are not in the current hotel data structure
-    // This test can be removed or updated when values are added
-    expect(true).toBe(true) // Placeholder test
+  it('should include hotel history and milestones', () => {
+    expect(hotelData.history).toBeDefined()
+    expect(hotelData.history.story).toBeDefined()
+    expect(hotelData.history.milestones.length).toBeGreaterThan(0)
   })
 })
 

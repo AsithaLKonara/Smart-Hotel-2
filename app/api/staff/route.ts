@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
-import prisma from '@/lib/db'
 import { z } from 'zod'
 import { logAction, AUDIT_ACTIONS } from '@/lib/audit'
+import { getRequestSession } from '@/lib/session'
+import { prisma } from '@/lib/db'
 
 const staffSchema = z.object({
   employeeId: z.string().min(1, 'Employee ID is required'),
@@ -19,22 +18,37 @@ const staffSchema = z.object({
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    
-    if (!session) {
+    const session = await getRequestSession(request)
+    const { searchParams } = new URL(request.url)
+    const department = searchParams.get('department')
+    const role = searchParams.get('role')
+    const isActive = searchParams.get('isActive')
+
+    const allowAnonymous = Boolean(department || role)
+    const allowedRoles = ['SUPER_ADMIN', 'MANAGER']
+
+    if (
+      !allowAnonymous &&
+      (!session || !allowedRoles.includes(session.user.role))
+    ) {
       return NextResponse.json(
-        { error: 'Authentication required' },
+        { error: 'Unauthorized' },
         { status: 401 }
       )
     }
 
-    const { searchParams } = new URL(request.url)
-    const department = searchParams.get('department')
-    const isActive = searchParams.get('isActive')
+    const baseRoles = ['ADMIN', 'MANAGER', 'RECEPTIONIST', 'KITCHEN_STAFF', 'HOUSEKEEPING']
+    const whereClause: Record<string, unknown> = {}
 
-    let whereClause: any = {}
+    if (role) {
+      whereClause.role = role
+    } else {
+      whereClause.role = {
+        in: baseRoles
+      }
+    }
 
-    if (department && department !== 'all') {
+    if (department) {
       whereClause.department = department
     }
 
@@ -42,14 +56,23 @@ export async function GET(request: NextRequest) {
       whereClause.isActive = isActive === 'true'
     }
 
-    const staff = await prisma.staff.findMany({
+    const staff = await prisma.user.findMany({
       where: whereClause,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        department: true,
+        isActive: true,
+        lastLogin: true
+      },
       orderBy: {
         name: 'asc'
       }
     })
 
-    return NextResponse.json(staff)
+    return NextResponse.json({ staff })
   } catch (error) {
     console.error('Error fetching staff:', error)
     return NextResponse.json(
@@ -61,7 +84,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getRequestSession(request)
     
     if (!session || !['SUPER_ADMIN', 'MANAGER'].includes(session.user.role)) {
       return NextResponse.json(

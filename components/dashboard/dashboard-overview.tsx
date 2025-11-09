@@ -184,51 +184,58 @@ function DashboardOverviewContent({ onNavigate }: DashboardOverviewProps) {
       setIsLoading(true)
       const response = await fetch('/api/analytics/dashboard')
       
-      if (response.ok) {
+      if (!response.ok) {
+        throw new Error('Failed to load dashboard metrics')
+      }
+
         const data = await response.json()
+      const summary = data.summary ?? {}
+      const recent = data.recentActivity ?? {}
+
+      const bookingGrowthRate = summary.bookingGrowthRate ?? 0
+      const revenueGrowthRate = summary.revenueGrowthRate ?? 0
         
-        // Transform API data to component format
         const transformedMetrics: DashboardMetrics = {
           occupancy: {
-            current: Math.round(data.summary.occupancyRate),
+          current: Math.round(summary.occupancyRate ?? 0),
             total: 100,
-            percentage: Math.round(data.summary.occupancyRate),
-            trend: data.summary.bookingGrowthRate > 0 ? 'up' : data.summary.bookingGrowthRate < 0 ? 'down' : 'stable',
-            change: Math.abs(data.summary.bookingGrowthRate)
+          percentage: Math.round(summary.averageOccupancyRate ?? summary.occupancyRate ?? 0),
+          trend: bookingGrowthRate > 0 ? 'up' : bookingGrowthRate < 0 ? 'down' : 'stable',
+          change: Math.abs(bookingGrowthRate)
           },
           revenue: {
-            today: data.summary.todayRevenue || 0,
-            thisMonth: data.summary.monthlyRevenue || 0,
-            lastMonth: data.summary.monthlyRevenue || 0,
-            trend: data.summary.bookingGrowthRate > 0 ? 'up' : 'down',
-            change: Math.abs(data.summary.bookingGrowthRate)
+          today: summary.todayRevenue ?? 0,
+          thisMonth: summary.monthlyRevenue ?? 0,
+          lastMonth: summary.monthlyRevenue ?? 0,
+          trend: revenueGrowthRate > 0 ? 'up' : revenueGrowthRate < 0 ? 'down' : 'stable',
+          change: Math.abs(revenueGrowthRate)
           },
           bookings: {
-            today: data.summary.todayBookings || 0,
-            thisWeek: data.summary.monthlyBookings || 0,
-            pending: data.recentActivity?.bookings?.filter((b: any) => b.status === 'PENDING').length || 0,
-            confirmed: data.recentActivity?.bookings?.filter((b: any) => b.status === 'CONFIRMED').length || 0,
-            trend: data.summary.bookingGrowthRate > 0 ? 'up' : 'down',
-            change: Math.abs(data.summary.bookingGrowthRate)
+          today: summary.todayBookings ?? 0,
+          thisWeek: summary.monthlyBookings ?? 0,
+          pending: (recent.bookings || []).filter((b: any) => b.status === 'PENDING').length,
+          confirmed: (recent.bookings || []).filter((b: any) => b.status === 'CONFIRMED').length,
+          trend: bookingGrowthRate > 0 ? 'up' : bookingGrowthRate < 0 ? 'down' : 'stable',
+          change: Math.abs(bookingGrowthRate)
           },
           restaurant: {
-            ordersToday: 0,
-            revenueToday: 0,
-            averageOrderValue: 0,
-            popularItem: 'N/A',
-            trend: 'stable',
-            change: 0
+          ordersToday: summary.restaurantOrdersToday ?? 0,
+          revenueToday: summary.restaurantRevenueToday ?? 0,
+          averageOrderValue: summary.averageOrderValueToday ?? 0,
+          popularItem: (recent.orders && recent.orders[0]?.items?.[0]?.name) || 'Signature Dish',
+          trend: (summary.restaurantOrdersToday ?? 0) >= 0 ? 'up' : 'stable',
+          change: summary.restaurantOrdersToday ?? 0
           },
           tasks: {
-            total: 0,
-            completed: 0,
-            pending: 0,
-            overdue: 0,
-            completionRate: 0
+          total: summary.taskStats?.total ?? 0,
+          completed: summary.taskStats?.completed ?? 0,
+          pending: summary.taskStats?.pending ?? 0,
+          overdue: summary.taskStats?.overdue ?? 0,
+          completionRate: summary.taskStats?.completionRate ?? 0
           },
           guestSatisfaction: {
-            rating: 4.5,
-            reviews: 0,
+          rating: summary.guestSatisfaction?.rating ?? 4.5,
+          reviews: summary.guestSatisfaction?.reviews ?? 0,
             trend: 'stable',
             change: 0
           }
@@ -236,19 +243,40 @@ function DashboardOverviewContent({ onNavigate }: DashboardOverviewProps) {
         
         setMetrics(transformedMetrics)
         
-        // Transform recent bookings to activity
-        const recentBookingsActivity: RecentActivity[] = (data.recentActivity?.bookings || []).slice(0, 5).map((booking: any, index: number) => ({
+      const bookingActivities: RecentActivity[] = (recent.bookings || []).map((booking: any) => ({
           id: booking.id,
-          type: 'booking' as const,
+        type: 'booking',
           title: 'New Booking',
           description: `Room ${booking.roomNumber} - ${booking.guestName}`,
           timestamp: new Date(booking.createdAt),
-          status: 'success' as const,
+        status: booking.status === 'CANCELLED' ? 'error' : 'success',
           amount: booking.totalAmount
         }))
         
-        setRecentActivity(recentBookingsActivity)
-      }
+      const orderActivities: RecentActivity[] = (recent.orders || []).map((order: any) => ({
+        id: order.id,
+        type: 'order',
+        title: 'Restaurant Order',
+        description: `Room ${order.roomNumber} • ${order.items?.length ?? 0} items`,
+        timestamp: new Date(order.createdAt),
+        status: order.status === 'DELIVERED' ? 'success' : 'info',
+        amount: order.totalAmount
+      }))
+
+      const taskActivities: RecentActivity[] = (recent.tasks || []).map((task: any) => ({
+        id: task.id,
+        type: 'task',
+        title: task.title,
+        description: `${task.assignedTo ? `Assigned to ${task.assignedTo}` : 'Unassigned'} • ${task.priority.toLowerCase()} priority`,
+        timestamp: new Date(task.createdAt),
+        status: task.status === 'OVERDUE' ? 'error' : task.status === 'COMPLETED' ? 'success' : 'info'
+      }))
+
+      const combinedActivity = [...bookingActivities, ...orderActivities, ...taskActivities]
+        .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+        .slice(0, 10)
+
+      setRecentActivity(combinedActivity)
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error)
     } finally {

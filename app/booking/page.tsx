@@ -196,18 +196,18 @@ function BookingPageContent() {
             ].map(({ step: stepNumber, title, icon: Icon }) => (
               <div key={stepNumber} className="flex items-center">
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                  step >= stepNumber ? 'bg-amber-600 text-white' : 'bg-gray-200 text-gray-600'
+                  step >= stepNumber ? 'bg-amber-700 text-white' : 'bg-gray-200 text-gray-600'
                 }`}>
                   <Icon className="w-5 h-5" />
                 </div>
                 <span className={`ml-2 font-medium ${
-                  step >= stepNumber ? 'text-amber-600' : 'text-gray-600'
+                  step >= stepNumber ? 'text-amber-800' : 'text-gray-600'
                 }`}>
                   {title}
                 </span>
                 {stepNumber < 4 && (
                   <div className={`w-16 h-0.5 mx-4 ${
-                    step > stepNumber ? 'bg-amber-600' : 'bg-gray-200'
+                    step > stepNumber ? 'bg-amber-700' : 'bg-gray-200'
                   }`} />
                 )}
               </div>
@@ -221,10 +221,11 @@ function BookingPageContent() {
             <h2 className="text-xl font-semibold mb-6">Search Available Rooms</h2>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="check-in-date" className="block text-sm font-medium text-gray-700 mb-2">
                   Check-in Date
                 </label>
                 <input
+                  id="check-in-date"
                   type="date"
                   value={searchData.checkIn}
                   onChange={(e) => setSearchData(prev => ({ ...prev, checkIn: e.target.value }))}
@@ -233,10 +234,11 @@ function BookingPageContent() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="check-out-date" className="block text-sm font-medium text-gray-700 mb-2">
                   Check-out Date
                 </label>
                 <input
+                  id="check-out-date"
                   type="date"
                   value={searchData.checkOut}
                   onChange={(e) => setSearchData(prev => ({ ...prev, checkOut: e.target.value }))}
@@ -245,10 +247,11 @@ function BookingPageContent() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="guests-count" className="block text-sm font-medium text-gray-700 mb-2">
                   Guests
                 </label>
                 <select
+                  id="guests-count"
                   value={searchData.guests}
                   onChange={(e) => setSearchData(prev => ({ ...prev, guests: parseInt(e.target.value) }))}
                   className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-amber-500"
@@ -259,10 +262,11 @@ function BookingPageContent() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="room-type" className="block text-sm font-medium text-gray-700 mb-2">
                   Room Type
                 </label>
                 <select
+                  id="room-type"
                   value={searchData.roomType}
                   onChange={(e) => setSearchData(prev => ({ ...prev, roomType: e.target.value }))}
                   className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-amber-500"
@@ -314,7 +318,7 @@ function BookingPageContent() {
                         </Badge>
                       </div>
                       <div className="text-right">
-                        <div className="text-2xl font-bold text-amber-600">
+                        <div className="text-2xl font-bold text-amber-800">
                           ${room.totalPrice}
                         </div>
                         <div className="text-sm text-gray-500">

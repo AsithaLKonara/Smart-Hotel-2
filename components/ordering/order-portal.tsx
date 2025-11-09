@@ -144,20 +144,25 @@ export function OrderPortal({ roomNumber = "101", guestInfo }: OrderPortalProps)
             <h1 className="text-3xl font-bold text-gray-900 mb-6">Restaurant Menu</h1>
             
             {/* Category Filter */}
-            <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-              {categories.map(category => (
+            <div className="flex gap-2 mb-6 overflow-x-auto pb-2" role="group" aria-label="Menu category filters">
+              {categories.map(category => {
+                const isSelected = selectedCategory === category
+                return (
                 <button
                   key={category}
+                    type="button"
                   onClick={() => setSelectedCategory(category)}
-                  className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap ${
-                    selectedCategory === category
-                      ? 'bg-amber-600 text-white'
-                      : 'bg-white text-gray-700 hover:bg-gray-100'
+                    aria-pressed={isSelected}
+                    className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap border transition-colors focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-amber-700 ${
+                      isSelected
+                        ? 'bg-amber-700 text-white border-amber-700 shadow-sm'
+                        : 'bg-white text-gray-800 border-gray-200 hover:bg-gray-100'
                   }`}
                 >
                   {category.charAt(0).toUpperCase() + category.slice(1)}
                 </button>
-              ))}
+                )
+              })}
             </div>
 
             {/* Menu Items */}

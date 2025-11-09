@@ -34,6 +34,44 @@ Your SmartHotel system now includes a **complete QR-based restaurant ordering sy
 - ✅ **Security**: JWT-based token validation (ready for production)
 - ✅ **Testing Tools**: QR generator page for development and testing
 
+## 📦 Environment & Data Setup
+
+- Copy `.env.example` to `.env.local` and update values (MongoDB Atlas, Stripe test keys, Mailtrap credentials).
+- Use a scoped MongoDB connection string that includes the database name, e.g. `mongodb+srv://user:pass@cluster.mongodb.net/smarthotel?retryWrites=true&w=majority&appName=Cluster0`.
+- Generate the Prisma client and seed the comprehensive dataset:
+  ```bash
+  npx prisma generate
+  npm run db:seed:demo
+  ```
+- Need a fresh dataset? Re-run `npm run db:seed:demo` — the script clears and rebuilds all hotel, booking, menu, and analytics records.
+
+## 🧪 Testing & QA
+
+- Unit tests (hotel data, email templates): `npx jest tests/unit --runInBand`
+- Integration tests (rooms + bookings APIs): `npx jest tests/integration/rooms.api.test.ts --runInBand`
+- Lint/type checks: `npm run lint`, `npm run type-check`
+- Contact pipeline smoke test:
+  ```bash
+  SMTP_HOST=... SMTP_PORT=... SMTP_USER=... SMTP_PASS=... \
+  npx tsx -e "import { POST } from './app/api/contact/route'; /* payload */"
+  ```
+- Dev server with external database: `DATABASE_URL=... npm run dev`
+
+## 🛠️ Operations Runbook (Snapshot)
+
+- **Seeding**: `npm run db:seed:demo` — rebuilds SmartHotel fixture data end-to-end.
+- **Analytics sanity check**: `npx tsx -e "import { computeAnalytics } from './lib/analytics/core'; computeAnalytics('month').then(console.log)"`
+- **Dashboard metrics**: `npx tsx -e "import { computeDashboardAnalytics } from './lib/analytics/dashboard'; computeDashboardAnalytics().then(console.log)"`
+- **Email smoke test**:
+  ```bash
+  SMTP_HOST=... SMTP_PORT=... SMTP_USER=... SMTP_PASS=... \
+  npx tsx scripts/email-smoke.ts
+  ```
+  (Create a helper script or reuse the sample snippet in `QUICK_START.md`.)
+- **Contact form**: POST to `/api/contact` or use the `/contact` page and confirm the entry is stored in `EmailLog` + `ContactMessage` collections.
+- **Reset caches**: When hotel branding changes, call `await getHotelData({ forceRefresh: true })` inside a maintenance task or bounce the server.
+- **Log levels**: Set `PRISMA_LOG_QUERIES=true` during debugging to emit Prisma query diagnostics (see `lib/db.ts`).
+
 ## 🛠 **How to Get Started**
 
 ### **Step 1: Update Database**

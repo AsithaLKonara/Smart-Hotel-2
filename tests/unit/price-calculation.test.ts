@@ -201,7 +201,7 @@ describe('Price Calculation', () => {
       expect(basePrice).toBe(897)
       expect(discount).toBe(44.85)
       expect(tax).toBe(85.22)
-      expect(total).toBe(937.365)
+      expect(total).toBe(937.37)
     })
 
     test('should handle loyalty member discount', () => {

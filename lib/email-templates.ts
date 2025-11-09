@@ -1,4 +1,4 @@
-import { hotelData } from './hotel-data'
+import { getHotelContactInfo } from './settings'
 
 export interface BookingEmailData {
   guestName: string
@@ -11,9 +11,54 @@ export interface BookingEmailData {
   guests: number
   totalAmount: number
   paymentStatus: string
+  roomNumber?: string
+  specialRequests?: string
 }
 
-export function getBookingConfirmationEmail(data: BookingEmailData): { subject: string; html: string } {
+interface WelcomeEmailData {
+  guestName: string
+  checkIn: string
+  loyaltyPoints?: number
+  loyaltyTier?: string
+}
+
+const fallbackBranding = {
+  name: 'Grand Palace Hotel',
+  tagline: 'Luxury 5-Star Accommodation',
+  phone: '+1 (800) 555-HOTEL',
+  email: 'info@smarthotel.com',
+  address: '123 Grand Boulevard, City Center, Metropolitan Area, ST 10001',
+}
+
+async function resolveBranding() {
+  try {
+    const contact = await getHotelContactInfo()
+    return {
+      name: contact.name || fallbackBranding.name,
+      tagline: contact.tagline || fallbackBranding.tagline,
+      phone: contact.phone || fallbackBranding.phone,
+      email: contact.email || fallbackBranding.email,
+      address: contact.address || fallbackBranding.address,
+    }
+  } catch (error) {
+    console.warn('Falling back to default branding in email templates:', error)
+    return fallbackBranding
+  }
+}
+
+async function renderContactInfo() {
+  const { phone, email, address } = await resolveBranding()
+  return `
+        <div style="background: #f1f5f9; padding: 20px; margin: 30px 0 0 0; border-radius: 8px;">
+          <p style="margin: 5px 0;"><strong>Phone:</strong> ${phone}</p>
+          <p style="margin: 5px 0;"><strong>Email:</strong> ${email}</p>
+          <p style="margin: 5px 0;"><strong>Address:</strong> ${address}</p>
+        </div>
+  `
+}
+
+export async function getBookingConfirmationEmail(data: BookingEmailData): Promise<{ subject: string; html: string }> {
+  const contactInfoHtml = await renderContactInfo()
   const { 
     guestName, 
     bookingId, 
@@ -23,10 +68,12 @@ export function getBookingConfirmationEmail(data: BookingEmailData): { subject: 
     checkOut, 
     guests,
     totalAmount,
-    paymentStatus
+    paymentStatus,
+    roomNumber,
+    specialRequests
   } = data
 
-  const subject = `Booking Confirmed - ${confirmationCode}`
+  const subject = `Booking Confirmation - ${confirmationCode}`
 
   const html = `
     <!DOCTYPE html>
@@ -53,12 +100,14 @@ export function getBookingConfirmationEmail(data: BookingEmailData): { subject: 
             <h3 style="margin-top: 0; color: #333;">Booking Details</h3>
             <p><strong>Confirmation Code:</strong> <span style="color: #f59e0b; font-size: 18px; font-weight: bold;">${confirmationCode}</span></p>
             <p><strong>Booking ID:</strong> ${bookingId}</p>
+            ${roomNumber ? `<p><strong>Room Number:</strong> ${roomNumber}</p>` : ''}
             <p><strong>Room Type:</strong> ${roomType}</p>
-            <p><strong>Check-in:</strong> ${new Date(checkIn).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-            <p><strong>Check-out:</strong> ${new Date(checkOut).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+            <p><strong>Check-in:</strong> ${new Date(checkIn).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}<span style="display:block;font-size:12px;color:#6b7280;">(Reference: ${checkIn})</span></p>
+            <p><strong>Check-out:</strong> ${new Date(checkOut).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}<span style="display:block;font-size:12px;color:#6b7280;">(Reference: ${checkOut})</span></p>
             <p><strong>Guests:</strong> ${guests}</p>
             <p><strong>Total Amount:</strong> $${totalAmount.toFixed(2)}</p>
             <p><strong>Payment Status:</strong> ${paymentStatus}</p>
+            ${specialRequests ? `<p><strong>Special Requests:</strong> ${specialRequests}</p>` : ''}
           </div>
           
           <div style="background: #fff3cd; border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0;">
@@ -73,11 +122,7 @@ export function getBookingConfirmationEmail(data: BookingEmailData): { subject: 
           
           <p>If you have any questions or need to modify your reservation, please contact us:</p>
           
-          <div style="background: white; padding: 20px; margin: 20px 0; border-radius: 8px; text-align: left;">
-            <p style="margin: 5px 0;"><strong>Phone:</strong> ${hotelData.hotel.contact.phone}</p>
-            <p style="margin: 5px 0;"><strong>Email:</strong> ${hotelData.hotel.contact.email}</p>
-            <p style="margin: 5px 0;"><strong>Address:</strong> ${hotelData.hotel.contact.address}</p>
-          </div>
+          ${contactInfoHtml}
           
           <p>We look forward to hosting you at Grand Palace Hotel!</p>
           
@@ -97,8 +142,11 @@ export function getBookingConfirmationEmail(data: BookingEmailData): { subject: 
   return { subject, html }
 }
 
-export function getWelcomeEmail(data: { guestName: string; checkIn: string }): { subject: string; html: string } {
+export async function getWelcomeEmail(data: WelcomeEmailData): Promise<{ subject: string; html: string }> {
+  const loyaltyPoints = data.loyaltyPoints ?? 1250
+  const loyaltyTier = data.loyaltyTier ?? 'Gold'
   const subject = `Welcome to Grand Palace Hotel`
+  const contactInfoHtml = await renderContactInfo()
   
   const html = `
     <!DOCTYPE html>
@@ -119,6 +167,8 @@ export function getWelcomeEmail(data: { guestName: string; checkIn: string }): {
           <p>We are delighted to welcome you to Grand Palace Hotel!</p>
           
           <p>Your upcoming stay begins on <strong>${new Date(data.checkIn).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</strong>.</p>
+          <p style="margin-top: 20px;"><strong>Loyalty Tier:</strong> ${loyaltyTier}</p>
+          <p><strong>Reward Points:</strong> ${loyaltyPoints}</p>
           
           <div style="background: white; padding: 20px; margin: 20px 0; border-radius: 8px;">
             <h3 style="color: #f59e0b; margin-top: 0;">What to Expect:</h3>
@@ -138,6 +188,8 @@ export function getWelcomeEmail(data: { guestName: string; checkIn: string }): {
             Best regards,<br>
             <strong>Grand Palace Hotel Team</strong>
           </p>
+
+          ${contactInfoHtml}
         </div>
         
         <div style="background: #333; color: #fff; padding: 20px; text-align: center; border-radius: 0 0 10px 10px; font-size: 12px;">
@@ -150,8 +202,9 @@ export function getWelcomeEmail(data: { guestName: string; checkIn: string }): {
   return { subject, html }
 }
 
-export function getCheckInReminderEmail(data: { guestName: string; checkIn: string }): { subject: string; html: string } {
+export async function getCheckInReminderEmail(data: { guestName: string; checkIn: string }): Promise<{ subject: string; html: string }> {
   const subject = `Reminder: Check-in Tomorrow - Grand Palace Hotel`
+  const contactInfoHtml = await renderContactInfo()
   
   const html = `
     <!DOCTYPE html>
@@ -174,6 +227,7 @@ export function getCheckInReminderEmail(data: { guestName: string; checkIn: stri
           <div style="background: #fff3cd; border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0;">
             <p style="margin: 0;"><strong>Your Check-in:</strong></p>
             <p style="margin: 10px 0 0 0; font-size: 18px;"><strong>${new Date(data.checkIn).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} at 3:00 PM</strong></p>
+            <p style="margin: 6px 0 0 0; font-size: 12px; color: #6b7280;">Reservation reference: ${data.checkIn}</p>
           </div>
           
           <p><strong>What to bring:</strong></p>
@@ -184,6 +238,8 @@ export function getCheckInReminderEmail(data: { guestName: string; checkIn: stri
           </ul>
           
           <p>If you have any questions, please don't hesitate to contact us.</p>
+
+          ${contactInfoHtml}
           
           <p style="margin-top: 30px;">
             Best regards,<br>
@@ -201,8 +257,9 @@ export function getCheckInReminderEmail(data: { guestName: string; checkIn: stri
   return { subject, html }
 }
 
-export function getCheckOutReminderEmail(data: { guestName: string; checkOut: string }): { subject: string; html: string } {
+export async function getCheckOutReminderEmail(data: { guestName: string; checkOut: string }): Promise<{ subject: string; html: string }> {
   const subject = `Check-out Reminder - Grand Palace Hotel`
+  const contactInfoHtml = await renderContactInfo()
   
   const html = `
     <!DOCTYPE html>
@@ -225,6 +282,7 @@ export function getCheckOutReminderEmail(data: { guestName: string; checkOut: st
           <div style="background: #fff3cd; border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0;">
             <p style="margin: 0;"><strong>Your Check-out:</strong></p>
             <p style="margin: 10px 0 0 0; font-size: 18px;"><strong>${new Date(data.checkOut).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} at 11:00 AM</strong></p>
+            <p style="margin: 6px 0 0 0; font-size: 12px; color: #6b7280;">Reference: ${data.checkOut}</p>
           </div>
           
           <p><strong>Check-out process:</strong></p>
@@ -236,6 +294,8 @@ export function getCheckOutReminderEmail(data: { guestName: string; checkOut: st
           </ul>
           
           <p>Thank you for choosing Grand Palace Hotel. We look forward to welcoming you back!</p>
+
+          ${contactInfoHtml}
           
           <p style="margin-top: 30px;">
             Best regards,<br>
@@ -253,8 +313,9 @@ export function getCheckOutReminderEmail(data: { guestName: string; checkOut: st
   return { subject, html }
 }
 
-export function getNewsletterEmail(data: { guestName: string; offers: string[] }): { subject: string; html: string } {
-  const subject = `Exclusive Offers - Grand Palace Hotel`
+export async function getNewsletterEmail(data: { guestName: string; offers: string[] }): Promise<{ subject: string; html: string }> {
+  const subject = `Exclusive Offers from Grand Palace Hotel`
+  const contactInfoHtml = await renderContactInfo()
   
   const html = `
     <!DOCTYPE html>
@@ -284,6 +345,8 @@ export function getNewsletterEmail(data: { guestName: string; offers: string[] }
             <p style="margin: 0;"><strong>Book now and save!</strong></p>
             <p style="margin: 10px 0 0 0;">Contact our reservations team to redeem these exclusive offers.</p>
           </div>
+
+          ${contactInfoHtml}
           
           <p style="margin-top: 30px;">
             Best regards,<br>
@@ -301,8 +364,9 @@ export function getNewsletterEmail(data: { guestName: string; offers: string[] }
   return { subject, html }
 }
 
-export function getAdminBookingAlertEmail(data: BookingEmailData): { subject: string; html: string } {
+export async function getAdminBookingAlertEmail(data: BookingEmailData): Promise<{ subject: string; html: string }> {
   const subject = `New Booking Alert - ${data.confirmationCode}`
+  const contactInfoHtml = await renderContactInfo()
   
   const html = `
     <!DOCTYPE html>
@@ -347,6 +411,8 @@ export function getAdminBookingAlertEmail(data: BookingEmailData): { subject: st
             Best regards,<br>
             <strong>SmartHotel System</strong>
           </p>
+
+          ${contactInfoHtml}
         </div>
         
         <div style="background: #333; color: #fff; padding: 20px; text-align: center; border-radius: 0 0 10px 10px; font-size: 12px;">

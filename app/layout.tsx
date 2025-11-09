@@ -6,6 +6,8 @@ import ErrorBoundary from "@/components/error-boundary"
 import ClientScripts from "@/components/client-scripts"
 import HotelNavigation from "@/components/hotel-navigation"
 import HotelFooter from "@/components/hotel-footer"
+import { ChatWrapper } from "@/components/live-chat/chat-wrapper"
+import { Providers } from "@/components/providers"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -149,11 +151,18 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen bg-background font-sans antialiased">
         <ErrorBoundary>
-          <HotelNavigation />
-          {children}
-          <HotelFooter />
-          <Toaster />
-          <ClientScripts />
+          <Providers>
+            <div className="flex min-h-screen flex-col">
+            <HotelNavigation />
+              <main id="main-content" role="main" className="flex-1">
+            {children}
+              </main>
+            <HotelFooter />
+            </div>
+            <Toaster />
+            <ClientScripts />
+            <ChatWrapper />
+          </Providers>
         </ErrorBoundary>
       </body>
     </html>

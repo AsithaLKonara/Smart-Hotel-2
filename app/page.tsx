@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import EnhancedHeroSection from '@/components/enhanced-hero-section'
-import { hotelData } from '@/lib/hotel-data'
 import { 
   Star, 
   Shield, 
@@ -19,13 +18,25 @@ import {
   ArrowRight,
   Calendar,
   Users,
-  Clock
+  Clock,
 } from 'lucide-react'
+import prisma from '@/lib/db'
+import { getHotelContactInfo } from '@/lib/settings'
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic'
 
-export default function HomePage() {
+export default async function HomePage() {
+  const [contact, featuredRooms] = await Promise.all([
+    getHotelContactInfo(),
+    prisma.room.findMany({
+      take: 3,
+      orderBy: {
+        price: 'desc',
+      },
+    }),
+  ])
+
   return (
     <div className="min-h-screen">
       {/* Enhanced Hero Section with Video Background */}
@@ -35,10 +46,8 @@ export default function HomePage() {
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Welcome to {hotelData.hotel.name}</h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              {hotelData.hotel.description}
-            </p>
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">Welcome to {contact.name}</h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">{contact.description}</p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -73,22 +82,21 @@ export default function HomePage() {
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">Luxurious Accommodations</h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Choose from our elegant collection of rooms and suites, each designed to provide 
-              the ultimate in comfort and luxury.
+              Choose from our elegant collection of rooms and suites, each designed to provide the ultimate in comfort and luxury.
             </p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-            {hotelData.rooms.map((room, index) => (
-              <div key={index} className="bg-white rounded-2xl overflow-hidden shadow-lg">
+            {featuredRooms.map(room => (
+              <div key={room.id} className="bg-white rounded-2xl overflow-hidden shadow-lg">
                 <div className="h-64 bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center">
                   <span className="text-white text-lg font-medium">{room.type}</span>
                 </div>
                 <div className="p-6">
                   <h3 className="text-xl font-semibold mb-2">{room.type}</h3>
-                  <p className="text-gray-600 mb-4">{room.description}</p>
+                  <p className="text-gray-600 mb-4">{room.description || 'Spacious accommodations with premium amenities and curated experiences.'}</p>
                   <div className="flex items-center justify-between">
-                    <span className="text-2xl font-bold text-amber-600">${room.price}</span>
+                    <span className="text-2xl font-bold text-amber-600">${room.price.toFixed(0)}</span>
                     <span className="text-gray-500">/night</span>
                   </div>
                 </div>
@@ -97,7 +105,10 @@ export default function HomePage() {
           </div>
           
           <div className="text-center">
-            <Link href="/rooms" className="inline-flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white px-8 py-4 rounded-lg font-medium transition-colors">
+            <Link
+              href="/rooms"
+              className="inline-flex items-center gap-2 bg-amber-700 hover:bg-amber-800 text-white px-8 py-4 rounded-lg font-medium transition-colors"
+            >
               View All Rooms
               <ArrowRight className="w-5 h-5" />
             </Link>
@@ -111,8 +122,7 @@ export default function HomePage() {
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">World-Class Amenities</h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              From fine dining to wellness facilities, we provide everything you need 
-              for an exceptional stay.
+              From fine dining to wellness facilities, we provide everything you need for an exceptional stay.
             </p>
           </div>
           
@@ -191,8 +201,7 @@ export default function HomePage() {
             <div>
               <h2 className="text-4xl font-bold text-gray-900 mb-6">Culinary Excellence</h2>
               <p className="text-xl text-gray-600 mb-8">
-                Indulge in world-class cuisine at our award-winning restaurants. 
-                From fine dining to casual bites, we offer an exceptional culinary journey.
+                Indulge in world-class cuisine at our award-winning restaurants. From fine dining to casual bites, we offer an exceptional culinary journey.
               </p>
               
               <div className="space-y-4 mb-8">
@@ -214,7 +223,10 @@ export default function HomePage() {
                 </div>
               </div>
               
-              <Link href="/order" className="inline-flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white px-8 py-4 rounded-lg font-medium transition-colors">
+              <Link
+                href="/order"
+                className="inline-flex items-center gap-2 bg-amber-700 hover:bg-amber-800 text-white px-8 py-4 rounded-lg font-medium transition-colors"
+              >
                 View Restaurant Menu
                 <ArrowRight className="w-5 h-5" />
               </Link>
@@ -233,8 +245,7 @@ export default function HomePage() {
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">Perfect Location</h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Located in the heart of the city, Grand Palace Hotel puts you within walking distance 
-              of major attractions, business districts, and entertainment venues.
+              Located in the heart of the city, {contact.name} puts you within walking distance of major attractions, business districts, and entertainment venues.
             </p>
           </div>
           
@@ -246,7 +257,7 @@ export default function HomePage() {
                   <MapPin className="w-6 h-6 text-amber-600 mt-1" />
                   <div>
                     <h4 className="font-semibold">Address</h4>
-                    <p className="text-gray-600">123 Luxury Avenue<br />Downtown District<br />City, State 12345</p>
+                    <p className="text-gray-600">{contact.address}</p>
                   </div>
                 </div>
                 
@@ -254,7 +265,7 @@ export default function HomePage() {
                   <Phone className="w-6 h-6 text-amber-600 mt-1" />
                   <div>
                     <h4 className="font-semibold">Phone</h4>
-                    <p className="text-gray-600">+1 (555) 123-4567</p>
+                    <p className="text-gray-600">{contact.phone}</p>
                   </div>
                 </div>
                 
@@ -262,7 +273,7 @@ export default function HomePage() {
                   <Mail className="w-6 h-6 text-amber-600 mt-1" />
                   <div>
                     <h4 className="font-semibold">Email</h4>
-                    <p className="text-gray-600">info@grandpalacehotel.com</p>
+                    <p className="text-gray-600">{contact.email}</p>
                   </div>
                 </div>
               </div>
@@ -291,13 +302,16 @@ export default function HomePage() {
         <div className="max-w-4xl mx-auto text-center px-4">
           <h2 className="text-4xl font-bold text-white mb-6">Ready to Experience Luxury?</h2>
           <p className="text-xl text-white/90 mb-8">
-            Book your stay at Grand Palace Hotel and discover why we're the city's premier destination.
+            Book your stay at {contact.name} and discover why we're the city's premier destination.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/booking" className="bg-white text-amber-600 hover:bg-gray-100 px-8 py-4 rounded-lg font-medium transition-colors">
+            <Link href="/booking" className="bg-white text-amber-800 border border-amber-800 hover:bg-amber-50 px-8 py-4 rounded-lg font-medium transition-colors">
               Book Now
             </Link>
-            <Link href="/contact" className="border-2 border-white text-white hover:bg-white hover:text-amber-600 px-8 py-4 rounded-lg font-medium transition-colors">
+            <Link
+              href="/contact"
+              className="border-2 border-white text-white hover:bg-white hover:text-amber-600 px-8 py-4 rounded-lg font-medium transition-colors"
+            >
               Contact Us
             </Link>
           </div>

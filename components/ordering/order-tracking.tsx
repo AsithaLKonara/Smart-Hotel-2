@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Clock, CheckCircle, ChefHat, Truck, Bell, MapPin, Phone } from "lucide-react"
 import { PremiumButton } from "../ui/premium-button"
@@ -84,19 +84,7 @@ export function OrderTracking({ orderId, onOrderComplete, onNewOrder }: OrderTra
   const [loading, setLoading] = useState(true)
   const [notifications, setNotifications] = useState<string[]>([])
 
-  // Fetch real order data from API
-  useEffect(() => {
-    fetchOrderStatus()
-    
-    // Poll for updates every 5 seconds
-    const interval = setInterval(() => {
-      fetchOrderStatus()
-    }, 5000)
-
-    return () => clearInterval(interval)
-  }, [orderId])
-
-  const fetchOrderStatus = async () => {
+  const fetchOrderStatus = useCallback(async () => {
     try {
       const response = await fetch(`/api/restaurant/orders/${orderId}`)
       if (response.ok) {
@@ -141,7 +129,19 @@ export function OrderTracking({ orderId, onOrderComplete, onNewOrder }: OrderTra
     } finally {
       setLoading(false)
     }
-  }
+  }, [orderId, order, onOrderComplete])
+
+  // Fetch real order data from API
+  useEffect(() => {
+    fetchOrderStatus()
+    
+    // Poll for updates every 5 seconds
+    const interval = setInterval(() => {
+      fetchOrderStatus()
+    }, 5000)
+
+    return () => clearInterval(interval)
+  }, [fetchOrderStatus])
 
   if (loading) {
     return (

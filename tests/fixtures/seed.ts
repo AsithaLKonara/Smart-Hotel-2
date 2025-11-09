@@ -1,16 +1,5 @@
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/db'
 import bcrypt from 'bcryptjs'
-
-// Create Prisma client - will use DATABASE_URL from environment
-// Tests should set DATABASE_URL before importing this module
-let prisma: PrismaClient
-
-function getPrisma() {
-  if (!prisma) {
-    prisma = new PrismaClient()
-  }
-  return prisma
-}
 
 export const testUsers = {
   admin: {
@@ -101,7 +90,6 @@ export const testMenuItems = {
 }
 
 export async function seedTestData() {
-  const prisma = getPrisma()
   // Create test users
   for (const user of Object.values(testUsers)) {
     const hashedPassword = await bcrypt.hash(user.password, 12)
@@ -130,16 +118,9 @@ export async function seedTestData() {
     })
   }
 
-  // Create test booking
-  await prisma.booking.upsert({
-    where: { id: testBookings.confirmed.id },
-    update: testBookings.confirmed,
-    create: testBookings.confirmed,
-  })
 }
 
 export async function cleanupTestData() {
-  const prisma = getPrisma()
   // Clean up in reverse order of dependencies
   await prisma.booking.deleteMany({
     where: { id: { startsWith: 'test-' } },

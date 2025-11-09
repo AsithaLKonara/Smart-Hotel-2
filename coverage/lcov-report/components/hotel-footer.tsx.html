@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/3</span>
+                <span class='fraction'>0/5</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/3</span>
+                <span class='fraction'>0/5</span>
             </div>
         
             
@@ -195,18 +195,12 @@
 <a name='L130'></a><a href='#L130'>130</a>
 <a name='L131'></a><a href='#L131'>131</a>
 <a name='L132'></a><a href='#L132'>132</a>
-<a name='L133'></a><a href='#L133'>133</a>
-<a name='L134'></a><a href='#L134'>134</a>
-<a name='L135'></a><a href='#L135'>135</a>
-<a name='L136'></a><a href='#L136'>136</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<a name='L133'></a><a href='#L133'>133</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -335,8 +329,11 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import Link from <span class="cstat-no" title="statement not covered" >'next/link'</span>
 import { Phone, Mail, MapPin, Facebook, Twitter, Instagram, Youtube } from <span class="cstat-no" title="statement not covered" >'lucide-react'</span>
+import { getHotelContactInfo } from <span class="cstat-no" title="statement not covered" >'@/lib/settings'</span>
 &nbsp;
-export default function <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >HotelFooter() {</span></span>
+export default async function <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >HotelFooter() {</span></span>
+  const contact = <span class="cstat-no" title="statement not covered" >await getHotelContactInfo()</span>
+&nbsp;
   return (
     &lt;footer className="bg-gray-900 text-white"&gt;
       &lt;div className="max-w-7xl mx-auto px-4 py-16"&gt;
@@ -348,14 +345,12 @@ export default function <span class="cstat-no" title="statement not covered" ><s
                 &lt;span className="text-white font-bold text-xl"&gt;GP&lt;/span&gt;
               &lt;/div&gt;
               &lt;div&gt;
-                &lt;h3 className="text-xl font-bold"&gt;Grand Palace&lt;/h3&gt;
-                &lt;p className="text-sm text-gray-400"&gt;Luxury Hotel&lt;/p&gt;
+                &lt;h3 className="text-xl font-bold"&gt;{contact.name}&lt;/h3&gt;
+                &lt;p className="text-sm text-gray-400"&gt;{contact.tagline}&lt;/p&gt;
               &lt;/div&gt;
             &lt;/div&gt;
             &lt;p className="text-gray-400 mb-6"&gt;
-              Experience unparalleled luxury at Grand Palace Hotel. 
-              Our 5-star accommodations offer world-class amenities 
-              and exceptional service in the heart of the city.
+              {contact.description}
             &lt;/p&gt;
             &lt;div className="flex space-x-4"&gt;
               &lt;a href="#" className="text-gray-400 hover:text-white transition-colors" aria-label="Follow us on Facebook"&gt;
@@ -426,20 +421,16 @@ export default function <span class="cstat-no" title="statement not covered" ><s
               &lt;div className="flex items-start space-x-3"&gt;
                 &lt;MapPin className="w-5 h-5 text-amber-500 mt-1" /&gt;
                 &lt;div&gt;
-                  &lt;p className="text-gray-400"&gt;
-                    123 Luxury Avenue&lt;br /&gt;
-                    Downtown District&lt;br /&gt;
-                    City, State 12345
-                  &lt;/p&gt;
+                  &lt;p className="text-gray-400"&gt;{contact.address}&lt;/p&gt;
                 &lt;/div&gt;
               &lt;/div&gt;
               &lt;div className="flex items-center space-x-3"&gt;
                 &lt;Phone className="w-5 h-5 text-amber-500" /&gt;
-                &lt;p className="text-gray-400"&gt;+1 (555) 123-4567&lt;/p&gt;
+                &lt;p className="text-gray-400"&gt;{contact.phone}&lt;/p&gt;
               &lt;/div&gt;
               &lt;div className="flex items-center space-x-3"&gt;
                 &lt;Mail className="w-5 h-5 text-amber-500" /&gt;
-                &lt;p className="text-gray-400"&gt;info@grandpalacehotel.com&lt;/p&gt;
+                &lt;p className="text-gray-400"&gt;{contact.email}&lt;/p&gt;
               &lt;/div&gt;
             &lt;/div&gt;
           &lt;/div&gt;
@@ -449,7 +440,7 @@ export default function <span class="cstat-no" title="statement not covered" ><s
         &lt;div className="border-t border-gray-800 mt-12 pt-8"&gt;
           &lt;div className="flex flex-col md:flex-row justify-between items-center"&gt;
             &lt;p className="text-gray-400 text-sm"&gt;
-              © 2024 Grand Palace Hotel. All rights reserved.
+              © {new Date().getFullYear()} {contact.name}. All rights reserved.
             &lt;/p&gt;
             &lt;div className="flex space-x-6 mt-4 md:mt-0"&gt;
               &lt;Link href="/privacy" className="text-gray-400 hover:text-white text-sm transition-colors"&gt;
@@ -475,7 +466,7 @@ export default function <span class="cstat-no" title="statement not covered" ><s
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-10-29T06:10:44.351Z
+                at 2025-11-08T18:46:00.772Z
             </div>
         <script src="../prettify.js"></script>
         <script>

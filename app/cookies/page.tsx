@@ -1,9 +1,11 @@
 import { Cookie, Settings, Shield, Eye } from 'lucide-react'
-import { hotelData } from '@/lib/hotel-data'
+import { getHotelContactInfo } from '@/lib/settings'
 
 export const dynamic = 'force-dynamic'
 
-export default function CookiePolicyPage() {
+export default async function CookiePolicyPage() {
+  const contact = await getHotelContactInfo()
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 py-16">
@@ -26,7 +28,7 @@ export default function CookiePolicyPage() {
               Cookies are small text files that are stored on your device when you visit our website. They help us provide you with a better experience by remembering your preferences and enabling certain website functions.
             </p>
             <p className="text-gray-700">
-              {hotelData.hotel.name} uses cookies to enhance your browsing experience, analyze website traffic, and provide personalized content and services.
+              {contact.name} uses cookies to enhance your browsing experience, analyze website traffic, and provide personalized content and services.
             </p>
           </section>
 
@@ -196,9 +198,9 @@ export default function CookiePolicyPage() {
               If you have any questions about our use of cookies or this Cookie Policy, please contact us:
             </p>
             <div className="bg-gray-50 rounded-lg p-4">
-              <p className="text-gray-700"><strong>Email:</strong> privacy@grandpalacehotel.com</p>
-              <p className="text-gray-700"><strong>Phone:</strong> {hotelData.hotel.contact.phone}</p>
-              <p className="text-gray-700"><strong>Address:</strong> {hotelData.hotel.contact.address}</p>
+              <p className="text-gray-700"><strong>Email:</strong> {contact.email}</p>
+              <p className="text-gray-700"><strong>Phone:</strong> {contact.phone}</p>
+              <p className="text-gray-700"><strong>Address:</strong> {contact.address}</p>
               <p className="text-gray-700 mt-2"><strong>Data Protection Officer:</strong> dpo@grandpalacehotel.com</p>
             </div>
           </section>

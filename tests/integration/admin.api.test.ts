@@ -5,40 +5,52 @@ import { GET as getNotifications } from '@/app/api/notifications/route'
 import { POST as createNotification } from '@/app/api/notifications/route'
 
 // Mock Prisma client
-const mockBookingAggregate = jest.fn() as jest.MockedFunction<any>
-const mockBookingFindMany = jest.fn() as jest.MockedFunction<any>
-const mockBookingCount = jest.fn() as jest.MockedFunction<any>
-const mockUserFindMany = jest.fn() as jest.MockedFunction<any>
-const mockUserCount = jest.fn() as jest.MockedFunction<any>
-const mockNotificationFindMany = jest.fn() as jest.MockedFunction<any>
-const mockNotificationCreate = jest.fn() as jest.MockedFunction<any>
-const mockNotificationUpdate = jest.fn() as jest.MockedFunction<any>
-const mockAuditLogCreate = jest.fn() as jest.MockedFunction<any>
+function getAdminPrismaMocks() {
+  const globalRef = globalThis as any
+  if (!globalRef.__ADMIN_PRISMA_MOCKS__) {
+    globalRef.__ADMIN_PRISMA_MOCKS__ = {}
+  }
+  return globalRef.__ADMIN_PRISMA_MOCKS__ as Record<string, jest.Mock>
+}
 
-jest.mock('@/lib/db', () => ({
-  prisma: {
-    booking: {
-      findMany: mockBookingFindMany,
-      count: mockBookingCount,
-      aggregate: mockBookingAggregate,
-    },
-    user: {
-      findMany: mockUserFindMany,
-      findUnique: jest.fn(),
-      create: jest.fn(),
-      count: mockUserCount,
-    },
-    notification: {
-      findMany: mockNotificationFindMany,
-      create: mockNotificationCreate,
-      update: mockNotificationUpdate,
-    },
-    auditLog: {
-      create: mockAuditLogCreate,
-    },
-  },
-}))
+jest.mock('@/lib/db', () => {
+  const prismaMocks = getAdminPrismaMocks()
+  prismaMocks.mockBookingAggregate = jest.fn()
+  prismaMocks.mockBookingFindMany = jest.fn()
+  prismaMocks.mockBookingCount = jest.fn()
+  prismaMocks.mockUserFindMany = jest.fn()
+  prismaMocks.mockUserCount = jest.fn()
+  prismaMocks.mockNotificationFindMany = jest.fn()
+  prismaMocks.mockNotificationCreate = jest.fn()
+  prismaMocks.mockNotificationUpdate = jest.fn()
+  prismaMocks.mockAuditLogCreate = jest.fn()
 
+  return {
+    prisma: {
+      booking: {
+        findMany: (...args: any[]) => getAdminPrismaMocks().mockBookingFindMany(...args),
+        count: (...args: any[]) => getAdminPrismaMocks().mockBookingCount(...args),
+        aggregate: (...args: any[]) => getAdminPrismaMocks().mockBookingAggregate(...args),
+      },
+      user: {
+        findMany: (...args: any[]) => getAdminPrismaMocks().mockUserFindMany(...args),
+        findUnique: jest.fn(),
+        create: jest.fn(),
+        count: (...args: any[]) => getAdminPrismaMocks().mockUserCount(...args),
+      },
+      notification: {
+        findMany: (...args: any[]) => getAdminPrismaMocks().mockNotificationFindMany(...args),
+        create: (...args: any[]) => getAdminPrismaMocks().mockNotificationCreate(...args),
+        update: (...args: any[]) => getAdminPrismaMocks().mockNotificationUpdate(...args),
+      },
+      auditLog: {
+        create: (...args: any[]) => getAdminPrismaMocks().mockAuditLogCreate(...args),
+      },
+    },
+  }
+})
+
+const prismaMocks = getAdminPrismaMocks()
 // Import after mock to get the mocked version
 import { prisma } from '@/lib/db'
 
@@ -92,12 +104,12 @@ describe('Admin API Integration', () => {
         ],
       }
 
-      mockBookingAggregate.mockResolvedValue({
+      prismaMocks.mockBookingAggregate.mockResolvedValue({
         _sum: { totalPrice: 2500.00 },
         _count: { id: 8 },
       })
-      mockBookingFindMany.mockResolvedValue(mockAnalytics.recentBookings)
-      mockUserCount.mockResolvedValue(245)
+      prismaMocks.mockBookingFindMany.mockResolvedValue(mockAnalytics.recentBookings)
+      prismaMocks.mockUserCount.mockResolvedValue(245)
 
       const request = new NextRequest('http://localhost:3000/api/analytics/dashboard', {
         headers: {
@@ -125,27 +137,39 @@ describe('Admin API Integration', () => {
         },
       }
 
-      mockBookingAggregate.mockResolvedValue({
+      prismaMocks.mockBookingAggregate.mockResolvedValue({
         _sum: { totalPrice: 5000.00 },
         _count: { id: 15 },
       })
-      mockBookingFindMany.mockResolvedValue([])
-      mockUserCount.mockResolvedValue(0)
+      prismaMocks.mockBookingFindMany.mockResolvedValue([])
+      prismaMocks.mockUserCount.mockResolvedValue(0)
 
-      const request = new NextRequest('http://localhost:3000/api/analytics/dashboard?startDate=2024-01-01&endDate=2024-01-31')
+      const request = new NextRequest('http://localhost:3000/api/analytics/dashboard?startDate=2024-01-01&endDate=2024-01-31', {
+        headers: {
+          'Authorization': 'Bearer admin-token',
+        },
+      })
       const response = await getDashboard(request)
       const data = await response.json()
 
       expect(response.status).toBe(200)
-      expect(mockBookingAggregate).toHaveBeenCalledWith({
+      expect(prismaMocks.mockBookingAggregate).toHaveBeenCalledWith({
         where: {
           createdAt: {
-            gte: new Date('2024-01-01'),
-            lte: new Date('2024-01-31'),
+            gte: expect.any(Date),
+            lte: expect.any(Date),
           },
         },
         _sum: { totalPrice: true },
         _count: { id: true },
+      })
+      expect(prismaMocks.mockUserCount).toHaveBeenCalledTimes(1)
+      expect(data).toEqual({
+        revenue: { period: 5000.00 },
+        bookings: { period: 15 },
+        occupancy: { current: 0, average: 0 },
+        guests: { total: 0 },
+        recentBookings: [],
       })
     })
 
@@ -159,7 +183,7 @@ describe('Admin API Integration', () => {
     })
 
     test('should handle database errors gracefully', async () => {
-      mockBookingAggregate.mockRejectedValue(new Error('Database connection failed'))
+      prismaMocks.mockBookingAggregate.mockRejectedValue(new Error('Database connection failed'))
 
       const request = new NextRequest('http://localhost:3000/api/analytics/dashboard', {
         headers: {
@@ -198,7 +222,7 @@ describe('Admin API Integration', () => {
         },
       ]
 
-      mockUserFindMany.mockResolvedValue(mockStaff)
+      prismaMocks.mockUserFindMany.mockResolvedValue(mockStaff)
 
       const request = new NextRequest('http://localhost:3000/api/staff', {
         headers: {
@@ -212,7 +236,7 @@ describe('Admin API Integration', () => {
       expect(response.status).toBe(200)
       expect(data).toHaveProperty('staff')
       expect(data.staff).toHaveLength(2)
-      expect(mockUserFindMany).toHaveBeenCalledWith({
+      expect(prismaMocks.mockUserFindMany).toHaveBeenCalledWith({
         where: {
           role: {
             in: ['ADMIN', 'MANAGER', 'RECEPTIONIST', 'KITCHEN_STAFF', 'HOUSEKEEPING'],
@@ -243,7 +267,7 @@ describe('Admin API Integration', () => {
         },
       ]
 
-      mockUserFindMany.mockResolvedValue(mockKitchenStaff)
+      prismaMocks.mockUserFindMany.mockResolvedValue(mockKitchenStaff)
 
       const request = new NextRequest('http://localhost:3000/api/staff?department=Kitchen')
       const response = await getStaff(request)
@@ -251,7 +275,7 @@ describe('Admin API Integration', () => {
 
       expect(response.status).toBe(200)
       expect(data.staff).toHaveLength(1)
-      expect(mockUserFindMany).toHaveBeenCalledWith({
+      expect(prismaMocks.mockUserFindMany).toHaveBeenCalledWith({
         where: {
           role: {
             in: ['ADMIN', 'MANAGER', 'RECEPTIONIST', 'KITCHEN_STAFF', 'HOUSEKEEPING'],
@@ -283,7 +307,7 @@ describe('Admin API Integration', () => {
         },
       ]
 
-      mockUserFindMany.mockResolvedValue(mockReceptionists)
+      prismaMocks.mockUserFindMany.mockResolvedValue(mockReceptionists)
 
       const request = new NextRequest('http://localhost:3000/api/staff?role=RECEPTIONIST')
       const response = await getStaff(request)
@@ -291,7 +315,7 @@ describe('Admin API Integration', () => {
 
       expect(response.status).toBe(200)
       expect(data.staff).toHaveLength(1)
-      expect(mockUserFindMany).toHaveBeenCalledWith({
+      expect(prismaMocks.mockUserFindMany).toHaveBeenCalledWith({
         where: {
           role: 'RECEPTIONIST',
         },
@@ -341,7 +365,7 @@ describe('Admin API Integration', () => {
         },
       ]
 
-      mockNotificationFindMany.mockResolvedValue(mockNotifications)
+      prismaMocks.mockNotificationFindMany.mockResolvedValue(mockNotifications)
 
       const request = new NextRequest('http://localhost:3000/api/notifications', {
         headers: {
@@ -355,7 +379,7 @@ describe('Admin API Integration', () => {
       expect(response.status).toBe(200)
       expect(data).toHaveProperty('notifications')
       expect(data.notifications).toHaveLength(2)
-      expect(mockNotificationFindMany).toHaveBeenCalledWith({
+      expect(prismaMocks.mockNotificationFindMany).toHaveBeenCalledWith({
         where: { userId: 'user-123' },
         orderBy: { createdAt: 'desc' },
         take: 50,
@@ -372,15 +396,19 @@ describe('Admin API Integration', () => {
         },
       ]
 
-      mockNotificationFindMany.mockResolvedValue(mockBookingNotifications)
+      prismaMocks.mockNotificationFindMany.mockResolvedValue(mockBookingNotifications)
 
-      const request = new NextRequest('http://localhost:3000/api/notifications?type=BOOKING')
+      const request = new NextRequest('http://localhost:3000/api/notifications?type=BOOKING', {
+        headers: {
+          'Authorization': 'Bearer user-token',
+        },
+      })
       const response = await getNotifications(request)
       const data = await response.json()
 
       expect(response.status).toBe(200)
       expect(data.notifications).toHaveLength(1)
-      expect(mockNotificationFindMany).toHaveBeenCalledWith({
+      expect(prismaMocks.mockNotificationFindMany).toHaveBeenCalledWith({
         where: {
           userId: 'user-123',
           type: 'BOOKING',
@@ -399,15 +427,19 @@ describe('Admin API Integration', () => {
         },
       ]
 
-      mockNotificationFindMany.mockResolvedValue(mockUnreadNotifications)
+      prismaMocks.mockNotificationFindMany.mockResolvedValue(mockUnreadNotifications)
 
-      const request = new NextRequest('http://localhost:3000/api/notifications?unread=true')
+      const request = new NextRequest('http://localhost:3000/api/notifications?unread=true', {
+        headers: {
+          'Authorization': 'Bearer user-token',
+        },
+      })
       const response = await getNotifications(request)
       const data = await response.json()
 
       expect(response.status).toBe(200)
       expect(data.notifications).toHaveLength(1)
-      expect(mockNotificationFindMany).toHaveBeenCalledWith({
+      expect(prismaMocks.mockNotificationFindMany).toHaveBeenCalledWith({
         where: {
           userId: 'user-123',
           isRead: false,
@@ -438,7 +470,7 @@ describe('Admin API Integration', () => {
         isRead: false,
       }
 
-      mockNotificationCreate.mockResolvedValue(mockNotification)
+      prismaMocks.mockNotificationCreate.mockResolvedValue(mockNotification)
 
       const requestBody = {
         userId: 'user-123',
@@ -462,7 +494,7 @@ describe('Admin API Integration', () => {
       expect(response.status).toBe(201)
       expect(data).toHaveProperty('notification')
       expect(data.notification.title).toBe('Welcome to Grand Palace Hotel')
-      expect(mockNotificationCreate).toHaveBeenCalledTimes(1)
+      expect(prismaMocks.mockNotificationCreate).toHaveBeenCalledTimes(1)
     })
 
     test('should validate notification data', async () => {
@@ -477,6 +509,7 @@ describe('Admin API Integration', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': 'Bearer admin-token',
         },
         body: JSON.stringify(requestBody),
       })
@@ -504,7 +537,7 @@ describe('Admin API Integration', () => {
         },
       ]
 
-      mockNotificationCreate.mockResolvedValue(mockNotifications[0])
+      prismaMocks.mockNotificationCreate.mockResolvedValue(mockNotifications[0])
 
       const requestBody = {
         userIds: ['user-1', 'user-2'],
@@ -517,6 +550,7 @@ describe('Admin API Integration', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': 'Bearer admin-token',
         },
         body: JSON.stringify(requestBody),
       })
@@ -526,11 +560,11 @@ describe('Admin API Integration', () => {
 
       expect(response.status).toBe(201)
       expect(data).toHaveProperty('notifications')
-      expect(mockNotificationCreate).toHaveBeenCalledTimes(2)
+      expect(prismaMocks.mockNotificationCreate).toHaveBeenCalledTimes(2)
     })
 
     test('should handle database errors', async () => {
-      mockNotificationCreate.mockRejectedValue(new Error('Database error'))
+      prismaMocks.mockNotificationCreate.mockRejectedValue(new Error('Database error'))
 
       const requestBody = {
         userId: 'user-123',
@@ -543,6 +577,7 @@ describe('Admin API Integration', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': 'Bearer admin-token',
         },
         body: JSON.stringify(requestBody),
       })

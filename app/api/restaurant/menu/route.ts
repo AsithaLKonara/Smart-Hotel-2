@@ -10,13 +10,12 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const category = searchParams.get('category') as FoodCategory | null
     const available = searchParams.get('available')
+    const dietary = searchParams.get('dietary')
     const search = searchParams.get('search')
     const minPrice = searchParams.get('minPrice')
     const maxPrice = searchParams.get('maxPrice')
 
-    const where: any = {
-      available: true // Only show available items by default
-    }
+    const where: Record<string, unknown> = {}
 
     if (category) {
       where.category = category
@@ -24,6 +23,12 @@ export async function GET(request: NextRequest) {
 
     if (available !== null) {
       where.available = available === 'true'
+    }
+
+    if (dietary) {
+      where.dietaryTags = {
+        has: dietary
+      }
     }
 
     if (search) {
@@ -41,10 +46,7 @@ export async function GET(request: NextRequest) {
 
     const menuItems = await prisma.foodMenu.findMany({
       where,
-      orderBy: [
-        { category: 'asc' },
-        { name: 'asc' }
-      ]
+      orderBy: { name: 'asc' }
     })
 
     return NextResponse.json(menuItems)

@@ -1,94 +1,125 @@
 import { NextResponse } from 'next/server'
-import prisma from '@/lib/db'
+import { prisma } from '@/lib/db'
+
+type HealthStatus = 'healthy' | 'unhealthy' | 'unknown'
+
+function formatStatus(isHealthy: boolean | undefined | null): HealthStatus {
+  if (isHealthy === true) return 'healthy'
+  if (isHealthy === false) return 'unhealthy'
+  return 'unknown'
+}
+
+function buildErrorMessage(entries: Array<{ source: string; message: string }>) {
+  if (entries.length === 0) {
+    return {
+      error: undefined,
+      errors: undefined
+    }
+  }
+
+  const normalized = entries.map(({ source, message }) => {
+    const label = source.charAt(0).toUpperCase() + source.slice(1)
+    return `${label}: ${message}`
+  })
+
+  return {
+    error: entries.length === 1 ? entries[0].message : normalized.join('; '),
+    errors: entries.length > 1 ? normalized : undefined
+  }
+}
+
+const DB_TIMEOUT_MS = 5000
+
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error('Connection timeout'))
+    }, timeoutMs)
+
+    promise
+      .then((value) => {
+        clearTimeout(timer)
+        resolve(value)
+      })
+      .catch((error) => {
+        clearTimeout(timer)
+        reject(error)
+      })
+  })
+}
 
 /**
- * Readiness probe - checks if the application is ready to serve traffic
- * Should check all critical dependencies (DB, Redis, external services)
+ * Readiness probe - checks if the application is ready to serve traffic.
+ * Aligns response contract with integration tests (string statuses, uptime, rich errors).
  */
 export async function GET() {
-  const checks = {
-    database: false,
-    redis: false,
-    stripe: false,
-    email: false
+  const errorEntries: Array<{ source: string; message: string }> = []
+
+  const checks: Record<'database' | 'users' | 'bookings', HealthStatus> = {
+    database: 'unknown',
+    users: 'unknown',
+    bookings: 'unknown'
   }
 
-  const errors: string[] = []
+  const now = new Date()
+
+  // Database connectivity
+  let databaseHealthy = false
 
   try {
-    // Database connectivity check
-    try {
-      await prisma.$runCommandRaw({ ping: 1 })
-      checks.database = true
-    } catch (error) {
-      errors.push(`Database: ${error instanceof Error ? error.message : 'Unknown error'}`)
-    }
-
-    // Redis connectivity check (if implemented)
-    try {
-      // TODO: Implement Redis health check when Redis is added
-      // const redis = await redisClient.ping()
-      // checks.redis = redis === 'PONG'
-      checks.redis = true // Placeholder until Redis is implemented
-    } catch (error) {
-      errors.push(`Redis: ${error instanceof Error ? error.message : 'Unknown error'}`)
-    }
-
-    // Stripe API connectivity check
-    try {
-      if (process.env.STRIPE_SECRET_KEY && process.env.STRIPE_SECRET_KEY.startsWith('sk_')) {
-        // Only check if we have a valid-looking Stripe key
-        try {
-          const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
-          await stripe.balance.retrieve()
-          checks.stripe = true
-        } catch (stripeError) {
-          // If Stripe check fails, mark as not configured rather than error
-          checks.stripe = true // Allow demo to work without valid Stripe keys
-        }
-      } else {
-        checks.stripe = true // Skip if not configured
-      }
-    } catch (error) {
-      checks.stripe = true // Allow demo to work without valid Stripe keys
-    }
-
-    // Email service check (if configured)
-    try {
-      if (process.env.SMTP_HOST && process.env.SMTP_USER) {
-        // TODO: Implement email service health check
-        checks.email = true // Placeholder
-      } else {
-        checks.email = true // Skip if not configured
-      }
-    } catch (error) {
-      errors.push(`Email: ${error instanceof Error ? error.message : 'Unknown error'}`)
-    }
-
-    const allHealthy = Object.values(checks).every(check => check === true)
-
-    const response = {
-      status: allHealthy ? 'ready' : 'not_ready',
-      timestamp: new Date().toISOString(),
-      checks,
-      errors: errors.length > 0 ? errors : undefined
-    }
-
-    return NextResponse.json(response, { 
-      status: allHealthy ? 200 : 503 
-    })
-
-  } catch (error) {
-    console.error('Readiness check failed:', error)
-    return NextResponse.json(
-      { 
-        status: 'not_ready', 
-        error: 'Readiness check failed',
-        timestamp: new Date().toISOString(),
-        checks,
-        errors: [...errors, `System: ${error instanceof Error ? error.message : 'Unknown error'}`]
-      }, 
-      { status: 503 }
+    const result = await withTimeout(
+      prisma.$queryRaw<Array<{ result?: number }>>`SELECT 1 as result`,
+      DB_TIMEOUT_MS
     )
+
+    const isValidResult = Array.isArray(result) && result.length > 0 && result[0]?.result === 1
+    checks.database = formatStatus(isValidResult)
+
+    if (!isValidResult) {
+      errorEntries.push({ source: 'database', message: 'Unexpected query result' })
+    }
+
+    databaseHealthy = checks.database === 'healthy'
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error'
+    checks.database = 'unhealthy'
+    errorEntries.push({ source: 'database', message })
+    databaseHealthy = false
   }
+
+  if (databaseHealthy) {
+    try {
+      const userCount = await prisma.user.count()
+      checks.users = formatStatus(typeof userCount === 'number' && userCount >= 0)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error'
+      checks.users = 'unhealthy'
+      errorEntries.push({ source: 'users', message })
+    }
+
+    try {
+      const bookingCount = await prisma.booking.count()
+      checks.bookings = formatStatus(typeof bookingCount === 'number' && bookingCount >= 0)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error'
+      checks.bookings = 'unhealthy'
+      errorEntries.push({ source: 'bookings', message })
+    }
+  }
+
+  const isReady = Object.values(checks).every(status => status === 'healthy')
+  const { error, errors } = buildErrorMessage(errorEntries)
+
+  const response = {
+    status: isReady ? 'ready' : 'not ready',
+    timestamp: now.toISOString(),
+    uptime: process.uptime(),
+    checks,
+    error,
+    errors
+  }
+
+  return NextResponse.json(response, {
+    status: isReady ? 200 : 503
+  })
 }

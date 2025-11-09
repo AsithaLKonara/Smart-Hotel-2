@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
+import prisma from '@/lib/db'
+import { sendPasswordResetEmail } from '@/lib/email'
 import crypto from 'crypto'
 
 export async function POST(request: NextRequest) {
@@ -30,28 +31,32 @@ export async function POST(request: NextRequest) {
     const resetToken = crypto.randomBytes(32).toString('hex')
     const resetTokenExpiry = new Date(Date.now() + 3600000) // 1 hour
 
-    // Store token (you'll need to add these fields to User model)
-    // For now, we'll return the token for demonstration
-    // In production, store in database and send via email
+    // Store token in database
+    await prisma.user.update({
+      where: { email },
+      data: {
+        resetToken,
+        resetTokenExpiry
+      }
+    })
 
-    const resetUrl = `${process.env.NEXTAUTH_URL}/auth/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`
+    const resetUrl = `${process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`
 
-    // TODO: Send email with reset link
-    // await sendEmail({
-    //   to: email,
-    //   subject: 'Reset Your Password - SmartHotel',
-    //   html: passwordResetEmail({ name: user.name, resetUrl })
-    // })
-
-    console.log('Password reset link:', resetUrl)
-    console.log('Reset token:', resetToken)
+    // Send email with reset link
+    try {
+      await sendPasswordResetEmail({
+        name: user.name,
+        email: user.email,
+        resetUrl
+      })
+    } catch (emailError) {
+      console.error('Failed to send password reset email:', emailError)
+      // Continue even if email fails - don't expose email configuration issues
+    }
 
     return NextResponse.json({
       success: true,
-      message: 'If an account exists, a password reset email has been sent',
-      // Remove these in production:
-      resetUrl, // For testing only
-      resetToken // For testing only
+      message: 'If an account exists, a password reset email has been sent'
     })
   } catch (error) {
     console.error('Password reset error:', error)
