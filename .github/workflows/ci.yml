@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 env:
-  NODE_VERSION: '18'
+  NODE_VERSION: '20'
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
@@ -51,22 +51,26 @@ jobs:
       
     - name: Run unit tests
       run: npm run test:unit
-    env:
-      DATABASE_URL: mongodb://root:password@localhost:27017/smarthotel_test?authSource=admin
+      env:
+        DATABASE_URL: mongodb://root:password@localhost:27017/smarthotel_test?authSource=admin
         
     - name: Run integration tests
       run: npm run test:integration
-    env:
-      DATABASE_URL: mongodb://root:password@localhost:27017/smarthotel_test?authSource=admin
+      env:
+        DATABASE_URL: mongodb://root:password@localhost:27017/smarthotel_test?authSource=admin
         
-    - name: Generate coverage report
-      run: npm run test:coverage
-      
-    - name: Upload coverage to Codecov
+    - name: Upload unit coverage to Codecov
       uses: codecov/codecov-action@v3
       with:
-        file: ./coverage/lcov.info
+        files: ./coverage/unit/lcov.info
         flags: unittests
+        name: codecov-umbrella
+
+    - name: Upload integration coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        files: ./coverage/integration/lcov.info
+        flags: integrationtests
         name: codecov-umbrella
 
   security:

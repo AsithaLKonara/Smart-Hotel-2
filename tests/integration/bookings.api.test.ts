@@ -6,6 +6,9 @@ jest.mock('next-auth', () => ({
   getServerSession: jest.fn(),
 }))
 
+const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined)
+const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => undefined)
+
 type StoreRecord = Record<string, any>
 
 type BookingStores = {
@@ -332,6 +335,8 @@ describe('Bookings API Integration Tests', () => {
     for (const store of Object.values(bookingStores)) {
       store.clear()
     }
+    consoleErrorSpy.mockRestore()
+    consoleLogSpy.mockRestore()
   })
 
   beforeEach(() => {

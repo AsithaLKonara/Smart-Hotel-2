@@ -11,6 +11,9 @@ import { GET as getRoomAvailability } from '@/app/api/rooms/availability/route'
 import { POST as createBooking } from '@/app/api/bookings/route'
 import { GET as getBookings } from '@/app/api/bookings/route'
 
+const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined)
+const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => undefined)
+
 // Mock Prisma client
 jest.mock('@/lib/db', () => {
   const prismaMock = {
@@ -48,6 +51,11 @@ jest.mock('@/lib/db', () => {
     prisma: prismaMock,
     default: prismaMock,
   }
+})
+
+afterAll(() => {
+  consoleErrorSpy.mockRestore()
+  consoleLogSpy.mockRestore()
 })
 
 jest.mock('@/lib/email', () => ({

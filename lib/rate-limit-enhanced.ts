@@ -138,12 +138,16 @@ const paymentLimiter = new EnhancedRateLimiter({
 })
 
 // Cleanup expired records every 5 minutes
-setInterval(() => {
+const cleanupInterval = setInterval(() => {
   authLimiter.cleanup()
   bookingLimiter.cleanup()
   apiLimiter.cleanup()
   paymentLimiter.cleanup()
 }, 5 * 60 * 1000)
+
+if (typeof cleanupInterval.unref === 'function') {
+  cleanupInterval.unref()
+}
 
 export function getClientIdentifier(req: NextRequest): string {
   // Use IP address as identifier with additional fingerprinting

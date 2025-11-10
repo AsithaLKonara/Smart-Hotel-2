@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Image from "next/image"
 import { Button } from "../ui/button"
 import { Card } from "../ui/card"
 import { Badge } from "../ui/badge"
@@ -176,7 +177,14 @@ export function OrderPortal({ roomNumber = "101", guestInfo }: OrderPortalProps)
                   <Card key={item.id} className="p-4">
                     <div className="flex items-start gap-4">
                       {item.image && (
-                        <img src={item.image} alt={item.name} className="w-24 h-24 object-cover rounded-lg" />
+                        <Image
+                          src={item.image}
+                          alt={item.name}
+                          width={96}
+                          height={96}
+                          className="w-24 h-24 object-cover rounded-lg"
+                          unoptimized
+                        />
                       )}
                       <div className="flex-1">
                         <div className="flex items-start justify-between">

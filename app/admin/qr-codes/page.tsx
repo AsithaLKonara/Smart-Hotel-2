@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { QrCode, Download, Loader2 } from 'lucide-react'
@@ -180,10 +181,14 @@ export default function AdminQRCodesPage() {
             {qrData ? (
               <div className="space-y-4">
                 <div className="flex justify-center p-6 bg-white rounded-lg border-2 border-dashed border-gray-300">
-                  <img 
-                    src={qrData.dataUrl} 
-                    alt="Generated QR Code" 
+                  <Image
+                    src={qrData.dataUrl}
+                    alt="Generated QR Code"
+                    width={256}
+                    height={256}
                     className="w-64 h-64"
+                    unoptimized
+                    priority
                   />
                 </div>
 

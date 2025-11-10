@@ -4,7 +4,12 @@ import { GET as getStaff } from '@/app/api/staff/route'
 import { GET as getNotifications } from '@/app/api/notifications/route'
 import { POST as createNotification } from '@/app/api/notifications/route'
 
+const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined)
+const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => undefined)
+
 // Mock Prisma client
+const computeDashboardAnalyticsMock = jest.fn()
+
 function getAdminPrismaMocks() {
   const globalRef = globalThis as any
   if (!globalRef.__ADMIN_PRISMA_MOCKS__) {
@@ -50,6 +55,14 @@ jest.mock('@/lib/db', () => {
   }
 })
 
+jest.mock('@/lib/analytics/dashboard', () => {
+  const actual = jest.requireActual('@/lib/analytics/dashboard')
+  return {
+    ...actual,
+    computeDashboardAnalytics: (...args: any[]) => computeDashboardAnalyticsMock(...args),
+  }
+})
+
 const prismaMocks = getAdminPrismaMocks()
 // Import after mock to get the mocked version
 import { prisma } from '@/lib/db'
@@ -59,57 +72,54 @@ const mockPrisma = prisma as any
 describe('Admin API Integration', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    computeDashboardAnalyticsMock.mockReset()
   })
 
   describe('GET /api/analytics/dashboard', () => {
     test('should return dashboard analytics for admin', async () => {
       const mockAnalytics = {
-        revenue: {
-          today: 2500.00,
-          thisWeek: 15000.00,
-          thisMonth: 65000.00,
-          lastMonth: 58000.00,
-        },
-        bookings: {
-          today: 8,
-          thisWeek: 45,
-          thisMonth: 180,
-          lastMonth: 165,
-        },
-        occupancy: {
-          current: 85.5,
-          average: 78.2,
-        },
-        guests: {
-          total: 245,
-          new: 12,
-          returning: 233,
-        },
-        topRooms: [
-          {
-            roomType: 'Deluxe King',
-            bookings: 45,
-            revenue: 13455.00,
+        summary: {
+          occupancyRate: 82.5,
+          averageOccupancyRate: 78.2,
+          bookingGrowthRate: 12.5,
+          todayRevenue: 2500,
+          monthlyRevenue: 65000,
+          revenueGrowthRate: 8.1,
+          todayBookings: 8,
+          monthlyBookings: 180,
+          restaurantOrdersToday: 45,
+          restaurantRevenueToday: 3800,
+          restaurantRevenueMonth: 12000,
+          averageOrderValueToday: 84.44,
+          taskStats: {
+            total: 42,
+            completed: 30,
+            pending: 10,
+            overdue: 2,
+            completionRate: 71.4,
           },
-        ],
-        recentBookings: [
+          guestSatisfaction: {
+            rating: 4.7,
+            reviews: 128,
+          },
+        },
+        recentActivity: {
+          bookings: [
           {
             id: 'booking-123',
-            guestName: 'John Doe',
-            roomType: 'Deluxe King',
-            checkIn: new Date('2024-01-15'),
-            totalPrice: 897.00,
+              roomNumber: '701',
+              guestName: 'Jordan Carter',
+              createdAt: new Date('2024-01-15'),
+              totalAmount: 897,
             status: 'CONFIRMED',
           },
         ],
+          orders: [],
+          tasks: [],
+        },
       }
 
-      prismaMocks.mockBookingAggregate.mockResolvedValue({
-        _sum: { totalPrice: 2500.00 },
-        _count: { id: 8 },
-      })
-      prismaMocks.mockBookingFindMany.mockResolvedValue(mockAnalytics.recentBookings)
-      prismaMocks.mockUserCount.mockResolvedValue(245)
+      computeDashboardAnalyticsMock.mockResolvedValue(mockAnalytics)
 
       const request = new NextRequest('http://localhost:3000/api/analytics/dashboard', {
         headers: {
@@ -121,28 +131,52 @@ describe('Admin API Integration', () => {
       const data = await response.json()
 
       expect(response.status).toBe(200)
-      expect(data).toHaveProperty('revenue')
-      expect(data).toHaveProperty('bookings')
-      expect(data).toHaveProperty('occupancy')
-      expect(data).toHaveProperty('guests')
+      expect(data.summary).toEqual(mockAnalytics.summary)
+      const expectedBookings = mockAnalytics.recentActivity.bookings.map(booking => ({
+        ...booking,
+        createdAt: booking.createdAt.toISOString(),
+      }))
+      expect(data.recentActivity.bookings).toEqual(expectedBookings)
+      expect(data.recentActivity.orders).toEqual(mockAnalytics.recentActivity.orders)
+      expect(data.recentActivity.tasks).toEqual(mockAnalytics.recentActivity.tasks)
+      expect(computeDashboardAnalyticsMock).toHaveBeenCalledTimes(1)
     })
 
     test('should filter analytics by date range', async () => {
       const mockAnalytics = {
-        revenue: {
-          period: 5000.00,
+        summary: {
+          occupancyRate: 65.4,
+          averageOccupancyRate: 70.1,
+          bookingGrowthRate: 5,
+          todayRevenue: 5000,
+          monthlyRevenue: 12000,
+          revenueGrowthRate: 4,
+          todayBookings: 3,
+          monthlyBookings: 15,
+          restaurantOrdersToday: 12,
+          restaurantRevenueToday: 640,
+          restaurantRevenueMonth: 4500,
+          averageOrderValueToday: 53.33,
+          taskStats: {
+            total: 10,
+            completed: 7,
+            pending: 2,
+            overdue: 1,
+            completionRate: 70,
+          },
+          guestSatisfaction: {
+            rating: 4.5,
+            reviews: 56,
+          },
         },
-        bookings: {
-          period: 15,
+        recentActivity: {
+          bookings: [],
+          orders: [],
+          tasks: [],
         },
       }
 
-      prismaMocks.mockBookingAggregate.mockResolvedValue({
-        _sum: { totalPrice: 5000.00 },
-        _count: { id: 15 },
-      })
-      prismaMocks.mockBookingFindMany.mockResolvedValue([])
-      prismaMocks.mockUserCount.mockResolvedValue(0)
+      computeDashboardAnalyticsMock.mockResolvedValue(mockAnalytics)
 
       const request = new NextRequest('http://localhost:3000/api/analytics/dashboard?startDate=2024-01-01&endDate=2024-01-31', {
         headers: {
@@ -153,24 +187,8 @@ describe('Admin API Integration', () => {
       const data = await response.json()
 
       expect(response.status).toBe(200)
-      expect(prismaMocks.mockBookingAggregate).toHaveBeenCalledWith({
-        where: {
-          createdAt: {
-            gte: expect.any(Date),
-            lte: expect.any(Date),
-          },
-        },
-        _sum: { totalPrice: true },
-        _count: { id: true },
-      })
-      expect(prismaMocks.mockUserCount).toHaveBeenCalledTimes(1)
-      expect(data).toEqual({
-        revenue: { period: 5000.00 },
-        bookings: { period: 15 },
-        occupancy: { current: 0, average: 0 },
-        guests: { total: 0 },
-        recentBookings: [],
-      })
+      expect(data).toEqual(mockAnalytics)
+      expect(computeDashboardAnalyticsMock).toHaveBeenCalledWith()
     })
 
     test('should handle unauthorized access', async () => {
@@ -183,7 +201,7 @@ describe('Admin API Integration', () => {
     })
 
     test('should handle database errors gracefully', async () => {
-      prismaMocks.mockBookingAggregate.mockRejectedValue(new Error('Database connection failed'))
+      computeDashboardAnalyticsMock.mockRejectedValue(new Error('Database connection failed'))
 
       const request = new NextRequest('http://localhost:3000/api/analytics/dashboard', {
         headers: {
@@ -589,4 +607,9 @@ describe('Admin API Integration', () => {
       expect(data.error).toContain('Failed to create notification')
     })
   })
+})
+
+afterAll(() => {
+  consoleErrorSpy.mockRestore()
+  consoleLogSpy.mockRestore()
 })

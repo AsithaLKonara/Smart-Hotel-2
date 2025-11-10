@@ -1,5 +1,14 @@
 import { EnvironmentValidator, testDatabaseConnection, testStripeConnection, testEmailConnection } from '@/lib/environment-validator'
 
+const stripeBalanceMock = jest.fn().mockResolvedValue({ available: [] })
+jest.mock('stripe', () => {
+  return jest.fn(() => ({
+    balance: {
+      retrieve: stripeBalanceMock,
+    },
+  }))
+})
+
 describe('Environment Validation', () => {
   let validator: EnvironmentValidator
 
@@ -163,18 +172,12 @@ describe('Environment Validation', () => {
     })
 
     test('should test Stripe connection', async () => {
-      // Mock Stripe for testing
-      const mockStripe = {
-        balance: {
-          retrieve: jest.fn().mockResolvedValue({ available: [] }),
-        },
-      }
-
-      jest.doMock('stripe', () => jest.fn(() => mockStripe))
+      stripeBalanceMock.mockResolvedValueOnce({ available: [] })
 
       const result = await testStripeConnection()
-      // In test environment, we expect this to fail due to invalid API key
-      expect(typeof result).toBe('boolean')
+
+      expect(result).toBe(true)
+      expect(stripeBalanceMock).toHaveBeenCalled()
     })
 
     test('should test email connection', async () => {

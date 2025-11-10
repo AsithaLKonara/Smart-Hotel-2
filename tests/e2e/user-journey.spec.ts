@@ -2,6 +2,11 @@ import { test, expect } from '@playwright/test'
 
 test.describe('Authenticated Journeys', () => {
   test('admin dashboard renders with analytics summary', async ({ page }) => {
+    await page.context().setExtraHTTPHeaders({
+      'x-test-role': 'SUPER_ADMIN',
+      'x-test-user-id': 'admin-1',
+    })
+
     await page.route('**/api/auth/session', route => {
       route.fulfill({
         status: 200,
@@ -91,6 +96,11 @@ test.describe('Authenticated Journeys', () => {
   })
 
   test('my bookings page lists bookings for authenticated users', async ({ page }) => {
+    await page.context().setExtraHTTPHeaders({
+      'x-test-role': 'GUEST',
+      'x-test-user-id': 'guest-123',
+    })
+
     await page.route('**/api/auth/session', route => {
       route.fulfill({
         status: 200,

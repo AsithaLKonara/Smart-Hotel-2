@@ -4,6 +4,9 @@ import { POST as createOrder } from '@/app/api/restaurant/orders/route'
 import { GET as getKitchenOrders } from '@/app/api/kitchen/orders/route'
 import { PATCH as updateOrderStatus } from '@/app/api/restaurant/orders/[id]/route'
 
+const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined)
+const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => undefined)
+
 // Mock Prisma client
 jest.mock('@/lib/db', () => ({
   prisma: {
@@ -533,4 +536,9 @@ describe('Restaurant API Integration', () => {
       })
     })
   })
+})
+
+afterAll(() => {
+  consoleErrorSpy.mockRestore()
+  consoleLogSpy.mockRestore()
 })

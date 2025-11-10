@@ -12,8 +12,8 @@
     "test": "npm run test:unit && npm run test:integration",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "test:unit": "jest --testPathPattern=unit --coverage",
-    "test:integration": "jest --testPathPattern=integration --runInBand",
+    "test:unit": "jest --testPathPattern=unit --runInBand --coverage --coverageDirectory=coverage/unit --coverageReporters=lcov",
+    "test:integration": "jest --testPathPattern=integration --runInBand --coverage --coverageDirectory=coverage/integration --coverageReporters=lcov",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:load": "k6 run tests/k6/booking-load-test.js",
@@ -105,7 +105,6 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "@types/supertest": "^6.0.3",
-    "artillery": "^1.7.9",
     "autoprefixer": "^10.0.1",
     "chrome-launcher": "^0.15.2",
     "eslint": "^8",
@@ -123,6 +122,7 @@
     "ts-jest": "^29.4.3",
     "tsx": "^4.6.0",
     "typescript": "^5",
-    "webpack-bundle-analyzer": "^4.10.2"
+    "webpack-bundle-analyzer": "^4.10.2",
+    "nyc": "^15.1.0"
   }
 }
