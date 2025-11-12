@@ -148,7 +148,12 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    return NextResponse.json({ availability: roomsWithPricing })
+    return NextResponse.json({ 
+      availableRooms: roomsWithPricing,
+      totalAvailable: roomsWithPricing.length,
+      checkIn,
+      checkOut
+    })
 
   } catch (error) {
     console.error('Availability check error:', error)

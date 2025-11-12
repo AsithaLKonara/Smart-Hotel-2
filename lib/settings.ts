@@ -36,25 +36,44 @@ export const getHotelSettings = cache(async () => {
 })
 
 export async function getHotelContactInfo() {
-  const settings = await getHotelSettings()
+  try {
+    const settings = await getHotelSettings()
 
-  return {
-    name: settings.hotel_name || 'SmartHotel Grand Palace',
-    tagline: settings.hotel_tagline || 'Luxury 5-Star Accommodation',
-    description:
-      settings.hotel_description ||
-      'Experience unparalleled luxury where timeless elegance meets modern hospitality.',
-    email: settings.hotel_email || 'info@smarthotel.com',
-    phone: settings.hotel_phone || '+1 (800) 555-HOTEL',
-    address:
-      settings.hotel_address ||
-      '123 Grand Boulevard, City Center, Metropolitan Area, ST 10001',
-    checkIn: settings.check_in_time || '15:00',
-    checkOut: settings.check_out_time || '11:00',
-    coordinates: {
-      lat: Number(settings.hotel_latitude ?? 40.7589),
-      lng: Number(settings.hotel_longitude ?? -73.9851),
-    },
+    return {
+      name: settings.hotel_name || 'SmartHotel Grand Palace',
+      tagline: settings.hotel_tagline || 'Luxury 5-Star Accommodation',
+      description:
+        settings.hotel_description ||
+        'Experience unparalleled luxury where timeless elegance meets modern hospitality.',
+      email: settings.hotel_email || 'info@smarthotel.com',
+      phone: settings.hotel_phone || '+1 (800) 555-HOTEL',
+      address:
+        settings.hotel_address ||
+        '123 Grand Boulevard, City Center, Metropolitan Area, ST 10001',
+      checkIn: settings.check_in_time || '15:00',
+      checkOut: settings.check_out_time || '11:00',
+      coordinates: {
+        lat: Number(settings.hotel_latitude ?? 40.7589),
+        lng: Number(settings.hotel_longitude ?? -73.9851),
+      },
+    }
+  } catch (error) {
+    console.error('Error fetching hotel contact info:', error)
+    // Return default values if database query fails
+    return {
+      name: 'SmartHotel Grand Palace',
+      tagline: 'Luxury 5-Star Accommodation',
+      description: 'Experience unparalleled luxury where timeless elegance meets modern hospitality.',
+      email: 'info@smarthotel.com',
+      phone: '+1 (800) 555-HOTEL',
+      address: '123 Grand Boulevard, City Center, Metropolitan Area, ST 10001',
+      checkIn: '15:00',
+      checkOut: '11:00',
+      coordinates: {
+        lat: 40.7589,
+        lng: -73.9851,
+      },
+    }
   }
 }
 
