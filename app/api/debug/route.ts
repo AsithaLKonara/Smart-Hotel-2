@@ -19,10 +19,10 @@ export async function GET(request: NextRequest) {
     debugInfo.checks.DATABASE_URL = {
       exists: hasDatabaseUrl,
       value: hasDatabaseUrl 
-        ? process.env.DATABASE_URL.replace(/\/\/.*@/, '//***:***@') 
+        ? (process.env.DATABASE_URL || '').replace(/\/\/.*@/, '//***:***@') 
         : 'NOT SET',
       formatted: hasDatabaseUrl 
-        ? process.env.DATABASE_URL.substring(0, 50) + '...' 
+        ? (process.env.DATABASE_URL || '').substring(0, 50) + '...' 
         : 'MISSING'
     }
     
