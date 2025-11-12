@@ -17,23 +17,35 @@ interface RoomDetailPageProps {
 export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
   const { id } = await params
 
-  const room = await prisma.room.findUnique({
-    where: { id },
-    include: {
-      roomImages: true,
-      reviews: {
-        take: 5,
-        orderBy: { createdAt: 'desc' },
-        include: {
-          user: {
-            select: {
-              name: true,
+  // Validate id parameter
+  if (!id || typeof id !== 'string' || id.trim() === '') {
+    console.error('Invalid room ID:', id)
+    notFound()
+  }
+
+  let room
+  try {
+    room = await prisma.room.findUnique({
+      where: { id: id.trim() },
+      include: {
+        roomImages: true,
+        reviews: {
+          take: 5,
+          orderBy: { createdAt: 'desc' },
+          include: {
+            user: {
+              select: {
+                name: true,
+              }
             }
           }
         }
       }
-    }
-  })
+    })
+  } catch (error) {
+    console.error('Error fetching room details:', error)
+    notFound()
+  }
 
   if (!room) {
     notFound()

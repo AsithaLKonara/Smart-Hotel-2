@@ -27,15 +27,65 @@ import { getHotelContactInfo } from '@/lib/settings'
 export const dynamic = 'force-dynamic'
 
 export default async function HomePage() {
-  const [contact, featuredRooms] = await Promise.all([
-    getHotelContactInfo(),
+  let contact
+  let featuredRooms: Array<{
+    id: string
+    type: string
+    price: number
+    description: string | null
+  }> = []
+
+  try {
+    const [contactData, roomsData] = await Promise.all([
+      getHotelContactInfo().catch((error) => {
+        console.error('Error fetching hotel contact info:', error)
+        return {
+          name: 'SmartHotel Grand Palace',
+          tagline: 'Luxury 5-Star Accommodation',
+          description: 'Experience unparalleled luxury where timeless elegance meets modern hospitality.',
+          email: 'info@smarthotel.com',
+          phone: '+1 (800) 555-HOTEL',
+          address: '123 Grand Boulevard, City Center, Metropolitan Area, ST 10001',
+          checkIn: '15:00',
+          checkOut: '11:00',
+          coordinates: {
+            lat: 40.7589,
+            lng: -73.9851,
+          },
+        }
+      }),
     prisma.room.findMany({
       take: 3,
       orderBy: {
         price: 'desc',
       },
+      }).catch((error) => {
+        console.error('Error fetching featured rooms:', error)
+        return []
     }),
   ])
+    
+    contact = contactData
+    featuredRooms = roomsData || []
+  } catch (error) {
+    console.error('Error in HomePage:', error)
+    // Fallback values
+    contact = {
+      name: 'SmartHotel Grand Palace',
+      tagline: 'Luxury 5-Star Accommodation',
+      description: 'Experience unparalleled luxury where timeless elegance meets modern hospitality.',
+      email: 'info@smarthotel.com',
+      phone: '+1 (800) 555-HOTEL',
+      address: '123 Grand Boulevard, City Center, Metropolitan Area, ST 10001',
+      checkIn: '15:00',
+      checkOut: '11:00',
+      coordinates: {
+        lat: 40.7589,
+        lng: -73.9851,
+      },
+    }
+    featuredRooms = []
+  }
 
   return (
     <div className="min-h-screen">

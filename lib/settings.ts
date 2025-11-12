@@ -28,34 +28,41 @@ const cache =
   }
 
 export const getHotelSettings = cache(async () => {
+  try {
   const records = await prisma.setting.findMany()
   return records.reduce<SettingsMap>((acc, setting) => {
     acc[setting.key] = setting.value
     return acc
   }, {})
+  } catch (error) {
+    console.error('Error fetching hotel settings:', error)
+    // Return empty object if database query fails
+    // This allows getHotelContactInfo to use default values
+    return {}
+  }
 })
 
 export async function getHotelContactInfo() {
   try {
-    const settings = await getHotelSettings()
+  const settings = await getHotelSettings()
 
-    return {
-      name: settings.hotel_name || 'SmartHotel Grand Palace',
-      tagline: settings.hotel_tagline || 'Luxury 5-Star Accommodation',
-      description:
-        settings.hotel_description ||
-        'Experience unparalleled luxury where timeless elegance meets modern hospitality.',
-      email: settings.hotel_email || 'info@smarthotel.com',
-      phone: settings.hotel_phone || '+1 (800) 555-HOTEL',
-      address:
-        settings.hotel_address ||
-        '123 Grand Boulevard, City Center, Metropolitan Area, ST 10001',
-      checkIn: settings.check_in_time || '15:00',
-      checkOut: settings.check_out_time || '11:00',
-      coordinates: {
-        lat: Number(settings.hotel_latitude ?? 40.7589),
-        lng: Number(settings.hotel_longitude ?? -73.9851),
-      },
+  return {
+    name: settings.hotel_name || 'SmartHotel Grand Palace',
+    tagline: settings.hotel_tagline || 'Luxury 5-Star Accommodation',
+    description:
+      settings.hotel_description ||
+      'Experience unparalleled luxury where timeless elegance meets modern hospitality.',
+    email: settings.hotel_email || 'info@smarthotel.com',
+    phone: settings.hotel_phone || '+1 (800) 555-HOTEL',
+    address:
+      settings.hotel_address ||
+      '123 Grand Boulevard, City Center, Metropolitan Area, ST 10001',
+    checkIn: settings.check_in_time || '15:00',
+    checkOut: settings.check_out_time || '11:00',
+    coordinates: {
+      lat: Number(settings.hotel_latitude ?? 40.7589),
+      lng: Number(settings.hotel_longitude ?? -73.9851),
+    },
     }
   } catch (error) {
     console.error('Error fetching hotel contact info:', error)
@@ -78,6 +85,7 @@ export async function getHotelContactInfo() {
 }
 
 export async function getHotelAboutContent() {
+  try {
   const settings = await getHotelSettings()
   const story =
     settings.hotel_story ||
@@ -96,16 +104,31 @@ export async function getHotelAboutContent() {
     }
   }
 
-  const staff = await prisma.staff.findMany({
+    let staff: any[] = []
+    try {
+      staff = await prisma.staff.findMany({
     orderBy: { hireDate: 'asc' },
     take: 6,
   })
+    } catch (error) {
+      console.error('Error fetching staff:', error)
+      staff = []
+    }
 
   return {
     story,
     founded,
     milestones,
     staff,
+    }
+  } catch (error) {
+    console.error('Error in getHotelAboutContent:', error)
+    return {
+      story: 'Since opening our doors in 1985, we have embraced guests with impeccable service, timeless design, and unforgettable experiences.',
+      founded: '1985',
+      milestones: defaultMilestones,
+      staff: [],
+    }
   }
 }
 

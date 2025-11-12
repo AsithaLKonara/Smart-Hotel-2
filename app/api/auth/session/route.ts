@@ -33,12 +33,18 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Error fetching session:', error)
+    // Always return JSON, never HTML error pages
     return NextResponse.json(
       { 
         authenticated: false,
         error: 'Failed to fetch session'
       },
-      { status: 500 }
+      { 
+        status: 200, // Return 200 instead of 500 to prevent error page rendering
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      }
     )
   }
 }
