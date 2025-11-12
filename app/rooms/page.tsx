@@ -3,28 +3,100 @@
 // Force dynamic rendering
 export const dynamic = 'force-dynamic'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Search, Filter, Users, Star } from 'lucide-react'
+import { Search, Filter, Users, Star, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 // Navigation is handled by layout.tsx
 
+interface Room {
+  id: string
+  number: string
+  type: string
+  price: number
+  capacity: number
+  size: number | null
+  description: string | null
+  amenities: string[] | any
+  roomImages?: Array<{ url: string; isMain?: boolean }>
+  images?: string[]
+  reviews?: Array<{ rating: number }>
+}
+
 export default function RoomsPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedType, setSelectedType] = useState('all')
   const [priceRange, setPriceRange] = useState([0, 1000])
+  const [rooms, setRooms] = useState<Room[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  // Fetch rooms from API
+  useEffect(() => {
+    async function fetchRooms() {
+      try {
+        setIsLoading(true)
+        const response = await fetch('/api/rooms')
+        if (!response.ok) {
+          throw new Error('Failed to fetch rooms')
+        }
+        const data = await response.json()
+        setRooms(data || [])
+      } catch (err) {
+        console.error('Error fetching rooms:', err)
+        setError('Failed to load rooms. Please try again later.')
+        // Fallback to empty array
+        setRooms([])
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchRooms()
+  }, [])
 
   const filteredRooms = rooms.filter(room => {
-    const matchesSearch = room.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         room.description.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesType = selectedType === 'all' || room.type.toLowerCase() === selectedType
+    const roomName = room.number || room.type || ''
+    const roomDescription = room.description || ''
+    const matchesSearch = roomName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         roomDescription.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesType = selectedType === 'all' || room.type.toLowerCase() === selectedType.toLowerCase()
     const matchesPrice = room.price >= priceRange[0] && room.price <= priceRange[1]
     
     return matchesSearch && matchesType && matchesPrice
   })
+
+  // Calculate average rating for a room
+  const getAverageRating = (room: Room): number => {
+    if (!room.reviews || !Array.isArray(room.reviews) || room.reviews.length === 0) {
+      return 0
+    }
+    const sum = room.reviews.reduce((acc, review) => acc + (review.rating || 0), 0)
+    return sum / room.reviews.length
+  }
+
+  // Get room image
+  const getRoomImage = (room: Room): string => {
+    if (room.roomImages && room.roomImages.length > 0) {
+      const mainImage = room.roomImages.find(img => img.isMain)
+      if (mainImage) return mainImage.url
+      return room.roomImages[0].url
+    }
+    if (room.images && Array.isArray(room.images) && room.images.length > 0) {
+      return room.images[0]
+    }
+    return '/images/room-placeholder.jpg'
+  }
+
+  // Get amenities array
+  const getAmenities = (room: Room): string[] => {
+    if (Array.isArray(room.amenities)) {
+      return room.amenities
+    }
+    return []
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -107,163 +179,116 @@ export default function RoomsPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredRooms.map((room) => (
-              <Card key={room.id} data-testid="room-card" className="overflow-hidden hover:shadow-xl transition-shadow group">
-                <div className="relative h-64">
-                  <Image
-                    src={room.image}
-                    alt={room.name}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <Badge className="absolute top-4 left-4 bg-luxury-600">
-                    {room.type}
-                  </Badge>
-                  <div className="absolute top-4 right-4 flex items-center gap-1 bg-black/50 text-white px-2 py-1 rounded">
-                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                    <span className="text-sm font-medium">{room.rating}</span>
-                  </div>
-                </div>
-                
-                <div className="p-6">
-                  <h3 className="text-xl font-bold mb-2">{room.name}</h3>
-                  <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-2">
-                    {room.description}
-                  </p>
-                  
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-300">
-                      <div className="flex items-center gap-1">
-                        <Users className="w-4 h-4" />
-                        <span>{room.capacity} Guests</span>
-                      </div>
-                      <span>{room.size}m²</span>
-                    </div>
-                    <div className="text-2xl font-bold text-primary-600">
-                      ${room.price}
-                      <span className="text-sm font-normal text-gray-500">/night</span>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {room.amenities.slice(0, 3).map((amenity) => (
-                      <Badge key={amenity} variant="secondary" className="text-xs">
-                        {amenity}
-                      </Badge>
-                    ))}
-                    {room.amenities.length > 3 && (
-                      <Badge variant="secondary" className="text-xs">
-                        +{room.amenities.length - 3} more
-                      </Badge>
-                    )}
-                  </div>
-
-                  <div className="flex gap-2">
-                    <Link href={`/rooms/${room.id}`} className="flex-1">
-                      <Button variant="outline" className="w-full">
-                        View Details
-                      </Button>
-                    </Link>
-                    <Link href={`/booking?room=${room.id}`} className="flex-1">
-                      <Button className="w-full btn-primary">
-                        Book Now
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-
-          {filteredRooms.length === 0 && (
+          {isLoading ? (
             <div className="text-center py-12">
-              <div className="text-gray-400 mb-4">
+              <Loader2 className="w-12 h-12 mx-auto animate-spin text-primary-600 mb-4" />
+              <p className="text-gray-600 dark:text-gray-300">Loading rooms...</p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-12">
+              <div className="text-red-500 mb-4">
                 <Search className="w-16 h-16 mx-auto" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">No rooms found</h3>
-              <p className="text-gray-600 dark:text-gray-300">
-                Try adjusting your search criteria or filters
-              </p>
+              <h3 className="text-xl font-semibold mb-2">Error loading rooms</h3>
+              <p className="text-gray-600 dark:text-gray-300">{error}</p>
             </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {filteredRooms.map((room) => {
+                  const rating = getAverageRating(room)
+                  const roomImage = getRoomImage(room)
+                  const amenities = getAmenities(room)
+                  const roomName = room.number ? `Room ${room.number}` : room.type
+                  
+                  return (
+                    <Card key={room.id} data-testid="room-card" className="overflow-hidden hover:shadow-xl transition-shadow group">
+                      <div className="relative h-64">
+                        <Image
+                          src={roomImage}
+                          alt={roomName}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                        <Badge className="absolute top-4 left-4 bg-luxury-600">
+                          {room.type}
+                        </Badge>
+                        {rating > 0 && (
+                          <div className="absolute top-4 right-4 flex items-center gap-1 bg-black/50 text-white px-2 py-1 rounded">
+                            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                            <span className="text-sm font-medium">{rating.toFixed(1)}</span>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="p-6">
+                        <h3 className="text-xl font-bold mb-2">{roomName}</h3>
+                        <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-2">
+                          {room.description || 'Experience luxury and comfort in our beautifully designed accommodations.'}
+                        </p>
+                        
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-300">
+                            <div className="flex items-center gap-1">
+                              <Users className="w-4 h-4" />
+                              <span>{room.capacity} Guests</span>
+                            </div>
+                            {room.size && <span>{room.size}m²</span>}
+                          </div>
+                          <div className="text-2xl font-bold text-primary-600">
+                            ${room.price}
+                            <span className="text-sm font-normal text-gray-500">/night</span>
+                          </div>
+                        </div>
+
+                        {amenities.length > 0 && (
+                          <div className="flex flex-wrap gap-2 mb-4">
+                            {amenities.slice(0, 3).map((amenity, idx) => (
+                              <Badge key={idx} variant="secondary" className="text-xs">
+                                {amenity}
+                              </Badge>
+                            ))}
+                            {amenities.length > 3 && (
+                              <Badge variant="secondary" className="text-xs">
+                                +{amenities.length - 3} more
+                              </Badge>
+                            )}
+                          </div>
+                        )}
+
+                        <div className="flex gap-2">
+                          <Link href={`/rooms/${room.id}`} className="flex-1">
+                            <Button variant="outline" className="w-full">
+                              View Details
+                            </Button>
+                          </Link>
+                          <Link href={`/booking?room=${room.id}`} className="flex-1">
+                            <Button className="w-full btn-primary">
+                              Book Now
+                            </Button>
+                          </Link>
+                        </div>
+                      </div>
+                    </Card>
+                  )
+                })}
+              </div>
+
+              {filteredRooms.length === 0 && !isLoading && (
+                <div className="text-center py-12">
+                  <div className="text-gray-400 mb-4">
+                    <Search className="w-16 h-16 mx-auto" />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2">No rooms found</h3>
+                  <p className="text-gray-600 dark:text-gray-300">
+                    Try adjusting your search criteria or filters
+                  </p>
+                </div>
+              )}
+            </>
           )}
         </div>
       </section>
     </div>
   )
 }
-
-const rooms = [
-  {
-    id: 1,
-    name: "Deluxe Suite",
-    type: "Suite",
-    description: "Spacious suite with panoramic city views, separate living area, and premium amenities. Perfect for families or business travelers seeking luxury and comfort.",
-    price: 299,
-    capacity: 4,
-    size: 65,
-    rating: 4.8,
-    image: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80",
-    amenities: ["King Bed", "City View", "Balcony", "Mini Bar", "Free WiFi", "Room Service"]
-  },
-  {
-    id: 2,
-    name: "Executive Room",
-    type: "Deluxe",
-    description: "Modern executive room with business facilities, ergonomic workspace, and city skyline views. Ideal for business travelers.",
-    price: 199,
-    capacity: 2,
-    size: 45,
-    rating: 4.6,
-    image: "https://images.unsplash.com/photo-1501117716987-c8e1ecb210f6?auto=format&fit=crop&w=1200&q=80",
-    amenities: ["Queen Bed", "Work Desk", "City View", "Free WiFi", "Coffee Maker"]
-  },
-  {
-    id: 3,
-    name: "Presidential Suite",
-    type: "Presidential",
-    description: "Ultimate luxury experience with panoramic views, private terrace, and exclusive butler service. The epitome of luxury accommodation.",
-    price: 599,
-    capacity: 6,
-    size: 120,
-    rating: 4.9,
-    image: "https://images.unsplash.com/photo-1543353071-873f17a7a088?auto=format&fit=crop&w=1200&q=80",
-    amenities: ["King Bed", "Terrace", "Butler Service", "Jacuzzi", "Kitchen", "Living Room"]
-  },
-  {
-    id: 4,
-    name: "Standard Room",
-    type: "Standard",
-    description: "Comfortable and well-appointed room with all essential amenities. Perfect for budget-conscious travelers who don't compromise on quality.",
-    price: 129,
-    capacity: 2,
-    size: 35,
-    rating: 4.4,
-    image: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=1200&q=80",
-    amenities: ["Queen Bed", "Free WiFi", "TV", "Private Bathroom"]
-  },
-  {
-    id: 5,
-    name: "Family Suite",
-    type: "Suite",
-    description: "Spacious family suite with connecting rooms, perfect for families with children. Features a separate living area and multiple bathrooms.",
-    price: 399,
-    capacity: 6,
-    size: 85,
-    rating: 4.7,
-    image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=80",
-    amenities: ["2 Bedrooms", "Living Room", "Kitchen", "Free WiFi", "Play Area"]
-  },
-  {
-    id: 6,
-    name: "Garden View Room",
-    type: "Deluxe",
-    description: "Peaceful room overlooking our beautiful gardens. Perfect for those seeking tranquility and natural beauty during their stay.",
-    price: 179,
-    capacity: 2,
-    size: 40,
-    rating: 4.5,
-    image: "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?auto=format&fit=crop&w=1200&q=80",
-    amenities: ["Queen Bed", "Garden View", "Balcony", "Free WiFi", "Coffee Maker"]
-  }
-] 

@@ -97,6 +97,14 @@ export async function GET(request: NextRequest) {
     const rooms = await prisma.room.findMany({
       where,
       orderBy: { number: 'asc' },
+      include: {
+        roomImages: true,
+        reviews: {
+          select: {
+            rating: true,
+          },
+        },
+      },
     })
 
     return NextResponse.json(rooms)
