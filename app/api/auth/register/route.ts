@@ -38,6 +38,8 @@ export async function POST(request: NextRequest) {
         password: hashedPassword,
         phone: validatedData.phone || '',
         role: 'GUEST', // Default role for new registrations
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
       select: {
         id: true,
