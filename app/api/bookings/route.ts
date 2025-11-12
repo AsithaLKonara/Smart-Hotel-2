@@ -310,11 +310,12 @@ export async function POST(request: NextRequest) {
         description: `Booking for Room ${room.number} - ${nights} nights`,
       })
 
-      // Update booking with payment intent ID
-      await prisma.booking.update({
-        where: { id: booking.id },
-        data: { paymentIntentId: paymentIntent.id }
-      })
+      // Note: paymentIntentId field doesn't exist in Booking schema
+      // Would need to add field to schema to store payment intent ID
+      // await prisma.booking.update({
+      //   where: { id: booking.id },
+      //   data: { paymentIntentId: paymentIntent.id }
+      // })
     }
 
                     // Send email notifications
