@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Find user
-    const user = await prisma.user.findUnique({
+    const user = await prisma.user.findFirst({
       where: { email }
     })
 
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
 
     // Store token in database
     await prisma.user.update({
-      where: { email },
+      where: { id: user.id },
       data: {
         resetToken,
         resetTokenExpiry
