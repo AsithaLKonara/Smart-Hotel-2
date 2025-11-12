@@ -8,20 +8,26 @@
 let Sentry: any = null
 
 // Lazy load Sentry to avoid issues in test environments
-try {
-  if (typeof window === 'undefined') {
-    // Server-side
-    Sentry = require('@sentry/nextjs')
-  } else {
-    // Client-side - Sentry is loaded via sentry.client.config.ts
-    // Check if Sentry is available globally
-    if (typeof (globalThis as any).Sentry !== 'undefined') {
-      Sentry = (globalThis as any).Sentry
+// Only attempt to load if SENTRY_DSN is configured
+if (process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN) {
+  try {
+    if (typeof window === 'undefined') {
+      // Server-side - use dynamic require to avoid webpack bundling
+      const sentryModule = '@sentry/nextjs'
+      if (require.resolve && require.resolve(sentryModule)) {
+        Sentry = require(sentryModule)
+      }
+    } else {
+      // Client-side - Sentry is loaded via sentry.client.config.ts
+      // Check if Sentry is available globally
+      if (typeof (globalThis as any).Sentry !== 'undefined') {
+        Sentry = (globalThis as any).Sentry
+      }
     }
+  } catch (error) {
+    // Sentry not available, will use console fallback
+    Sentry = null
   }
-} catch (error) {
-  // Sentry not available, will use console fallback
-  Sentry = null
 }
 
 export interface ErrorContext {

@@ -118,16 +118,16 @@ jest.mock('exceljs', () => ({
       addWorksheet: jest.fn((name: string) => {
         const worksheet = {
           name,
-          columns: [],
-          addRow: jest.fn(),
+      columns: [],
+      addRow: jest.fn(),
           getColumn: jest.fn(() => ({ width: 0 })),
         }
         worksheets.push(worksheet)
         return worksheet
-      }),
-      xlsx: {
-        writeBuffer: jest.fn().mockResolvedValue(Buffer.from('excel-data')),
-      },
+    }),
+    xlsx: {
+      writeBuffer: jest.fn().mockResolvedValue(Buffer.from('excel-data')),
+    },
     }
   }),
 }))

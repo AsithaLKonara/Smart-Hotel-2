@@ -38,7 +38,23 @@ const nextConfig = {
   outputFileTracingRoot: __dirname,
   
   // Build performance optimizations
-  webpack: (config) => {
+  webpack: (config, { isServer }) => {
+    // Ignore optional Sentry module if not installed
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      '@sentry/nextjs': false,
+    }
+    
+    // Add externals for Sentry to prevent webpack from trying to bundle it
+    if (!isServer) {
+      config.externals = config.externals || []
+      if (Array.isArray(config.externals)) {
+        config.externals.push('@sentry/nextjs')
+      } else {
+        config.externals = [config.externals, '@sentry/nextjs']
+      }
+    }
+    
     return config
   },
   
