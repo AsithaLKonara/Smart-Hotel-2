@@ -22,10 +22,16 @@ const customJestConfig = {
   ],
   coverageThreshold: {
     global: {
-      branches: 0,
-      functions: 0,
-      lines: 0,
-      statements: 0,
+      branches: 15,
+      functions: 15,
+      lines: 15,
+      statements: 15,
+    },
+    './lib/': {
+      branches: 60,
+      functions: 70,
+      lines: 70,
+      statements: 70,
     },
   },
   moduleNameMapper: {

@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { captureException } from '@/lib/monitoring'
 
 interface ErrorBoundaryState {
   hasError: boolean
@@ -23,7 +24,16 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('ErrorBoundary caught an error:', error, errorInfo)
+    // Log to Sentry
+    captureException(error, {
+      componentStack: errorInfo.componentStack,
+      errorBoundary: true,
+    })
+    
+    // Also log to console in development
+    if (process.env.NODE_ENV === 'development') {
+      console.error('ErrorBoundary caught an error:', error, errorInfo)
+    }
   }
 
   resetError = () => {

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './fixtures'
 
 test.describe('Staff Journeys', () => {
   test('receptionist manages booking board actions', async ({ page }) => {

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
+import { Prisma } from '@prisma/client'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { FoodCategory } from '@/types/restaurant'
@@ -15,7 +16,7 @@ export async function GET(request: NextRequest) {
     const minPrice = searchParams.get('minPrice')
     const maxPrice = searchParams.get('maxPrice')
 
-    const where: Record<string, unknown> = {}
+    const where: Prisma.FoodMenuWhereInput = {}
 
     if (category) {
       where.category = category
@@ -23,12 +24,6 @@ export async function GET(request: NextRequest) {
 
     if (available !== null) {
       where.available = available === 'true'
-    }
-
-    if (dietary) {
-      where.dietaryTags = {
-        has: dietary
-      }
     }
 
     if (search) {
@@ -39,9 +34,10 @@ export async function GET(request: NextRequest) {
     }
 
     if (minPrice || maxPrice) {
-      where.price = {}
-      if (minPrice) where.price.gte = parseFloat(minPrice)
-      if (maxPrice) where.price.lte = parseFloat(maxPrice)
+      const priceFilter: Prisma.FloatFilter = {}
+      if (minPrice) priceFilter.gte = parseFloat(minPrice)
+      if (maxPrice) priceFilter.lte = parseFloat(maxPrice)
+      where.price = priceFilter
     }
 
     const menuItems = await prisma.foodMenu.findMany({

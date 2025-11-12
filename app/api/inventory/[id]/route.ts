@@ -41,7 +41,7 @@ export async function GET(
       )
     }
 
-    return NextResponse.json(inventory)
+    return NextResponse.json({ item: inventory })
   } catch (error) {
     console.error('Error fetching inventory item:', error)
     return NextResponse.json(
@@ -69,6 +69,17 @@ export async function PUT(
     const body = await request.json()
     const validatedData = inventoryUpdateSchema.parse(body)
 
+    const existingInventory = await prisma.inventory.findUnique({
+      where: { id: id }
+    })
+
+    if (!existingInventory) {
+      return NextResponse.json(
+        { error: 'Inventory item not found' },
+        { status: 404 }
+      )
+    }
+
     const inventory = await prisma.inventory.update({
       where: { id: id },
       data: validatedData
@@ -84,7 +95,7 @@ export async function PUT(
       validatedData
     )
 
-    return NextResponse.json(inventory)
+    return NextResponse.json({ item: inventory })
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(

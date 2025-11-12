@@ -37,7 +37,7 @@ export async function GET(
       )
     }
 
-    return NextResponse.json(gallery)
+    return NextResponse.json({ item: gallery })
   } catch (error) {
     console.error('Error fetching gallery item:', error)
     return NextResponse.json(

@@ -195,7 +195,7 @@ export async function computeAnalytics(range: AnalyticsRange, referenceDate = ne
   const invoicesById = new Map(invoicesAll.map(invoice => [invoice.bookingId, invoice]))
   const now = referenceDate
 
-  const sumInvoiceTotals = (items: typeof invoicesAll) =>
+  const sumInvoiceTotals = <T extends { total: number | null | undefined }>(items: T[]) =>
     items.reduce((sum, invoice) => sum + (invoice.total ?? 0), 0)
 
   const filterInvoicesInRange = (items: typeof invoicesCurrent, start: Date, end: Date) =>
@@ -331,7 +331,7 @@ export async function computeAnalytics(range: AnalyticsRange, referenceDate = ne
   })()
 
   const guestSourceMap = bookingsCurrent.reduce<Record<string, number>>((acc, booking) => {
-    const source = (booking.source || booking.paymentMethod || 'PAY_LATER').toUpperCase()
+    const source = (booking.paymentMethod || 'PAY_LATER').toUpperCase()
     acc[source] = (acc[source] || 0) + 1
     return acc
   }, {})

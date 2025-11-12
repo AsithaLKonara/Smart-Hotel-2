@@ -60,7 +60,7 @@ export async function GET(
       )
     }
 
-    return NextResponse.json(task)
+    return NextResponse.json({ task })
   } catch (error) {
     console.error('Error fetching task:', error)
     return NextResponse.json(
@@ -140,7 +140,7 @@ export async function PUT(
       }
     )
 
-    return NextResponse.json(updatedTask)
+    return NextResponse.json({ task: updatedTask })
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -227,7 +227,7 @@ export async function PATCH(
       }
     )
 
-    return NextResponse.json(updatedTask)
+    return NextResponse.json({ task: updatedTask })
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(

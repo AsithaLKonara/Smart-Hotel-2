@@ -86,9 +86,43 @@ const optionalVars = {
     description: 'Default sender name',
     example: 'SmartHotel'
   },
-  NODE_ENV: {
-    description: 'Node environment',
-    example: 'development'
+// Production-specific required variables
+const productionRequiredVars = {
+  SENTRY_DSN: {
+    required: true,
+    description: 'Sentry DSN for error tracking',
+    validate: (value) => value.startsWith('https://') && value.includes('@'),
+    example: 'https://xxx@xxx.ingest.sentry.io/xxx'
+  },
+  NEXT_PUBLIC_SENTRY_DSN: {
+    required: true,
+    description: 'Public Sentry DSN for client-side error tracking',
+    validate: (value) => value.startsWith('https://') && value.includes('@'),
+    example: 'https://xxx@xxx.ingest.sentry.io/xxx'
+  }
+};
+
+// Production-specific optional variables
+const productionOptionalVars = {
+  SENTRY_DSN: {
+    description: 'Sentry DSN for error tracking',
+    example: 'https://xxx@xxx.ingest.sentry.io/xxx'
+  },
+  NEXT_PUBLIC_SENTRY_DSN: {
+    description: 'Public Sentry DSN for client-side error tracking',
+    example: 'https://xxx@xxx.ingest.sentry.io/xxx'
+  },
+  ADMIN_EMAIL: {
+    description: 'Admin email for notifications',
+    example: 'admin@smarthotel.com'
+  },
+  CONTACT_EMAIL: {
+    description: 'Contact email',
+    example: 'contact@smarthotel.com'
+  },
+  NEXT_PUBLIC_APP_URL: {
+    description: 'Public application URL',
+    example: 'https://smarthotel.example.com'
   }
 };
 
@@ -112,8 +146,9 @@ function loadEnvFile() {
   return env;
 }
 
-function validateEnvironment() {
-  console.log('🔍 Validating Environment Variables\n');
+function validateEnvironment(isProduction = false) {
+  const envType = isProduction ? 'PRODUCTION' : 'DEVELOPMENT';
+  console.log(`🔍 Validating Environment Variables (${envType})\n`);
 
   const env = loadEnvFile();
 
@@ -155,12 +190,40 @@ function validateEnvironment() {
 
   // Check optional variables
   console.log('\n📋 Optional Variables:');
-  for (const [key, config] of Object.entries(optionalVars)) {
+  const allOptionalVars = { ...optionalVars, ...productionOptionalVars };
+  for (const [key, config] of Object.entries(allOptionalVars)) {
+    // Skip if already checked as required
+    if (requiredVars[key] || (isProduction && productionRequiredVars[key])) {
+      continue;
+    }
     const value = env[key];
     if (value) {
       console.log(`✅ ${key}`);
     } else {
       console.log(`⚪ ${key} (not set - using defaults)`);
+    }
+  }
+
+  // Check production-specific required variables
+  if (isProduction) {
+    console.log('\n🏭 Production-Specific Required Variables:');
+    for (const [key, config] of Object.entries(productionRequiredVars)) {
+      const value = env[key];
+      if (!value || value.trim() === '') {
+        missing.push(key);
+        isValid = false;
+        console.error(`❌ Missing: ${key}`);
+        console.log(`   ${config.description}`);
+        console.log(`   Example: ${config.example}\n`);
+      } else if (config.validate && !config.validate(value)) {
+        invalid.push(key);
+        isValid = false;
+        console.error(`❌ Invalid: ${key} = ${value.substring(0, 20)}...`);
+        console.log(`   ${config.description}`);
+        console.log(`   Example: ${config.example}\n`);
+      } else {
+        console.log(`✅ ${key}`);
+      }
     }
   }
 
@@ -187,8 +250,11 @@ function validateEnvironment() {
 }
 
 // Run validation
-const isValid = validateEnvironment();
+const isProduction = process.argv.includes('--production') || process.env.NODE_ENV === 'production';
+const isValid = validateEnvironment(isProduction);
 process.exit(isValid ? 0 : 1);
+
+
 
 
 

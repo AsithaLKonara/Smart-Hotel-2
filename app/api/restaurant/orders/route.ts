@@ -66,12 +66,21 @@ export async function GET(request: NextRequest) {
 // POST /api/restaurant/orders - Create new order
 export async function POST(request: NextRequest) {
   try {
+    const session = await getRequestSession(request)
     const body: CreateOrderRequest = await request.json()
     const { roomNumber, guestId, bookingId, items, specialRequests } = body
 
     if (!roomNumber || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
         { error: 'Invalid order data' },
+        { status: 400 }
+      )
+    }
+
+    const resolvedGuestId = guestId ?? session?.user.id
+    if (!resolvedGuestId) {
+      return NextResponse.json(
+        { error: 'Guest ID is required' },
         { status: 400 }
       )
     }
@@ -105,10 +114,11 @@ export async function POST(request: NextRequest) {
     const order = await prisma.foodOrder.create({
       data: {
         roomNumber,
-        guestId,
-        bookingId,
+        guestId: resolvedGuestId,
+        bookingId: bookingId ?? undefined,
         totalAmount,
         specialRequests,
+        hotelId: session?.user.hotelId ?? null,
         items: {
           create: orderItems
         }

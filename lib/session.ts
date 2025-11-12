@@ -6,6 +6,8 @@ type SessionUser = {
   id: string
   role: string
   hotelId?: string | null
+  name?: string | null
+  email?: string | null
 }
 
 type AppSession = {
@@ -20,6 +22,8 @@ function buildTestSession(request?: NextRequest): AppSession | null {
         id: request?.headers.get('x-test-user-id') ?? 'test-user',
         role: roleHeader,
         hotelId: request?.headers.get('x-test-hotel-id'),
+        name: request?.headers.get('x-test-user-name'),
+        email: request?.headers.get('x-test-user-email'),
       },
     }
   }
@@ -32,11 +36,11 @@ function buildTestSession(request?: NextRequest): AppSession | null {
   const token = authHeader.replace(/^Bearer\s+/i, '').trim()
 
   const tokenRoleMap: Record<string, SessionUser> = {
-    'valid-token': { id: 'user-123', role: 'GUEST' },
-    'kitchen-staff-token': { id: 'kitchen-staff', role: 'RECEPTIONIST' },
-    'manager-token': { id: 'manager-user', role: 'MANAGER' },
-    'admin-token': { id: 'admin-user', role: 'SUPER_ADMIN' },
-    'user-token': { id: 'user-123', role: 'GUEST' },
+    'valid-token': { id: 'user-123', role: 'GUEST', name: 'Guest User', email: 'guest@example.com' },
+    'kitchen-staff-token': { id: 'kitchen-staff', role: 'RECEPTIONIST', name: 'Kitchen Staff', email: 'kitchen@example.com' },
+    'manager-token': { id: 'manager-user', role: 'MANAGER', name: 'Manager User', email: 'manager@example.com' },
+    'admin-token': { id: 'admin-user', role: 'SUPER_ADMIN', name: 'Admin User', email: 'admin@example.com' },
+    'user-token': { id: 'user-123', role: 'GUEST', name: 'Guest User', email: 'guest@example.com' },
   }
 
   const mappedUser = tokenRoleMap[token]

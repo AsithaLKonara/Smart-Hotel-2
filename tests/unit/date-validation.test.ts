@@ -5,7 +5,14 @@ import {
   getDaysBetween, 
   formatDateForDisplay,
   parseBookingDates,
-  validateBookingDates
+  validateBookingDates,
+  isWeekend,
+  isHoliday,
+  getNextBusinessDay,
+  includesWeekend,
+  includesHoliday,
+  getSeason,
+  isPeakSeason
 } from '@/lib/date-validation'
 
 describe('Date Validation', () => {
@@ -257,6 +264,56 @@ describe('Date Validation', () => {
       const result = validateBookingDates(longStayStart, longStayEnd)
       
       expect(result.isValid).toBe(true)
+    })
+  })
+
+  describe('Weekend and holiday helpers', () => {
+    test('isWeekend identifies Saturdays and Sundays', () => {
+      expect(isWeekend(new Date('2025-01-04'))).toBe(true) // Saturday
+      expect(isWeekend(new Date('2025-01-05'))).toBe(true) // Sunday
+      expect(isWeekend(new Date('2025-01-06'))).toBe(false)
+      expect(isWeekend(new Date('invalid'))).toBe(false)
+    })
+
+    test('isHoliday recognises fixed holidays', () => {
+      expect(isHoliday(new Date('2025-07-04'))).toBe(true)
+      expect(isHoliday(new Date('2025-12-25'))).toBe(true)
+      expect(isHoliday(new Date('2025-02-14'))).toBe(false)
+      expect(isHoliday(new Date('invalid'))).toBe(false)
+    })
+
+    test('getNextBusinessDay skips weekends and holidays', () => {
+      const fridayBeforeHoliday = new Date('2025-07-04') // Friday holiday
+      const nextBusiness = getNextBusinessDay(fridayBeforeHoliday)
+      expect(nextBusiness.toISOString().split('T')[0]).toBe('2025-07-07')
+    })
+
+    test('includesWeekend detects weekend days within range', () => {
+      const start = new Date('2025-03-07') // Friday
+      const end = new Date('2025-03-10')   // Monday
+      expect(includesWeekend(start, end)).toBe(true)
+      expect(includesWeekend(new Date('2025-03-03'), new Date('2025-03-05'))).toBe(false)
+    })
+
+    test('includesHoliday detects holidays within range', () => {
+      const start = new Date('2025-12-24')
+      const end = new Date('2025-12-26')
+      expect(includesHoliday(start, end)).toBe(true)
+      expect(includesHoliday(new Date('2025-02-01'), new Date('2025-02-05'))).toBe(false)
+    })
+
+    test('getSeason identifies correct season and handles invalid', () => {
+      expect(getSeason(new Date('2025-04-15'))).toBe('spring')
+      expect(getSeason(new Date('2025-07-01'))).toBe('summer')
+      expect(getSeason(new Date('2025-10-01'))).toBe('autumn')
+      expect(getSeason(new Date('2025-01-01'))).toBe('winter')
+      expect(getSeason(new Date('invalid'))).toBe('unknown')
+    })
+
+    test('isPeakSeason is true for summer months and December', () => {
+      expect(isPeakSeason(new Date('2025-06-15'))).toBe(true)
+      expect(isPeakSeason(new Date('2025-12-20'))).toBe(true)
+      expect(isPeakSeason(new Date('2025-03-10'))).toBe(false)
     })
   })
 })

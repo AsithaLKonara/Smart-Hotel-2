@@ -507,7 +507,7 @@ async function main() {
 
   const gallerySeeds = [
     { title: 'Skyline Infinity Pool', imageUrl: '/images/gallery/infinity-pool.jpg', category: GalleryCategory.AMENITY },
-    { title: 'Grand Lobby Arrival', imageUrl: '/images/gallery/grand-lobby.jpg', category: GalleryCategory.INTERIOR },
+    { title: 'Grand Lobby Arrival', imageUrl: '/images/gallery/grand-lobby.jpg', category: GalleryCategory.EVENT },
     { title: 'Presidential Living Room', imageUrl: '/images/gallery/presidential-suite.jpg', category: GalleryCategory.ROOM },
     { title: 'Executive Chef Tasting', imageUrl: '/images/gallery/tasting-menu.jpg', category: GalleryCategory.FOOD },
     { title: 'SmartHotel Spa Retreat', imageUrl: '/images/gallery/spa-suite.jpg', category: GalleryCategory.AMENITY },
@@ -517,7 +517,7 @@ async function main() {
     { title: 'Digital Concierge Tablet', imageUrl: '/images/gallery/digital-concierge.jpg', category: GalleryCategory.AMENITY },
     { title: 'Fitness and Wellness Club', imageUrl: '/images/gallery/fitness-club.jpg', category: GalleryCategory.AMENITY },
     { title: 'Luxury Suite Bathroom', imageUrl: '/images/gallery/luxury-bathroom.jpg', category: GalleryCategory.ROOM },
-    { title: 'Skyline Champagne Lounge', imageUrl: '/images/gallery/champagne-lounge.jpg', category: GalleryCategory.INTERIOR },
+    { title: 'Skyline Champagne Lounge', imageUrl: '/images/gallery/champagne-lounge.jpg', category: GalleryCategory.EVENT },
   ]
   await prisma.gallery.createMany({ data: gallerySeeds })
 

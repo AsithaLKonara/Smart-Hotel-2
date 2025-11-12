@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './fixtures'
 
 test.describe('Authenticated Journeys', () => {
   test('admin dashboard renders with analytics summary', async ({ page }) => {

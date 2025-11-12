@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { Prisma } from '@prisma/client'
 import { z } from 'zod'
 import { logAction, AUDIT_ACTIONS } from '@/lib/audit'
 import { getRequestSession } from '@/lib/session'
@@ -37,42 +38,49 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const baseRoles = ['ADMIN', 'MANAGER', 'RECEPTIONIST', 'KITCHEN_STAFF', 'HOUSEKEEPING']
-    const whereClause: Record<string, unknown> = {}
+    const whereClause: Prisma.StaffWhereInput = {}
 
-    if (role) {
-      whereClause.role = role
-    } else {
-      whereClause.role = {
-        in: baseRoles
+    if (department) {
+      whereClause.department = {
+        equals: department,
+        mode: 'insensitive'
       }
     }
 
-    if (department) {
-      whereClause.department = department
+    if (role) {
+      const normalizedRole = role.replace(/_/g, ' ').replace(/\s+/g, ' ').trim()
+      whereClause.position = {
+        equals: normalizedRole,
+        mode: 'insensitive'
+      }
     }
 
     if (isActive !== null) {
       whereClause.isActive = isActive === 'true'
     }
 
-    const staff = await prisma.user.findMany({
+    const staffMembers = await prisma.staff.findMany({
       where: whereClause,
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        department: true,
-        isActive: true,
-        lastLogin: true
-      },
       orderBy: {
         name: 'asc'
       }
     })
 
-    return NextResponse.json({ staff })
+    const staff = staffMembers.map(member => ({
+      id: member.id,
+      employeeId: member.employeeId,
+      name: member.name,
+      email: member.email,
+      phone: member.phone,
+      position: member.position,
+      department: member.department,
+      hireDate: member.hireDate.toISOString(),
+      salary: member.salary,
+      isActive: member.isActive,
+      hotelId: member.hotelId ?? null
+    }))
+
+    return NextResponse.json(staff)
   } catch (error) {
     console.error('Error fetching staff:', error)
     return NextResponse.json(

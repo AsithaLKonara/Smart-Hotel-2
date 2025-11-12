@@ -23,6 +23,7 @@ jest.mock('@/lib/db', () => {
   prismaMocks.mockBookingAggregate = jest.fn()
   prismaMocks.mockBookingFindMany = jest.fn()
   prismaMocks.mockBookingCount = jest.fn()
+  prismaMocks.mockStaffFindMany = jest.fn()
   prismaMocks.mockUserFindMany = jest.fn()
   prismaMocks.mockUserCount = jest.fn()
   prismaMocks.mockNotificationFindMany = jest.fn()
@@ -36,6 +37,9 @@ jest.mock('@/lib/db', () => {
         findMany: (...args: any[]) => getAdminPrismaMocks().mockBookingFindMany(...args),
         count: (...args: any[]) => getAdminPrismaMocks().mockBookingCount(...args),
         aggregate: (...args: any[]) => getAdminPrismaMocks().mockBookingAggregate(...args),
+      },
+      staff: {
+        findMany: (...args: any[]) => getAdminPrismaMocks().mockStaffFindMany(...args),
       },
       user: {
         findMany: (...args: any[]) => getAdminPrismaMocks().mockUserFindMany(...args),
@@ -222,25 +226,35 @@ describe('Admin API Integration', () => {
       const mockStaff = [
         {
           id: 'staff-1',
+          employeeId: 'EMP-001',
           name: 'Alice Johnson',
           email: 'alice@hotel.com',
+          phone: '123-456-7890',
+          position: 'Receptionist',
           role: 'RECEPTIONIST',
           department: 'Front Desk',
+          hireDate: new Date('2024-01-01T09:00:00Z'),
+          salary: 45000,
           isActive: true,
-          lastLogin: new Date('2024-01-15T09:00:00Z'),
+          hotelId: null,
         },
         {
           id: 'staff-2',
+          employeeId: 'EMP-002',
           name: 'Bob Smith',
           email: 'bob@hotel.com',
+          phone: '321-654-0987',
+          position: 'Kitchen Staff',
           role: 'KITCHEN_STAFF',
           department: 'Kitchen',
+          hireDate: new Date('2024-02-10T08:30:00Z'),
+          salary: 38000,
           isActive: true,
-          lastLogin: new Date('2024-01-15T08:30:00Z'),
+          hotelId: null,
         },
       ]
 
-      prismaMocks.mockUserFindMany.mockResolvedValue(mockStaff)
+      prismaMocks.mockStaffFindMany.mockResolvedValue(mockStaff)
 
       const request = new NextRequest('http://localhost:3000/api/staff', {
         headers: {
@@ -252,23 +266,10 @@ describe('Admin API Integration', () => {
       const data = await response.json()
 
       expect(response.status).toBe(200)
-      expect(data).toHaveProperty('staff')
-      expect(data.staff).toHaveLength(2)
-      expect(prismaMocks.mockUserFindMany).toHaveBeenCalledWith({
-        where: {
-          role: {
-            in: ['ADMIN', 'MANAGER', 'RECEPTIONIST', 'KITCHEN_STAFF', 'HOUSEKEEPING'],
-          },
-        },
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          role: true,
-          department: true,
-          isActive: true,
-          lastLogin: true,
-        },
+      expect(Array.isArray(data)).toBe(true)
+      expect(data).toHaveLength(2)
+      expect(prismaMocks.mockStaffFindMany).toHaveBeenCalledWith({
+        where: {},
         orderBy: {
           name: 'asc',
         },
@@ -279,35 +280,35 @@ describe('Admin API Integration', () => {
       const mockKitchenStaff = [
         {
           id: 'staff-2',
+          employeeId: 'EMP-002',
           name: 'Bob Smith',
+          email: 'bob@hotel.com',
+          phone: '321-654-0987',
           role: 'KITCHEN_STAFF',
+          position: 'Kitchen Staff',
           department: 'Kitchen',
+          hireDate: new Date('2024-02-10T08:30:00Z'),
+          salary: 38000,
+          isActive: true,
+          hotelId: null,
         },
       ]
 
-      prismaMocks.mockUserFindMany.mockResolvedValue(mockKitchenStaff)
+      prismaMocks.mockStaffFindMany.mockResolvedValue(mockKitchenStaff)
 
       const request = new NextRequest('http://localhost:3000/api/staff?department=Kitchen')
       const response = await getStaff(request)
       const data = await response.json()
 
       expect(response.status).toBe(200)
-      expect(data.staff).toHaveLength(1)
-      expect(prismaMocks.mockUserFindMany).toHaveBeenCalledWith({
+      expect(Array.isArray(data)).toBe(true)
+      expect(data).toHaveLength(1)
+      expect(prismaMocks.mockStaffFindMany).toHaveBeenCalledWith({
         where: {
-          role: {
-            in: ['ADMIN', 'MANAGER', 'RECEPTIONIST', 'KITCHEN_STAFF', 'HOUSEKEEPING'],
+          department: {
+            equals: 'Kitchen',
+            mode: 'insensitive',
           },
-          department: 'Kitchen',
-        },
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          role: true,
-          department: true,
-          isActive: true,
-          lastLogin: true,
         },
         orderBy: {
           name: 'asc',
@@ -319,32 +320,35 @@ describe('Admin API Integration', () => {
       const mockReceptionists = [
         {
           id: 'staff-1',
+          employeeId: 'EMP-001',
           name: 'Alice Johnson',
+          email: 'alice@hotel.com',
+          phone: '123-456-7890',
           role: 'RECEPTIONIST',
+          position: 'Receptionist',
           department: 'Front Desk',
+          hireDate: new Date('2024-01-01T09:00:00Z'),
+          salary: 45000,
+          isActive: true,
+          hotelId: null,
         },
       ]
 
-      prismaMocks.mockUserFindMany.mockResolvedValue(mockReceptionists)
+      prismaMocks.mockStaffFindMany.mockResolvedValue(mockReceptionists)
 
       const request = new NextRequest('http://localhost:3000/api/staff?role=RECEPTIONIST')
       const response = await getStaff(request)
       const data = await response.json()
 
       expect(response.status).toBe(200)
-      expect(data.staff).toHaveLength(1)
-      expect(prismaMocks.mockUserFindMany).toHaveBeenCalledWith({
+      expect(Array.isArray(data)).toBe(true)
+      expect(data).toHaveLength(1)
+      expect(prismaMocks.mockStaffFindMany).toHaveBeenCalledWith({
         where: {
-          role: 'RECEPTIONIST',
-        },
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          role: true,
-          department: true,
-          isActive: true,
-          lastLogin: true,
+          position: {
+            equals: 'RECEPTIONIST',
+            mode: 'insensitive',
+          },
         },
         orderBy: {
           name: 'asc',

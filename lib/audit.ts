@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server'
 import prisma from './db'
+import { log } from './logger'
 
 export interface AuditLogData {
   userId?: string
@@ -25,7 +26,11 @@ export async function createAuditLog(data: AuditLogData) {
       }
     })
   } catch (error) {
-    console.error('Failed to create audit log:', error)
+    log.error('Failed to create audit log', error, {
+      userId: data.userId,
+      action: data.action,
+      resource: data.resource,
+    })
     // Don't throw error to avoid breaking the main functionality
   }
 }

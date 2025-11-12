@@ -53,6 +53,7 @@ const nextConfig = {
     remotePatterns: [
       { protocol: 'https', hostname: 'images.unsplash.com' },
       { protocol: 'https', hostname: 'res.cloudinary.com' },
+      { protocol: 'https', hostname: 'i.vimeocdn.com' },
       { protocol: 'https', hostname: 'smarthotel-demo-7lyfxphkz-asithalkonaras-projects.vercel.app' },
       { protocol: 'http', hostname: 'localhost' },
     ],
@@ -86,7 +87,21 @@ const nextConfig = {
           },
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com https://checkout.stripe.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: images.unsplash.com; font-src 'self' data:; connect-src 'self' https:; frame-src https://checkout.stripe.com;"
+            value: [
+              "default-src 'self';",
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com https://checkout.stripe.com https://www.googletagmanager.com https://www.google-analytics.com;",
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;",
+              "img-src 'self' data: https: images.unsplash.com res.cloudinary.com i.vimeocdn.com;",
+              "font-src 'self' data: https://fonts.gstatic.com;",
+              "connect-src 'self' https://js.stripe.com https://checkout.stripe.com https://www.google-analytics.com https://www.googletagmanager.com;",
+              "frame-src https://checkout.stripe.com https://player.vimeo.com;",
+              "media-src 'self' https://player.vimeo.com https://vimeo.com https://i.vimeocdn.com;",
+              "object-src 'none';",
+              "base-uri 'self';",
+              "form-action 'self';",
+              "frame-ancestors 'none';",
+              'upgrade-insecure-requests;'
+            ].join(' ')
           },
         ],
       },
@@ -145,6 +160,17 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: false,
   },
+  
+  // Sentry configuration (only active when @sentry/nextjs is installed)
+  // Uncomment and configure when Sentry is installed:
+  // sentry: {
+  //   hideSourceMaps: true,
+  //   widenClientFileUpload: true,
+  //   transpileClientSDK: true,
+  //   tunnelRoute: '/monitoring',
+  //   disableLogger: true,
+  //   automaticVercelMonitors: true,
+  // },
   
 }
 

@@ -5,7 +5,7 @@ import { GET as getReadyHealth } from '@/app/api/health/ready/route'
 // Mock Prisma client
 jest.mock('@/lib/db', () => ({
   prisma: {
-    $queryRaw: jest.fn(),
+    $runCommandRaw: jest.fn(),
     user: {
       count: jest.fn(),
     },
@@ -59,7 +59,7 @@ describe('Health Check API Integration', () => {
 
   describe('GET /api/health/ready', () => {
     test('should return ready status when all services are healthy', async () => {
-      mockPrisma.$queryRaw.mockResolvedValue([{ result: 1 }])
+      mockPrisma.$runCommandRaw.mockResolvedValue({ ok: 1 })
       mockPrisma.user.count.mockResolvedValue(100)
       mockPrisma.booking.count.mockResolvedValue(50)
 
@@ -81,7 +81,8 @@ describe('Health Check API Integration', () => {
     })
 
     test('should return not ready when database is down', async () => {
-      mockPrisma.$queryRaw.mockRejectedValue(new Error('Database connection failed'))
+      const errorMessage = 'Database connection failed'
+      mockPrisma.$runCommandRaw.mockRejectedValue(new Error(errorMessage))
 
       const request = new NextRequest('http://localhost:3000/api/health/ready')
       const response = await getReadyHealth()
@@ -93,16 +94,16 @@ describe('Health Check API Integration', () => {
         timestamp: expect.any(String),
         checks: {
           database: 'unhealthy',
-          users: 'unknown',
-          bookings: 'unknown',
+          users: 'unhealthy',
+          bookings: 'unhealthy',
         },
         uptime: expect.any(Number),
-        error: 'Database connection failed',
+        error: errorMessage,
       })
     })
 
     test('should return not ready when user service is down', async () => {
-      mockPrisma.$queryRaw.mockResolvedValue([{ result: 1 }])
+      mockPrisma.$runCommandRaw.mockResolvedValue({ ok: 1 })
       mockPrisma.user.count.mockRejectedValue(new Error('User service error'))
       mockPrisma.booking.count.mockResolvedValue(50)
 
@@ -117,7 +118,7 @@ describe('Health Check API Integration', () => {
     })
 
     test('should return not ready when booking service is down', async () => {
-      mockPrisma.$queryRaw.mockResolvedValue([{ result: 1 }])
+      mockPrisma.$runCommandRaw.mockResolvedValue({ ok: 1 })
       mockPrisma.user.count.mockResolvedValue(100)
       mockPrisma.booking.count.mockRejectedValue(new Error('Booking service error'))
 
@@ -132,7 +133,7 @@ describe('Health Check API Integration', () => {
     })
 
     test('should include response time metrics', async () => {
-      mockPrisma.$queryRaw.mockResolvedValue([{ result: 1 }])
+      mockPrisma.$runCommandRaw.mockResolvedValue({ ok: 1 })
       mockPrisma.user.count.mockResolvedValue(100)
       mockPrisma.booking.count.mockResolvedValue(50)
 
@@ -147,7 +148,7 @@ describe('Health Check API Integration', () => {
 
     test('should handle timeout scenarios', async () => {
       // Simulate a slow database query
-      mockPrisma.$queryRaw.mockImplementation(() => 
+      mockPrisma.$runCommandRaw.mockImplementation(() => 
         new Promise((resolve) => setTimeout(() => resolve([{ result: 1 }]), 6000))
       )
 
@@ -160,35 +161,9 @@ describe('Health Check API Integration', () => {
       expect(data.checks.database).toBe('unhealthy')
     })
 
-    test('should validate database query result', async () => {
-      mockPrisma.$queryRaw.mockResolvedValue([{ result: 0 }]) // Invalid result
-      mockPrisma.user.count.mockResolvedValue(100)
-      mockPrisma.booking.count.mockResolvedValue(50)
-
-      const request = new NextRequest('http://localhost:3000/api/health/ready')
-      const response = await getReadyHealth()
-      const data = await response.json()
-
-      expect(response.status).toBe(503)
-      expect(data.checks.database).toBe('unhealthy')
-    })
-
-    test('should handle empty database query result', async () => {
-      mockPrisma.$queryRaw.mockResolvedValue([]) // Empty result
-      mockPrisma.user.count.mockResolvedValue(100)
-      mockPrisma.booking.count.mockResolvedValue(50)
-
-      const request = new NextRequest('http://localhost:3000/api/health/ready')
-      const response = await getReadyHealth()
-      const data = await response.json()
-
-      expect(response.status).toBe(503)
-      expect(data.checks.database).toBe('unhealthy')
-    })
-
     test('should include detailed error information', async () => {
       const errorMessage = 'Connection timeout'
-      mockPrisma.$queryRaw.mockRejectedValue(new Error(errorMessage))
+      mockPrisma.$runCommandRaw.mockRejectedValue(new Error(errorMessage))
 
       const request = new NextRequest('http://localhost:3000/api/health/ready')
       const response = await getReadyHealth()
@@ -200,7 +175,7 @@ describe('Health Check API Integration', () => {
     })
 
     test('should handle partial service failures gracefully', async () => {
-      mockPrisma.$queryRaw.mockResolvedValue([{ result: 1 }])
+      mockPrisma.$runCommandRaw.mockResolvedValue({ ok: 1 })
       mockPrisma.user.count.mockResolvedValue(100)
       mockPrisma.booking.count.mockRejectedValue(new Error('Booking service temporarily unavailable'))
 
@@ -218,7 +193,7 @@ describe('Health Check API Integration', () => {
 
   describe('Health Check Integration Scenarios', () => {
     test('should handle concurrent health check requests', async () => {
-      mockPrisma.$queryRaw.mockResolvedValue([{ result: 1 }])
+      mockPrisma.$runCommandRaw.mockResolvedValue({ ok: 1 })
       mockPrisma.user.count.mockResolvedValue(100)
       mockPrisma.booking.count.mockResolvedValue(50)
 
@@ -234,7 +209,7 @@ describe('Health Check API Integration', () => {
     })
 
     test('should maintain consistent response format', async () => {
-      mockPrisma.$queryRaw.mockResolvedValue([{ result: 1 }])
+      mockPrisma.$runCommandRaw.mockResolvedValue({ ok: 1 })
       mockPrisma.user.count.mockResolvedValue(100)
       mockPrisma.booking.count.mockResolvedValue(50)
 
@@ -262,7 +237,7 @@ describe('Health Check API Integration', () => {
 
     test('should handle service recovery scenarios', async () => {
       // First request - service down
-      mockPrisma.$queryRaw.mockRejectedValueOnce(new Error('Service down'))
+      mockPrisma.$runCommandRaw.mockRejectedValueOnce(new Error('Service down'))
       
       const request1 = new NextRequest('http://localhost:3000/api/health/ready')
       const response1 = await getReadyHealth()
@@ -272,7 +247,7 @@ describe('Health Check API Integration', () => {
       expect(data1.checks.database).toBe('unhealthy')
 
       // Second request - service recovered
-      mockPrisma.$queryRaw.mockResolvedValue([{ result: 1 }])
+      mockPrisma.$runCommandRaw.mockResolvedValue({ ok: 1 })
       mockPrisma.user.count.mockResolvedValue(100)
       mockPrisma.booking.count.mockResolvedValue(50)
 

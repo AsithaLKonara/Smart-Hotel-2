@@ -19,8 +19,8 @@ function ResetPasswordContent() {
   const [email, setEmail] = useState('')
 
   useEffect(() => {
-    const tokenParam = searchParams.get('token')
-    const emailParam = searchParams.get('email')
+    const tokenParam = searchParams?.get('token')
+    const emailParam = searchParams?.get('email')
 
     if (!tokenParam || !emailParam) {
       toast.error('Invalid reset link')

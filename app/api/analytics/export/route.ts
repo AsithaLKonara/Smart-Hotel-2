@@ -196,7 +196,7 @@ export async function GET(request: NextRequest) {
 
     if (type === 'pdf') {
       const pdfBuffer = await createPdfReport(range, analytics)
-      return new NextResponse(pdfBuffer, {
+      return new NextResponse(pdfBuffer as any, {
         headers: {
           'Content-Type': 'application/pdf',
           'Content-Disposition': `attachment; filename="analytics-${range}-${timestamp}.pdf"`,
@@ -206,7 +206,7 @@ export async function GET(request: NextRequest) {
 
     if (type === 'excel') {
       const excelBuffer = await createExcelReport(range, analytics)
-      return new NextResponse(excelBuffer, {
+      return new NextResponse(excelBuffer as any, {
         headers: {
           'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
           'Content-Disposition': `attachment; filename="analytics-${range}-${timestamp}.xlsx"`,
@@ -214,10 +214,10 @@ export async function GET(request: NextRequest) {
       })
     }
 
-      return NextResponse.json(
-        { error: 'Invalid export type. Use "pdf" or "excel"' },
-        { status: 400 }
-      )
+    return NextResponse.json(
+      { error: 'Invalid export type. Use "pdf" or "excel"' },
+      { status: 400 }
+    )
   } catch (error) {
     console.error('Error exporting analytics:', error)
     return NextResponse.json(

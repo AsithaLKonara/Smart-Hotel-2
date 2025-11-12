@@ -1,4 +1,4 @@
-import { enhancedRateLimit, getClientIdentifier, authLimiter } from '@/lib/rate-limit-enhanced'
+import { enhancedRateLimit, getClientIdentifier, authLimiter, createEnhancedRateLimitResponse } from '@/lib/rate-limit-enhanced'
 import { NextRequest } from 'next/server'
 
 describe('EnhancedRateLimit', () => {
@@ -13,7 +13,7 @@ describe('EnhancedRateLimit', () => {
   })
 
   afterEach(() => {
-    // Clean up any rate limit state if needed
+    jest.useRealTimers()
   })
 
   describe('getClientIdentifier', () => {
@@ -59,12 +59,76 @@ describe('EnhancedRateLimit', () => {
       expect(bookingResult).toBeDefined()
       expect(apiResult).toBeDefined()
     })
+
+    it('blocks after exceeding auth limit and unblocks after block duration', () => {
+      jest.useFakeTimers().setSystemTime(new Date('2025-01-01T00:00:00.000Z'))
+      const request = new NextRequest('http://localhost:3000/api/auth', {
+        headers: { 'x-forwarded-for': '203.0.113.10' }
+      })
+
+      for (let i = 0; i < 5; i++) {
+        const result = enhancedRateLimit(request, 'auth')
+        expect(result.allowed).toBe(true)
+      }
+
+      jest.setSystemTime(new Date('2025-01-01T00:00:01.000Z'))
+      const blocked = enhancedRateLimit(request, 'auth')
+      expect(blocked.allowed).toBe(false)
+      expect(blocked.blocked).toBe(true)
+      expect(blocked.blockUntil).toBeDefined()
+
+      jest.setSystemTime(new Date(blocked.blockUntil! + 1000))
+      const afterBlock = enhancedRateLimit(request, 'auth')
+      expect(afterBlock.allowed).toBe(true)
+      expect(afterBlock.blocked).toBe(false)
+
+      jest.setSystemTime(new Date(afterBlock.resetTime + 60_000))
+      authLimiter.cleanup()
+    })
+
+    it('cleanup removes expired records', () => {
+      jest.useFakeTimers().setSystemTime(new Date('2025-01-02T00:00:00.000Z'))
+      const request = new NextRequest('http://localhost:3000/api/auth', {
+        headers: { 'x-forwarded-for': '198.51.100.5' }
+      })
+
+      const initial = enhancedRateLimit(request, 'auth')
+      expect(initial.allowed).toBe(true)
+
+      jest.setSystemTime(new Date('2025-01-02T00:20:00.000Z'))
+      authLimiter.cleanup()
+
+      const afterCleanup = enhancedRateLimit(request, 'auth')
+      expect(afterCleanup.allowed).toBe(true)
+      expect(afterCleanup.remaining).toBe(4)
+    })
   })
 
   describe('authLimiter', () => {
     it('should have correct configuration for auth endpoints', () => {
       expect(authLimiter).toBeDefined()
-      // Test that auth limiter has appropriate limits
+    })
+  })
+
+  describe('createEnhancedRateLimitResponse', () => {
+    it('creates a 429 response with helpful headers and payload', async () => {
+      const now = Date.now()
+      const response = createEnhancedRateLimitResponse({
+        allowed: false,
+        remaining: 0,
+        resetTime: now + 60_000,
+        blocked: true,
+        blockUntil: now + 120_000,
+      })
+
+      expect(response.status).toBe(429)
+      expect(response.headers.get('X-RateLimit-Blocked')).toBe('true')
+      expect(response.headers.get('Retry-After')).toBeDefined()
+
+      const body = await response.json()
+      expect(body.error).toBe('Too many requests')
+      expect(body.blockUntil).toBeDefined()
+      expect(body.retryAfter).toBeGreaterThan(0)
     })
   })
 })

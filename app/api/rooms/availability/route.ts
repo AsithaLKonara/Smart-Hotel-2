@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { Prisma } from '@prisma/client'
 import { prisma } from '@/lib/db'
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24
@@ -52,7 +53,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get all rooms
-    let whereClause: any = {
+    const whereClause: Prisma.RoomWhereInput = {
       status: 'AVAILABLE'
     }
 
@@ -120,15 +121,18 @@ export async function GET(request: NextRequest) {
     const availableRooms = allRooms.filter(room => !bookedRoomIds.has(room.id))
 
     // Calculate pricing for each room
-    const roomsWithPricing = availableRooms.map(room => {
-      const reviews = Array.isArray((room as any).reviews) ? (room as any).reviews : []
-      const images = Array.isArray((room as any).images) ? (room as any).images : []
+    type RoomWithRelations = Prisma.RoomGetPayload<{
+      include: { roomImages: true; reviews: true }
+    }>
+
+    const roomsWithPricing = availableRooms.map((room: RoomWithRelations) => {
+      const reviews = Array.isArray(room.reviews) ? room.reviews : []
       const nights = getNightCount(checkInDate, checkOutDate)
       const basePrice = room.price * nights
 
       // Calculate average rating
-      const avgRating = reviews.length > 0 
-        ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
+      const avgRating = reviews.length > 0
+        ? reviews.reduce((sum: number, review) => sum + (review.rating ?? 0), 0) / reviews.length
         : 0
 
       return {
@@ -137,7 +141,10 @@ export async function GET(request: NextRequest) {
         totalPrice: basePrice,
         averageRating: Math.round(avgRating * 10) / 10,
         reviewCount: reviews.length,
-        mainImage: room.roomImages?.find((img: any) => img.isMain)?.url || images[0] || '/images/room-placeholder.jpg'
+        mainImage:
+          room.roomImages?.find(img => img.isMain)?.url ||
+          (Array.isArray(room.images) ? room.images[0] : undefined) ||
+          '/images/room-placeholder.jpg'
       }
     })
 

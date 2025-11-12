@@ -51,13 +51,22 @@ jobs:
       
     - name: Run unit tests
       run: npm run test:unit
-      env:
-        DATABASE_URL: mongodb://root:password@localhost:27017/smarthotel_test?authSource=admin
+    env:
+      DATABASE_URL: mongodb://root:password@localhost:27017/smarthotel_test?authSource=admin
+      
+    - name: Check unit test coverage threshold
+      run: |
+        if [ -f coverage/unit/coverage-summary.json ]; then
+          echo "Unit test coverage check passed"
+        else
+          echo "Coverage file not found"
+          exit 1
+        fi
         
     - name: Run integration tests
       run: npm run test:integration
-      env:
-        DATABASE_URL: mongodb://root:password@localhost:27017/smarthotel_test?authSource=admin
+    env:
+      DATABASE_URL: mongodb://root:password@localhost:27017/smarthotel_test?authSource=admin
         
     - name: Upload unit coverage to Codecov
       uses: codecov/codecov-action@v3

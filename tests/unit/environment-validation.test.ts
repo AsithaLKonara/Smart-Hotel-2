@@ -9,6 +9,7 @@ jest.mock('stripe', () => {
   }))
 })
 
+
 describe('Environment Validation', () => {
   let validator: EnvironmentValidator
 
@@ -152,6 +153,71 @@ describe('Environment Validation', () => {
       expect(result.errors).toContain('SMTP_PORT must be a valid number')
 
       process.env.SMTP_PORT = originalPort
+    })
+
+    test('should warn when SOCKET_IO_URL is missing', () => {
+      const original = process.env.SOCKET_IO_URL
+      delete process.env.SOCKET_IO_URL
+
+      const result = validator.validate()
+      expect(result.warnings).toContain('SOCKET_IO_URL not set - using default localhost:3000')
+
+      if (original !== undefined) {
+        process.env.SOCKET_IO_URL = original
+      }
+    })
+
+    test('should error when SOCKET_IO_URL is invalid', () => {
+      const original = process.env.SOCKET_IO_URL
+      process.env.SOCKET_IO_URL = 'invalid-url'
+
+      const result = validator.validate()
+      expect(result.errors).toContain('SOCKET_IO_URL must be a valid URL')
+
+      if (original !== undefined) {
+        process.env.SOCKET_IO_URL = original
+      } else {
+        delete process.env.SOCKET_IO_URL
+      }
+    })
+
+    test('should warn when SMTP transport creation fails', () => {
+      const smtpDefaults = {
+        SMTP_HOST: process.env.SMTP_HOST || 'smtp.test',
+        SMTP_PORT: process.env.SMTP_PORT || '2525',
+        SMTP_USER: process.env.SMTP_USER || 'mailer@test',
+        SMTP_PASS: process.env.SMTP_PASS || 'secret',
+      }
+      Object.assign(process.env, smtpDefaults)
+      const originalSocket = process.env.SOCKET_IO_URL
+      process.env.SOCKET_IO_URL = 'https://socket.test'
+
+      jest.resetModules()
+      jest.isolateModules(() => {
+        jest.doMock('nodemailer', () => ({
+          __esModule: true,
+          createTransport: jest.fn(() => {
+            throw new Error('connect fail')
+          }),
+          default: {
+            createTransport: jest.fn(() => {
+              throw new Error('connect fail')
+            }),
+          },
+        }))
+
+        const { EnvironmentValidator: LocalValidator } = require('@/lib/environment-validator')
+        const localValidator = new LocalValidator()
+        const result = localValidator.validate()
+        expect(result.warnings).toContain('SMTP connection test failed - check email configuration')
+      })
+      jest.resetModules()
+
+      if (originalSocket !== undefined) {
+        process.env.SOCKET_IO_URL = originalSocket
+      } else {
+        delete process.env.SOCKET_IO_URL
+      }
     })
   })
 

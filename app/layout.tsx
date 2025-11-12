@@ -8,6 +8,21 @@ import HotelNavigation from "@/components/hotel-navigation"
 import HotelFooter from "@/components/hotel-footer"
 import { ChatWrapper } from "@/components/live-chat/chat-wrapper"
 import { Providers } from "@/components/providers"
+import { WebVitalsTracker } from "@/components/web-vitals-tracker"
+
+// Initialize Sentry on the server (optional)
+if (process.env.NODE_ENV === 'production' && process.env.SENTRY_DSN) {
+  try {
+    require('@sentry/nextjs').init({
+      dsn: process.env.SENTRY_DSN,
+      tracesSampleRate: 0.1,
+      environment: process.env.NODE_ENV,
+    })
+  } catch (error) {
+    // Sentry not installed or configuration error - continue without it
+    console.warn('Sentry initialization skipped:', error instanceof Error ? error.message : 'Sentry package not found')
+  }
+}
 
 const inter = Inter({
   subsets: ["latin"],
@@ -123,10 +138,6 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://api.stripe.com" />
         <link rel="dns-prefetch" href="https://js.stripe.com" />
         
-        {/* Preload critical resources */}
-        <link rel="preload" href="/_next/static/css/app.css" as="style" />
-        <link rel="preload" href="/_next/static/js/app.js" as="script" />
-        
         {/* Google Analytics */}
         {process.env.NEXT_PUBLIC_GA_ID && (
           <>
@@ -162,6 +173,7 @@ export default function RootLayout({
             <Toaster />
             <ClientScripts />
             <ChatWrapper />
+            <WebVitalsTracker />
           </Providers>
         </ErrorBoundary>
       </body>

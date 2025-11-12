@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { Prisma } from '@prisma/client'
 import { prisma } from '@/lib/db'
 
 type HealthStatus = 'healthy' | 'unhealthy' | 'unknown'
@@ -63,33 +64,24 @@ export async function GET() {
 
   const now = new Date()
 
-  // Database connectivity
   let databaseHealthy = false
 
   try {
-    const result = await withTimeout(
-      prisma.$queryRaw<Array<{ result?: number }>>`SELECT 1 as result`,
-      DB_TIMEOUT_MS
-    )
-
-    const isValidResult = Array.isArray(result) && result.length > 0 && result[0]?.result === 1
-    checks.database = formatStatus(isValidResult)
-
-    if (!isValidResult) {
-      errorEntries.push({ source: 'database', message: 'Unexpected query result' })
-    }
-
-    databaseHealthy = checks.database === 'healthy'
+    await withTimeout(prisma.$runCommandRaw({ ping: 1 }), DB_TIMEOUT_MS)
+    checks.database = 'healthy'
+    databaseHealthy = true
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error'
     checks.database = 'unhealthy'
+    checks.users = 'unhealthy'
+    checks.bookings = 'unhealthy'
     errorEntries.push({ source: 'database', message })
     databaseHealthy = false
   }
 
   if (databaseHealthy) {
     try {
-      const userCount = await prisma.user.count()
+      const userCount = await withTimeout(prisma.user.count(), DB_TIMEOUT_MS)
       checks.users = formatStatus(typeof userCount === 'number' && userCount >= 0)
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error'
@@ -98,7 +90,7 @@ export async function GET() {
     }
 
     try {
-      const bookingCount = await prisma.booking.count()
+      const bookingCount = await withTimeout(prisma.booking.count(), DB_TIMEOUT_MS)
       checks.bookings = formatStatus(typeof bookingCount === 'number' && bookingCount >= 0)
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error'

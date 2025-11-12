@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    return NextResponse.json(inventory)
+    return NextResponse.json({ items: inventory })
   } catch (error) {
     console.error('Error fetching inventory:', error)
     return NextResponse.json(
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
       }
     )
 
-    return NextResponse.json(inventory, { status: 201 })
+    return NextResponse.json({ item: inventory }, { status: 201 })
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(

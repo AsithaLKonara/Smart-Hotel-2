@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    return NextResponse.json(gallery)
+    return NextResponse.json({ items: gallery })
   } catch (error) {
     console.error('Error fetching gallery:', error)
     return NextResponse.json(
@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
       }
     )
 
-    return NextResponse.json(gallery, { status: 201 })
+    return NextResponse.json({ item: gallery }, { status: 201 })
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(

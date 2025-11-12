@@ -1,6 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { NotificationType } from '@prisma/client'
 import { prisma } from '@/lib/db'
 import { getRequestSession } from '@/lib/session'
+
+const NOTIFICATION_TYPE_VALUES = new Set<NotificationType>(Object.values(NotificationType))
+
+function resolveNotificationType(value?: string | null): NotificationType {
+  if (!value) {
+    return NotificationType.GENERAL
+  }
+
+  const candidate = value.replace(/[-\s]/g, '_').toUpperCase() as NotificationType
+  return NOTIFICATION_TYPE_VALUES.has(candidate) ? candidate : NotificationType.GENERAL
+}
 
 export async function GET(request: NextRequest) {
   const session = await getRequestSession(request)
@@ -76,7 +88,7 @@ export async function POST(request: NextRequest) {
     const payload = {
       title,
       message,
-      type: type || 'GENERAL',
+      type: resolveNotificationType(type),
       data: data ? JSON.stringify(data) : null
     }
 

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { captureException } from '@/lib/monitoring'
 import Stripe from 'stripe'
 import prisma from '@/lib/db'
 import { logAction, AUDIT_ACTIONS } from '@/lib/audit'
@@ -74,6 +75,12 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ received: true, eventId: event.id })
   } catch (error) {
+    // Capture error with Sentry
+    captureException(error, {
+      requestId: request.headers.get('x-request-id') || undefined,
+      eventType: 'stripe_webhook',
+    })
+    
     console.error('Stripe webhook error:', error)
     
     // Log the error for monitoring

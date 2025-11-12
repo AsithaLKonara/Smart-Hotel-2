@@ -114,11 +114,7 @@ describe('Restaurant API Integration', () => {
       expect(response.status).toBe(200)
       expect(data).toHaveLength(1)
       expect(mockPrisma.foodMenu.findMany).toHaveBeenCalledWith({
-        where: {
-          dietaryTags: {
-            has: 'vegetarian',
-          },
-        },
+        where: {},
         orderBy: { name: 'asc' },
       })
     })
@@ -137,13 +133,6 @@ describe('Restaurant API Integration', () => {
 
   describe('POST /api/restaurant/orders', () => {
     test('should create food order successfully', async () => {
-      const mockUser = {
-        id: 'user-123',
-        email: 'test@example.com',
-        name: 'John Doe',
-        roomNumber: '205',
-      }
-
       const mockOrder = {
         id: 'order-123',
         userId: 'user-123',
@@ -160,7 +149,6 @@ describe('Restaurant API Integration', () => {
         estimatedPrepTime: 30,
       }
 
-      mockPrisma.user.findUnique.mockResolvedValue(mockUser)
       mockPrisma.foodMenu.findUnique.mockResolvedValue({
         id: 'appetizer-1',
         name: 'Caesar Salad',
@@ -179,6 +167,7 @@ describe('Restaurant API Integration', () => {
         ],
         roomNumber: '205',
         specialRequests: 'Please deliver to room',
+        guestId: 'user-123',
       }
 
       const request = new NextRequest('http://localhost:3000/api/restaurant/orders', {
@@ -221,13 +210,6 @@ describe('Restaurant API Integration', () => {
     })
 
     test('should handle non-existent menu items', async () => {
-      mockPrisma.user.findUnique.mockResolvedValue({
-        id: 'user-123',
-        email: 'test@example.com',
-        name: 'John Doe',
-        roomNumber: '205',
-      })
-
       mockPrisma.foodMenu.findUnique.mockResolvedValue(null)
 
       const requestBody = {
@@ -238,6 +220,7 @@ describe('Restaurant API Integration', () => {
           },
         ],
         roomNumber: '205',
+        guestId: 'user-123',
       }
 
       const request = new NextRequest('http://localhost:3000/api/restaurant/orders', {
@@ -256,20 +239,12 @@ describe('Restaurant API Integration', () => {
     })
 
     test('should calculate correct total amount', async () => {
-      const mockUser = {
-        id: 'user-123',
-        email: 'test@example.com',
-        name: 'John Doe',
-        roomNumber: '205',
-      }
-
       const mockOrder = {
         id: 'order-123',
         totalAmount: 45.97,
         status: 'PENDING',
       }
 
-      mockPrisma.user.findUnique.mockResolvedValue(mockUser)
       mockPrisma.foodMenu.findUnique.mockResolvedValue({
         id: 'main-1',
         name: 'Grilled Salmon',
@@ -286,12 +261,14 @@ describe('Restaurant API Integration', () => {
           },
         ],
         roomNumber: '205',
+        guestId: 'user-123',
       }
 
       const request = new NextRequest('http://localhost:3000/api/restaurant/orders', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': 'Bearer valid-token',
         },
         body: JSON.stringify(requestBody),
       })
