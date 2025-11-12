@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Prisma } from '@prisma/client'
 import { prisma } from '@/lib/db'
+import { isDatabaseConfigured, getDatabaseErrorMessage } from '@/lib/db-helpers'
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24
 
@@ -20,6 +21,19 @@ function getNightCount(checkInDate: Date, checkOutDate: Date): number {
 }
 
 export async function GET(request: NextRequest) {
+  // Check database configuration first
+  if (!isDatabaseConfigured()) {
+    return NextResponse.json(
+      {
+        error: 'Database not configured',
+        message: 'DATABASE_URL environment variable is not set',
+        availableRooms: [],
+        totalAvailable: 0
+      },
+      { status: 503 }
+    )
+  }
+
   try {
     const { searchParams } = new URL(request.url)
     const checkIn = searchParams.get('checkIn') ?? searchParams.get('checkin')
@@ -155,11 +169,17 @@ export async function GET(request: NextRequest) {
       checkOut
     })
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Availability check error:', error)
+    const message = getDatabaseErrorMessage(error)
     return NextResponse.json(
-      { error: 'Failed to check room availability' },
-      { status: 500 }
+      {
+        error: 'Failed to check room availability',
+        message,
+        availableRooms: [],
+        totalAvailable: 0
+      },
+      { status: 503 }
     )
   }
 }

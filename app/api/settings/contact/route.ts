@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getHotelContactInfo } from '@/lib/settings'
+import { isDatabaseConfigured } from '@/lib/db-helpers'
 
 const defaultContactInfo = {
   name: 'SmartHotel Grand Palace',
@@ -17,6 +18,11 @@ const defaultContactInfo = {
 }
 
 export async function GET() {
+  // Always return valid JSON, even if database is not configured
+  if (!isDatabaseConfigured()) {
+    return NextResponse.json(defaultContactInfo, { status: 200 })
+  }
+
   try {
     const contact = await getHotelContactInfo()
     // Ensure we always return valid data

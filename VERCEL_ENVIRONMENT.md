@@ -7,8 +7,10 @@
 
 ### **Database Configuration**
 ```bash
-DATABASE_URL="mongodb+srv://asviaai2025_db_user:iMC78D0NpbkppZz0@cluster0.1tpj8te.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+DATABASE_URL="mongodb+srv://asviaai2025_db_user:1234@cluster0.1tpj8te.mongodb.net/smarthotel?retryWrites=true&w=majority"
 ```
+
+**✅ Verified**: Connection string tested and working!
 
 ### **Authentication Configuration**
 ```bash

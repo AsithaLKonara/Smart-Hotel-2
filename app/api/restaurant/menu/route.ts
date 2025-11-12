@@ -3,10 +3,16 @@ import { getServerSession } from 'next-auth'
 import { Prisma } from '@prisma/client'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { isDatabaseConfigured, getDatabaseErrorMessage } from '@/lib/db-helpers'
 import { FoodCategory } from '@/types/restaurant'
 
 // GET /api/restaurant/menu - Get all menu items with filters
 export async function GET(request: NextRequest) {
+  // Check database configuration first
+  if (!isDatabaseConfigured()) {
+    return NextResponse.json([], { status: 200 })
+  }
+
   try {
     const { searchParams } = new URL(request.url)
     const category = searchParams.get('category') as FoodCategory | null
@@ -49,8 +55,9 @@ export async function GET(request: NextRequest) {
     
     // Always return an array, even if empty
     return NextResponse.json(menuItems || [], { status: 200 })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching menu:', error)
+    const message = getDatabaseErrorMessage(error)
     // Return empty array instead of error to prevent frontend failures
     // Frontend can handle empty array gracefully
     return NextResponse.json([], { status: 200 })

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { isDatabaseConfigured, getDatabaseErrorMessage } from '@/lib/db-helpers'
 import { z } from 'zod'
 import { RoomStatus } from '@prisma/client'
 
@@ -18,6 +19,18 @@ const roomSchema = z.object({
 })
 
 export async function GET(request: NextRequest) {
+  // Check database configuration first
+  if (!isDatabaseConfigured()) {
+    return NextResponse.json(
+      {
+        error: 'Database not configured',
+        message: 'DATABASE_URL environment variable is not set',
+        rooms: []
+      },
+      { status: 503 }
+    )
+  }
+
   try {
     const { searchParams } = new URL(request.url)
     const type = searchParams.get('type')
@@ -108,11 +121,16 @@ export async function GET(request: NextRequest) {
     })
 
     return NextResponse.json(rooms)
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching rooms:', error)
+    const message = getDatabaseErrorMessage(error)
     return NextResponse.json(
-      { error: 'Failed to fetch rooms' },
-      { status: 500 }
+      {
+        error: 'Failed to fetch rooms',
+        message,
+        rooms: []
+      },
+      { status: 503 }
     )
   }
 }
