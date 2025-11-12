@@ -28,30 +28,20 @@ export async function GET(
       )
     }
 
+    // Note: Booking model doesn't have relations defined in schema
+    // Relations would need to be added to schema for include to work
     const booking = await prisma.booking.findUnique({
-      where: { id },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            phone: true,
-          }
-        },
-        room: {
-          select: {
-            id: true,
-            number: true,
-            type: true,
-            price: true,
-            description: true,
-            amenities: true,
-          }
-        },
-        invoice: true,
-      }
+      where: { id }
     })
+    
+    // Fetch related data separately if needed
+    let user, room
+    if (booking) {
+      [user, room] = await Promise.all([
+        prisma.user.findUnique({ where: { id: booking.userId } }).catch(() => null),
+        prisma.room.findUnique({ where: { id: booking.roomId } }).catch(() => null)
+      ])
+    }
 
     if (!booking) {
       return NextResponse.json(
@@ -68,7 +58,24 @@ export async function GET(
       )
     }
 
-    return NextResponse.json(booking)
+    // Return booking with related data
+    return NextResponse.json({
+      ...booking,
+      user: user ? {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+      } : null,
+      room: room ? {
+        id: room.id,
+        number: room.number,
+        type: room.type,
+        price: room.price,
+        description: room.description,
+        amenities: room.amenities,
+      } : null,
+    })
   } catch (error) {
     console.error('Error fetching booking:', error)
     return NextResponse.json(
@@ -97,18 +104,17 @@ export async function PATCH(
     const validatedData = bookingUpdateSchema.parse(body)
 
     const booking = await prisma.booking.findUnique({
-      where: { id: id },
-      include: { 
-        room: true,
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          }
-        }
-      }
+      where: { id: id }
     })
+    
+    // Fetch related data separately
+    let user, room
+    if (booking) {
+      [user, room] = await Promise.all([
+        prisma.user.findUnique({ where: { id: booking.userId } }).catch(() => null),
+        prisma.room.findUnique({ where: { id: booking.roomId } }).catch(() => null)
+      ])
+    }
 
     if (!booking) {
       return NextResponse.json(
@@ -137,35 +143,43 @@ export async function PATCH(
 
     const updatedBooking = await prisma.booking.update({
       where: { id: id },
-      data: validatedData,
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            phone: true,
-          }
-        },
-        room: {
-          select: {
-            id: true,
-            number: true,
-            type: true,
-            price: true,
-          }
-        },
+      data: {
+        ...validatedData,
+        updatedAt: new Date(),
       }
     })
+    
+    // Fetch updated related data
+    const [updatedUser, updatedRoom] = await Promise.all([
+      prisma.user.findUnique({ where: { id: updatedBooking.userId } }).catch(() => null),
+      prisma.room.findUnique({ where: { id: updatedBooking.roomId } }).catch(() => null)
+    ])
+    
+    // Return booking with related data
+    const bookingWithRelations = {
+      ...updatedBooking,
+      user: updatedUser ? {
+        id: updatedUser.id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        phone: updatedUser.phone,
+      } : null,
+      room: updatedRoom ? {
+        id: updatedRoom.id,
+        number: updatedRoom.number,
+        type: updatedRoom.type,
+        price: updatedRoom.price,
+      } : null,
+    }
 
     // Send email notifications for status changes
     try {
-      if (validatedData.status && validatedData.status !== oldStatus) {
+      if (validatedData.status && validatedData.status !== oldStatus && user && room) {
         await sendBookingStatusUpdate({
-          guestEmail: booking.user.email,
-          guestName: booking.user.name || 'Guest',
+          guestEmail: user.email,
+          guestName: user.name || 'Guest',
           bookingId: booking.id,
-          roomNumber: booking.room.number,
+          roomNumber: room.number,
           status: validatedData.status,
           checkIn: booking.checkIn,
           checkOut: booking.checkOut
@@ -191,7 +205,7 @@ export async function PATCH(
       }
     )
 
-    return NextResponse.json(updatedBooking)
+    return NextResponse.json(bookingWithRelations)
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
