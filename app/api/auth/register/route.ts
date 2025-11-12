@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     const validatedData = registerSchema.parse(body)
 
     // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
+    const existingUser = await prisma.user.findFirst({
       where: { email: validatedData.email }
     })
 
