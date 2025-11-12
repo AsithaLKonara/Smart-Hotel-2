@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
         name: validatedData.name,
         email: validatedData.email,
         password: hashedPassword,
-        phone: validatedData.phone,
+        phone: validatedData.phone || '',
         role: 'GUEST', // Default role for new registrations
       },
       select: {
