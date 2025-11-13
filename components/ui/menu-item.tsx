@@ -114,6 +114,25 @@ export function MenuItem({
     return colors[tag.toLowerCase() as keyof typeof colors] || 'bg-gray-100 text-gray-800'
   }
 
+  // Get category-specific placeholder image
+  const getCategoryPlaceholder = (category: string): string => {
+    const categoryLower = category.toLowerCase()
+    if (categoryLower.includes('breakfast')) {
+      return '/images/hotel/food-breakfast.jpg'
+    } else if (categoryLower.includes('lunch')) {
+      return '/images/hotel/food-lunch.jpg'
+    } else if (categoryLower.includes('dinner') || categoryLower.includes('main')) {
+      return '/images/hotel/food-dinner.jpg'
+    } else if (categoryLower.includes('dessert')) {
+      return '/images/hotel/food-dessert.jpg'
+    } else if (categoryLower.includes('beverage') || categoryLower.includes('drink')) {
+      return '/images/hotel/hotel-bar.jpg'
+    }
+    return '/images/menu-placeholder.jpg'
+  }
+
+  const displayImageUrl = item.imageUrl || getCategoryPlaceholder(item.category)
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -130,19 +149,18 @@ export function MenuItem({
         {/* Image */}
         <div className="relative flex-shrink-0">
           <div className="relative w-20 h-20 rounded-lg overflow-hidden">
-            {item.imageUrl ? (
-              <Image
-                ref={imgRef}
-                src={item.imageUrl}
-                alt={item.name}
-                fill
-                className="object-cover transition-transform duration-300 group-hover:scale-110"
-              />
-            ) : (
-              <div className="w-full h-full bg-gradient-to-br from-amber-100 to-amber-200 flex items-center justify-center">
-                <span className="text-amber-600 text-xs font-medium">No Image</span>
-              </div>
-            )}
+            <Image
+              ref={imgRef}
+              src={displayImageUrl}
+              alt={item.name}
+              fill
+              className="object-cover transition-transform duration-300 group-hover:scale-110"
+              onError={(e) => {
+                // Fallback to category-specific placeholder if image fails to load
+                const target = e.target as HTMLImageElement
+                target.src = getCategoryPlaceholder(item.category)
+              }}
+            />
           </div>
           
           {/* Popular Badge */}

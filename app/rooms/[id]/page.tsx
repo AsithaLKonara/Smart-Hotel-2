@@ -57,9 +57,24 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
   const avgRating = 0 // Default rating since reviews aren't available
 
   // Note: roomImages relation doesn't exist - use images array from Room model
+  // Use type-specific placeholder images
+  const getDefaultRoomImage = (roomType: string): string => {
+    const typeLower = roomType.toLowerCase()
+    if (typeLower.includes('standard')) {
+      return '/images/hotel/room-standard.jpg'
+    } else if (typeLower.includes('deluxe')) {
+      return '/images/hotel/room-deluxe.jpg'
+    } else if (typeLower.includes('suite') || typeLower.includes('presidential')) {
+      return '/images/hotel/room-suite.jpg'
+    } else if (typeLower.includes('luxury')) {
+      return '/images/hotel/room-luxury.jpg'
+    }
+    return '/images/room-placeholder.jpg'
+  }
+  
   const images = room.images && Array.isArray(room.images) && room.images.length > 0
     ? room.images
-    : ['/images/room-placeholder.jpg']
+    : [getDefaultRoomImage(room.type)]
 
   const amenities = Array.isArray(room.amenities) ? room.amenities : []
 
@@ -101,16 +116,16 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
               <div className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-lg">
                 <div className="aspect-video relative">
                   <Image
-                    src={images[0] || '/images/room-placeholder.jpg'}
+                    src={images[0] || getDefaultRoomImage(room.type)}
                     alt={room.type}
                     fill
                     className="object-cover"
                     priority={!images[0]?.startsWith('https://images.unsplash.com')}
                     unoptimized={images[0]?.startsWith('https://images.unsplash.com')}
                     onError={(e) => {
-                      // Fallback to placeholder if image fails to load
+                      // Fallback to type-specific placeholder if image fails to load
                       const target = e.target as HTMLImageElement
-                      target.src = '/images/room-placeholder.jpg'
+                      target.src = getDefaultRoomImage(room.type)
                     }}
                   />
                 </div>
@@ -125,9 +140,9 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
                           className="object-cover"
                           unoptimized={img?.startsWith('https://images.unsplash.com')}
                           onError={(e) => {
-                            // Fallback to placeholder if image fails to load
+                            // Fallback to type-specific placeholder if image fails to load
                             const target = e.target as HTMLImageElement
-                            target.src = '/images/room-placeholder.jpg'
+                            target.src = getDefaultRoomImage(room.type)
                           }}
                         />
                       </div>

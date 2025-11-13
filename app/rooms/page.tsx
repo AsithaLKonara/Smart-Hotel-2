@@ -77,7 +77,7 @@ export default function RoomsPage() {
     return sum / room.reviews.length
   }
 
-  // Get room image
+  // Get room image with type-specific placeholders
   const getRoomImage = (room: Room): string => {
     if (room.roomImages && room.roomImages.length > 0) {
       const mainImage = room.roomImages.find(img => img.isMain)
@@ -86,6 +86,17 @@ export default function RoomsPage() {
     }
     if (room.images && Array.isArray(room.images) && room.images.length > 0) {
       return room.images[0]
+    }
+    // Use type-specific placeholder images
+    const typeLower = room.type.toLowerCase()
+    if (typeLower.includes('standard')) {
+      return '/images/hotel/room-standard.jpg'
+    } else if (typeLower.includes('deluxe')) {
+      return '/images/hotel/room-deluxe.jpg'
+    } else if (typeLower.includes('suite') || typeLower.includes('presidential')) {
+      return '/images/hotel/room-suite.jpg'
+    } else if (typeLower.includes('luxury')) {
+      return '/images/hotel/room-luxury.jpg'
     }
     return '/images/room-placeholder.jpg'
   }
