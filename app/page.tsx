@@ -20,14 +20,32 @@ import {
   Users,
   Clock,
 } from 'lucide-react'
-import prisma from '@/lib/db'
 import { getHotelContactInfo } from '@/lib/settings'
+import { isDatabaseConfigured } from '@/lib/db-helpers'
+import prisma from '@/lib/db'
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic'
 
+// Default fallback values
+const defaultContact = {
+  name: 'SmartHotel Grand Palace',
+  tagline: 'Luxury 5-Star Accommodation',
+  description: 'Experience unparalleled luxury where timeless elegance meets modern hospitality.',
+  email: 'info@smarthotel.com',
+  phone: '+1 (800) 555-HOTEL',
+  address: '123 Grand Boulevard, City Center, Metropolitan Area, ST 10001',
+  checkIn: '15:00',
+  checkOut: '11:00',
+  coordinates: {
+    lat: 40.7589,
+    lng: -73.9851,
+  },
+}
+
 export default async function HomePage() {
-  let contact
+  // Initialize with fallback values
+  let contact = defaultContact
   let featuredRooms: Array<{
     id: string
     type: string
@@ -35,55 +53,51 @@ export default async function HomePage() {
     description: string | null
   }> = []
 
-  try {
-    const [contactData, roomsData] = await Promise.all([
-      getHotelContactInfo().catch((error) => {
+  // Check if database is configured before making queries
+  const dbConfigured = isDatabaseConfigured()
+
+  if (dbConfigured) {
+    try {
+      // Fetch contact info with error handling
+      try {
+        contact = await getHotelContactInfo()
+      } catch (error) {
         console.error('Error fetching hotel contact info:', error)
-        return {
-          name: 'SmartHotel Grand Palace',
-          tagline: 'Luxury 5-Star Accommodation',
-          description: 'Experience unparalleled luxury where timeless elegance meets modern hospitality.',
-          email: 'info@smarthotel.com',
-          phone: '+1 (800) 555-HOTEL',
-          address: '123 Grand Boulevard, City Center, Metropolitan Area, ST 10001',
-          checkIn: '15:00',
-          checkOut: '11:00',
-          coordinates: {
-            lat: 40.7589,
-            lng: -73.9851,
+        // Use default contact if fetch fails
+        contact = defaultContact
+      }
+
+      // Fetch featured rooms with error handling
+      try {
+        const rooms = await prisma.room.findMany({
+          take: 3,
+          orderBy: {
+            price: 'desc',
           },
-        }
-      }),
-    prisma.room.findMany({
-      take: 3,
-      orderBy: {
-        price: 'desc',
-      },
-      }).catch((error) => {
+          select: {
+            id: true,
+            type: true,
+            price: true,
+            description: true,
+          },
+        })
+        featuredRooms = rooms || []
+      } catch (error) {
         console.error('Error fetching featured rooms:', error)
-        return []
-    }),
-  ])
-    
-    contact = contactData
-    featuredRooms = roomsData || []
-  } catch (error) {
-    console.error('Error in HomePage:', error)
-    // Fallback values
-    contact = {
-      name: 'SmartHotel Grand Palace',
-      tagline: 'Luxury 5-Star Accommodation',
-      description: 'Experience unparalleled luxury where timeless elegance meets modern hospitality.',
-      email: 'info@smarthotel.com',
-      phone: '+1 (800) 555-HOTEL',
-      address: '123 Grand Boulevard, City Center, Metropolitan Area, ST 10001',
-      checkIn: '15:00',
-      checkOut: '11:00',
-      coordinates: {
-        lat: 40.7589,
-        lng: -73.9851,
-      },
+        // Use empty array if fetch fails
+        featuredRooms = []
+      }
+    } catch (error) {
+      // Catch any unexpected errors
+      console.error('Unexpected error in HomePage:', error)
+      // Keep default values
+      contact = defaultContact
+      featuredRooms = []
     }
+  } else {
+    // Database not configured - use default values
+    console.warn('Database not configured - using default values for homepage')
+    contact = defaultContact
     featuredRooms = []
   }
 

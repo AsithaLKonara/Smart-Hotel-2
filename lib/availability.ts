@@ -64,7 +64,7 @@ export async function getAvailableRooms(
     const allRooms = await prisma.room.findMany({
       where: {
         status: { in: ['AVAILABLE', 'RESERVED'] },
-        ...(capacity ? { capacity: { gte: capacity } } : {})
+        ...(capacity ? { capacity: { gte: BigInt(capacity) } } : {})
       },
       // Note: Room model doesn't have bookings relation defined in schema
     })
@@ -100,7 +100,13 @@ export async function getAvailableRooms(
     const bookedRoomIds = new Set(conflictingBookings.map(b => b.roomId))
     const availableRooms = allRooms.filter(room => !bookedRoomIds.has(room.id))
 
-    return availableRooms
+    // Convert BigInt fields to Number for JSON serialization
+    return availableRooms.map(room => ({
+      ...room,
+      capacity: Number(room.capacity),
+      floor: Number(room.floor),
+      size: Number(room.size),
+    }))
   } catch (error) {
     console.error('Error getting available rooms:', error)
     return []

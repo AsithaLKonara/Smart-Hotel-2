@@ -22,7 +22,12 @@ export default function HeroVideoBackground({
   const [videoError, setVideoError] = useState(false)
 
   // Default hotel video URL (you can replace with your own)
+  // Note: External video URLs may fail - fallback image will be used
   const defaultVideoUrl = videoUrl || "https://player.vimeo.com/external/371433846.sd.mp4?s=236da2f3c0fd273d2c6d9a064f3ae35579b2bbdf&profile_id=165&oauth2_token_id=57447761"
+
+  // Check if video URL is available on mount
+  // Note: External video URLs may fail - fallback image will be used automatically
+  // The onError handler on the video element will catch loading failures
 
   const togglePlayPause = () => {
     setIsPlaying(!isPlaying)
@@ -55,7 +60,20 @@ export default function HeroVideoBackground({
             loop
             playsInline
             poster={fallbackImage}
-            onError={() => setVideoError(true)}
+            onError={(e) => {
+              console.warn('Video failed to load, using fallback image:', e)
+              setVideoError(true)
+            }}
+            onLoadStart={(e) => {
+              // Check if video actually loads
+              const video = e.target as HTMLVideoElement
+              setTimeout(() => {
+                if (video.readyState === 0 || video.networkState === 3) {
+                  // Video failed to load
+                  setVideoError(true)
+                }
+              }, 2000)
+            }}
             style={{
               filter: 'brightness(0.6) contrast(1.1)'
             }}

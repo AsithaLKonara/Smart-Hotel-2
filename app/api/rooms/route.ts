@@ -107,7 +107,14 @@ export async function GET(request: NextRequest) {
       })
       const bookedRoomIds = new Set(bookings.map(b => b.roomId))
       const availableRooms = rooms.filter(room => !bookedRoomIds.has(room.id))
-      return NextResponse.json(availableRooms)
+      // Convert BigInt fields to Number for JSON serialization
+      const serializedRooms = availableRooms.map(room => ({
+        ...room,
+        capacity: Number(room.capacity),
+        floor: Number(room.floor),
+        size: Number(room.size),
+      }))
+      return NextResponse.json(serializedRooms)
     }
 
     // Note: Room model doesn't have roomImages or reviews relations defined in schema
@@ -116,7 +123,15 @@ export async function GET(request: NextRequest) {
       orderBy: { number: 'asc' }
     })
 
-    return NextResponse.json(rooms)
+    // Convert BigInt fields to Number for JSON serialization
+    const serializedRooms = rooms.map(room => ({
+      ...room,
+      capacity: Number(room.capacity),
+      floor: Number(room.floor),
+      size: Number(room.size),
+    }))
+
+    return NextResponse.json(serializedRooms)
   } catch (error: any) {
     console.error('Error fetching rooms:', error)
     const message = getDatabaseErrorMessage(error)

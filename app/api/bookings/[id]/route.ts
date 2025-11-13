@@ -61,6 +61,7 @@ export async function GET(
     // Return booking with related data
     return NextResponse.json({
       ...booking,
+      guests: Number(booking.guests), // Convert BigInt to Number for JSON serialization
       user: user ? {
         id: user.id,
         name: user.name,
@@ -74,6 +75,9 @@ export async function GET(
         price: room.price,
         description: room.description,
         amenities: room.amenities,
+        capacity: Number(room.capacity),
+        floor: Number(room.floor),
+        size: Number(room.size),
       } : null,
     })
   } catch (error) {
@@ -158,6 +162,7 @@ export async function PATCH(
     // Return booking with related data
     const bookingWithRelations = {
       ...updatedBooking,
+      guests: Number(updatedBooking.guests), // Convert BigInt to Number for JSON serialization
       user: updatedUser ? {
         id: updatedUser.id,
         name: updatedUser.name,
@@ -169,8 +174,11 @@ export async function PATCH(
         number: updatedRoom.number,
         type: updatedRoom.type,
         price: updatedRoom.price,
+        capacity: Number(updatedRoom.capacity),
+        floor: Number(updatedRoom.floor),
+        size: Number(updatedRoom.size),
       } : null,
-      }
+    }
 
     // Send email notifications for status changes
     try {

@@ -62,23 +62,45 @@ transports.push(
   })
 )
 
-// File transports for production
-if (process.env.NODE_ENV === 'production') {
-  transports.push(
-    new winston.transports.File({
-      filename: 'logs/error.log',
-      level: 'error',
-      format,
-      maxsize: 5242880, // 5MB
-      maxFiles: 5,
-    }),
-    new winston.transports.File({
-      filename: 'logs/combined.log',
-      format,
-      maxsize: 5242880, // 5MB
-      maxFiles: 5,
-    })
-  )
+// File transports for production (only if not in serverless environment)
+// Vercel and other serverless platforms have read-only filesystems
+const isServerless = 
+  process.env.VERCEL === '1' || 
+  !!process.env.AWS_LAMBDA_FUNCTION_NAME || 
+  !!process.env.VERCEL_ENV
+
+if (process.env.NODE_ENV === 'production' && !isServerless) {
+  // Only use file transports in non-serverless production environments
+  try {
+    const fs = require('fs')
+    const path = require('path')
+    const logsDir = path.join(process.cwd(), 'logs')
+    
+    // Try to create logs directory (will fail in serverless)
+    if (!fs.existsSync(logsDir)) {
+      fs.mkdirSync(logsDir, { recursive: true })
+    }
+    
+    transports.push(
+      new winston.transports.File({
+        filename: 'logs/error.log',
+        level: 'error',
+        format,
+        maxsize: 5242880, // 5MB
+        maxFiles: 5,
+      }),
+      new winston.transports.File({
+        filename: 'logs/combined.log',
+        format,
+        maxsize: 5242880, // 5MB
+        maxFiles: 5,
+      })
+    )
+  } catch (error) {
+    // If file transport fails (e.g., in serverless), just use console
+    // This is expected in Vercel/serverless environments
+    console.warn('File logging not available in serverless environment, using console only')
+  }
 }
 
 // Create logger instance

@@ -7,9 +7,12 @@ import Stripe from 'stripe'
 import { sendBookingConfirmation, sendAdminBookingAlert } from '@/lib/email'
 import { getRequestSession } from '@/lib/session'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2023-10-16',
-})
+// Initialize Stripe only if secret key is configured
+const stripe = process.env.STRIPE_SECRET_KEY && process.env.STRIPE_SECRET_KEY !== ''
+  ? new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2023-10-16',
+    })
+  : null
 
 // Simple rate limit response function
 function createRateLimitResponse(result: any) {
@@ -109,12 +112,18 @@ export async function GET(request: NextRequest) {
         
         return {
           ...booking,
+          guests: Number(booking.guests), // Convert BigInt to Number for JSON serialization
           user: user ? (actorRole && actorRole !== 'GUEST' ? user : {
             id: user.id,
             name: user.name,
             email: user.email,
           }) : null,
-          room: room || null,
+          room: room ? {
+            ...room,
+            capacity: Number(room.capacity),
+            floor: Number(room.floor),
+            size: Number(room.size),
+          } : null,
         }
       })
     )
@@ -146,9 +155,19 @@ export async function POST(request: NextRequest) {
     const validatedData = bookingSchema.parse(body)
 
     // Check if room exists and is available
-    const room = await prisma.room.findUnique({
-      where: { id: validatedData.roomId }
-    })
+    let room
+    try {
+      room = await prisma.room.findUnique({
+        where: { id: validatedData.roomId }
+      })
+    } catch (dbError: any) {
+      // Handle invalid ObjectId format or other database errors
+      console.error('Error fetching room:', dbError)
+      return NextResponse.json(
+        { error: 'Invalid room ID format or room not found', details: dbError.message },
+        { status: 404 }
+      )
+    }
 
     if (!room) {
       return NextResponse.json(
@@ -248,7 +267,7 @@ export async function POST(request: NextRequest) {
         userId,
         checkIn,
         checkOut,
-        guests: validatedData.guests,
+        guests: BigInt(validatedData.guests), // Convert to BigInt as per schema
         totalAmount,
         specialRequests: validatedData.specialRequests || null,
         status: 'PENDING',
@@ -267,13 +286,19 @@ export async function POST(request: NextRequest) {
     
     const bookingWithRelations = {
       ...booking,
-      room: bookingRoom,
+      guests: Number(booking.guests), // Convert BigInt to Number for JSON serialization
+      room: bookingRoom ? {
+        ...bookingRoom,
+        capacity: Number(bookingRoom.capacity),
+        floor: Number(bookingRoom.floor),
+        size: Number(bookingRoom.size),
+      } : null,
       user: bookingUser ? {
         id: bookingUser.id,
         name: bookingUser.name,
         email: bookingUser.email,
       } : null,
-        }
+    }
 
     // Emit WebSocket event for real-time updates
     try {
@@ -299,16 +324,27 @@ export async function POST(request: NextRequest) {
     // If pay now, create Stripe payment intent
     let paymentIntent = null
     if (validatedData.paymentMethod === 'pay_now') {
-      paymentIntent = await stripe.paymentIntents.create({
-        amount: Math.round((totalAmount + tax) * 100), // Convert to cents
-        currency: 'usd',
-        metadata: {
-          bookingId: booking.id,
-          roomId: room.id,
-          userId: userId,
-        },
-        description: `Booking for Room ${room.number} - ${nights} nights`,
-      })
+      try {
+        // Check if Stripe is configured
+        if (!stripe) {
+          console.warn('Stripe secret key not configured, skipping payment intent creation')
+        } else {
+          paymentIntent = await stripe.paymentIntents.create({
+            amount: Math.round((totalAmount + tax) * 100), // Convert to cents
+            currency: 'usd',
+            metadata: {
+              bookingId: booking.id,
+              roomId: room.id,
+              userId: userId,
+            },
+            description: `Booking for Room ${room.number} - ${nights} nights`,
+          })
+        }
+      } catch (stripeError: any) {
+        // Log Stripe error but don't fail the booking
+        console.error('Error creating Stripe payment intent:', stripeError)
+        // Continue without payment intent - booking is still created
+      }
 
       // Note: paymentIntentId field doesn't exist in Booking schema
       // Would need to add field to schema to store payment intent ID
@@ -387,7 +423,8 @@ export async function POST(request: NextRequest) {
                   }
                 }, { status: 201 })
 
-  } catch (error) {
+  } catch (error: any) {
+    // Handle validation errors
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Invalid booking data', details: error.errors },
@@ -395,9 +432,42 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Handle specific error types
+    if (error?.code === 'P2002') {
+      // Prisma unique constraint error
+      return NextResponse.json(
+        { error: 'Booking already exists', details: error.message },
+        { status: 409 }
+      )
+    }
+
+    if (error?.code === 'P2025') {
+      // Prisma record not found error
+      return NextResponse.json(
+        { error: 'Room or user not found', details: error.message },
+        { status: 404 }
+      )
+    }
+
+    // Log the full error for debugging
     console.error('Error creating booking:', error)
+    console.error('Error stack:', error?.stack)
+    console.error('Error details:', {
+      message: error?.message,
+      code: error?.code,
+      name: error?.name,
+    })
+
+    // Return more detailed error message in development
+    const errorMessage = process.env.NODE_ENV === 'development'
+      ? error?.message || 'Failed to create booking'
+      : 'Failed to create booking'
+
     return NextResponse.json(
-      { error: 'Failed to create booking' },
+      { 
+        error: errorMessage,
+        ...(process.env.NODE_ENV === 'development' && { details: error?.stack })
+      },
       { status: 500 }
     )
   }

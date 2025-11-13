@@ -105,7 +105,13 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
                     alt={room.type}
                     fill
                     className="object-cover"
-                    priority
+                    priority={!images[0]?.startsWith('https://images.unsplash.com')}
+                    unoptimized={images[0]?.startsWith('https://images.unsplash.com')}
+                    onError={(e) => {
+                      // Fallback to placeholder if image fails to load
+                      const target = e.target as HTMLImageElement
+                      target.src = '/images/room-placeholder.jpg'
+                    }}
                   />
                 </div>
                 {images.length > 1 && (
@@ -117,6 +123,12 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
                           alt={`${room.type} ${idx + 2}`}
                           fill
                           className="object-cover"
+                          unoptimized={img?.startsWith('https://images.unsplash.com')}
+                          onError={(e) => {
+                            // Fallback to placeholder if image fails to load
+                            const target = e.target as HTMLImageElement
+                            target.src = '/images/room-placeholder.jpg'
+                          }}
                         />
                       </div>
                     ))}

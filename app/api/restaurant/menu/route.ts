@@ -53,8 +53,14 @@ export async function GET(request: NextRequest) {
 
     console.log(`Menu API: Found ${menuItems.length} menu items`)
     
+    // Convert BigInt fields to Number for JSON serialization
+    const serializedMenuItems = menuItems.map(item => ({
+      ...item,
+      preparationTime: Number(item.preparationTime),
+    }))
+    
     // Always return an array, even if empty
-    return NextResponse.json(menuItems || [], { status: 200 })
+    return NextResponse.json(serializedMenuItems || [], { status: 200 })
   } catch (error: any) {
     console.error('Error fetching menu:', error)
     const message = getDatabaseErrorMessage(error)

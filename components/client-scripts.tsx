@@ -4,10 +4,15 @@ import { useEffect } from 'react'
 
 export default function ClientScripts() {
   useEffect(() => {
-    // Service Worker Registration
-    if ('serviceWorker' in navigator) {
+    // Service Worker Registration (only in production and if supported)
+    if (
+      typeof window !== 'undefined' &&
+      'serviceWorker' in navigator &&
+      process.env.NODE_ENV === 'production'
+    ) {
       window.addEventListener('load', function() {
-        navigator.serviceWorker.register('/sw.js')
+        navigator.serviceWorker
+          .register('/sw.js')
           .then(function(registration) {
             console.log('SW registered: ', registration);
             
@@ -18,36 +23,26 @@ export default function ClientScripts() {
                 newWorker.addEventListener('statechange', function() {
                   if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
                     // New content is available, show update notification
-                    if (confirm('New version available! Reload to update?')) {
-                      newWorker.postMessage({ type: 'SKIP_WAITING' });
-                      window.location.reload();
-                    }
+                    // Only show notification, don't force reload
+                    console.log('New service worker available');
                   }
                 });
               }
             });
           })
           .catch(function(registrationError) {
-            console.log('SW registration failed: ', registrationError);
+            // Silently fail - service worker is optional
+            console.warn('SW registration failed: ', registrationError);
           });
       });
     }
 
     // Initialize performance optimizations
     if (typeof window !== 'undefined') {
-      // Preload critical images
-      const criticalImages = [
-        '/images/hotel-hero-1.jpg',
-        '/images/room-placeholder.jpg'
-      ];
-      
-      criticalImages.forEach(src => {
-        const link = document.createElement('link');
-        link.rel = 'preload';
-        link.as = 'image';
-        link.href = src;
-        document.head.appendChild(link);
-      });
+      // Note: Preloading images removed to avoid console warnings
+      // Images will load naturally when needed
+      // Preloading should only be used for above-the-fold critical images
+      // that are guaranteed to be used within a few seconds
       
       // Initialize lazy loading
       if ('IntersectionObserver' in window) {

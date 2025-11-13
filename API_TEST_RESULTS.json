@@ -1,0 +1,13 @@
+{
+  "timestamp": "2025-11-13T22:46:58.331Z",
+  "baseUrl": "https://smarthotel-demo.vercel.app",
+  "summary": {
+    "total": 37,
+    "passed": 37,
+    "failed": 0,
+    "skipped": 0,
+    "successRate": "100.0%",
+    "duration": "46.84s"
+  },
+  "errors": []
+}

@@ -143,8 +143,12 @@ export async function GET(request: NextRequest) {
         ? reviews.reduce((sum: number, review) => sum + (review.rating ?? 0), 0) / reviews.length
         : 0
 
+      // Convert BigInt fields to Number for JSON serialization
       return {
         ...room,
+        capacity: Number(room.capacity),
+        floor: Number(room.floor),
+        size: Number(room.size),
         nights,
         totalPrice: basePrice,
         averageRating: Math.round(avgRating * 10) / 10,

@@ -5,6 +5,51 @@ import { MapPin, Phone, Mail, Clock, Send } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 
+// Google Maps component with fallback
+function GoogleMapFallback({ lat, lng, address }: { lat: number; lng: number; address: string }) {
+  // In Next.js, NEXT_PUBLIC_* variables are available at build time
+  const apiKey = typeof window !== 'undefined' 
+    ? (window as any).__NEXT_DATA__?.env?.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY 
+    : process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+
+  // For client-side, try to use the environment variable directly
+  // Next.js replaces process.env.NEXT_PUBLIC_* at build time
+  const mapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || apiKey
+
+  if (mapsApiKey && mapsApiKey !== 'AIzaSyYour_Google_Maps_API_Key_Here' && mapsApiKey !== '') {
+    return (
+      <iframe
+        src={`https://www.google.com/maps/embed/v1/place?key=${mapsApiKey}&q=${lat},${lng}&zoom=15`}
+        width="100%"
+        height="100%"
+        style={{ border: 0 }}
+        allowFullScreen
+        loading="lazy"
+        referrerPolicy="no-referrer-when-downgrade"
+        className="absolute inset-0 w-full h-full"
+        title="SmartHotel Location"
+      />
+    )
+  }
+
+  // Fallback: Show address with link to Google Maps
+  return (
+    <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
+      <MapPin className="w-16 h-16 text-amber-600 mb-4" />
+      <h3 className="text-xl font-semibold mb-2">Our Location</h3>
+      <p className="text-gray-600 mb-4">{address}</p>
+      <a
+        href={`https://www.google.com/maps?q=${lat},${lng}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-amber-600 hover:text-amber-700 underline"
+      >
+        Open in Google Maps
+      </a>
+    </div>
+  )
+}
+
 interface ContactInfo {
   name: string
   email: string
@@ -250,17 +295,11 @@ export default function ContactPage() {
             </Card>
 
             <Card className="p-0 overflow-hidden">
-              <div className="relative pb-[56.25%]">
-                <iframe
-                  src={`https://www.google.com/maps?q=${mapLat},${mapLng}&z=15&output=embed`}
-                  width="100%"
-                  height="100%"
-                  style={{ border: 0 }}
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  className="absolute inset-0 w-full h-full"
-                  title="SmartHotel Location"
+              <div className="relative pb-[56.25%] bg-gray-100">
+                <GoogleMapFallback
+                  lat={mapLat}
+                  lng={mapLng}
+                  address={contactInfo?.address || '123 Grand Boulevard, City Center, Metropolitan Area, ST 10001'}
                 />
               </div>
             </Card>

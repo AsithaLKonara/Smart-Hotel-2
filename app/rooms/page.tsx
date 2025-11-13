@@ -209,6 +209,12 @@ export default function RoomsPage() {
                           alt={roomName}
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    unoptimized={roomImage.startsWith('https://images.unsplash.com')}
+                    onError={(e) => {
+                      // Fallback to placeholder if image fails to load
+                      const target = e.target as HTMLImageElement
+                      target.src = '/images/room-placeholder.jpg'
+                    }}
                   />
                   <Badge className="absolute top-4 left-4 bg-luxury-600">
                     {room.type}

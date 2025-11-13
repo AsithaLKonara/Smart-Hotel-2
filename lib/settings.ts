@@ -29,13 +29,23 @@ const cache =
 
 export const getHotelSettings = cache(async () => {
   try {
-  const records = await prisma.setting.findMany()
-  return records.reduce<SettingsMap>((acc, setting) => {
-    acc[setting.key] = setting.value
-    return acc
-  }, {})
+    // Check if database is configured before making query
+    if (!process.env.DATABASE_URL) {
+      console.warn('DATABASE_URL not configured - returning empty settings')
+      return {}
+    }
+    
+    const records = await prisma.setting.findMany().catch((error) => {
+      console.error('Error fetching hotel settings:', error)
+      return []
+    })
+    
+    return records.reduce<SettingsMap>((acc, setting) => {
+      acc[setting.key] = setting.value
+      return acc
+    }, {})
   } catch (error) {
-    console.error('Error fetching hotel settings:', error)
+    console.error('Error in getHotelSettings:', error)
     // Return empty object if database query fails
     // This allows getHotelContactInfo to use default values
     return {}
