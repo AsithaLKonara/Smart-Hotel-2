@@ -5,7 +5,8 @@ import GoogleProvider from 'next-auth/providers/google'
 import bcrypt from 'bcryptjs'
 import prisma from './db'
 import { logAction, AUDIT_ACTIONS } from './audit'
-import { UserRole } from '@prisma/client'
+// Note: UserRole enum doesn't exist in Prisma schema - define locally
+type UserRole = 'GUEST' | 'STAFF' | 'MANAGER' | 'SUPER_ADMIN' | 'RECEPTIONIST'
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -29,7 +30,7 @@ export const authOptions: NextAuthOptions = {
 
         try {
           console.info('Credentials authorize: lookup user', credentials.email)
-          const user = await prisma.user.findUnique({ 
+          const user = await prisma.user.findFirst({ 
             where: { email: credentials.email.toLowerCase().trim() } 
           })
           console.info('Credentials authorize: user found', !!user)
@@ -82,8 +83,8 @@ export const authOptions: NextAuthOptions = {
             id: user.id,
             email: user.email,
             name: user.name,
-            role: user.role,
-            hotelId: user.hotelId,
+            role: user.role as UserRole,
+            hotelId: (user as any).hotelId || null,
           }
         } catch (error) {
           console.error('Authentication error:', error)
@@ -114,7 +115,7 @@ export const authOptions: NextAuthOptions = {
         // Token expired, force re-authentication
         return {
           id: '',
-          role: 'GUEST' as UserRole,
+          role: 'GUEST',
           hotelId: null,
           iat: 0
         }

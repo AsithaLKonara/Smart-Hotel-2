@@ -112,13 +112,7 @@ export async function computeDashboardAnalytics(referenceDate = new Date()): Pro
           lte: todayEnd,
         },
       },
-      include: {
-        room: true,
-        invoice: true,
-        user: {
-          select: { id: true, name: true, email: true },
-        },
-      },
+      // Note: Booking model doesn't have room, invoice, or user relations defined in schema
     }),
     prisma.booking.findMany({
       where: {
@@ -127,9 +121,7 @@ export async function computeDashboardAnalytics(referenceDate = new Date()): Pro
           lte: todayEnd,
         },
       },
-      include: {
-        invoice: true,
-      },
+      // Note: Booking model doesn't have invoice relation defined in schema
     }),
     prisma.booking.findMany({
       where: {
@@ -147,7 +139,8 @@ export async function computeDashboardAnalytics(referenceDate = new Date()): Pro
         ],
       },
     }),
-    prisma.invoice.findMany({
+    // Note: Invoice model doesn't exist in schema - use bookings instead
+    prisma.booking.findMany({
       where: {
         createdAt: {
           gte: todayStart,
@@ -155,7 +148,7 @@ export async function computeDashboardAnalytics(referenceDate = new Date()): Pro
         },
       },
     }),
-    prisma.invoice.findMany({
+    prisma.booking.findMany({
       where: {
         createdAt: {
           gte: monthStart,
@@ -163,7 +156,7 @@ export async function computeDashboardAnalytics(referenceDate = new Date()): Pro
         },
       },
     }),
-    prisma.invoice.findMany({
+    prisma.booking.findMany({
       where: {
         createdAt: {
           gte: previousMonthStart,
@@ -178,11 +171,7 @@ export async function computeDashboardAnalytics(referenceDate = new Date()): Pro
           lte: todayEnd,
         },
       },
-      include: {
-        items: {
-          include: { menu: true },
-        },
-      },
+      // Note: FoodOrder model doesn't have items relation defined in schema
     }),
     prisma.foodOrder.findMany({
       where: {
@@ -191,48 +180,25 @@ export async function computeDashboardAnalytics(referenceDate = new Date()): Pro
           lte: todayEnd,
         },
       },
-      include: {
-        items: {
-          include: { menu: true },
-        },
-      },
+      // Note: FoodOrder model doesn't have items relation defined in schema
     }),
     prisma.task.findMany(),
-    prisma.guestReview.aggregate({
-      _avg: { rating: true },
-      _count: { id: true },
-    }),
+    // Note: GuestReview model doesn't exist in schema - return mock data
+    Promise.resolve({ _avg: { rating: null }, _count: { id: 0 } }),
     prisma.booking.findMany({
       orderBy: { createdAt: 'desc' },
       take: 5,
-      include: {
-        room: true,
-        invoice: true,
-        user: {
-          select: { id: true, name: true, email: true },
-        },
-      },
+      // Note: Booking model doesn't have room, invoice, or user relations defined in schema
     }),
     prisma.foodOrder.findMany({
       orderBy: { createdAt: 'desc' },
       take: 5,
-      include: {
-        items: {
-          include: { menu: true },
-        },
-      },
+      // Note: FoodOrder model doesn't have items relation defined in schema
     }),
     prisma.task.findMany({
       orderBy: { createdAt: 'desc' },
       take: 5,
-      include: {
-        user: {
-          select: { id: true, name: true },
-        },
-        staff: {
-          select: { id: true, name: true },
-        },
-      },
+      // Note: Task model doesn't have user or staff relations defined in schema
     }),
   ])
 
@@ -263,9 +229,10 @@ export async function computeDashboardAnalytics(referenceDate = new Date()): Pro
     return Number((average * 100).toFixed(1))
   })()
 
-  const todayRevenue = invoicesToday.reduce((sum, invoice) => sum + (invoice.total ?? 0), 0)
-  const monthlyRevenue = invoicesThisMonth.reduce((sum, invoice) => sum + (invoice.total ?? 0), 0)
-  const previousMonthlyRevenue = invoicesPreviousMonth.reduce((sum, invoice) => sum + (invoice.total ?? 0), 0)
+  // Use booking.totalAmount since Invoice model doesn't exist
+  const todayRevenue = invoicesToday.reduce((sum, booking) => sum + (booking.totalAmount ?? 0), 0)
+  const monthlyRevenue = invoicesThisMonth.reduce((sum, booking) => sum + (booking.totalAmount ?? 0), 0)
+  const previousMonthlyRevenue = invoicesPreviousMonth.reduce((sum, booking) => sum + (booking.totalAmount ?? 0), 0)
 
   const bookingGrowthRate = calculateGrowthRate(bookingsThisMonth.length, bookingsPreviousMonth.length)
   const revenueGrowthRate = calculateGrowthRate(monthlyRevenue, previousMonthlyRevenue)
@@ -314,13 +281,20 @@ export async function computeDashboardAnalytics(referenceDate = new Date()): Pro
       guestSatisfaction,
     },
     recentActivity: {
-      bookings: recentBookings.map(booking => ({
-        id: booking.id,
-        roomNumber: booking.room?.number ?? 'N/A',
-        guestName: booking.user?.name ?? booking.guestName ?? 'Guest',
-        createdAt: booking.createdAt,
-        totalAmount: booking.invoice?.total ?? 0,
-        status: booking.status,
+      bookings: await Promise.all(recentBookings.map(async (booking) => {
+        // Fetch related data separately since relations don't exist in schema
+        const [room, user] = await Promise.all([
+          prisma.room.findUnique({ where: { id: booking.roomId } }).catch(() => null),
+          prisma.user.findUnique({ where: { id: booking.userId } }).catch(() => null)
+        ])
+        return {
+          id: booking.id,
+          roomNumber: room?.number ?? 'N/A',
+          guestName: user?.name ?? 'Guest',
+          createdAt: booking.createdAt,
+          totalAmount: booking.totalAmount ?? 0,
+          status: booking.status,
+        }
       })),
       orders: recentOrders.map(order => ({
         id: order.id,
@@ -328,21 +302,25 @@ export async function computeDashboardAnalytics(referenceDate = new Date()): Pro
         createdAt: order.createdAt,
         status: order.status,
         totalAmount: order.totalAmount,
-        items: order.items.map(item => ({
-          id: item.id,
-          name: item.menu?.name ?? 'Item',
-          quantity: item.quantity,
-        })),
+        // Note: items relation doesn't exist - return empty array
+        items: [],
       })),
-      tasks: recentTasks.map(task => ({
-        id: task.id,
-        title: task.title,
-        status: task.status,
-        createdAt: task.createdAt,
-        dueDate: task.dueDate,
-        assignedTo: task.staff?.name ?? null,
-        createdBy: task.user?.name ?? null,
-        priority: task.priority,
+      tasks: await Promise.all(recentTasks.map(async (task) => {
+        // Fetch related data separately since relations don't exist in schema
+        const [staff, user] = await Promise.all([
+          task.assignedTo ? prisma.staff.findFirst({ where: { id: task.assignedTo } }).catch(() => null) : Promise.resolve(null),
+          prisma.user.findUnique({ where: { id: task.createdBy } }).catch(() => null)
+        ])
+        return {
+          id: task.id,
+          title: task.title,
+          status: task.status,
+          createdAt: task.createdAt,
+          dueDate: task.dueDate,
+          assignedTo: staff?.name ?? null,
+          createdBy: user?.name ?? null,
+          priority: task.priority,
+        }
       })),
     },
   }

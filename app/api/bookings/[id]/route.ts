@@ -170,7 +170,7 @@ export async function PATCH(
         type: updatedRoom.type,
         price: updatedRoom.price,
       } : null,
-    }
+      }
 
     // Send email notifications for status changes
     try {

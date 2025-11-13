@@ -195,7 +195,14 @@ function BookingStep2({
           checkIn: filters.checkIn || new Date(),
           checkOut: filters.checkOut || new Date(Date.now() + 24 * 60 * 60 * 1000)
         })
-        setRooms(availableRooms)
+        // Convert BigInt fields to numbers for frontend compatibility
+        const roomsWithNumbers = availableRooms.map(room => ({
+          ...room,
+          capacity: Number(room.capacity),
+          floor: Number(room.floor),
+          size: Number(room.size),
+        }))
+        setRooms(roomsWithNumbers)
       } catch (error) {
         console.error('Error fetching rooms:', error)
         // Fallback to mock data if API fails

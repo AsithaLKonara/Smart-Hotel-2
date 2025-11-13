@@ -42,15 +42,10 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // Note: FoodOrder model doesn't have relations defined in schema
+    // Items would need to be fetched separately if stored in a separate collection
     const orders = await prisma.foodOrder.findMany({
       where: whereClause,
-      include: {
-        items: {
-          include: {
-            menu: true
-          }
-        }
-      },
       orderBy: {
         createdAt: 'asc'
       }
@@ -147,28 +142,22 @@ export async function PUT(request: NextRequest) {
     // In production, you might want to implement more strict validation
 
     // Update order
+    const updateData: any = {
+      status,
+      updatedAt: new Date()
+    }
+    
+    if (estimatedTime) {
+      updateData.deliveryTime = new Date(estimatedTime)
+    }
+    
+    if (notes) {
+      updateData.specialRequests = notes
+    }
+    
     const updatedOrder = await prisma.foodOrder.update({
       where: { id: orderId },
-      data: {
-        status,
-        deliveryTime: estimatedTime,
-        specialRequests: notes,
-        updatedAt: new Date()
-      },
-      include: {
-        items: {
-          include: {
-            menu: {
-              select: {
-                id: true,
-                name: true,
-                category: true,
-                preparationTime: true
-              }
-            }
-          }
-        }
-      }
+      data: updateData
     })
 
     // Get user information for the updated order
@@ -187,6 +176,8 @@ export async function PUT(request: NextRequest) {
     }
 
     // Send real-time notification to customer about order status change
+    // Note: Notification model doesn't exist in schema
+    // Notifications would need to be implemented via a separate service or added to schema
     try {
       const statusMessages: Record<string, string> = {
         CONFIRMED: 'Your order has been confirmed and is being prepared',
@@ -197,19 +188,21 @@ export async function PUT(request: NextRequest) {
       }
 
       if (statusMessages[status] && user) {
-        await prisma.notification.create({
-          data: {
-            userId: user.id,
-            title: 'Order Status Update',
-            message: `Order #${orderId.length > 8 ? orderId.substring(0, 8) : orderId}: ${statusMessages[status]}`,
-            type: 'ROOM_SERVICE_READY',
-            data: {
-              orderId,
-              status,
-              roomNumber: updatedOrder.roomNumber
-            }
-          }
-        })
+        // Note: Notification model doesn't exist in schema
+        // await prisma.notification.create({
+        //   data: {
+        //     userId: user.id,
+        //     title: 'Order Status Update',
+        //     message: `Order #${orderId.length > 8 ? orderId.substring(0, 8) : orderId}: ${statusMessages[status]}`,
+        //     type: 'ROOM_SERVICE_READY',
+        //     data: {
+        //       orderId,
+        //       status,
+        //       roomNumber: updatedOrder.roomNumber
+        //     }
+        //   }
+        // })
+        console.log(`Notification would be sent to user ${user.id}: ${statusMessages[status]}`)
       }
     } catch (notificationError) {
       console.error('Failed to create customer notification:', notificationError)
@@ -233,24 +226,26 @@ export async function PUT(request: NextRequest) {
         })
 
         // Create notifications for all delivery staff
+        // Note: Notification model doesn't exist in schema
+        // Notifications would need to be implemented via a separate service or added to schema
         await Promise.all(
-          deliveryStaff.map(staff =>
-            prisma.notification.create({
-              data: {
-                userId: staff.id,
-                title: 'Order Ready for Delivery',
-                message: `Order #${orderId.length > 8 ? orderId.substring(0, 8) : orderId} for Room ${updatedOrder.roomNumber} is ready for delivery`,
-                type: 'ROOM_SERVICE_READY',
-                data: {
-                  orderId,
-                  roomNumber: updatedOrder.roomNumber,
-                  status: 'READY'
-                }
-              }
-            }).catch(err => {
-              console.error(`Failed to notify staff ${staff.id}:`, err)
-            })
-          )
+          deliveryStaff.map(staff => {
+            // await prisma.notification.create({
+            //   data: {
+            //     userId: staff.id,
+            //     title: 'Order Ready for Delivery',
+            //     message: `Order #${orderId.length > 8 ? orderId.substring(0, 8) : orderId} for Room ${updatedOrder.roomNumber} is ready for delivery`,
+            //     type: 'ROOM_SERVICE_READY',
+            //     data: {
+            //       orderId,
+            //       roomNumber: updatedOrder.roomNumber,
+            //       status: 'READY'
+            //     }
+            //   }
+            // })
+            console.log(`Notification would be sent to staff ${staff.id}: Order ready for Room ${updatedOrder.roomNumber}`)
+            return Promise.resolve()
+          })
         )
       } catch (staffNotificationError) {
         console.error('Failed to notify delivery staff:', staffNotificationError)

@@ -1,5 +1,6 @@
 // Ordering API integration for QR menu & ordering system
-import { FoodMenu, FoodOrder, OrderItem } from '@prisma/client'
+import { FoodMenu, FoodOrder } from '@prisma/client'
+// Note: OrderItem model doesn't exist in schema
 
 export interface MenuItemData {
   id: string
@@ -198,7 +199,8 @@ export function validateOrderData(data: Partial<OrderRequest>): string[] {
 }
 
 // Format order for display
-export function formatOrderForDisplay(order: FoodOrder, items: OrderItem[]): any {
+// Note: OrderItem model doesn't exist in schema - using inline type
+export function formatOrderForDisplay(order: FoodOrder, items: Array<{ quantity: number; notes?: string; unitPrice: number }>): any {
   return {
     id: order.id,
     roomNumber: order.roomNumber,

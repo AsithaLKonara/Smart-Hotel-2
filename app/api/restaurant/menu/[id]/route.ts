@@ -57,17 +57,23 @@ export async function PUT(
       )
     }
 
-    const menuItem = await prisma.foodMenu.update({
-      where: { id: id },
-      data: {
+    // Note: FoodMenu schema doesn't have 'image' field
+    // Only update preparationTime if provided
+    const updateData: any = {
         name,
         description,
         price: parseFloat(price),
         category,
-        image,
-        preparationTime: preparationTime ? parseInt(preparationTime) : null,
         available
       }
+    
+    if (preparationTime) {
+      updateData.preparationTime = BigInt(parseInt(preparationTime))
+    }
+    
+    const menuItem = await prisma.foodMenu.update({
+      where: { id: id },
+      data: updateData
     })
 
     return NextResponse.json(menuItem)
@@ -96,17 +102,17 @@ export async function DELETE(
       )
     }
 
-    // Check if item is used in any orders
-    const orderItems = await prisma.orderItem.findMany({
-      where: { menuId: id }
-    })
-
-    if (orderItems.length > 0) {
-      return NextResponse.json(
-        { error: 'Cannot delete menu item that has been ordered' },
-        { status: 400 }
-      )
-    }
+    // Note: OrderItem model doesn't exist in schema
+    // Check if item is used in any orders would require OrderItem model
+    // const orderItems = await prisma.orderItem.findMany({
+    //   where: { menuId: id }
+    // })
+    // if (orderItems.length > 0) {
+    //   return NextResponse.json(
+    //     { error: 'Cannot delete menu item that has been ordered' },
+    //     { status: 400 }
+    //   )
+    // }
 
     await prisma.foodMenu.delete({
       where: { id: id }

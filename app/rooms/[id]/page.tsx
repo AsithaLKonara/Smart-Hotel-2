@@ -25,23 +25,24 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
 
   let room
   try {
+    // Note: Room model doesn't have roomImages or reviews relations defined in schema
     room = await prisma.room.findUnique({
-      where: { id: id.trim() },
-      include: {
-        roomImages: true,
-        reviews: {
-          take: 5,
-          orderBy: { createdAt: 'desc' },
-          include: {
-            user: {
-              select: {
-                name: true,
-              }
-            }
-          }
-        }
-      }
+      where: { id: id.trim() }
     })
+    
+    // Reviews would need to be fetched separately if Review model exists
+    // const reviews = await prisma.review.findMany({
+    //   where: { roomId: id },
+    //   take: 5,
+    //   orderBy: { createdAt: 'desc' },
+    //   include: {
+    //     user: {
+    //       select: {
+    //         name: true,
+    //       },
+    //     },
+    //   },
+    // })
   } catch (error) {
     console.error('Error fetching room details:', error)
     notFound()
@@ -51,14 +52,12 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
     notFound()
   }
 
-  const reviews = Array.isArray(room.reviews) ? room.reviews : []
-  const avgRating = reviews.length > 0
-    ? reviews.reduce((sum, review) => sum + (review.rating ?? 0), 0) / reviews.length
-    : 0
+  // Note: Reviews don't exist in Room model - would need to be fetched separately if Review model exists
+  const reviews: any[] = []
+  const avgRating = 0 // Default rating since reviews aren't available
 
-  const images = room.roomImages && room.roomImages.length > 0
-    ? room.roomImages.map(img => img.url)
-    : room.images && Array.isArray(room.images)
+  // Note: roomImages relation doesn't exist - use images array from Room model
+  const images = room.images && Array.isArray(room.images) && room.images.length > 0
     ? room.images
     : ['/images/room-placeholder.jpg']
 

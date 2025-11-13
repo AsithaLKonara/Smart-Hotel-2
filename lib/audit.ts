@@ -14,7 +14,11 @@ export interface AuditLogData {
 
 export async function createAuditLog(data: AuditLogData) {
   try {
-    await prisma.auditLog.create({
+    // Note: AuditLog model doesn't exist in schema
+    // Logging would need to be implemented via a separate service or added to schema
+    console.log('Audit log:', data)
+    return
+    /* await prisma.auditLog.create({
       data: {
         userId: data.userId || '',
         action: data.action,
@@ -24,7 +28,7 @@ export async function createAuditLog(data: AuditLogData) {
         ipAddress: data.ipAddress || undefined,
         userAgent: data.userAgent || undefined,
       }
-    })
+    }) */
   } catch (error) {
     log.error('Failed to create audit log', error, {
       userId: data.userId,

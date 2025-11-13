@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
         name: session.user.name,
         email: session.user.email,
         role: session.user.role,
-        hotelId: session.user.hotelId
+        // Note: User model doesn't have hotelId field in schema
       },
       session: {
         expires: session.expires

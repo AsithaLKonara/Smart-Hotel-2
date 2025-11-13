@@ -86,15 +86,18 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Note: FoodMenu schema doesn't have 'image' or 'hotelId' fields
+    // preparationTime is required, so provide default if not specified
     const menuItem = await prisma.foodMenu.create({
       data: {
         name,
         description,
         price: parseFloat(price),
         category,
-        image,
-        preparationTime: preparationTime ? parseInt(preparationTime) : null,
-        hotelId: session.user.hotelId || null
+        preparationTime: preparationTime ? BigInt(parseInt(preparationTime)) : BigInt(30), // Default 30 minutes
+        available: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       }
     })
 

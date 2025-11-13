@@ -66,39 +66,41 @@ export async function getAvailableRooms(
         status: { in: ['AVAILABLE', 'RESERVED'] },
         ...(capacity ? { capacity: { gte: capacity } } : {})
       },
-      include: {
-        bookings: {
-          where: {
-            status: { in: ['PENDING', 'CONFIRMED', 'CHECKED_IN'] },
-            OR: [
-              {
-                AND: [
-                  { checkIn: { gte: checkIn } },
-                  { checkIn: { lt: checkOut } }
-                ]
-              },
-              {
-                AND: [
-                  { checkOut: { gt: checkIn } },
-                  { checkOut: { lte: checkOut } }
-                ]
-              },
-              {
-                AND: [
-                  { checkIn: { lte: checkIn } },
-                  { checkOut: { gte: checkOut } }
-                ]
-              }
-            ]
-          }
-        }
-      }
+      // Note: Room model doesn't have bookings relation defined in schema
     })
 
-    // Filter out rooms with conflicting bookings
-    const availableRooms = allRooms.filter(room => room.bookings.length === 0)
+    // Fetch bookings separately to check availability
+    const conflictingBookings = await prisma.booking.findMany({
+      where: {
+        status: { in: ['PENDING', 'CONFIRMED', 'CHECKED_IN'] },
+        OR: [
+          {
+            AND: [
+              { checkIn: { gte: checkIn } },
+              { checkIn: { lt: checkOut } }
+            ]
+          },
+          {
+            AND: [
+              { checkOut: { gt: checkIn } },
+              { checkOut: { lte: checkOut } }
+            ]
+          },
+          {
+            AND: [
+              { checkIn: { lte: checkIn } },
+              { checkOut: { gte: checkOut } }
+            ]
+          }
+        ]
+      },
+      select: { roomId: true }
+    })
 
-    return availableRooms.map(({ bookings, ...room }) => room)
+    const bookedRoomIds = new Set(conflictingBookings.map(b => b.roomId))
+    const availableRooms = allRooms.filter(room => !bookedRoomIds.has(room.id))
+
+    return availableRooms
   } catch (error) {
     console.error('Error getting available rooms:', error)
     return []
@@ -162,40 +164,44 @@ export async function getAvailabilityCalendar(
   try {
     const rooms = await prisma.room.findMany({
       where: { status: { not: 'MAINTENANCE' } },
-      include: {
-        bookings: {
-          where: {
-            status: { in: ['PENDING', 'CONFIRMED', 'CHECKED_IN'] },
-            OR: [
-              { checkIn: { gte: startDate, lte: endDate } },
-              { checkOut: { gte: startDate, lte: endDate } },
-              {
-                AND: [
-                  { checkIn: { lte: startDate } },
-                  { checkOut: { gte: endDate } }
-                ]
-              }
+      // Note: Room model doesn't have bookings relation defined in schema
+    })
+
+    // Fetch bookings separately
+    const bookings = await prisma.booking.findMany({
+      where: {
+        status: { in: ['PENDING', 'CONFIRMED', 'CHECKED_IN'] },
+        OR: [
+          { checkIn: { gte: startDate, lte: endDate } },
+          { checkOut: { gte: startDate, lte: endDate } },
+          {
+            AND: [
+              { checkIn: { lte: startDate } },
+              { checkOut: { gte: endDate } }
             ]
-          },
-          select: {
-            id: true,
-            checkIn: true,
-            checkOut: true,
-            status: true,
-            user: {
-              select: {
-                name: true,
-                email: true
-              }
-            }
           }
-        }
+        ]
+      },
+      select: {
+        id: true,
+        roomId: true,
+        checkIn: true,
+        checkOut: true,
+        status: true,
       }
+    })
+
+    const bookingsByRoomId = new Map<string, typeof bookings>()
+    bookings.forEach(booking => {
+      const roomBookings = bookingsByRoomId.get(booking.roomId) || []
+      roomBookings.push(booking)
+      bookingsByRoomId.set(booking.roomId, roomBookings)
     })
 
     return rooms.map(room => ({
       ...room,
-      isAvailable: room.bookings.length === 0
+      bookings: bookingsByRoomId.get(room.id) || [],
+      isAvailable: !bookingsByRoomId.has(room.id)
     }))
   } catch (error) {
     console.error('Error getting availability calendar:', error)

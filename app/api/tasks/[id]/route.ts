@@ -31,27 +31,20 @@ export async function GET(
       )
     }
 
+    // Note: Task model doesn't have staff or user relations defined in schema
+    // Fetch related data separately if needed
     const task = await prisma.task.findUnique({
-      where: { id: id },
-      include: {
-        staff: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            position: true,
-            department: true,
-          }
-        },
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          }
-        }
-      }
+      where: { id: id }
     })
+    
+    // Fetch related data separately if task exists
+    let staff, user
+    if (task) {
+      [staff, user] = await Promise.all([
+        prisma.staff.findFirst({ where: { id: task.assignedTo } }).catch(() => null),
+        prisma.user.findUnique({ where: { id: task.createdBy } }).catch(() => null)
+      ])
+    }
 
     if (!task) {
       return NextResponse.json(
@@ -60,7 +53,24 @@ export async function GET(
       )
     }
 
-    return NextResponse.json({ task })
+    // Return task with related data
+    return NextResponse.json({
+      task: {
+        ...task,
+        staff: staff ? {
+          id: staff.id,
+          name: staff.name,
+          email: staff.email,
+          position: staff.position,
+          department: staff.department,
+        } : null,
+        user: user ? {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+        } : null,
+      }
+    })
   } catch (error) {
     console.error('Error fetching task:', error)
     return NextResponse.json(
@@ -99,31 +109,32 @@ export async function PUT(
       )
     }
 
+    const updateData: any = {
+      ...validatedData,
+      updatedAt: new Date(),
+    }
+    
+    // Only update assignedTo if provided, otherwise keep existing value
+    if (validatedData.assignedTo !== undefined) {
+      updateData.assignedTo = validatedData.assignedTo || existingTask.assignedTo
+    }
+    if (validatedData.dueDate) {
+      updateData.dueDate = new Date(validatedData.dueDate)
+    }
+    if (validatedData.completedAt !== undefined) {
+      updateData.completedAt = validatedData.completedAt ? new Date(validatedData.completedAt) : null
+    }
+    
     const updatedTask = await prisma.task.update({
       where: { id: id },
-      data: {
-        ...validatedData,
-        assignedTo: validatedData.assignedTo || null,
-        dueDate: validatedData.dueDate ? new Date(validatedData.dueDate) : undefined,
-        completedAt: validatedData.completedAt ? new Date(validatedData.completedAt) : undefined,
-      },
-      include: {
-        staff: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          }
-        },
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          }
-        }
-      }
+      data: updateData
     })
+    
+    // Fetch related data separately (relations don't exist in schema)
+    const [updatedStaff, updatedUser] = await Promise.all([
+      prisma.staff.findFirst({ where: { id: updatedTask.assignedTo } }).catch(() => null),
+      prisma.user.findUnique({ where: { id: updatedTask.createdBy } }).catch(() => null)
+    ])
 
     // Log the action
     await logAction(
@@ -140,7 +151,22 @@ export async function PUT(
       }
     )
 
-    return NextResponse.json({ task: updatedTask })
+    // Return task with related data
+    return NextResponse.json({
+      task: {
+        ...updatedTask,
+        staff: updatedStaff ? {
+          id: updatedStaff.id,
+          name: updatedStaff.name,
+          email: updatedStaff.email,
+        } : null,
+        user: updatedUser ? {
+          id: updatedUser.id,
+          name: updatedUser.name,
+          email: updatedUser.email,
+        } : null,
+      }
+    })
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -186,31 +212,32 @@ export async function PATCH(
       )
     }
 
+    const updateData: any = {
+      ...validatedData,
+      updatedAt: new Date(),
+    }
+    
+    // Only update assignedTo if provided, otherwise keep existing value
+    if (validatedData.assignedTo !== undefined) {
+      updateData.assignedTo = validatedData.assignedTo || existingTask.assignedTo
+    }
+    if (validatedData.dueDate) {
+      updateData.dueDate = new Date(validatedData.dueDate)
+    }
+    if (validatedData.completedAt !== undefined) {
+      updateData.completedAt = validatedData.completedAt ? new Date(validatedData.completedAt) : null
+    }
+    
     const updatedTask = await prisma.task.update({
       where: { id: id },
-      data: {
-        ...validatedData,
-        assignedTo: validatedData.assignedTo || null,
-        dueDate: validatedData.dueDate ? new Date(validatedData.dueDate) : undefined,
-        completedAt: validatedData.completedAt ? new Date(validatedData.completedAt) : undefined,
-      },
-      include: {
-        staff: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          }
-        },
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          }
-        }
-      }
+      data: updateData
     })
+    
+    // Fetch related data separately (relations don't exist in schema)
+    const [updatedStaff, updatedUser] = await Promise.all([
+      prisma.staff.findFirst({ where: { id: updatedTask.assignedTo } }).catch(() => null),
+      prisma.user.findUnique({ where: { id: updatedTask.createdBy } }).catch(() => null)
+    ])
 
     // Log the action
     await logAction(
@@ -227,7 +254,22 @@ export async function PATCH(
       }
     )
 
-    return NextResponse.json({ task: updatedTask })
+    // Return task with related data
+    return NextResponse.json({
+      task: {
+        ...updatedTask,
+        staff: updatedStaff ? {
+          id: updatedStaff.id,
+          name: updatedStaff.name,
+          email: updatedStaff.email,
+        } : null,
+        user: updatedUser ? {
+          id: updatedUser.id,
+          name: updatedUser.name,
+          email: updatedUser.email,
+        } : null,
+      }
+    })
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(

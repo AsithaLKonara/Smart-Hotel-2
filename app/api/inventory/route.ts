@@ -74,12 +74,14 @@ export async function POST(request: NextRequest) {
     const inventory = await prisma.inventory.create({
       data: {
         name: validatedData.name,
-        description: validatedData.description,
+        description: validatedData.description || '',
         category: validatedData.category,
         quantity: validatedData.quantity,
         unit: validatedData.unit,
         minQuantity: validatedData.minQuantity,
         status: validatedData.status,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       }
     })
 

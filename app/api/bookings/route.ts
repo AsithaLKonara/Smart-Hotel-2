@@ -96,7 +96,7 @@ export async function GET(request: NextRequest) {
         createdAt: 'desc'
       }
     })
-    
+
     // Fetch related data separately if needed
     const bookingsWithRelations = await Promise.all(
       bookings.map(async (booking) => {
@@ -273,7 +273,7 @@ export async function POST(request: NextRequest) {
         name: bookingUser.name,
         email: bookingUser.email,
       } : null,
-    }
+        }
 
     // Emit WebSocket event for real-time updates
     try {
@@ -288,13 +288,13 @@ export async function POST(request: NextRequest) {
     // Invoice creation would need Invoice model in schema
     const tax = totalAmount * 0.1 // 10% tax
     const invoice = {
-      bookingId: booking.id,
-      amount: totalAmount,
-      tax,
-      total: totalAmount + tax,
-      dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours from now
-      status: 'PENDING',
-    }
+        bookingId: booking.id,
+        amount: totalAmount,
+        tax,
+        total: totalAmount + tax,
+        dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours from now
+        status: 'PENDING',
+      }
 
     // If pay now, create Stripe payment intent
     let paymentIntent = null

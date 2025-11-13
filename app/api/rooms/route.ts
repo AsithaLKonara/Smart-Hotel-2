@@ -4,7 +4,8 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { isDatabaseConfigured, getDatabaseErrorMessage } from '@/lib/db-helpers'
 import { z } from 'zod'
-import { RoomStatus } from '@prisma/client'
+// Note: RoomStatus enum doesn't exist in Prisma schema - Room.status is a String field
+type RoomStatus = 'AVAILABLE' | 'OCCUPIED' | 'MAINTENANCE' | 'CLEANING' | 'RESERVED'
 
 const roomSchema = z.object({
   number: z.string().min(1, 'Room number is required'),
@@ -79,7 +80,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (status) {
-      const allowedStatuses = RoomStatus ? Object.values(RoomStatus) : ['AVAILABLE', 'OCCUPIED', 'MAINTENANCE', 'CLEANING']
+      const allowedStatuses: RoomStatus[] = ['AVAILABLE', 'OCCUPIED', 'MAINTENANCE', 'CLEANING', 'RESERVED']
       const normalizedStatus = status.toUpperCase()
       if (!allowedStatuses.includes(normalizedStatus as RoomStatus)) {
         return NextResponse.json(
@@ -91,33 +92,28 @@ export async function GET(request: NextRequest) {
     }
 
     if (available === 'true') {
-      const rooms = await prisma.room.findMany({
-        include: {
-          bookings: {
+      // Note: Room model doesn't have bookings relation defined in schema
+      // Fetch bookings separately to check availability
+      const rooms = await prisma.room.findMany()
+      const bookings = await prisma.booking.findMany({
             where: {
               status: {
                 in: ['CONFIRMED', 'CHECKED_IN']
               }
-            }
-          }
+        },
+        select: {
+          roomId: true
         }
       })
-
-      const availableRooms = rooms.filter(room => !room.bookings || room.bookings.length === 0)
+      const bookedRoomIds = new Set(bookings.map(b => b.roomId))
+      const availableRooms = rooms.filter(room => !bookedRoomIds.has(room.id))
       return NextResponse.json(availableRooms)
     }
 
+    // Note: Room model doesn't have roomImages or reviews relations defined in schema
     const rooms = await prisma.room.findMany({
       where,
-      orderBy: { number: 'asc' },
-      include: {
-        roomImages: true,
-        reviews: {
-          select: {
-            rating: true,
-          },
-        },
-      },
+      orderBy: { number: 'asc' }
     })
 
     return NextResponse.json(rooms)
@@ -149,7 +145,8 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const validatedData = roomSchema.parse(body)
 
-    const existingRoom = await prisma.room.findUnique({
+    // Note: number is not a unique field, use findFirst instead
+    const existingRoom = await prisma.room.findFirst({
       where: { number: validatedData.number }
     })
 
@@ -162,9 +159,18 @@ export async function POST(request: NextRequest) {
 
     const room = await prisma.room.create({
       data: {
-        ...validatedData,
-        floor: validatedData.floor || null,
-        size: validatedData.size || null,
+        number: validatedData.number,
+        type: validatedData.type,
+        capacity: BigInt(validatedData.capacity),
+        price: validatedData.price,
+        description: validatedData.description || '',
+        amenities: validatedData.amenities || [],
+        images: validatedData.images || [],
+        floor: validatedData.floor ? BigInt(validatedData.floor) : BigInt(1), // Default floor 1
+        size: validatedData.size ? BigInt(validatedData.size) : BigInt(200), // Default size 200
+        status: 'AVAILABLE',
+        createdAt: new Date(),
+        updatedAt: new Date(),
       }
     })
 

@@ -9,23 +9,9 @@ export async function GET(
   try {
     const { id: orderId } = await context.params
 
+    // Note: FoodOrder model doesn't have relations defined in schema
     const order = await prisma.foodOrder.findUnique({
-      where: { id: orderId },
-      include: {
-        items: {
-          include: {
-            menu: {
-              select: {
-                id: true,
-                name: true,
-                category: true,
-                image: true,
-                preparationTime: true
-              }
-            }
-          }
-        }
-      }
+      where: { id: orderId }
     })
 
     if (!order) {
@@ -75,14 +61,7 @@ export async function PATCH(
     }
 
     const existingOrder = await prisma.foodOrder.findUnique({
-      where: { id: orderId },
-      include: {
-        items: {
-          include: {
-            menu: true
-          }
-        }
-      }
+      where: { id: orderId }
     })
 
     if (!existingOrder) {
@@ -104,18 +83,10 @@ export async function PATCH(
       status: body.status
     }
 
-    if (body.status === 'PREPARING') {
-      if (typeof body.estimatedPrepTime === 'number') {
-        updateData.preparationTime = body.estimatedPrepTime
-      } else {
-        const derivedPreparation = existingOrder.items
-          .map(item => item.menu?.preparationTime)
-          .filter((value): value is number => typeof value === 'number')
-
-        if (derivedPreparation.length > 0) {
-          updateData.preparationTime = Math.max(...derivedPreparation)
-        }
-      }
+    // Note: preparationTime field doesn't exist in FoodOrder schema
+    // Would need to be added to schema or stored differently
+    if (body.status === 'PREPARING' && typeof body.estimatedPrepTime === 'number') {
+      // Store estimated prep time in specialRequests or a separate field if schema is updated
     }
 
     const order = await prisma.foodOrder.update({

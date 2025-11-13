@@ -83,12 +83,9 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // Note: Room model doesn't have roomImages or reviews relations defined in schema
     const allRooms = await prisma.room.findMany({
-      where: whereClause,
-      include: {
-        roomImages: true,
-        reviews: true
-      }
+      where: whereClause
     })
 
     // Check for conflicting bookings
@@ -135,12 +132,9 @@ export async function GET(request: NextRequest) {
     const availableRooms = allRooms.filter(room => !bookedRoomIds.has(room.id))
 
     // Calculate pricing for each room
-    type RoomWithRelations = Prisma.RoomGetPayload<{
-      include: { roomImages: true; reviews: true }
-    }>
-
-    const roomsWithPricing = availableRooms.map((room: RoomWithRelations) => {
-      const reviews = Array.isArray(room.reviews) ? room.reviews : []
+    // Note: Room model doesn't have roomImages or reviews relations defined in schema
+    const roomsWithPricing = availableRooms.map((room: any) => {
+      const reviews: any[] = [] // Reviews would need to be fetched separately if Review model exists
       const nights = getNightCount(checkInDate, checkOutDate)
       const basePrice = room.price * nights
 
@@ -156,8 +150,7 @@ export async function GET(request: NextRequest) {
         averageRating: Math.round(avgRating * 10) / 10,
         reviewCount: reviews.length,
         mainImage:
-          room.roomImages?.find(img => img.isMain)?.url ||
-          (Array.isArray(room.images) ? room.images[0] : undefined) ||
+          (Array.isArray(room.images) && room.images.length > 0 ? room.images[0] : undefined) ||
           '/images/room-placeholder.jpg'
       }
     })

@@ -72,7 +72,8 @@ async function loadHotelData(): Promise<HotelData> {
       name: item.name,
       description: item.description,
       price: item.price,
-      image: item.image,
+      // Note: FoodMenu model doesn't have image field in schema
+      image: undefined,
     })
   })
 

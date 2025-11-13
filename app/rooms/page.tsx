@@ -194,7 +194,7 @@ export default function RoomsPage() {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {filteredRooms.map((room) => {
                   const rating = getAverageRating(room)
                   const roomImage = getRoomImage(room)
@@ -202,88 +202,88 @@ export default function RoomsPage() {
                   const roomName = room.number ? `Room ${room.number}` : room.type
                   
                   return (
-                    <Card key={room.id} data-testid="room-card" className="overflow-hidden hover:shadow-xl transition-shadow group">
-                      <div className="relative h-64">
-                        <Image
+              <Card key={room.id} data-testid="room-card" className="overflow-hidden hover:shadow-xl transition-shadow group">
+                <div className="relative h-64">
+                  <Image
                           src={roomImage}
                           alt={roomName}
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                        <Badge className="absolute top-4 left-4 bg-luxury-600">
-                          {room.type}
-                        </Badge>
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <Badge className="absolute top-4 left-4 bg-luxury-600">
+                    {room.type}
+                  </Badge>
                         {rating > 0 && (
-                          <div className="absolute top-4 right-4 flex items-center gap-1 bg-black/50 text-white px-2 py-1 rounded">
-                            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                  <div className="absolute top-4 right-4 flex items-center gap-1 bg-black/50 text-white px-2 py-1 rounded">
+                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                             <span className="text-sm font-medium">{rating.toFixed(1)}</span>
-                          </div>
+                  </div>
                         )}
-                      </div>
-                      
-                      <div className="p-6">
+                </div>
+                
+                <div className="p-6">
                         <h3 className="text-xl font-bold mb-2">{roomName}</h3>
-                        <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-2">
+                  <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-2">
                           {room.description || 'Experience luxury and comfort in our beautifully designed accommodations.'}
-                        </p>
-                        
-                        <div className="flex items-center justify-between mb-4">
-                          <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-300">
-                            <div className="flex items-center gap-1">
-                              <Users className="w-4 h-4" />
-                              <span>{room.capacity} Guests</span>
-                            </div>
+                  </p>
+                  
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-300">
+                      <div className="flex items-center gap-1">
+                        <Users className="w-4 h-4" />
+                        <span>{room.capacity} Guests</span>
+                      </div>
                             {room.size && <span>{room.size}m²</span>}
-                          </div>
-                          <div className="text-2xl font-bold text-primary-600">
-                            ${room.price}
-                            <span className="text-sm font-normal text-gray-500">/night</span>
-                          </div>
-                        </div>
+                    </div>
+                    <div className="text-2xl font-bold text-primary-600">
+                      ${room.price}
+                      <span className="text-sm font-normal text-gray-500">/night</span>
+                    </div>
+                  </div>
 
                         {amenities.length > 0 && (
-                          <div className="flex flex-wrap gap-2 mb-4">
+                  <div className="flex flex-wrap gap-2 mb-4">
                             {amenities.slice(0, 3).map((amenity, idx) => (
                               <Badge key={idx} variant="secondary" className="text-xs">
-                                {amenity}
-                              </Badge>
-                            ))}
+                        {amenity}
+                      </Badge>
+                    ))}
                             {amenities.length > 3 && (
-                              <Badge variant="secondary" className="text-xs">
+                      <Badge variant="secondary" className="text-xs">
                                 +{amenities.length - 3} more
-                              </Badge>
-                            )}
-                          </div>
+                      </Badge>
+                    )}
+                  </div>
                         )}
 
-                        <div className="flex gap-2">
-                          <Link href={`/rooms/${room.id}`} className="flex-1">
-                            <Button variant="outline" className="w-full">
-                              View Details
-                            </Button>
-                          </Link>
-                          <Link href={`/booking?room=${room.id}`} className="flex-1">
-                            <Button className="w-full btn-primary">
-                              Book Now
-                            </Button>
-                          </Link>
-                        </div>
-                      </div>
-                    </Card>
+                  <div className="flex gap-2">
+                    <Link href={`/rooms/${room.id}`} className="flex-1">
+                      <Button variant="outline" className="w-full">
+                        View Details
+                      </Button>
+                    </Link>
+                    <Link href={`/booking?room=${room.id}`} className="flex-1">
+                      <Button className="w-full btn-primary">
+                        Book Now
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              </Card>
                   )
                 })}
-              </div>
+          </div>
 
               {filteredRooms.length === 0 && !isLoading && (
-                <div className="text-center py-12">
-                  <div className="text-gray-400 mb-4">
-                    <Search className="w-16 h-16 mx-auto" />
-                  </div>
-                  <h3 className="text-xl font-semibold mb-2">No rooms found</h3>
-                  <p className="text-gray-600 dark:text-gray-300">
-                    Try adjusting your search criteria or filters
-                  </p>
-                </div>
+            <div className="text-center py-12">
+              <div className="text-gray-400 mb-4">
+                <Search className="w-16 h-16 mx-auto" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">No rooms found</h3>
+              <p className="text-gray-600 dark:text-gray-300">
+                Try adjusting your search criteria or filters
+              </p>
+            </div>
               )}
             </>
           )}

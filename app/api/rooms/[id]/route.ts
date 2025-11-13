@@ -23,18 +23,10 @@ export async function GET(
 ) {
   try {
     const { id } = await params
+    // Note: Room model doesn't have bookings relation defined in schema
+    // Bookings would need to be fetched separately if needed
     const room = await prisma.room.findUnique({
-      where: { id },
-      include: {
-        bookings: {
-          where: {
-            status: {
-              in: ['CONFIRMED', 'CHECKED_IN']
-            }
-          },
-          orderBy: { checkIn: 'asc' }
-        }
-      }
+      where: { id }
     })
 
     if (!room) {

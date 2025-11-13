@@ -623,7 +623,10 @@ export async function sendContactEmail(data: {
     html,
   })
 
-  await prisma.emailLog.create({
+  // Note: EmailLog model doesn't exist in schema
+  // Logging would need to be implemented via a separate service or added to schema
+  console.log('Email log:', { to: recipient, subject: `[Contact] ${data.subject}` })
+  /* await prisma.emailLog.create({
     data: {
       to: recipient,
       subject: `[Contact] ${data.subject}`,
@@ -632,5 +635,5 @@ export async function sendContactEmail(data: {
       sentAt: new Date(),
       error: null,
     },
-  })
+  }) */
 }

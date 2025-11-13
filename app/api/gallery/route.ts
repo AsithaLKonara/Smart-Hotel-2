@@ -67,6 +67,8 @@ export async function POST(request: NextRequest) {
         title: validatedData.title,
         imageUrl: validatedData.imageUrl,
         category: validatedData.category,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       }
     })
 

@@ -129,7 +129,9 @@ export function getAnalyticsWindow(range: AnalyticsRange, referenceDate = new Da
 export async function computeAnalytics(range: AnalyticsRange, referenceDate = new Date()): Promise<AnalyticsPayload> {
   const { startDate, endDate, previousStart, previousEnd, rangeDays } = getAnalyticsWindow(range, referenceDate)
 
-  const [rooms, bookingsCurrent, bookingsPrevious, invoicesAll, invoicesCurrent, invoicesPrevious] =
+  // Note: Invoice model doesn't exist in schema
+  // Use booking.totalAmount as revenue source instead
+  const [rooms, bookingsCurrent, bookingsPrevious] =
     await Promise.all([
       prisma.room.findMany(),
       prisma.booking.findMany({
@@ -139,13 +141,7 @@ export async function computeAnalytics(range: AnalyticsRange, referenceDate = ne
             { checkOut: { gte: startDate } },
           ],
         },
-        include: {
-          room: true,
-          user: {
-            select: { id: true, name: true, email: true },
-          },
-          invoice: true,
-        },
+        // Note: Booking model doesn't have room, user, or invoice relations defined in schema
         orderBy: { createdAt: 'desc' },
       }),
       prisma.booking.findMany({
@@ -155,37 +151,31 @@ export async function computeAnalytics(range: AnalyticsRange, referenceDate = ne
             { checkOut: { gte: previousStart } },
           ],
         },
-        include: {
-          room: true,
-          invoice: true,
-        },
-      }),
-      prisma.invoice.findMany({
-        include: {
-          booking: true,
-        },
-      }),
-      prisma.invoice.findMany({
-        where: {
-          createdAt: {
-            gte: startDate,
-            lte: endDate,
-          },
-        },
-        include: {
-          booking: true,
-        },
-        orderBy: { createdAt: 'asc' },
-      }),
-      prisma.invoice.findMany({
-        where: {
-          createdAt: {
-            gte: previousStart,
-            lte: previousEnd,
-          },
-        },
+        // Note: Booking model doesn't have room or invoice relations defined in schema
       }),
     ])
+  
+  // Use bookings as invoice data since Invoice model doesn't exist
+  const invoicesAll = bookingsCurrent.map(booking => ({
+    id: booking.id,
+    bookingId: booking.id,
+    total: booking.totalAmount,
+    createdAt: booking.createdAt,
+    updatedAt: booking.updatedAt,
+  }))
+  
+  const invoicesCurrent = invoicesAll.filter(invoice => {
+    const date = new Date(invoice.createdAt)
+    return date >= startDate && date <= endDate
+  })
+  
+  const invoicesPrevious = bookingsPrevious.map(booking => ({
+    id: booking.id,
+    bookingId: booking.id,
+    total: booking.totalAmount,
+    createdAt: booking.createdAt,
+    updatedAt: booking.updatedAt,
+  }))
 
   const totalRooms = rooms.length
   const occupiedRooms = rooms.filter(room => room.status === 'OCCUPIED').length

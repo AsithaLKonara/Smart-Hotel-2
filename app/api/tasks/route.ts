@@ -44,30 +44,39 @@ export async function GET(request: NextRequest) {
       whereClause.assignedTo = assignedTo
     }
 
+    // Note: Task model doesn't have staff or user relations defined in schema
     const tasks = await prisma.task.findMany({
       where: whereClause,
-      include: {
-        staff: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          }
-        },
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          }
-        }
-      },
       orderBy: {
         createdAt: 'desc'
       }
     })
+    
+    // Fetch related data separately for each task
+    const tasksWithRelations = await Promise.all(
+      tasks.map(async (task) => {
+        const [staff, user] = await Promise.all([
+          prisma.staff.findFirst({ where: { id: task.assignedTo } }).catch(() => null),
+          prisma.user.findUnique({ where: { id: task.createdBy } }).catch(() => null)
+        ])
+        
+        return {
+          ...task,
+          staff: staff ? {
+            id: staff.id,
+            name: staff.name,
+            email: staff.email,
+          } : null,
+          user: user ? {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+          } : null,
+        }
+      })
+    )
 
-    return NextResponse.json({ tasks })
+    return NextResponse.json({ tasks: tasksWithRelations })
   } catch (error) {
     console.error('Error fetching tasks:', error)
     return NextResponse.json(
@@ -91,34 +100,41 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const validatedData = taskSchema.parse(body)
 
+    // Note: assignedTo is required (String, not nullable), so use existing value or session user ID as fallback
     const task = await prisma.task.create({
       data: {
         title: validatedData.title,
-        description: validatedData.description,
+        description: validatedData.description || '',
         type: validatedData.type,
         priority: validatedData.priority,
-        assignedTo: validatedData.assignedTo || null,
-        dueDate: validatedData.dueDate ? new Date(validatedData.dueDate) : null,
+        assignedTo: validatedData.assignedTo || session.user.id, // Use session user ID as fallback
+        dueDate: validatedData.dueDate ? new Date(validatedData.dueDate) : new Date(),
         createdBy: session.user.id,
         status: 'PENDING',
-      },
-      include: {
-        staff: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          }
-        },
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          }
-        }
+        createdAt: new Date(),
+        updatedAt: new Date(),
       }
     })
+    
+    // Fetch related data separately
+    const [staff, user] = await Promise.all([
+      prisma.staff.findFirst({ where: { id: task.assignedTo } }).catch(() => null),
+      prisma.user.findUnique({ where: { id: task.createdBy } }).catch(() => null)
+    ])
+    
+    const taskWithRelations = {
+      ...task,
+      staff: staff ? {
+        id: staff.id,
+        name: staff.name,
+        email: staff.email,
+      } : null,
+      user: user ? {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+      } : null,
+    }
 
     // Log the action
     await logAction(
@@ -135,7 +151,7 @@ export async function POST(request: NextRequest) {
       }
     )
 
-    return NextResponse.json({ task }, { status: 201 })
+    return NextResponse.json({ task: taskWithRelations }, { status: 201 })
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(

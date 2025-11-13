@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
       hireDate: member.hireDate.toISOString(),
       salary: member.salary,
       isActive: member.isActive,
-      hotelId: member.hotelId ?? null
+      // Note: Staff model doesn't have hotelId field in schema
     }))
 
     return NextResponse.json(staff)
@@ -105,7 +105,8 @@ export async function POST(request: NextRequest) {
     const validatedData = staffSchema.parse(body)
 
     // Check if employee ID already exists
-    const existingEmployee = await prisma.staff.findUnique({
+    // Note: employeeId is not a unique field, use findFirst instead
+    const existingEmployee = await prisma.staff.findFirst({
       where: { employeeId: validatedData.employeeId }
     })
 
@@ -117,7 +118,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if email already exists
-    const existingEmail = await prisma.staff.findUnique({
+    // Note: email is not a unique field, use findFirst instead
+    const existingEmail = await prisma.staff.findFirst({
       where: { email: validatedData.email }
     })
 
@@ -138,7 +140,9 @@ export async function POST(request: NextRequest) {
         department: validatedData.department,
         hireDate: new Date(validatedData.hireDate),
         salary: validatedData.salary,
-        isActive: validatedData.isActive,
+        isActive: validatedData.isActive ?? true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       }
     })
 
