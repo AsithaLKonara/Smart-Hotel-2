@@ -149,18 +149,18 @@ export function MenuItem({
         {/* Image */}
         <div className="relative flex-shrink-0">
           <div className="relative w-20 h-20 rounded-lg overflow-hidden">
-            <Image
-              ref={imgRef}
+              <Image
+                ref={imgRef}
               src={displayImageUrl}
-              alt={item.name}
-              fill
-              className="object-cover transition-transform duration-300 group-hover:scale-110"
+                alt={item.name}
+                fill
+                className="object-cover transition-transform duration-300 group-hover:scale-110"
               onError={(e) => {
                 // Fallback to category-specific placeholder if image fails to load
                 const target = e.target as HTMLImageElement
                 target.src = getCategoryPlaceholder(item.category)
               }}
-            />
+              />
           </div>
           
           {/* Popular Badge */}

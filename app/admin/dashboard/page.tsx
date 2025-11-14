@@ -26,6 +26,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import toast from 'react-hot-toast'
+import { canAccessAdminDashboard, getUserRole } from '@/lib/rbac-helpers'
 
 interface DashboardData {
   summary: {
@@ -95,8 +96,9 @@ function AdminDashboardContent() {
   useEffect(() => {
     if (status === 'loading') return
     
-    if (!session || !['MANAGER', 'SUPER_ADMIN'].includes(session.user.role)) {
-      router.push('/')
+    // Use RBAC helper for safe role checking
+    if (!canAccessAdminDashboard(session)) {
+      router.push('/auth/signin')
       return
     }
 
@@ -149,6 +151,23 @@ function AdminDashboardContent() {
     ) : (
       <TrendingDown className="w-4 h-4 text-red-600" />
     )
+  }
+
+  // Early return if not authenticated or wrong role
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading dashboard...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Check authentication and role before rendering using RBAC helper
+  if (!canAccessAdminDashboard(session)) {
+    return null // Will redirect via useEffect
   }
 
   if (isLoading) {

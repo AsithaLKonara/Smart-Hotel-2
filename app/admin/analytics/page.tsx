@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { DollarSign, Users, Bed, UtensilsCrossed, TrendingUp, TrendingDown, Calendar, Loader2 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { canAccessManagerFeatures } from '@/lib/rbac-helpers'
 
 export default function AdminAnalyticsPage() {
   const { data: session, status } = useSession()
@@ -15,7 +16,7 @@ export default function AdminAnalyticsPage() {
   useEffect(() => {
     if (status === 'loading') return
     
-    if (!session || (session.user.role !== 'SUPER_ADMIN' && session.user.role !== 'MANAGER')) {
+    if (!canAccessManagerFeatures(session)) {
       router.push('/auth/signin')
       return
     }

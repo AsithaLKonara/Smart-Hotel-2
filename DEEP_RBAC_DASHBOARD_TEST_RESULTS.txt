@@ -1,0 +1,51 @@
+[36m[1m
+═══════════════════════════════════════════════════════════════
+  Deep RBAC Dashboard Access Testing
+═══════════════════════════════════════════════════════════════[0m
+
+[34mTesting Route Protection...[0m
+
+  [32m✓[0m Admin Dashboard - Protected (HTTP 200)
+  [32m✓[0m Admin Analytics - Protected (HTTP 200)
+  [32m✓[0m Admin Staff - Protected (HTTP 200)
+  [32m✓[0m Admin Rooms - Protected (HTTP 200)
+  [32m✓[0m Admin Menu - Protected (HTTP 200)
+  [32m✓[0m Admin Orders - Protected (HTTP 200)
+  [32m✓[0m Admin Inventory - Protected (HTTP 200)
+  [32m✓[0m Admin Gallery - Protected (HTTP 200)
+  [32m✓[0m Admin Bookings - Protected (HTTP 200)
+  [32m✓[0m Admin Calendar - Protected (HTTP 200)
+  [32m✓[0m Check-In/Check-Out - Protected (HTTP 200)
+  [32m✓[0m Admin Tasks - Protected (HTTP 200)
+  [32m✓[0m QR Codes - Protected (HTTP 200)
+  [32m✓[0m Kitchen Dashboard - Protected (HTTP 200)
+
+[34mChecking for RBAC Errors in Dashboard Pages...[0m
+
+  [32m✓[0m /admin/dashboard - No RBAC errors detected
+  [32m✓[0m /admin/staff - No RBAC errors detected
+  [32m✓[0m /admin/analytics - No RBAC errors detected
+  [32m✓[0m /admin/bookings - No RBAC errors detected
+  [32m✓[0m /admin/rooms - No RBAC errors detected
+  [32m✓[0m /kitchen/dashboard - No RBAC errors detected
+
+  [32m[1m✓ No RBAC errors detected in dashboard pages[0m
+
+[34mValidating HTML Structure...[0m
+
+  [32m✓[0m /admin/dashboard - Valid HTML structure
+  [32m✓[0m /admin/bookings - Valid HTML structure
+  [32m✓[0m /admin/staff - Valid HTML structure
+
+[36m[1m═══════════════════════════════════════════════════════════════
+  DEEP RBAC DASHBOARD TEST RESULTS
+═══════════════════════════════════════════════════════════════[0m
+
+Route Protection: 14/14 passed
+Error Detection: 6/6 passed
+HTML Validation: 3/3 passed
+
+[1mOverall:[0m 23/23 passed (100.0%)
+
+[32m[1m✅ ALL RBAC DASHBOARD TESTS PASSED![0m
+

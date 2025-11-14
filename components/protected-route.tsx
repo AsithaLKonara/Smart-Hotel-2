@@ -3,16 +3,17 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import { Loader2 } from 'lucide-react'
+import { hasRole, isAuthenticated, UserRole } from '@/lib/rbac-helpers'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
-  allowedRoles?: string[]
+  allowedRoles?: UserRole[]
   redirectTo?: string
 }
 
 export default function ProtectedRoute({ 
   children, 
-  allowedRoles = ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'], 
+  allowedRoles = ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'] as UserRole[], 
   redirectTo = '/auth/signin' 
 }: ProtectedRouteProps) {
   const { data: session, status } = useSession()
@@ -21,12 +22,12 @@ export default function ProtectedRoute({
   useEffect(() => {
     if (status === 'loading') return
 
-    if (!session) {
+    if (!isAuthenticated(session)) {
       router.push(redirectTo)
       return
     }
 
-    if (allowedRoles.length > 0 && !allowedRoles.includes(session.user.role)) {
+    if (allowedRoles.length > 0 && !hasRole(session, allowedRoles)) {
       router.push('/')
       return
     }
@@ -43,7 +44,7 @@ export default function ProtectedRoute({
     )
   }
 
-  if (!session || (allowedRoles.length > 0 && !allowedRoles.includes(session.user.role))) {
+  if (!isAuthenticated(session) || (allowedRoles.length > 0 && !hasRole(session, allowedRoles))) {
     return null
   }
 

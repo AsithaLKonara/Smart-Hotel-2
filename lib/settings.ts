@@ -40,10 +40,10 @@ export const getHotelSettings = cache(async () => {
       return []
     })
     
-    return records.reduce<SettingsMap>((acc, setting) => {
-      acc[setting.key] = setting.value
-      return acc
-    }, {})
+  return records.reduce<SettingsMap>((acc, setting) => {
+    acc[setting.key] = setting.value
+    return acc
+  }, {})
   } catch (error) {
     console.error('Error in getHotelSettings:', error)
     // Return empty object if database query fails

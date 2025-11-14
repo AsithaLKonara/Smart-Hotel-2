@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import { canAccessManagerFeatures } from '@/lib/rbac-helpers'
 import { Plus, Edit, Trash2, Search, Users, Mail, Phone, Briefcase, Loader2, Save, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -47,7 +48,7 @@ export default function AdminStaffPage() {
   useEffect(() => {
     if (status === 'loading') return
     
-    if (!session || (session.user.role !== 'SUPER_ADMIN' && session.user.role !== 'MANAGER')) {
+    if (!canAccessManagerFeatures(session)) {
       router.push('/auth/signin')
       return
     }

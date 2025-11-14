@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import { canAccessManagerFeatures } from '@/lib/rbac-helpers'
 import { Search, Filter, Clock, CheckCircle, XCircle, AlertCircle, Loader2, Eye } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -42,7 +43,7 @@ export default function AdminOrdersPage() {
   useEffect(() => {
     if (status === 'loading') return
     
-    if (!session || (session.user.role !== 'SUPER_ADMIN' && session.user.role !== 'MANAGER')) {
+    if (!canAccessManagerFeatures(session)) {
       router.push('/auth/signin')
       return
     }

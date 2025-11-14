@@ -81,21 +81,21 @@ if (process.env.NODE_ENV === 'production' && !isServerless) {
       fs.mkdirSync(logsDir, { recursive: true })
     }
     
-    transports.push(
-      new winston.transports.File({
-        filename: 'logs/error.log',
-        level: 'error',
-        format,
-        maxsize: 5242880, // 5MB
-        maxFiles: 5,
-      }),
-      new winston.transports.File({
-        filename: 'logs/combined.log',
-        format,
-        maxsize: 5242880, // 5MB
-        maxFiles: 5,
-      })
-    )
+  transports.push(
+    new winston.transports.File({
+      filename: 'logs/error.log',
+      level: 'error',
+      format,
+      maxsize: 5242880, // 5MB
+      maxFiles: 5,
+    }),
+    new winston.transports.File({
+      filename: 'logs/combined.log',
+      format,
+      maxsize: 5242880, // 5MB
+      maxFiles: 5,
+    })
+  )
   } catch (error) {
     // If file transport fails (e.g., in serverless), just use console
     // This is expected in Vercel/serverless environments

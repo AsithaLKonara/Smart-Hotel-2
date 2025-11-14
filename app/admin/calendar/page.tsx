@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import { canAccessReceptionistFeatures } from '@/lib/rbac-helpers'
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -33,7 +34,7 @@ export default function AdminCalendarPage() {
   useEffect(() => {
     if (status === 'loading') return
     
-    if (!session || (session.user.role !== 'SUPER_ADMIN' && session.user.role !== 'MANAGER' && session.user.role !== 'RECEPTIONIST')) {
+    if (!canAccessReceptionistFeatures(session)) {
       router.push('/auth/signin')
       return
     }

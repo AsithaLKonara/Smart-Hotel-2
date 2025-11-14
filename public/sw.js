@@ -205,8 +205,8 @@ async function staleWhileRevalidate(request, cacheName) {
   
   const fetchPromise = fetch(request)
     .then((networkResponse) => {
-      if (networkResponse.ok) {
-        const cache = caches.open(cacheName)
+    if (networkResponse.ok) {
+      const cache = caches.open(cacheName)
         cache.then((cache) => {
           cache.put(request, networkResponse.clone()).catch(err => {
             console.warn('Failed to cache response:', err)
@@ -214,17 +214,17 @@ async function staleWhileRevalidate(request, cacheName) {
         }).catch(err => {
           console.warn('Failed to open cache:', err)
         })
-      }
-      return networkResponse
+    }
+    return networkResponse
     })
     .catch(() => {
-      // Return cached response if network fails
+    // Return cached response if network fails
       return cachedResponse || new Response('Offline', {
         status: 503,
         statusText: 'Service Unavailable',
         headers: { 'Content-Type': 'text/plain' }
       })
-    })
+  })
   
   return cachedResponse || fetchPromise
 }
@@ -269,10 +269,10 @@ self.addEventListener('push', (event) => {
   
   if (event.data) {
     try {
-      const data = event.data.json()
-      options.body = data.body || options.body
-      options.title = data.title || 'SmartHotel'
-      options.data = { ...options.data, ...data }
+    const data = event.data.json()
+    options.body = data.body || options.body
+    options.title = data.title || 'SmartHotel'
+    options.data = { ...options.data, ...data }
     } catch (error) {
       console.error('Failed to parse push data:', error)
     }
@@ -291,12 +291,12 @@ self.addEventListener('notificationclick', (event) => {
   
   event.notification.close()
   
-  event.waitUntil(
-    clients.matchAll().then((clientList) => {
-      if (clientList.length > 0) {
-        return clientList[0].focus()
-      }
-      return clients.openWindow('/')
+    event.waitUntil(
+      clients.matchAll().then((clientList) => {
+        if (clientList.length > 0) {
+          return clientList[0].focus()
+        }
+        return clients.openWindow('/')
     }).catch(err => {
       console.error('Failed to handle notification click:', err)
     })

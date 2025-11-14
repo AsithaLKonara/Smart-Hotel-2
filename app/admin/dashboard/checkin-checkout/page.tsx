@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import { canAccessReceptionistFeatures } from '@/lib/rbac-helpers'
 import { Search, UserCheck, UserX, Calendar, Loader2, CheckCircle, XCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -41,7 +42,7 @@ export default function CheckInCheckOutPage() {
   useEffect(() => {
     if (status === 'loading') return
     
-    if (!session || (session.user.role !== 'SUPER_ADMIN' && session.user.role !== 'MANAGER' && session.user.role !== 'RECEPTIONIST')) {
+    if (!canAccessReceptionistFeatures(session)) {
       router.push('/auth/signin')
       return
     }

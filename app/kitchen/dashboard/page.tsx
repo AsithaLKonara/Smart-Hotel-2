@@ -81,7 +81,7 @@ function KitchenDashboardContent() {
   useEffect(() => {
     if (status === 'loading') return
     
-    if (!session || !['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'].includes(session.user.role)) {
+    if (!canAccessReceptionistFeatures(session)) {
       router.push('/')
       return
     }

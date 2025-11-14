@@ -8,6 +8,7 @@ import { QrCode, Download, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import toast from 'react-hot-toast'
+import { canAccessReceptionistFeatures } from '@/lib/rbac-helpers'
 
 export default function AdminQRCodesPage() {
   const { data: session, status } = useSession()
@@ -28,7 +29,7 @@ export default function AdminQRCodesPage() {
     )
   }
 
-  if (!session || (session.user.role !== 'SUPER_ADMIN' && session.user.role !== 'MANAGER' && session.user.role !== 'RECEPTIONIST')) {
+  if (!canAccessReceptionistFeatures(session)) {
     router.push('/auth/signin')
     return null
   }

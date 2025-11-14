@@ -1,7 +1,6 @@
-import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowLeft, Star, Users, Wifi, Car, Utensils, Waves, Dumbbell, Shield, MapPin, Phone, Mail } from 'lucide-react'
+import { ArrowLeft, Star, Users, Wifi, Car, Utensils, Waves, Dumbbell, Shield, MapPin, Home } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -15,12 +14,68 @@ interface RoomDetailPageProps {
 }
 
 export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
-  const { id } = await params
+  let id: string
+  try {
+    const paramsData = await params
+    id = paramsData.id
+  } catch (error) {
+    console.error('Error loading room details page:', error)
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto px-4">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Home className="w-8 h-8 text-red-600" />
+          </div>
+          <h1 className="text-2xl font-bold mb-4">Room Not Found</h1>
+          <p className="text-gray-600 dark:text-gray-300 mb-6">
+            We couldn't find the room you're looking for. It may have been removed or the link is incorrect.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/rooms">
+              <Button className="w-full sm:w-auto">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Browse All Rooms
+              </Button>
+            </Link>
+            <Link href="/">
+              <Button variant="outline" className="w-full sm:w-auto">
+                Go to Homepage
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   // Validate id parameter
   if (!id || typeof id !== 'string' || id.trim() === '') {
-    console.error('Invalid room ID:', id)
-    notFound()
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto px-4">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Home className="w-8 h-8 text-red-600" />
+          </div>
+          <h1 className="text-2xl font-bold mb-4">Invalid Room ID</h1>
+          <p className="text-gray-600 dark:text-gray-300 mb-6">
+            The room ID provided is invalid. Please check the link and try again.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/rooms">
+              <Button className="w-full sm:w-auto">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Browse All Rooms
+              </Button>
+            </Link>
+            <Link href="/">
+              <Button variant="outline" className="w-full sm:w-auto">
+                Go to Homepage
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   let room
@@ -45,11 +100,69 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
     // })
   } catch (error) {
     console.error('Error fetching room details:', error)
-    notFound()
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto px-4">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Home className="w-8 h-8 text-red-600" />
+          </div>
+          <h1 className="text-2xl font-bold mb-4">Room Not Found</h1>
+          <p className="text-gray-600 dark:text-gray-300 mb-6">
+            We encountered an error while loading the room details. Please try again later.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/rooms">
+              <Button className="w-full sm:w-auto">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Browse All Rooms
+              </Button>
+            </Link>
+            <Link href="/">
+              <Button variant="outline" className="w-full sm:w-auto">
+                Go to Homepage
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   if (!room) {
-    notFound()
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto px-4">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Home className="w-8 h-8 text-red-600" />
+          </div>
+          <h1 className="text-2xl font-bold mb-4">Room Not Found</h1>
+          <p className="text-gray-600 dark:text-gray-300 mb-6">
+            We couldn't find a room with that ID. It may have been removed or the link is incorrect.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/rooms">
+              <Button className="w-full sm:w-auto">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Browse All Rooms
+              </Button>
+            </Link>
+            <Link href="/">
+              <Button variant="outline" className="w-full sm:w-auto">
+                Go to Homepage
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Convert BigInt fields to numbers for serialization
+  const serializedRoom = {
+    ...room,
+    capacity: Number(room.capacity),
+    floor: room.floor ? Number(room.floor) : null,
+    size: room.size ? Number(room.size) : null,
   }
 
   // Note: Reviews don't exist in Room model - would need to be fetched separately if Review model exists
@@ -72,11 +185,11 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
     return '/images/room-placeholder.jpg'
   }
   
-  const images = room.images && Array.isArray(room.images) && room.images.length > 0
-    ? room.images
-    : [getDefaultRoomImage(room.type)]
+  const images = serializedRoom.images && Array.isArray(serializedRoom.images) && serializedRoom.images.length > 0
+    ? serializedRoom.images
+    : [getDefaultRoomImage(serializedRoom.type)]
 
-  const amenities = Array.isArray(room.amenities) ? room.amenities : []
+  const amenities = Array.isArray(serializedRoom.amenities) ? serializedRoom.amenities : []
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -89,7 +202,7 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
           </Link>
           <div className="flex items-center gap-2 mb-2">
             <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
-              {room.type}
+              {serializedRoom.type}
             </Badge>
             {avgRating > 0 && (
               <div className="flex items-center gap-1">
@@ -99,9 +212,9 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
               </div>
             )}
           </div>
-          <h1 className="text-4xl md:text-5xl font-serif font-bold mb-4">{room.type}</h1>
+          <h1 className="text-4xl md:text-5xl font-serif font-bold mb-4">{serializedRoom.type}</h1>
           <p className="text-xl opacity-90 max-w-3xl">
-            {room.description || 'Experience luxury and comfort in our beautifully designed accommodations.'}
+            {serializedRoom.description || 'Experience luxury and comfort in our beautifully designed accommodations.'}
           </p>
         </div>
       </section>
@@ -116,8 +229,8 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
               <div className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-lg">
                 <div className="aspect-video relative">
                   <Image
-                    src={images[0] || getDefaultRoomImage(room.type)}
-                    alt={room.type}
+                    src={images[0] || getDefaultRoomImage(serializedRoom.type)}
+                    alt={serializedRoom.type}
                     fill
                     className="object-cover"
                     priority={!images[0]?.startsWith('https://images.unsplash.com')}
@@ -125,7 +238,7 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
                     onError={(e) => {
                       // Fallback to type-specific placeholder if image fails to load
                       const target = e.target as HTMLImageElement
-                      target.src = getDefaultRoomImage(room.type)
+                      target.src = getDefaultRoomImage(serializedRoom.type)
                     }}
                   />
                 </div>
@@ -135,14 +248,14 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
                       <div key={idx} className="aspect-video relative rounded overflow-hidden">
                         <Image
                           src={img}
-                          alt={`${room.type} ${idx + 2}`}
+                          alt={`${serializedRoom.type} ${idx + 2}`}
                           fill
                           className="object-cover"
                           unoptimized={img?.startsWith('https://images.unsplash.com')}
                           onError={(e) => {
                             // Fallback to type-specific placeholder if image fails to load
                             const target = e.target as HTMLImageElement
-                            target.src = getDefaultRoomImage(room.type)
+                            target.src = getDefaultRoomImage(serializedRoom.type)
                           }}
                         />
                       </div>
@@ -155,7 +268,7 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
               <Card className="p-6">
                 <h2 className="text-2xl font-bold mb-4">About This Room</h2>
                 <p className="text-gray-600 dark:text-gray-300 mb-4">
-                  {room.description || 'This beautifully appointed room offers the perfect blend of comfort and luxury, designed to make your stay unforgettable.'}
+                  {serializedRoom.description || 'This beautifully appointed room offers the perfect blend of comfort and luxury, designed to make your stay unforgettable.'}
                 </p>
                 
                 <div className="grid grid-cols-2 gap-4 mt-6">
@@ -164,31 +277,31 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
                       <Users className="w-5 h-5" />
                       <span className="font-medium">Capacity</span>
                     </div>
-                    <p className="text-lg font-semibold">{room.capacity} Guests</p>
+                    <p className="text-lg font-semibold">{serializedRoom.capacity} Guests</p>
                   </div>
-                  {room.size && (
+                  {serializedRoom.size && (
                     <div>
                       <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 mb-1">
                         <MapPin className="w-5 h-5" />
                         <span className="font-medium">Size</span>
                       </div>
-                      <p className="text-lg font-semibold">{room.size}m²</p>
+                      <p className="text-lg font-semibold">{serializedRoom.size}m²</p>
                     </div>
                   )}
-                  {room.floor && (
+                  {serializedRoom.floor && (
                     <div>
                       <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 mb-1">
                         <span className="font-medium">Floor</span>
                       </div>
-                      <p className="text-lg font-semibold">Floor {room.floor}</p>
+                      <p className="text-lg font-semibold">Floor {serializedRoom.floor}</p>
                     </div>
                   )}
-                  {room.number && (
+                  {serializedRoom.number && (
                     <div>
                       <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 mb-1">
                         <span className="font-medium">Room Number</span>
                       </div>
-                      <p className="text-lg font-semibold">{room.number}</p>
+                      <p className="text-lg font-semibold">{serializedRoom.number}</p>
                     </div>
                   )}
                 </div>
@@ -261,7 +374,7 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
               <Card className="p-6 sticky top-24">
                 <div className="text-center mb-6">
                   <div className="text-4xl font-bold text-primary-600 mb-2">
-                    {formatPrice(room.price)}
+                    {formatPrice(serializedRoom.price)}
                   </div>
                   <div className="text-gray-600 dark:text-gray-400">per night</div>
                 </div>
@@ -269,12 +382,12 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
                 <div className="space-y-4 mb-6">
                   <div className="flex items-center justify-between py-2 border-b border-gray-200 dark:border-gray-700">
                     <span className="text-gray-600 dark:text-gray-400">Capacity</span>
-                    <span className="font-semibold">{room.capacity} Guests</span>
+                    <span className="font-semibold">{serializedRoom.capacity} Guests</span>
                   </div>
-                  {room.size && (
+                  {serializedRoom.size && (
                     <div className="flex items-center justify-between py-2 border-b border-gray-200 dark:border-gray-700">
                       <span className="text-gray-600 dark:text-gray-400">Size</span>
-                      <span className="font-semibold">{room.size}m²</span>
+                      <span className="font-semibold">{serializedRoom.size}m²</span>
                     </div>
                   )}
                   {avgRating > 0 && (
@@ -288,7 +401,7 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
                   )}
                 </div>
 
-                <Link href={`/booking?room=${room.id}`} className="block w-full">
+                <Link href={`/booking?room=${serializedRoom.id}`} className="block w-full">
                   <Button className="w-full btn-primary" size="lg">
                     Book Now
                   </Button>
