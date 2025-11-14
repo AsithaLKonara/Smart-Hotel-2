@@ -164,9 +164,17 @@ export function OrderTracking({ orderId, onOrderComplete, onNewOrder }: OrderTra
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Order Not Found</h2>
           <p className="text-gray-600 mb-6">We couldn't find an order with that ID.</p>
-          <PremiumButton onClick={onNewOrder}>
-            Place New Order
-          </PremiumButton>
+          {onNewOrder ? (
+            <PremiumButton onClick={onNewOrder}>
+              Place New Order
+            </PremiumButton>
+          ) : (
+            <a href="/order">
+              <PremiumButton>
+                Place New Order
+              </PremiumButton>
+            </a>
+          )}
         </div>
       </div>
     )
@@ -377,22 +385,34 @@ export function OrderTracking({ orderId, onOrderComplete, onNewOrder }: OrderTra
           transition={{ delay: 0.5 }}
           className="flex flex-col sm:flex-row gap-4 justify-center mt-8"
         >
-          <PremiumButton
-            variant="outline"
-            onClick={onNewOrder}
-            className="px-8"
-          >
-            Place New Order
-          </PremiumButton>
-          
-          {order.status === 'DELIVERED' && (
+          {onNewOrder ? (
             <PremiumButton
-              variant="primary"
-              onClick={() => window.location.reload()}
+              variant="outline"
+              onClick={onNewOrder}
               className="px-8"
             >
-              Track Another Order
+              Place New Order
             </PremiumButton>
+          ) : (
+            <a href="/order">
+              <PremiumButton
+                variant="outline"
+                className="px-8"
+              >
+                Place New Order
+              </PremiumButton>
+            </a>
+          )}
+          
+          {order.status === 'DELIVERED' && (
+            <a href="/order">
+              <PremiumButton
+                variant="primary"
+                className="px-8"
+              >
+                Track Another Order
+              </PremiumButton>
+            </a>
           )}
         </motion.div>
       </div>
