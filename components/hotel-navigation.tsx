@@ -115,7 +115,7 @@ export default function HotelNavigation() {
               ))}
               
               {/* Authentication & Actions */}
-              {session ? (
+              {session?.user ? (
                 <>
                   <Link
                     href="/my-bookings"
@@ -123,7 +123,7 @@ export default function HotelNavigation() {
                   >
                     My Bookings
                   </Link>
-                  {session.user.role !== 'GUEST' && (
+                  {session.user.role && session.user.role !== 'GUEST' && (
                     <Link
                       href="/admin"
                       className="text-gray-700 hover:text-amber-600 font-medium transition-colors"
@@ -184,7 +184,7 @@ export default function HotelNavigation() {
                 ))}
                 
                 {/* Mobile Authentication */}
-                {session ? (
+                {session?.user ? (
                   <>
                     <Link
                       href="/my-bookings"
@@ -193,7 +193,7 @@ export default function HotelNavigation() {
                     >
                       My Bookings
                     </Link>
-                    {session.user.role !== 'GUEST' && (
+                    {session.user.role && session.user.role !== 'GUEST' && (
                       <Link
                         href="/admin"
                         className="text-gray-700 hover:text-amber-600 font-medium transition-colors"
