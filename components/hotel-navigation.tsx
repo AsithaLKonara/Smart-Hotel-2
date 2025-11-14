@@ -2,7 +2,8 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { Menu, X, Phone, Mail, MapPin } from 'lucide-react'
+import { useSession, signOut } from 'next-auth/react'
+import { Menu, X, Phone, Mail, MapPin, LogOut, User } from 'lucide-react'
 
 interface NavigationContact {
   name: string
@@ -23,6 +24,7 @@ const defaultContact: NavigationContact = {
 export default function HotelNavigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [contactInfo, setContactInfo] = useState<NavigationContact>(defaultContact)
+  const { data: session } = useSession()
 
   useEffect(() => {
     let isMounted = true
@@ -101,7 +103,7 @@ export default function HotelNavigation() {
             </Link>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-8">
+            <div className="hidden md:flex items-center space-x-6">
               {navigation.map((item) => (
                 <Link
                   key={item.name}
@@ -111,6 +113,41 @@ export default function HotelNavigation() {
                   {item.name}
                 </Link>
               ))}
+              
+              {/* Authentication & Actions */}
+              {session ? (
+                <>
+                  <Link
+                    href="/my-bookings"
+                    className="text-gray-700 hover:text-amber-600 font-medium transition-colors"
+                  >
+                    My Bookings
+                  </Link>
+                  {session.user.role !== 'GUEST' && (
+                    <Link
+                      href="/admin"
+                      className="text-gray-700 hover:text-amber-600 font-medium transition-colors"
+                    >
+                      Admin
+                    </Link>
+                  )}
+                  <button
+                    onClick={() => signOut()}
+                    className="text-gray-700 hover:text-amber-600 font-medium transition-colors flex items-center gap-1"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Sign Out
+                  </button>
+                </>
+              ) : (
+                <Link
+                  href="/auth/signin"
+                  className="text-gray-700 hover:text-amber-600 font-medium transition-colors"
+                >
+                  Sign In
+                </Link>
+              )}
+              
               <Link
                 href="/booking"
                 className="bg-amber-800 hover:bg-amber-900 text-white px-6 py-2 rounded-lg font-medium transition-colors"
@@ -145,6 +182,47 @@ export default function HotelNavigation() {
                     {item.name}
                   </Link>
                 ))}
+                
+                {/* Mobile Authentication */}
+                {session ? (
+                  <>
+                    <Link
+                      href="/my-bookings"
+                      className="text-gray-700 hover:text-amber-600 font-medium transition-colors"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      My Bookings
+                    </Link>
+                    {session.user.role !== 'GUEST' && (
+                      <Link
+                        href="/admin"
+                        className="text-gray-700 hover:text-amber-600 font-medium transition-colors"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        Admin
+                      </Link>
+                    )}
+                    <button
+                      onClick={() => {
+                        signOut()
+                        setIsMenuOpen(false)
+                      }}
+                      className="text-gray-700 hover:text-amber-600 font-medium transition-colors flex items-center gap-2 text-left"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Sign Out
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    href="/auth/signin"
+                    className="text-gray-700 hover:text-amber-600 font-medium transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Sign In
+                  </Link>
+                )}
+                
                 <Link
                   href="/booking"
                   className="bg-amber-700 hover:bg-amber-800 text-white px-6 py-2 rounded-lg font-medium transition-colors text-center"
