@@ -114,7 +114,10 @@ export async function GET(request: NextRequest) {
         floor: Number(room.floor),
         size: Number(room.size),
       }))
-      return NextResponse.json(serializedRooms)
+      return NextResponse.json({
+        rooms: serializedRooms,
+        count: serializedRooms.length
+      })
     }
 
     // Note: Room model doesn't have roomImages or reviews relations defined in schema
@@ -131,7 +134,10 @@ export async function GET(request: NextRequest) {
       size: Number(room.size),
     }))
 
-    return NextResponse.json(serializedRooms)
+    return NextResponse.json({
+      rooms: serializedRooms,
+      count: serializedRooms.length
+    })
   } catch (error: any) {
     console.error('Error fetching rooms:', error)
     const message = getDatabaseErrorMessage(error)

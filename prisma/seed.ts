@@ -12,103 +12,113 @@ async function main() {
   const receptionistHash = await bcrypt.hash('receptionist123', 12)
   const guestHash = await bcrypt.hash('guest123', 12)
 
-  const adminUser = await prisma.user.upsert({
-    where: { email: 'admin@smarthotel.com' },
-    update: {},
-    create: {
-      name: 'Super Admin',
-      email: 'admin@smarthotel.com',
-      password: adminHash,
-      phone: '+1-800-555-0001',
-      role: 'SUPER_ADMIN'
+  // Helper function to create or update user
+  async function createOrUpdateUser(email: string, data: any) {
+    const existing = await prisma.user.findFirst({ where: { email } })
+    if (existing) {
+      return await prisma.user.update({
+        where: { id: existing.id },
+        data
+      })
     }
+    return await prisma.user.create({ data })
+  }
+
+  const adminUser = await createOrUpdateUser('admin@smarthotel.com', {
+    name: 'Super Admin',
+    email: 'admin@smarthotel.com',
+    password: adminHash,
+    phone: '+1-800-555-0001',
+    role: 'SUPER_ADMIN',
+    createdAt: new Date(),
+    updatedAt: new Date()
   })
 
-  const managerUser = await prisma.user.upsert({
-    where: { email: 'manager@smarthotel.com' },
-    update: {},
-    create: {
-      name: 'Hotel Manager',
-      email: 'manager@smarthotel.com',
-      password: managerHash,
-      phone: '+1-800-555-0002',
-      role: 'MANAGER'
-    }
+  const managerUser = await createOrUpdateUser('manager@smarthotel.com', {
+    name: 'Hotel Manager',
+    email: 'manager@smarthotel.com',
+    password: managerHash,
+    phone: '+1-800-555-0002',
+    role: 'MANAGER',
+    createdAt: new Date(),
+    updatedAt: new Date()
   })
 
-  const receptionistUser = await prisma.user.upsert({
-    where: { email: 'receptionist@smarthotel.com' },
-    update: {},
-    create: {
-      name: 'Front Desk Receptionist',
-      email: 'receptionist@smarthotel.com',
-      password: receptionistHash,
-      phone: '+1-800-555-0003',
-      role: 'RECEPTIONIST'
-    }
+  const receptionistUser = await createOrUpdateUser('receptionist@smarthotel.com', {
+    name: 'Front Desk Receptionist',
+    email: 'receptionist@smarthotel.com',
+    password: receptionistHash,
+    phone: '+1-800-555-0003',
+    role: 'RECEPTIONIST',
+    createdAt: new Date(),
+    updatedAt: new Date()
   })
 
-  const guestUser = await prisma.user.upsert({
-    where: { email: 'guest@example.com' },
-    update: {},
-    create: {
-      name: 'John Doe',
-      email: 'guest@example.com',
-      password: guestHash,
-      phone: '+1-555-0104',
-      role: 'GUEST'
-    }
+  const guestUser = await createOrUpdateUser('guest@example.com', {
+    name: 'John Doe',
+    email: 'guest@example.com',
+    password: guestHash,
+    phone: '+1-555-0104',
+    role: 'GUEST',
+    createdAt: new Date(),
+    updatedAt: new Date()
   })
 
   console.log('✅ Users created')
 
+  // Helper function to create or update staff
+  async function createOrUpdateStaff(employeeId: string, data: any) {
+    const existing = await prisma.staff.findFirst({ where: { employeeId } })
+    if (existing) {
+      return await prisma.staff.update({
+        where: { id: existing.id },
+        data
+      })
+    }
+    return await prisma.staff.create({ data })
+  }
+
   // Create sample staff
-  const staff1 = await prisma.staff.upsert({
-    where: { employeeId: 'EMP001' },
-    update: {},
-    create: {
-      employeeId: 'EMP001',
-      name: 'Sarah Johnson',
-      email: 'sarah.johnson@smarthotel.com',
-      phone: '+1-555-0201',
-      position: 'Front Desk Manager',
-      department: 'Reception',
-      hireDate: new Date('2022-01-15'),
-      salary: 55000,
-      isActive: true
-    }
+  const staff1 = await createOrUpdateStaff('EMP001', {
+    employeeId: 'EMP001',
+    name: 'Sarah Johnson',
+    email: 'sarah.johnson@smarthotel.com',
+    phone: '+1-555-0201',
+    position: 'Front Desk Manager',
+    department: 'Reception',
+    hireDate: new Date('2022-01-15'),
+    salary: 55000,
+    isActive: true,
+    createdAt: new Date(),
+    updatedAt: new Date()
   })
 
-  const staff2 = await prisma.staff.upsert({
-    where: { employeeId: 'EMP002' },
-    update: {},
-    create: {
-      employeeId: 'EMP002',
-      name: 'Mike Chen',
-      email: 'mike.chen@smarthotel.com',
-      phone: '+1-555-0202',
-      position: 'Housekeeping Supervisor',
-      department: 'Housekeeping',
-      hireDate: new Date('2021-06-10'),
-      salary: 45000,
-      isActive: true
-    }
+  const staff2 = await createOrUpdateStaff('EMP002', {
+    employeeId: 'EMP002',
+    name: 'Mike Chen',
+    email: 'mike.chen@smarthotel.com',
+    phone: '+1-555-0202',
+    position: 'Housekeeping Supervisor',
+    department: 'Housekeeping',
+    hireDate: new Date('2021-06-10'),
+    salary: 45000,
+    isActive: true,
+    createdAt: new Date(),
+    updatedAt: new Date()
   })
 
-  const staff3 = await prisma.staff.upsert({
-    where: { employeeId: 'EMP003' },
-      update: {},
-      create: {
-      employeeId: 'EMP003',
-      name: 'Lisa Rodriguez',
-      email: 'lisa.rodriguez@smarthotel.com',
-      phone: '+1-555-0203',
-      position: 'Head Chef',
-      department: 'Kitchen',
-      hireDate: new Date('2020-03-20'),
-      salary: 65000,
-      isActive: true
-    }
+  const staff3 = await createOrUpdateStaff('EMP003', {
+    employeeId: 'EMP003',
+    name: 'Lisa Rodriguez',
+    email: 'lisa.rodriguez@smarthotel.com',
+    phone: '+1-555-0203',
+    position: 'Head Chef',
+    department: 'Kitchen',
+    hireDate: new Date('2020-03-20'),
+    salary: 65000,
+    isActive: true,
+    createdAt: new Date(),
+    updatedAt: new Date()
   })
 
   console.log('✅ Staff created')
@@ -172,68 +182,115 @@ async function main() {
     }
   ]
 
+  // Helper function to create or update room
+  async function createOrUpdateRoom(number: string, data: any) {
+    const existing = await prisma.room.findFirst({ where: { number } })
+    if (existing) {
+      return await prisma.room.update({
+        where: { id: existing.id },
+        data: { ...data, updatedAt: new Date() }
+      })
+    }
+    return await prisma.room.create({ 
+      data: { 
+        ...data, 
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        status: data.status || 'AVAILABLE'
+      } 
+    })
+  }
+
   for (const roomData of rooms) {
-    await prisma.room.upsert({
-      where: { number: roomData.number },
-      update: {},
-      create: roomData
+    await createOrUpdateRoom(roomData.number, {
+      number: roomData.number,
+      type: roomData.type,
+      price: roomData.price,
+      capacity: BigInt(roomData.capacity),
+      description: roomData.description,
+      amenities: roomData.amenities,
+      images: roomData.images,
+      floor: BigInt(roomData.floor),
+      size: BigInt(roomData.size),
+      status: 'AVAILABLE'
     })
   }
 
   console.log('✅ Rooms created')
 
+  // Skip bookings for now - database schema may have confirmationCode field that's not in Prisma schema
   // Create sample bookings
-  const room101 = await prisma.room.findUnique({ where: { number: '101' } })
-  const room102 = await prisma.room.findUnique({ where: { number: '102' } })
-  const room201 = await prisma.room.findUnique({ where: { number: '201' } })
+  try {
+    const room101 = await prisma.room.findFirst({ where: { number: '101' } })
+    const room102 = await prisma.room.findFirst({ where: { number: '102' } })
+    const room201 = await prisma.room.findFirst({ where: { number: '201' } })
 
-  if (room101 && room102 && room201) {
-    const bookings = [
-      {
-        userId: guestUser.id,
-        roomId: room101.id,
-        checkIn: new Date('2024-01-15'),
-        checkOut: new Date('2024-01-18'),
-        guests: 2,
-        totalAmount: 450,
-        status: 'CONFIRMED' as const,
-        paymentStatus: 'PAID' as const,
-        paymentMethod: 'credit_card',
-        specialRequests: 'Late checkout requested'
-      },
-      {
-        userId: guestUser.id,
-        roomId: room102.id,
-        checkIn: new Date('2024-01-20'),
-        checkOut: new Date('2024-01-22'),
-        guests: 2,
-        totalAmount: 400,
-        status: 'PENDING' as const,
-        paymentStatus: 'PENDING' as const,
-        specialRequests: 'High floor preferred'
-      },
-      {
-        userId: adminUser.id,
-        roomId: room201.id,
-        checkIn: new Date('2024-01-25'),
-        checkOut: new Date('2024-01-28'),
-        guests: 4,
-        totalAmount: 1050,
-        status: 'CHECKED_IN' as const,
-        paymentStatus: 'PAID' as const,
-        paymentMethod: 'credit_card',
-        specialRequests: 'Anniversary celebration'
+    if (room101 && room102 && room201) {
+      const bookings = [
+        {
+          userId: guestUser.id,
+          roomId: room101.id,
+          checkIn: new Date('2024-01-15'),
+          checkOut: new Date('2024-01-18'),
+          guests: 2,
+          totalAmount: 450,
+          status: 'CONFIRMED' as const,
+          paymentStatus: 'PAID' as const,
+          paymentMethod: 'credit_card',
+          specialRequests: 'Late checkout requested'
+        },
+        {
+          userId: guestUser.id,
+          roomId: room102.id,
+          checkIn: new Date('2024-01-20'),
+          checkOut: new Date('2024-01-22'),
+          guests: 2,
+          totalAmount: 400,
+          status: 'PENDING' as const,
+          paymentStatus: 'PENDING' as const,
+          specialRequests: 'High floor preferred'
+        },
+        {
+          userId: adminUser.id,
+          roomId: room201.id,
+          checkIn: new Date('2024-01-25'),
+          checkOut: new Date('2024-01-28'),
+          guests: 4,
+          totalAmount: 1050,
+          status: 'CHECKED_IN' as const,
+          paymentStatus: 'PAID' as const,
+          paymentMethod: 'credit_card',
+          specialRequests: 'Anniversary celebration'
+        }
+      ]
+
+      for (const bookingData of bookings) {
+        // Generate unique confirmation code
+        const confirmationCode = `GP${Date.now()}${Math.floor(Math.random() * 1000)}`
+        
+        await prisma.booking.create({
+          data: {
+            ...bookingData,
+            guests: BigInt(bookingData.guests),
+            checkIn: new Date(bookingData.checkIn),
+            checkOut: new Date(bookingData.checkOut),
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            paymentMethod: bookingData.paymentMethod || 'cash',
+            specialRequests: bookingData.specialRequests || '',
+            confirmationCode: confirmationCode as any // Add confirmationCode if it exists in DB
+          }
+        } as any)
+        
+        // Small delay to ensure unique confirmation codes
+        await new Promise(resolve => setTimeout(resolve, 50))
       }
-    ]
-
-    for (const bookingData of bookings) {
-      await prisma.booking.create({
-        data: bookingData
-      })
+      console.log('✅ Bookings created')
     }
+  } catch (bookingError) {
+    console.log('⚠️ Skipping bookings creation:', bookingError instanceof Error ? bookingError.message : 'Unknown error')
+    console.log('✅ Continuing with other data...')
   }
-
-  console.log('✅ Bookings created')
 
   // Create sample food menu
   const menuItems = [
@@ -294,8 +351,15 @@ async function main() {
   ]
 
   for (const menuItem of menuItems) {
+    // Remove image field if it doesn't exist in schema
+    const { image, ...menuData } = menuItem as any
     await prisma.foodMenu.create({
-      data: menuItem
+      data: {
+        ...menuData,
+        preparationTime: BigInt(menuItem.preparationTime),
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
     })
   }
 
@@ -327,7 +391,11 @@ async function main() {
 
   for (const galleryItem of galleryItems) {
     await prisma.gallery.create({
-      data: galleryItem
+      data: {
+        ...galleryItem,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
     })
   }
 
@@ -369,7 +437,11 @@ async function main() {
 
   for (const taskData of tasks) {
     await prisma.task.create({
-      data: taskData
+      data: {
+        ...taskData,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
     })
   }
 
@@ -408,7 +480,13 @@ async function main() {
 
   for (const inventoryItem of inventoryItems) {
     await prisma.inventory.create({
-      data: inventoryItem
+      data: {
+        ...inventoryItem,
+        quantity: BigInt(inventoryItem.quantity),
+        minQuantity: BigInt(inventoryItem.minQuantity),
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
     })
   }
 
@@ -442,12 +520,20 @@ async function main() {
     }
   ]
 
+  // Helper function to create or update setting
+  async function createOrUpdateSetting(key: string, value: string) {
+    const existing = await prisma.setting.findFirst({ where: { key } })
+    if (existing) {
+      return await prisma.setting.update({
+        where: { id: existing.id },
+        data: { value }
+      })
+    }
+    return await prisma.setting.create({ data: { key, value } })
+  }
+
   for (const setting of settings) {
-    await prisma.setting.upsert({
-      where: { key: setting.key },
-      update: { value: setting.value },
-      create: setting
-    })
+    await createOrUpdateSetting(setting.key, setting.value)
   }
 
   console.log('✅ Settings created')

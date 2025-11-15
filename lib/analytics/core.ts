@@ -126,6 +126,11 @@ export function getAnalyticsWindow(range: AnalyticsRange, referenceDate = new Da
   return { startDate, endDate, previousStart, previousEnd, rangeDays }
 }
 
+export async function buildAnalytics(rangeParam: string) {
+  const normalizedRange = normalizeAnalyticsRange(rangeParam)
+  return computeAnalytics(normalizedRange)
+}
+
 export async function computeAnalytics(range: AnalyticsRange, referenceDate = new Date()): Promise<AnalyticsPayload> {
   const { startDate, endDate, previousStart, previousEnd, rangeDays } = getAnalyticsWindow(range, referenceDate)
 

@@ -36,7 +36,4 @@ export async function GET(request: NextRequest) {
   }
 } 
 
-export async function buildAnalytics(rangeParam: string) {
-  const normalizedRange = normalizeAnalyticsRange(rangeParam)
-  return computeAnalytics(normalizedRange)
-} 
+// buildAnalytics moved to lib/analytics/core.ts to avoid Next.js route export restrictions 

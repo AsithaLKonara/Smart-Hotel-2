@@ -260,6 +260,93 @@ export async function computeDashboardAnalytics(referenceDate = new Date()): Pro
     reviews: guestReviews._count.id ?? 0,
   }
 
+  // Safely fetch recent activity with error handling
+  let recentBookingsData: Array<{
+    id: string
+    roomNumber: string
+    guestName: string
+    createdAt: Date
+    totalAmount: number
+    status: string
+  }> = []
+  try {
+    recentBookingsData = await Promise.all(recentBookings.map(async (booking) => {
+      try {
+        // Fetch related data separately since relations don't exist in schema
+        const [room, user] = await Promise.all([
+          booking.roomId ? prisma.room.findUnique({ where: { id: booking.roomId } }).catch(() => null) : Promise.resolve(null),
+          booking.userId ? prisma.user.findUnique({ where: { id: booking.userId } }).catch(() => null) : Promise.resolve(null)
+        ])
+        return {
+          id: booking.id,
+          roomNumber: room?.number ?? 'N/A',
+          guestName: user?.name ?? 'Guest',
+          createdAt: booking.createdAt,
+          totalAmount: booking.totalAmount ?? 0,
+          status: booking.status,
+        }
+      } catch (error) {
+        console.error('Error fetching booking details:', error)
+        return {
+          id: booking.id,
+          roomNumber: 'N/A',
+          guestName: 'Guest',
+          createdAt: booking.createdAt,
+          totalAmount: booking.totalAmount ?? 0,
+          status: booking.status,
+        }
+      }
+    }))
+  } catch (error) {
+    console.error('Error processing recent bookings:', error)
+  }
+
+  let recentTasksData: Array<{
+    id: string
+    title: string
+    status: string
+    createdAt: Date
+    dueDate: Date | null
+    assignedTo: string | null
+    createdBy: string | null
+    priority: string
+  }> = []
+  try {
+    recentTasksData = await Promise.all(recentTasks.map(async (task) => {
+      try {
+        // Fetch related data separately since relations don't exist in schema
+        const [staff, user] = await Promise.all([
+          task.assignedTo ? prisma.staff.findFirst({ where: { id: task.assignedTo } }).catch(() => null) : Promise.resolve(null),
+          task.createdBy ? prisma.user.findUnique({ where: { id: task.createdBy } }).catch(() => null) : Promise.resolve(null)
+        ])
+        return {
+          id: task.id,
+          title: task.title,
+          status: task.status,
+          createdAt: task.createdAt,
+          dueDate: task.dueDate,
+          assignedTo: staff?.name ?? null,
+          createdBy: user?.name ?? null,
+          priority: task.priority,
+        }
+      } catch (error) {
+        console.error('Error fetching task details:', error)
+        return {
+          id: task.id,
+          title: task.title,
+          status: task.status,
+          createdAt: task.createdAt,
+          dueDate: task.dueDate,
+          assignedTo: null,
+          createdBy: null,
+          priority: task.priority,
+        }
+      }
+    }))
+  } catch (error) {
+    console.error('Error processing recent tasks:', error)
+  }
+
   return {
     summary: {
       occupancyRate,
@@ -281,47 +368,17 @@ export async function computeDashboardAnalytics(referenceDate = new Date()): Pro
       guestSatisfaction,
     },
     recentActivity: {
-      bookings: await Promise.all(recentBookings.map(async (booking) => {
-        // Fetch related data separately since relations don't exist in schema
-        const [room, user] = await Promise.all([
-          prisma.room.findUnique({ where: { id: booking.roomId } }).catch(() => null),
-          prisma.user.findUnique({ where: { id: booking.userId } }).catch(() => null)
-        ])
-        return {
-          id: booking.id,
-          roomNumber: room?.number ?? 'N/A',
-          guestName: user?.name ?? 'Guest',
-          createdAt: booking.createdAt,
-          totalAmount: booking.totalAmount ?? 0,
-          status: booking.status,
-        }
-      })),
+      bookings: recentBookingsData,
       orders: recentOrders.map(order => ({
         id: order.id,
-        roomNumber: order.roomNumber,
+        roomNumber: order.roomNumber || 'N/A',
         createdAt: order.createdAt,
         status: order.status,
-        totalAmount: order.totalAmount,
+        totalAmount: order.totalAmount || 0,
         // Note: items relation doesn't exist - return empty array
         items: [],
       })),
-      tasks: await Promise.all(recentTasks.map(async (task) => {
-        // Fetch related data separately since relations don't exist in schema
-        const [staff, user] = await Promise.all([
-          task.assignedTo ? prisma.staff.findFirst({ where: { id: task.assignedTo } }).catch(() => null) : Promise.resolve(null),
-          prisma.user.findUnique({ where: { id: task.createdBy } }).catch(() => null)
-        ])
-        return {
-          id: task.id,
-          title: task.title,
-          status: task.status,
-          createdAt: task.createdAt,
-          dueDate: task.dueDate,
-          assignedTo: staff?.name ?? null,
-          createdBy: user?.name ?? null,
-          priority: task.priority,
-        }
-      })),
+      tasks: recentTasksData,
     },
   }
 }

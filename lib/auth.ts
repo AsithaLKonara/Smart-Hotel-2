@@ -88,6 +88,13 @@ export const authOptions: NextAuthOptions = {
           }
         } catch (error) {
           console.error('Authentication error:', error)
+          // Log the error for debugging
+          if (error instanceof Error) {
+            console.error('Authentication error details:', {
+              message: error.message,
+              stack: error.stack
+            })
+          }
           return null
         }
       }
