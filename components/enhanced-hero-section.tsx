@@ -14,7 +14,7 @@ export default function EnhancedHeroSection() {
     guests: 2
   })
 
-  const slides = [
+  const [slides, setSlides] = useState([
     {
       image: '/images/hotel/hotel-hero-1.jpg',
       title: 'Welcome to Grand Palace Hotel',
@@ -39,9 +39,34 @@ export default function EnhancedHeroSection() {
       cta: 'Explore Dining',
       ctaLink: '/restaurant'
     }
-  ]
+  ])
 
   useEffect(() => {
+    async function loadSlides() {
+      try {
+        const response = await fetch('/api/hero-slides')
+        if (!response.ok) return
+        const data = await response.json()
+        const loadedSlides = Array.isArray(data) ? data : (data.items || [])
+        if (loadedSlides.length > 0) {
+          setSlides(loadedSlides.map((slide: any) => ({
+            image: slide.image,
+            title: slide.title,
+            subtitle: slide.subtitle,
+            description: slide.description,
+            cta: slide.cta,
+            ctaLink: slide.ctaLink
+          })))
+        }
+      } catch (error) {
+        console.error('Failed to load hero slides:', error)
+      }
+    }
+    loadSlides()
+  }, [])
+
+  useEffect(() => {
+    if (slides.length === 0) return
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length)
     }, 6000)

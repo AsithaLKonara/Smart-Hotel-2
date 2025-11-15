@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { canAccessManagerFeatures } from '@/lib/rbac-helpers'
-import { Plus, Trash2, Search, Image as ImageIcon, Loader2, X } from 'lucide-react'
+import { Plus, Edit, Trash2, Search, Image as ImageIcon, Loader2, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -27,10 +27,11 @@ export default function AdminGalleryPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterCategory, setFilterCategory] = useState('all')
   const [showModal, setShowModal] = useState(false)
+  const [editingItem, setEditingItem] = useState<GalleryItem | null>(null)
   const [formData, setFormData] = useState({
     title: '',
     imageUrl: '',
-    category: 'ROOM'
+    category: 'ROOM' as GalleryItem['category']
   })
 
   useEffect(() => {
@@ -49,7 +50,8 @@ export default function AdminGalleryPage() {
       const response = await fetch('/api/gallery')
       if (!response.ok) throw new Error('Failed to fetch gallery')
       const data = await response.json()
-      setItems(data)
+      // API returns { items: [...] } or array directly
+      setItems(Array.isArray(data) ? data : (data.items || []))
     } catch (error) {
       console.error('Error fetching gallery:', error)
       toast.error('Failed to load gallery')
@@ -62,21 +64,25 @@ export default function AdminGalleryPage() {
     e.preventDefault()
     
     try {
-      const response = await fetch('/api/gallery', {
-        method: 'POST',
+      const url = editingItem ? `/api/gallery/${editingItem.id}` : '/api/gallery'
+      const method = editingItem ? 'PUT' : 'POST'
+
+      const response = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       })
 
-      if (!response.ok) throw new Error('Failed to add image')
+      if (!response.ok) throw new Error(editingItem ? 'Failed to update image' : 'Failed to add image')
 
-      toast.success('Image added successfully')
+      toast.success(editingItem ? 'Image updated successfully' : 'Image added successfully')
       setShowModal(false)
+      setEditingItem(null)
       resetForm()
       fetchGallery()
     } catch (error) {
-      console.error('Error adding image:', error)
-      toast.error('Failed to add image')
+      console.error('Error saving image:', error)
+      toast.error(editingItem ? 'Failed to update image' : 'Failed to add image')
     }
   }
 
@@ -98,12 +104,23 @@ export default function AdminGalleryPage() {
     }
   }
 
+  const handleEdit = (item: GalleryItem) => {
+    setEditingItem(item)
+    setFormData({
+      title: item.title,
+      imageUrl: item.imageUrl,
+      category: item.category
+    })
+    setShowModal(true)
+  }
+
   const resetForm = () => {
     setFormData({
       title: '',
       imageUrl: '',
       category: 'ROOM'
     })
+    setEditingItem(null)
   }
 
   const filteredItems = items.filter(item => {
@@ -206,7 +223,15 @@ export default function AdminGalleryPage() {
                 fill
                 className="object-cover group-hover:scale-105 transition-transform duration-300"
               />
-              <div className="absolute top-2 right-2">
+              <div className="absolute top-2 right-2 flex gap-2">
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => handleEdit(item)}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <Edit className="w-4 h-4" />
+                </Button>
                 <Button
                   size="sm"
                   variant="destructive"
@@ -249,13 +274,14 @@ export default function AdminGalleryPage() {
           <Card className="w-full max-w-md">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle>Add New Image</CardTitle>
+                <CardTitle>{editingItem ? 'Edit Image' : 'Add New Image'}</CardTitle>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => {
                     setShowModal(false)
                     resetForm()
+                    setEditingItem(null)
                   }}
                 >
                   <X className="w-5 h-5" />
@@ -304,7 +330,7 @@ export default function AdminGalleryPage() {
 
                 <div className="flex gap-3 pt-4">
                   <Button type="submit" className="flex-1">
-                    Add Image
+                    {editingItem ? 'Update Image' : 'Add Image'}
                   </Button>
                   <Button
                     type="button"
@@ -312,6 +338,7 @@ export default function AdminGalleryPage() {
                     onClick={() => {
                       setShowModal(false)
                       resetForm()
+                      setEditingItem(null)
                     }}
                     className="flex-1"
                   >

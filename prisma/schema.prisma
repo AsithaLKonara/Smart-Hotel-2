@@ -92,6 +92,87 @@ model Setting {
   value String
 }
 
+model NavigationLink {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  href      String
+  order     Int
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now()) @db.Date
+  updatedAt DateTime @default(now()) @db.Date
+}
+
+model FAQ {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  question  String
+  answer    String
+  category  String
+  order     Int
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now()) @db.Date
+  updatedAt DateTime @default(now()) @db.Date
+}
+
+model HeroSlide {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  image       String
+  title       String
+  subtitle    String
+  description String
+  cta         String
+  ctaLink     String
+  order       Int
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now()) @db.Date
+  updatedAt   DateTime @default(now()) @db.Date
+}
+
+model SocialLink {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  platform    String
+  url         String
+  icon        String?
+  order       Int
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now()) @db.Date
+  updatedAt   DateTime @default(now()) @db.Date
+}
+
+model Amenity {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  description  String?
+  icon         String?
+  category     String?
+  displayOrder Int
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now()) @db.Date
+  updatedAt    DateTime @default(now()) @db.Date
+}
+
+model NearbyAttraction {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  distance     String
+  description  String?
+  category     String?
+  displayOrder Int
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now()) @db.Date
+  updatedAt    DateTime @default(now()) @db.Date
+}
+
+model FooterLink {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  label     String
+  url       String
+  category  String
+  order     Int
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now()) @db.Date
+  updatedAt DateTime @default(now()) @db.Date
+}
+
 model Staff {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
   createdAt  DateTime @db.Date

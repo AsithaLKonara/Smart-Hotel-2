@@ -18,7 +18,11 @@ import {
   LogOut,
   UserCheck,
   Menu,
-  X
+  X,
+  Settings as SettingsIcon,
+  Share2,
+  MapPin,
+  Link as LinkIcon
 } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
@@ -42,6 +46,14 @@ export default function AdminSidebar() {
     { name: 'Gallery', href: '/admin/gallery', icon: ImageIcon },
     { name: 'QR Codes', href: '/admin/qr-codes', icon: QrCode },
     { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
+    { name: 'Settings', href: '/admin/settings', icon: SettingsIcon },
+    { name: 'FAQ', href: '/admin/faq', icon: ClipboardList },
+    { name: 'Hero Slides', href: '/admin/hero-slides', icon: ImageIcon },
+    { name: 'Navigation', href: '/admin/navigation', icon: Menu },
+    { name: 'Social Links', href: '/admin/social-links', icon: Share2 },
+    { name: 'Amenities', href: '/admin/amenities', icon: Package },
+    { name: 'Attractions', href: '/admin/attractions', icon: MapPin },
+    { name: 'Footer Links', href: '/admin/footer-links', icon: LinkIcon },
   ]
 
   const SidebarContent = () => (

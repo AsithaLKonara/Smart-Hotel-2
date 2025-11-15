@@ -70,6 +70,59 @@ const defaultFormState = {
   message: '',
 }
 
+function FAQSection() {
+  const [faqs, setFaqs] = useState<Array<{ question: string; answer: string }>>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function loadFAQs() {
+      try {
+        const response = await fetch('/api/faq')
+        if (!response.ok) return
+        const data = await response.json()
+        const items = Array.isArray(data) ? data : (data.items || [])
+        setFaqs(items.map((item: any) => ({ question: item.question, answer: item.answer })))
+      } catch (error) {
+        console.error('Failed to load FAQs:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadFAQs()
+  }, [])
+
+  if (loading) {
+    return (
+      <section className="mt-16">
+        <Card className="p-8">
+          <h2 className="text-2xl font-bold mb-8 text-center">Frequently Asked Questions</h2>
+          <p className="text-center text-gray-600">Loading FAQs...</p>
+        </Card>
+      </section>
+    )
+  }
+
+  if (faqs.length === 0) {
+    return null
+  }
+
+  return (
+    <section className="mt-16">
+      <Card className="p-8">
+        <h2 className="text-2xl font-bold mb-8 text-center">Frequently Asked Questions</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {faqs.map((faq, index) => (
+            <div key={index}>
+              <h3 className="font-semibold mb-2">{faq.question}</h3>
+              <p className="text-gray-600">{faq.answer}</p>
+            </div>
+          ))}
+        </div>
+      </Card>
+    </section>
+  )
+}
+
 export default function ContactPage() {
   const [formData, setFormData] = useState(defaultFormState)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -306,41 +359,7 @@ export default function ContactPage() {
           </div>
         </div>
 
-        <section className="mt-16">
-          <Card className="p-8">
-            <h2 className="text-2xl font-bold mb-8 text-center">Frequently Asked Questions</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div>
-                <h3 className="font-semibold mb-2">What are your check-in and check-out times?</h3>
-                <p className="text-gray-600">
-                  Check-in is available from {contactInfo?.checkIn ?? '15:00'}, and check-out is until {contactInfo?.checkOut ?? '11:00'}.
-                  Early check-in and late check-out can be arranged based on availability.
-                </p>
-              </div>
-              
-              <div>
-                <h3 className="font-semibold mb-2">Do you offer airport transportation?</h3>
-                <p className="text-gray-600">
-                  Yes, we provide airport shuttle service. Please contact us at least 24 hours in advance to arrange transportation.
-                </p>
-              </div>
-              
-              <div>
-                <h3 className="font-semibold mb-2">Can I request special room arrangements?</h3>
-                <p className="text-gray-600">
-                  Absolutely! Let us know your preferences when booking, and our staff will ensure your room is prepared according to your needs.
-                </p>
-              </div>
-              
-              <div>
-                <h3 className="font-semibold mb-2">Do you accommodate dietary requirements?</h3>
-                <p className="text-gray-600">
-                  Yes, our culinary team can accommodate dietary restrictions. Please inform us in advance so we can make arrangements.
-                </p>
-              </div>
-            </div>
-          </Card>
-        </section>
+        <FAQSection />
       </div>
     </div>
   )

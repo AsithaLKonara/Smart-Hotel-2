@@ -1,9 +1,82 @@
+"use client"
+
 import Link from 'next/link'
 import { Phone, Mail, MapPin, Facebook, Twitter, Instagram, Youtube } from 'lucide-react'
 import { getHotelContactInfo } from '@/lib/settings'
+import { useEffect, useState } from 'react'
 
-export default async function HotelFooter() {
-  const contact = await getHotelContactInfo()
+interface SocialLink {
+  platform: string
+  url: string
+  icon?: string
+}
+
+interface FooterLink {
+  label: string
+  url: string
+  category: string
+}
+
+export default function HotelFooter() {
+  const [contact, setContact] = useState<any>(null)
+  const [socialLinks, setSocialLinks] = useState<SocialLink[]>([])
+  const [footerLinks, setFooterLinks] = useState<FooterLink[]>([])
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        // Load contact info
+        const contactResponse = await fetch('/api/settings/contact')
+        if (contactResponse.ok) {
+          const contactData = await contactResponse.json()
+          setContact(contactData)
+        }
+
+        // Load social links
+        const socialResponse = await fetch('/api/social-links')
+        if (socialResponse.ok) {
+          const socialData = await socialResponse.json()
+          const items = Array.isArray(socialData) ? socialData : (socialData.items || [])
+          setSocialLinks(items.map((item: any) => ({
+            platform: item.platform,
+            url: item.url,
+            icon: item.icon
+          })))
+        }
+
+        // Load footer links
+        const footerResponse = await fetch('/api/footer-links')
+        if (footerResponse.ok) {
+          const footerData = await footerResponse.json()
+          const items = Array.isArray(footerData) ? footerData : (footerData.items || [])
+          setFooterLinks(items.map((item: any) => ({
+            label: item.label,
+            url: item.url,
+            category: item.category
+          })))
+        }
+      } catch (error) {
+        console.error('Failed to load footer data:', error)
+      }
+    }
+    loadData()
+  }, [])
+
+  const quickLinks = footerLinks.filter(link => link.category === 'Quick Links')
+  const services = footerLinks.filter(link => link.category === 'Services')
+
+  const getSocialIcon = (platform: string) => {
+    const lowerPlatform = platform.toLowerCase()
+    if (lowerPlatform.includes('facebook')) return Facebook
+    if (lowerPlatform.includes('twitter') || lowerPlatform.includes('x')) return Twitter
+    if (lowerPlatform.includes('instagram')) return Instagram
+    if (lowerPlatform.includes('youtube')) return Youtube
+    return null
+  }
+
+  if (!contact) {
+    return <footer className="bg-gray-900 text-white p-8 text-center">Loading...</footer>
+  }
 
   return (
     <footer className="bg-gray-900 text-white">
@@ -24,66 +97,65 @@ export default async function HotelFooter() {
               {contact.description}
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-white transition-colors" aria-label="Follow us on Facebook">
-                <Facebook className="w-5 h-5" />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors" aria-label="Follow us on Twitter">
-                <Twitter className="w-5 h-5" />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors" aria-label="Follow us on Instagram">
-                <Instagram className="w-5 h-5" />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors" aria-label="Subscribe to our YouTube channel">
-                <Youtube className="w-5 h-5" />
-              </a>
+              {socialLinks.map((social, index) => {
+                const IconComponent = getSocialIcon(social.platform)
+                return (
+                  <a
+                    key={index}
+                    href={social.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-400 hover:text-white transition-colors"
+                    aria-label={`Follow us on ${social.platform}`}
+                  >
+                    {social.icon ? (
+                      <span className="text-xl">{social.icon}</span>
+                    ) : IconComponent ? (
+                      <IconComponent className="w-5 h-5" />
+                    ) : (
+                      <span>{social.platform[0]}</span>
+                    )}
+                  </a>
+                )
+              })}
             </div>
           </div>
 
           {/* Quick Links */}
-          <div>
-            <h4 className="text-lg font-semibold mb-6">Quick Links</h4>
-            <ul className="space-y-3">
-              <li>
-                <Link href="/" className="text-gray-400 hover:text-white transition-colors">
-                  Home
-                </Link>
-              </li>
-              <li>
-                <Link href="/rooms" className="text-gray-400 hover:text-white transition-colors">
-                  Rooms & Suites
-                </Link>
-              </li>
-              <li>
-                <Link href="/order" className="text-gray-400 hover:text-white transition-colors">
-                  Restaurant & Dining
-                </Link>
-              </li>
-              <li>
-                <Link href="/gallery" className="text-gray-400 hover:text-white transition-colors">
-                  Gallery
-                </Link>
-              </li>
-              <li>
-                <Link href="/booking" className="text-gray-400 hover:text-white transition-colors">
-                  Book Now
-                </Link>
-              </li>
-            </ul>
-          </div>
+          {quickLinks.length > 0 && (
+            <div>
+              <h4 className="text-lg font-semibold mb-6">Quick Links</h4>
+              <ul className="space-y-3">
+                {quickLinks.map((link, index) => (
+                  <li key={index}>
+                    <Link href={link.url} className="text-gray-400 hover:text-white transition-colors">
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {/* Services */}
-          <div>
-            <h4 className="text-lg font-semibold mb-6">Services</h4>
-            <ul className="space-y-3">
-              <li className="text-gray-400">Spa & Wellness</li>
-              <li className="text-gray-400">Fitness Center</li>
-              <li className="text-gray-400">Swimming Pool</li>
-              <li className="text-gray-400">Business Center</li>
-              <li className="text-gray-400">Concierge Service</li>
-              <li className="text-gray-400">Valet Parking</li>
-              <li className="text-gray-400">Room Service</li>
-            </ul>
-          </div>
+          {services.length > 0 && (
+            <div>
+              <h4 className="text-lg font-semibold mb-6">Services</h4>
+              <ul className="space-y-3">
+                {services.map((link, index) => (
+                  <li key={index} className="text-gray-400">
+                    {link.url ? (
+                      <Link href={link.url} className="hover:text-white transition-colors">
+                        {link.label}
+                      </Link>
+                    ) : (
+                      link.label
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {/* Contact Info */}
           <div>
@@ -114,12 +186,11 @@ export default async function HotelFooter() {
               © {new Date().getFullYear()} {contact.name}. All rights reserved.
             </p>
             <div className="flex space-x-6 mt-4 md:mt-0">
-              <Link href="/privacy" className="text-gray-400 hover:text-white text-sm transition-colors">
-                Privacy Policy
-              </Link>
-              <Link href="/terms" className="text-gray-400 hover:text-white text-sm transition-colors">
-                Terms of Service
-              </Link>
+              {footerLinks.filter(link => link.category === 'Legal').map((link, index) => (
+                <Link key={index} href={link.url} className="text-gray-400 hover:text-white text-sm transition-colors">
+                  {link.label}
+                </Link>
+              ))}
               <Link href="/contact" className="text-gray-400 hover:text-white text-sm transition-colors">
                 Contact Us
               </Link>

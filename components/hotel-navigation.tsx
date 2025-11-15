@@ -25,6 +25,13 @@ const defaultContact: NavigationContact = {
 export default function HotelNavigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [contactInfo, setContactInfo] = useState<NavigationContact>(defaultContact)
+  const [navigation, setNavigation] = useState([
+    { name: 'Home', href: '/' },
+    { name: 'Rooms', href: '/rooms' },
+    { name: 'Restaurant', href: '/order' },
+    { name: 'Gallery', href: '/gallery' },
+    { name: 'Contact', href: '/contact' },
+  ])
   const { data: session } = useSession()
   const pathname = usePathname()
   
@@ -34,7 +41,8 @@ export default function HotelNavigation() {
   useEffect(() => {
     let isMounted = true
 
-    async function loadContactInfo() {
+    async function loadData() {
+      // Load contact info
       try {
         const response = await fetch('/api/settings/contact')
         if (!response.ok) return
@@ -51,9 +59,22 @@ export default function HotelNavigation() {
       } catch (error) {
         console.error('Failed to load contact info for navigation:', error)
       }
+
+      // Load navigation links
+      try {
+        const navResponse = await fetch('/api/navigation')
+        if (!navResponse.ok) return
+        const navData = await navResponse.json()
+        const links = Array.isArray(navData) ? navData : (navData.items || [])
+        if (isMounted && links.length > 0) {
+          setNavigation(links.map((link: any) => ({ name: link.name, href: link.href })))
+        }
+      } catch (error) {
+        console.error('Failed to load navigation:', error)
+      }
     }
 
-    loadContactInfo()
+    loadData()
 
     return () => {
       isMounted = false
@@ -64,14 +85,6 @@ export default function HotelNavigation() {
   if (isDashboardRoute) {
     return null
   }
-
-  const navigation = [
-    { name: 'Home', href: '/' },
-    { name: 'Rooms', href: '/rooms' },
-    { name: 'Restaurant', href: '/order' },
-    { name: 'Gallery', href: '/gallery' },
-    { name: 'Contact', href: '/contact' },
-  ]
 
   return (
     <header role="banner" className="bg-white shadow-sm">
