@@ -29,25 +29,36 @@ export default function SignInPage() {
       if (result?.error) {
         console.error('Sign in error:', result.error)
         toast.error(result.error === 'CredentialsSignin' ? 'Invalid email or password' : 'An error occurred during sign in')
-      } else if (result?.ok) {
-        const session = await getSession()
-        if (session?.user.role === 'GUEST') {
-          router.push('/')
-        } else {
-          router.push('/admin')
-        }
+        setIsLoading(false)
+        return
+      }
+
+      // Wait a bit for session to be established
+      await new Promise(resolve => setTimeout(resolve, 100))
+      
+      // Check for session and redirect
+      const session = await getSession()
+      if (session?.user) {
         toast.success('Signed in successfully')
-      } else {
-        // No error but not ok - might be redirecting
-        const session = await getSession()
-        if (session) {
-          if (session.user.role === 'GUEST') {
-            router.push('/')
-          } else {
-            router.push('/admin')
-          }
-          toast.success('Signed in successfully')
+        // Use window.location for more reliable redirect
+        if (session.user.role === 'GUEST') {
+          window.location.href = '/'
         } else {
+          window.location.href = '/admin'
+        }
+      } else {
+        // Session not available yet, try once more after a short delay
+        await new Promise(resolve => setTimeout(resolve, 300))
+        const retrySession = await getSession()
+        if (retrySession?.user) {
+          toast.success('Signed in successfully')
+          if (retrySession.user.role === 'GUEST') {
+            window.location.href = '/'
+          } else {
+            window.location.href = '/admin'
+          }
+        } else {
+          console.error('Session not available after login')
           toast.error('An error occurred during sign in')
         }
       }
