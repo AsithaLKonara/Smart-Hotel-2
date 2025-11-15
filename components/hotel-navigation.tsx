@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { useSession, signOut } from 'next-auth/react'
+import { usePathname } from 'next/navigation'
 import { Menu, X, Phone, Mail, MapPin, LogOut, User } from 'lucide-react'
 
 interface NavigationContact {
@@ -25,6 +26,10 @@ export default function HotelNavigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [contactInfo, setContactInfo] = useState<NavigationContact>(defaultContact)
   const { data: session } = useSession()
+  const pathname = usePathname()
+  
+  // Hide navigation on dashboard/admin routes (they have their own navigation)
+  const isDashboardRoute = pathname?.startsWith('/dashboard') || pathname?.startsWith('/admin')
 
   useEffect(() => {
     let isMounted = true
@@ -54,6 +59,11 @@ export default function HotelNavigation() {
       isMounted = false
     }
   }, [])
+  
+  // Hide navigation on dashboard/admin routes (they have their own navigation)
+  if (isDashboardRoute) {
+    return null
+  }
 
   const navigation = [
     { name: 'Home', href: '/' },
@@ -90,70 +100,73 @@ export default function HotelNavigation() {
       {/* Main Navigation */}
       <nav className="bg-white shadow-lg sticky top-0 z-50" aria-label="Primary navigation">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="flex justify-between items-center h-20">
+          <div className="flex justify-between items-center h-20 gap-4">
             {/* Logo */}
-            <Link href="/" className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-500 rounded-full flex items-center justify-center">
+            <Link href="/" className="flex items-center space-x-3 flex-shrink-0 min-w-0">
+              <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
                 <span className="text-white font-bold text-xl">GP</span>
               </div>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">{contactInfo.name}</h1>
-                <p className="text-sm text-gray-600">{contactInfo.tagline}</p>
+              <div className="min-w-0">
+                <h1 className="text-xl lg:text-2xl font-bold text-gray-900 truncate">{contactInfo.name}</h1>
+                <p className="text-xs lg:text-sm text-gray-600 truncate hidden sm:block">{contactInfo.tagline}</p>
               </div>
             </Link>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-6">
-              {navigation.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className="text-gray-700 hover:text-amber-600 font-medium transition-colors"
-                >
-                  {item.name}
-                </Link>
-              ))}
-              
-              {/* Authentication & Actions */}
-              {session?.user ? (
-                <>
+            <div className="hidden md:flex items-center space-x-4 overflow-x-auto flex-1 justify-end min-w-0">
+              <div className="flex items-center space-x-4 flex-shrink-0">
+                {navigation.map((item) => (
                   <Link
-                    href="/my-bookings"
-                    className="text-gray-700 hover:text-amber-600 font-medium transition-colors"
+                    key={item.name}
+                    href={item.href}
+                    className="text-gray-700 hover:text-amber-600 font-medium transition-colors whitespace-nowrap"
                   >
-                    My Bookings
+                    {item.name}
                   </Link>
-                  {session.user.role && session.user.role !== 'GUEST' && (
+                ))}
+                
+                {/* Authentication & Actions */}
+                {session?.user ? (
+                  <>
                     <Link
-                      href="/admin"
-                      className="text-gray-700 hover:text-amber-600 font-medium transition-colors"
+                      href="/my-bookings"
+                      className="text-gray-700 hover:text-amber-600 font-medium transition-colors whitespace-nowrap"
                     >
-                      Admin
+                      My Bookings
                     </Link>
-                  )}
-                  <button
-                    onClick={() => signOut()}
-                    className="text-gray-700 hover:text-amber-600 font-medium transition-colors flex items-center gap-1"
+                    {session.user.role && session.user.role !== 'GUEST' && (
+                      <Link
+                        href="/admin"
+                        className="text-gray-700 hover:text-amber-600 font-medium transition-colors whitespace-nowrap"
+                      >
+                        Admin
+                      </Link>
+                    )}
+                    <button
+                      onClick={() => signOut()}
+                      className="text-gray-700 hover:text-amber-600 font-medium transition-colors flex items-center gap-1 whitespace-nowrap"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      <span className="hidden lg:inline">Sign Out</span>
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    href="/auth/signin"
+                    className="text-gray-700 hover:text-amber-600 font-medium transition-colors whitespace-nowrap"
                   >
-                    <LogOut className="w-4 h-4" />
-                    Sign Out
-                  </button>
-                </>
-              ) : (
+                    Sign In
+                  </Link>
+                )}
+                
                 <Link
-                  href="/auth/signin"
-                  className="text-gray-700 hover:text-amber-600 font-medium transition-colors"
+                  href="/booking"
+                  className="bg-amber-800 hover:bg-amber-900 text-white px-4 lg:px-6 py-2 rounded-lg font-medium transition-colors whitespace-nowrap flex-shrink-0"
                 >
-                  Sign In
+                  <span className="hidden xl:inline">Book Now</span>
+                  <span className="xl:hidden">Book</span>
                 </Link>
-              )}
-              
-              <Link
-                href="/booking"
-                className="bg-amber-800 hover:bg-amber-900 text-white px-6 py-2 rounded-lg font-medium transition-colors"
-              >
-                Book Now
-              </Link>
+              </div>
             </div>
 
             {/* Mobile menu button */}
