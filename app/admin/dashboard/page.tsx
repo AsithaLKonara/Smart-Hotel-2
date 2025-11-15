@@ -112,11 +112,58 @@ function AdminDashboardContent() {
       const data = await response.json()
 
       if (response.ok) {
-        setDashboardData(data)
+        // Transform the API response to match DashboardData interface
+        const transformedData: DashboardData = {
+          summary: {
+            totalBookings: data.summary?.monthlyBookings ?? data.summary?.totalBookings ?? 0,
+            todayBookings: data.summary?.todayBookings ?? 0,
+            monthlyBookings: data.summary?.monthlyBookings ?? 0,
+            yearlyBookings: data.summary?.yearlyBookings ?? 0,
+            totalRevenue: data.summary?.totalRevenue ?? data.summary?.monthlyRevenue ?? 0,
+            todayRevenue: data.summary?.todayRevenue ?? 0,
+            monthlyRevenue: data.summary?.monthlyRevenue ?? 0,
+            yearlyRevenue: data.summary?.yearlyRevenue ?? 0,
+            occupancyRate: data.summary?.occupancyRate ?? 0,
+            avgBookingValue: data.summary?.avgBookingValue ?? (data.summary?.monthlyRevenue && data.summary?.monthlyBookings 
+              ? Number((data.summary.monthlyRevenue / data.summary.monthlyBookings).toFixed(2)) 
+              : 0),
+            bookingGrowthRate: data.summary?.bookingGrowthRate ?? 0,
+          },
+          charts: data.charts || {
+            occupancy: [],
+            roomStatus: [],
+            revenue: {
+              today: data.summary?.todayRevenue ?? 0,
+              month: data.summary?.monthlyRevenue ?? 0,
+              year: data.summary?.yearlyRevenue ?? 0,
+            },
+          },
+          recentActivity: {
+            bookings: (data.recentActivity?.bookings || []).map((booking: any) => ({
+              id: booking.id || '',
+              guestName: booking.guestName || 'Guest',
+              roomNumber: booking.roomNumber || 'N/A',
+              roomType: booking.roomType || 'Standard',
+              checkIn: booking.checkIn || booking.createdAt || new Date().toISOString(),
+              checkOut: booking.checkOut || new Date().toISOString(),
+              totalAmount: booking.totalAmount || 0,
+              status: booking.status || 'PENDING',
+              createdAt: booking.createdAt || new Date().toISOString(),
+            })),
+            topRooms: data.recentActivity?.topRooms || [],
+          },
+          guestStats: data.guestStats || {
+            totalGuests: 0,
+            totalStaff: 0,
+            totalAdmins: 0,
+          },
+        }
+        setDashboardData(transformedData)
       } else {
         toast.error('Failed to load dashboard data')
       }
     } catch (error) {
+      console.error('Error fetching dashboard data:', error)
       toast.error('Failed to load dashboard data')
     } finally {
       setIsLoading(false)
@@ -196,10 +243,33 @@ function AdminDashboardContent() {
   }
 
   const { summary, charts, recentActivity, guestStats } = dashboardData || {
-    summary: {},
-    charts: {},
-    recentActivity: {},
-    guestStats: { totalGuests: 0, totalStaff: 0 }
+    summary: {
+      totalBookings: 0,
+      todayBookings: 0,
+      monthlyBookings: 0,
+      yearlyBookings: 0,
+      totalRevenue: 0,
+      todayRevenue: 0,
+      monthlyRevenue: 0,
+      yearlyRevenue: 0,
+      occupancyRate: 0,
+      avgBookingValue: 0,
+      bookingGrowthRate: 0,
+    },
+    charts: {
+      occupancy: [],
+      roomStatus: [],
+      revenue: {
+        today: 0,
+        month: 0,
+        year: 0,
+      },
+    },
+    recentActivity: {
+      bookings: [],
+      topRooms: [],
+    },
+    guestStats: { totalGuests: 0, totalStaff: 0, totalAdmins: 0 }
   }
 
   return (
@@ -217,11 +287,11 @@ function AdminDashboardContent() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Bookings</p>
-                <p className="text-2xl font-bold text-gray-900">{summary.totalBookings}</p>
+                <p className="text-2xl font-bold text-gray-900">{summary?.totalBookings ?? 0}</p>
                 <div className="flex items-center mt-2">
-                  {getGrowthIcon(summary.bookingGrowthRate)}
-                  <span className={`text-sm ml-1 ${summary.bookingGrowthRate >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {Math.abs(summary.bookingGrowthRate).toFixed(1)}%
+                  {getGrowthIcon(summary?.bookingGrowthRate ?? 0)}
+                  <span className={`text-sm ml-1 ${(summary?.bookingGrowthRate ?? 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {Math.abs(summary?.bookingGrowthRate ?? 0).toFixed(1)}%
                   </span>
                 </div>
               </div>
@@ -233,9 +303,9 @@ function AdminDashboardContent() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-                <p className="text-2xl font-bold text-gray-900">{formatCurrency(summary.totalRevenue)}</p>
+                <p className="text-2xl font-bold text-gray-900">{formatCurrency(summary?.totalRevenue ?? 0)}</p>
                 <p className="text-sm text-gray-500 mt-2">
-                  Monthly: {formatCurrency(summary.monthlyRevenue)}
+                  Monthly: {formatCurrency(summary?.monthlyRevenue ?? 0)}
                 </p>
               </div>
               <DollarSign className="w-8 h-8 text-green-600" />
@@ -246,9 +316,9 @@ function AdminDashboardContent() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Occupancy Rate</p>
-                <p className="text-2xl font-bold text-gray-900">{summary.occupancyRate}%</p>
+                <p className="text-2xl font-bold text-gray-900">{summary?.occupancyRate ?? 0}%</p>
                 <p className="text-sm text-gray-500 mt-2">
-                  Avg Booking: {formatCurrency(summary.avgBookingValue)}
+                  Avg Booking: {formatCurrency(summary?.avgBookingValue ?? 0)}
                 </p>
               </div>
               <Bed className="w-8 h-8 text-blue-600" />
@@ -278,24 +348,28 @@ function AdminDashboardContent() {
               Occupancy Forecast (30 Days)
             </h3>
             <div className="space-y-3">
-              {charts.occupancy.slice(0, 7).map((day, index) => (
-                <div key={day.date} className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
-                    <span className="text-sm text-gray-600">
-                      {formatDate(day.date)}
-                    </span>
+              {charts?.occupancy && charts.occupancy.length > 0 ? (
+                charts.occupancy.slice(0, 7).map((day, index) => (
+                  <div key={day.date} className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
+                      <span className="text-sm text-gray-600">
+                        {formatDate(day.date)}
+                      </span>
+                    </div>
+                    <div className="flex items-center space-x-4">
+                      <span className="text-sm text-gray-600">
+                        {day.occupied}/{day.occupied + day.available}
+                      </span>
+                      <span className="text-sm font-medium">
+                        {day.occupancyRate.toFixed(1)}%
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-center space-x-4">
-                    <span className="text-sm text-gray-600">
-                      {day.occupied}/{day.occupied + day.available}
-                    </span>
-                    <span className="text-sm font-medium">
-                      {day.occupancyRate.toFixed(1)}%
-                    </span>
-                  </div>
-                </div>
-              ))}
+                ))
+              ) : (
+                <p className="text-sm text-gray-500 text-center py-4">No occupancy data available</p>
+              )}
             </div>
           </Card>
 
@@ -306,21 +380,25 @@ function AdminDashboardContent() {
               Room Status
             </h3>
             <div className="space-y-3">
-              {charts.roomStatus.map((status) => (
-                <div key={status.status} className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className={`w-3 h-3 rounded-full ${
-                      status.status === 'AVAILABLE' ? 'bg-green-500' :
-                      status.status === 'OCCUPIED' ? 'bg-red-500' :
-                      status.status === 'MAINTENANCE' ? 'bg-yellow-500' : 'bg-gray-500'
-                    }`}></div>
-                    <span className="text-sm text-gray-600 capitalize">
-                      {status.status.toLowerCase()}
-                    </span>
+              {charts?.roomStatus && charts.roomStatus.length > 0 ? (
+                charts.roomStatus.map((status) => (
+                  <div key={status.status} className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className={`w-3 h-3 rounded-full ${
+                        status.status === 'AVAILABLE' ? 'bg-green-500' :
+                        status.status === 'OCCUPIED' ? 'bg-red-500' :
+                        status.status === 'MAINTENANCE' ? 'bg-yellow-500' : 'bg-gray-500'
+                      }`}></div>
+                      <span className="text-sm text-gray-600 capitalize">
+                        {status.status.toLowerCase()}
+                      </span>
+                    </div>
+                    <span className="text-sm font-medium">{status.count}</span>
                   </div>
-                  <span className="text-sm font-medium">{status.count}</span>
-                </div>
-              ))}
+                ))
+              ) : (
+                <p className="text-sm text-gray-500 text-center py-4">No room status data available</p>
+              )}
             </div>
           </Card>
         </div>
@@ -334,27 +412,31 @@ function AdminDashboardContent() {
               Recent Bookings
             </h3>
             <div className="space-y-4">
-              {recentActivity.bookings.slice(0, 5).map((booking) => (
-                <div key={booking.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div>
-                    <p className="font-medium text-gray-900">{booking.guestName}</p>
-                    <p className="text-sm text-gray-600">
-                      Room {booking.roomNumber} • {booking.roomType}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {formatDate(booking.checkIn)} - {formatDate(booking.checkOut)}
-                    </p>
+              {recentActivity?.bookings && recentActivity.bookings.length > 0 ? (
+                recentActivity.bookings.slice(0, 5).map((booking) => (
+                  <div key={booking.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                      <p className="font-medium text-gray-900">{booking.guestName}</p>
+                      <p className="text-sm text-gray-600">
+                        Room {booking.roomNumber} • {booking.roomType}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {formatDate(booking.checkIn)} - {formatDate(booking.checkOut)}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <Badge className={getStatusColor(booking.status)}>
+                        {booking.status.replace('_', ' ')}
+                      </Badge>
+                      <p className="text-sm font-medium text-gray-900 mt-1">
+                        {formatCurrency(booking.totalAmount)}
+                      </p>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <Badge className={getStatusColor(booking.status)}>
-                      {booking.status.replace('_', ' ')}
-                    </Badge>
-                    <p className="text-sm font-medium text-gray-900 mt-1">
-                      {formatCurrency(booking.totalAmount)}
-                    </p>
-                  </div>
-                </div>
-              ))}
+                ))
+              ) : (
+                <p className="text-sm text-gray-500 text-center py-4">No recent bookings</p>
+              )}
             </div>
           </Card>
 
@@ -365,27 +447,31 @@ function AdminDashboardContent() {
               Top Performing Rooms
             </h3>
             <div className="space-y-4">
-              {recentActivity.topRooms.map((room) => (
-                <div key={room.rank} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center font-bold">
-                      {room.rank}
+              {recentActivity?.topRooms && recentActivity.topRooms.length > 0 ? (
+                recentActivity.topRooms.map((room) => (
+                  <div key={room.rank} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center font-bold">
+                        {room.rank}
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-900">Room {room.roomNumber}</p>
+                        <p className="text-sm text-gray-600">{room.roomType}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-medium text-gray-900">Room {room.roomNumber}</p>
-                      <p className="text-sm text-gray-600">{room.roomType}</p>
+                    <div className="text-right">
+                      <p className="text-sm font-medium text-gray-900">
+                        {room.bookingCount} bookings
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {formatCurrency(room.revenue)}
+                      </p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-gray-900">
-                      {room.bookingCount} bookings
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {formatCurrency(room.revenue)}
-                    </p>
-                  </div>
-                </div>
-              ))}
+                ))
+              ) : (
+                <p className="text-sm text-gray-500 text-center py-4">No top rooms data available</p>
+              )}
             </div>
           </Card>
         </div>

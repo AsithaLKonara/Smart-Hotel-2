@@ -27,34 +27,35 @@ export async function GET(request: NextRequest) {
       // Return a safe default structure instead of 500 error
       return NextResponse.json({
         summary: {
-          occupancyRate: 0,
-          averageOccupancyRate: 0,
-          bookingGrowthRate: 0,
-          todayRevenue: 0,
-          monthlyRevenue: 0,
-          revenueGrowthRate: 0,
+          totalBookings: 0,
           todayBookings: 0,
           monthlyBookings: 0,
-          restaurantOrdersToday: 0,
-          restaurantRevenueToday: 0,
-          restaurantRevenueMonth: 0,
-          averageOrderValueToday: 0,
-          taskStats: {
-            total: 0,
-            completed: 0,
-            pending: 0,
-            overdue: 0,
-            completionRate: 0,
-          },
-          guestSatisfaction: {
-            rating: 0,
-            reviews: 0,
+          yearlyBookings: 0,
+          totalRevenue: 0,
+          todayRevenue: 0,
+          monthlyRevenue: 0,
+          yearlyRevenue: 0,
+          occupancyRate: 0,
+          avgBookingValue: 0,
+          bookingGrowthRate: 0,
+        },
+        charts: {
+          occupancy: [],
+          roomStatus: [],
+          revenue: {
+            today: 0,
+            month: 0,
+            year: 0,
           },
         },
         recentActivity: {
           bookings: [],
-          orders: [],
-          tasks: [],
+          topRooms: [],
+        },
+        guestStats: {
+          totalGuests: 0,
+          totalStaff: 0,
+          totalAdmins: 0,
         },
       })
     }

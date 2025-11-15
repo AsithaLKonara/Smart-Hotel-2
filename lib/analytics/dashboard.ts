@@ -5,67 +5,69 @@ const ALLOWED_ROLES = ['MANAGER', 'SUPER_ADMIN'] as const
 export type DashboardRole = (typeof ALLOWED_ROLES)[number]
 
 export interface DashboardSummary {
-  occupancyRate: number
-  averageOccupancyRate: number
-  bookingGrowthRate: number
-  todayRevenue: number
-  monthlyRevenue: number
-  revenueGrowthRate: number
+  totalBookings: number
   todayBookings: number
   monthlyBookings: number
-  restaurantOrdersToday: number
-  restaurantRevenueToday: number
-  restaurantRevenueMonth: number
-  averageOrderValueToday: number
-  taskStats: {
-    total: number
-    completed: number
-    pending: number
-    overdue: number
-    completionRate: number
-  }
-  guestSatisfaction: {
-    rating: number
-    reviews: number
+  yearlyBookings: number
+  totalRevenue: number
+  todayRevenue: number
+  monthlyRevenue: number
+  yearlyRevenue: number
+  occupancyRate: number
+  avgBookingValue: number
+  bookingGrowthRate: number
+}
+
+export interface DashboardCharts {
+  occupancy: Array<{
+    date: string
+    occupied: number
+    available: number
+    occupancyRate: number
+  }>
+  roomStatus: Array<{
+    status: string
+    count: number
+  }>
+  revenue: {
+    today: number
+    month: number
+    year: number
   }
 }
 
 export interface DashboardActivity {
   bookings: Array<{
     id: string
-    roomNumber: string
     guestName: string
-    createdAt: Date
-    totalAmount: number
-    status: string
-  }>
-  orders: Array<{
-    id: string
     roomNumber: string
-    createdAt: Date
-    status: string
+    roomType: string
+    checkIn: string
+    checkOut: string
     totalAmount: number
-    items: Array<{
-      id: string
-      name: string
-      quantity: number
-    }>
-  }>
-  tasks: Array<{
-    id: string
-    title: string
     status: string
-    createdAt: Date
-    dueDate: Date | null
-    assignedTo: string | null
-    createdBy: string | null
-    priority: string
+    createdAt: string
   }>
+  topRooms: Array<{
+    rank: number
+    roomNumber: string
+    roomType: string
+    bookingCount: number
+    revenue: number
+  }>
+}
+
+export interface DashboardGuestStats {
+  totalGuests: number
+  totalStaff: number
+  totalAdmins: number
 }
 
 export interface DashboardAnalyticsPayload {
   summary: DashboardSummary
+  charts: DashboardCharts
   recentActivity: DashboardActivity
+  guestStats: DashboardGuestStats
 }
 
 function calculateGrowthRate(current: number, previous: number): number {
@@ -347,38 +349,137 @@ export async function computeDashboardAnalytics(referenceDate = new Date()): Pro
     console.error('Error processing recent tasks:', error)
   }
 
+  // Calculate total revenue and bookings from all time
+  const allBookings = await prisma.booking.findMany().catch(() => [])
+  const totalBookings = allBookings.length
+  const totalRevenue = allBookings.reduce((sum, booking) => sum + (Number(booking.totalAmount) || 0), 0)
+  
+  // Calculate yearly stats
+  const currentYearStart = new Date(now.getFullYear(), 0, 1)
+  const yearlyBookings = allBookings.filter(b => new Date(b.createdAt) >= currentYearStart).length
+  const yearlyRevenue = allBookings
+    .filter(b => new Date(b.createdAt) >= currentYearStart)
+    .reduce((sum, booking) => sum + (Number(booking.totalAmount) || 0), 0)
+
+  // Get room status breakdown
+  const roomStatusBreakdown = [
+    { status: 'AVAILABLE', count: rooms.filter(r => r.status === 'AVAILABLE').length },
+    { status: 'OCCUPIED', count: rooms.filter(r => r.status === 'OCCUPIED').length },
+    { status: 'MAINTENANCE', count: rooms.filter(r => r.status === 'MAINTENANCE').length },
+    { status: 'OUT_OF_ORDER', count: rooms.filter(r => r.status === 'OUT_OF_ORDER').length },
+  ].filter(status => status.count > 0)
+
+  // Generate occupancy chart data (30 days)
+  const occupancyChartData = []
+  for (let i = 29; i >= 0; i--) {
+    const date = subDays(todayStart, i)
+    const dateStr = date.toISOString().split('T')[0]
+    const bookingsOnDate = allBookings.filter(b => {
+      const checkIn = new Date(b.checkIn)
+      const checkOut = new Date(b.checkOut)
+      return checkIn <= date && checkOut >= date
+    })
+    occupancyChartData.push({
+      date: dateStr,
+      occupied: bookingsOnDate.length,
+      available: Math.max(0, totalRooms - bookingsOnDate.length),
+      occupancyRate: totalRooms > 0 ? Number(((bookingsOnDate.length / totalRooms) * 100).toFixed(1)) : 0,
+    })
+  }
+
+  // Get top performing rooms
+  const roomPerformanceMap = new Map<string, { bookingCount: number; revenue: number }>()
+  allBookings.forEach(booking => {
+    const roomId = booking.roomId || 'unknown'
+    const existing = roomPerformanceMap.get(roomId) || { bookingCount: 0, revenue: 0 }
+    roomPerformanceMap.set(roomId, {
+      bookingCount: existing.bookingCount + 1,
+      revenue: existing.revenue + (Number(booking.totalAmount) || 0),
+    })
+  })
+
+  // Get guest and staff stats
+  const [allUsers, allStaff] = await Promise.all([
+    prisma.user.findMany().catch(() => []),
+    prisma.staff.findMany().catch(() => []),
+  ])
+  const totalGuests = allUsers.filter(u => u.role === 'GUEST').length
+  const totalStaffCount = allStaff.length
+  const totalAdmins = allUsers.filter(u => u.role === 'SUPER_ADMIN' || u.role === 'MANAGER').length
+
+  // Build top rooms array
+  const topRooms: Array<{ rank: number; roomNumber: string; roomType: string; bookingCount: number; revenue: number }> = []
+  try {
+    const roomEntries = Array.from(roomPerformanceMap.entries())
+      .sort((a, b) => b[1].revenue - a[1].revenue)
+      .slice(0, 5)
+    
+    for (let i = 0; i < roomEntries.length; i++) {
+      const [roomId, stats] = roomEntries[i]
+      const room = await prisma.room.findUnique({ where: { id: roomId } }).catch(() => null)
+      if (room) {
+        topRooms.push({
+          rank: i + 1,
+          roomNumber: room.number || 'N/A',
+          roomType: room.type || 'Standard',
+          bookingCount: stats.bookingCount,
+          revenue: Number(stats.revenue.toFixed(2)),
+        })
+      }
+    }
+  } catch (error) {
+    console.error('Error building top rooms:', error)
+  }
+
+  // Transform recent bookings to match expected format
+  const transformedRecentBookings = recentBookingsData.map((booking: any) => {
+    const bookingRecord = recentBookings.find((b: any) => b.id === booking.id)
+    return {
+      id: booking.id,
+      guestName: booking.guestName,
+      roomNumber: booking.roomNumber,
+      roomType: bookingRecord?.roomId ? 'Standard' : 'Standard', // Default, can be enhanced
+      checkIn: bookingRecord?.checkIn?.toString() || booking.createdAt.toString(),
+      checkOut: bookingRecord?.checkOut?.toString() || booking.createdAt.toString(),
+      totalAmount: booking.totalAmount,
+      status: booking.status,
+      createdAt: booking.createdAt.toString(),
+    }
+  })
+
   return {
     summary: {
-      occupancyRate,
-      averageOccupancyRate: averageOccupancyLastSevenDays,
-      bookingGrowthRate,
-      todayRevenue: Number(todayRevenue.toFixed(2)),
-      monthlyRevenue: Number(monthlyRevenue.toFixed(2)),
-      revenueGrowthRate,
+      totalBookings,
       todayBookings: bookingsToday.length,
       monthlyBookings: bookingsThisMonth.length,
-      restaurantOrdersToday,
-      restaurantRevenueToday: Number(restaurantRevenueToday.toFixed(2)),
-      restaurantRevenueMonth: Number(restaurantRevenueThisMonth.toFixed(2)),
-      averageOrderValueToday,
-      taskStats: {
-        ...taskStats,
-        completionRate,
+      yearlyBookings,
+      totalRevenue: Number(totalRevenue.toFixed(2)),
+      todayRevenue: Number(todayRevenue.toFixed(2)),
+      monthlyRevenue: Number(monthlyRevenue.toFixed(2)),
+      yearlyRevenue: Number(yearlyRevenue.toFixed(2)),
+      occupancyRate,
+      avgBookingValue: monthlyRevenue > 0 && bookingsThisMonth.length > 0
+        ? Number((monthlyRevenue / bookingsThisMonth.length).toFixed(2))
+        : 0,
+      bookingGrowthRate,
+    },
+    charts: {
+      occupancy: occupancyChartData,
+      roomStatus: roomStatusBreakdown,
+      revenue: {
+        today: Number(todayRevenue.toFixed(2)),
+        month: Number(monthlyRevenue.toFixed(2)),
+        year: Number(yearlyRevenue.toFixed(2)),
       },
-      guestSatisfaction,
     },
     recentActivity: {
-      bookings: recentBookingsData,
-      orders: recentOrders.map(order => ({
-        id: order.id,
-        roomNumber: order.roomNumber || 'N/A',
-        createdAt: order.createdAt,
-        status: order.status,
-        totalAmount: order.totalAmount || 0,
-        // Note: items relation doesn't exist - return empty array
-        items: [],
-      })),
-      tasks: recentTasksData,
+      bookings: transformedRecentBookings,
+      topRooms,
+    },
+    guestStats: {
+      totalGuests,
+      totalStaff: totalStaffCount,
+      totalAdmins,
     },
   }
 }
