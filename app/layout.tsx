@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster"
 import ErrorBoundary from "@/components/error-boundary"
 import ClientScripts from "@/components/client-scripts"
 import HotelNavigation from "@/components/hotel-navigation"
-import HotelFooter from "@/components/hotel-footer"
+import ConditionalFooter from "@/components/conditional-footer"
 import { ChatWrapper } from "@/components/live-chat/chat-wrapper"
 import { Providers } from "@/components/providers"
 import { WebVitalsTracker } from "@/components/web-vitals-tracker"
@@ -174,7 +174,7 @@ export default function RootLayout({
               <main id="main-content" role="main" className="flex-1">
             {children}
               </main>
-            <HotelFooter />
+            <ConditionalFooter />
             </div>
             <Toaster />
             <ClientScripts />
