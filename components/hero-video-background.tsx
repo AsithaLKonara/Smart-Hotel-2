@@ -61,7 +61,9 @@ export default function HeroVideoBackground({
             playsInline
             poster={fallbackImage}
             onError={(e) => {
-              console.warn('Video failed to load, using fallback image:', e)
+              // Silent handling for expected external video service errors (e.g., Vimeo 404)
+              // Fallback image will be displayed automatically
+              e.stopPropagation()
               setVideoError(true)
             }}
             onLoadStart={(e) => {
