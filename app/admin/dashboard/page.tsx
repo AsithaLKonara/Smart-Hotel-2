@@ -195,7 +195,12 @@ function AdminDashboardContent() {
     )
   }
 
-  const { summary, charts, recentActivity, guestStats } = dashboardData
+  const { summary, charts, recentActivity, guestStats } = dashboardData || {
+    summary: {},
+    charts: {},
+    recentActivity: {},
+    guestStats: { totalGuests: 0, totalStaff: 0 }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -254,9 +259,9 @@ function AdminDashboardContent() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Guests</p>
-                <p className="text-2xl font-bold text-gray-900">{guestStats.totalGuests}</p>
+                <p className="text-2xl font-bold text-gray-900">{guestStats?.totalGuests || 0}</p>
                 <p className="text-sm text-gray-500 mt-2">
-                  Staff: {guestStats.totalStaff}
+                  Staff: {guestStats?.totalStaff || 0}
                 </p>
               </div>
               <Users className="w-8 h-8 text-purple-600" />
