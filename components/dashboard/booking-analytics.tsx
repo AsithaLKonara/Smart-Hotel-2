@@ -355,7 +355,15 @@ function BookingAnalyticsContent({ onExport, onBookingClick }: BookingAnalyticsP
 
         setAllBookings(mappedBookings)
         setOccupancyData(occupancySeries)
-        setGuestInsights(calculateGuestInsights(mappedBookings, guestSources, guestSatisfaction))
+        const insights = calculateGuestInsights(mappedBookings, guestSources || [], guestSatisfaction)
+        setGuestInsights(insights || {
+          totalGuests: 0,
+          repeatGuests: 0,
+          newGuests: 0,
+          averageStay: 0,
+          topSource: 'Direct',
+          satisfaction: 0
+        })
       } catch (err) {
         console.error(err)
         if (isMounted) {
@@ -481,7 +489,7 @@ function BookingAnalyticsContent({ onExport, onBookingClick }: BookingAnalyticsP
                 <span className="text-sm font-medium">+8.3%</span>
               </div>
             </div>
-            <div className="text-2xl font-bold text-gray-900 mb-1">{guestInsights?.totalGuests}</div>
+            <div className="text-2xl font-bold text-gray-900 mb-1">{guestInsights?.totalGuests ?? 0}</div>
             <div className="text-gray-600">Total Guests</div>
           </div>
 
@@ -495,7 +503,7 @@ function BookingAnalyticsContent({ onExport, onBookingClick }: BookingAnalyticsP
                 <span className="text-sm font-medium">+5.2%</span>
               </div>
             </div>
-            <div className="text-2xl font-bold text-gray-900 mb-1">{guestInsights?.averageStay}</div>
+            <div className="text-2xl font-bold text-gray-900 mb-1">{guestInsights?.averageStay ?? 0}</div>
             <div className="text-gray-600">Avg Stay (days)</div>
           </div>
 
@@ -509,7 +517,7 @@ function BookingAnalyticsContent({ onExport, onBookingClick }: BookingAnalyticsP
                 <span className="text-sm font-medium">+2.1%</span>
               </div>
             </div>
-            <div className="text-2xl font-bold text-gray-900 mb-1">{guestInsights?.satisfaction}</div>
+            <div className="text-2xl font-bold text-gray-900 mb-1">{guestInsights?.satisfaction ?? 0}</div>
             <div className="text-gray-600">Guest Rating</div>
           </div>
         </motion.div>
