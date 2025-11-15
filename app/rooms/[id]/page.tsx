@@ -4,8 +4,10 @@ import { ArrowLeft, Star, Users, Wifi, Car, Utensils, Waves, Dumbbell, Shield, M
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { FallbackImage } from '@/components/ui/fallback-image'
 import prisma from '@/lib/db'
 import { formatPrice } from '@/lib/utils'
+import { isDatabaseConfigured } from '@/lib/db-helpers'
 
 export const dynamic = 'force-dynamic'
 
@@ -59,6 +61,36 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
           <h1 className="text-2xl font-bold mb-4">Invalid Room ID</h1>
           <p className="text-gray-600 dark:text-gray-300 mb-6">
             The room ID provided is invalid. Please check the link and try again.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/rooms">
+              <Button className="w-full sm:w-auto">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Browse All Rooms
+              </Button>
+            </Link>
+            <Link href="/">
+              <Button variant="outline" className="w-full sm:w-auto">
+                Go to Homepage
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Check database configuration
+  if (!isDatabaseConfigured()) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto px-4">
+          <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Home className="w-8 h-8 text-yellow-600" />
+          </div>
+          <h1 className="text-2xl font-bold mb-4">Service Temporarily Unavailable</h1>
+          <p className="text-gray-600 dark:text-gray-300 mb-6">
+            We're currently experiencing technical difficulties. Please try again later or contact us for assistance.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/rooms">
@@ -228,35 +260,27 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
               {/* Images */}
               <div className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-lg">
                 <div className="aspect-video relative">
-                  <Image
+                  <FallbackImage
                     src={images[0] || getDefaultRoomImage(serializedRoom.type)}
+                    fallbackSrc={getDefaultRoomImage(serializedRoom.type)}
                     alt={serializedRoom.type}
                     fill
                     className="object-cover"
                     priority={!images[0]?.startsWith('https://images.unsplash.com')}
                     unoptimized={images[0]?.startsWith('https://images.unsplash.com')}
-                    onError={(e) => {
-                      // Fallback to type-specific placeholder if image fails to load
-                      const target = e.target as HTMLImageElement
-                      target.src = getDefaultRoomImage(serializedRoom.type)
-                    }}
                   />
                 </div>
                 {images.length > 1 && (
                   <div className="grid grid-cols-4 gap-2 p-4">
                     {images.slice(1, 5).map((img, idx) => (
                       <div key={idx} className="aspect-video relative rounded overflow-hidden">
-                        <Image
+                        <FallbackImage
                           src={img}
+                          fallbackSrc={getDefaultRoomImage(serializedRoom.type)}
                           alt={`${serializedRoom.type} ${idx + 2}`}
                           fill
                           className="object-cover"
                           unoptimized={img?.startsWith('https://images.unsplash.com')}
-                          onError={(e) => {
-                            // Fallback to type-specific placeholder if image fails to load
-                            const target = e.target as HTMLImageElement
-                            target.src = getDefaultRoomImage(serializedRoom.type)
-                          }}
                         />
                       </div>
                     ))}

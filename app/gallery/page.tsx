@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { Filter, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { FallbackImage } from '@/components/ui/fallback-image'
 // Navigation is handled by layout.tsx
 
 export default function GalleryPage() {
@@ -70,8 +71,9 @@ export default function GalleryPage() {
                 className="group relative overflow-hidden rounded-lg cursor-pointer transform transition-transform hover:scale-105"
                 onClick={() => setSelectedImage(image)}
               >
-                <Image
+                <FallbackImage
                   src={image.url}
+                  fallbackSrc={image.fallback || "/images/hotel/hotel-lobby.jpg"}
                   alt={image.title}
                   width={400}
                   height={300}
@@ -116,8 +118,9 @@ export default function GalleryPage() {
             >
               <X className="w-6 h-6" />
             </Button>
-            <Image
+            <FallbackImage
               src={selectedImage.url}
+              fallbackSrc={selectedImage.fallback || "/images/hotel/hotel-lobby.jpg"}
               alt={selectedImage.title}
               width={800}
               height={600}
@@ -140,83 +143,95 @@ const galleryImages = [
     title: "Luxury Suite",
     description: "Spacious suite with panoramic city views",
     category: "rooms",
-    url: "/images/gallery/suite-1.jpg"
+    url: "/images/hotel/room-suite.jpg",
+    fallback: "/images/hotel/room-luxury.jpg"
   },
   {
     id: 2,
     title: "Hotel Lobby",
     description: "Elegant lobby with modern design",
     category: "lobby",
-    url: "/images/gallery/lobby-1.jpg"
+    url: "/images/hotel/hotel-lobby.jpg",
+    fallback: "/images/hotel/hotel-exterior.jpg"
   },
   {
     id: 3,
     title: "Fine Dining Restaurant",
     description: "World-class dining experience",
     category: "restaurant",
-    url: "/images/gallery/restaurant-1.jpg"
+    url: "/images/hotel/hotel-restaurant.jpg",
+    fallback: "/images/hotel/hotel-bar.jpg"
   },
   {
     id: 4,
     title: "Infinity Pool",
     description: "Relaxing pool with city skyline",
     category: "pool",
-    url: "/images/gallery/pool-1.jpg"
+    url: "/images/hotel/hotel-pool.jpg",
+    fallback: "/images/hotel/hotel-spa.jpg"
   },
   {
     id: 5,
     title: "Wedding Venue",
     description: "Perfect setting for special events",
     category: "events",
-    url: "/images/gallery/events-1.jpg"
+    url: "/images/hotel/hotel-view.jpg",
+    fallback: "/images/hotel/hotel-garden.jpg"
   },
   {
     id: 6,
     title: "Hotel Exterior",
     description: "Stunning architectural design",
     category: "exterior",
-    url: "/images/gallery/exterior-1.jpg"
+    url: "/images/hotel/hotel-exterior.jpg",
+    fallback: "/images/hotel/hotel-lobby.jpg"
   },
   {
     id: 7,
     title: "Deluxe Room",
     description: "Comfortable and modern room design",
     category: "rooms",
-    url: "/images/gallery/room-1.jpg"
+    url: "/images/hotel/room-deluxe.jpg",
+    fallback: "/images/hotel/room-standard.jpg"
   },
   {
     id: 8,
     title: "Spa Center",
     description: "Relaxation and wellness facilities",
     category: "pool",
-    url: "/images/gallery/spa-1.jpg"
+    url: "/images/hotel/hotel-spa.jpg",
+    fallback: "/images/hotel/hotel-pool.jpg"
   },
   {
     id: 9,
     title: "Conference Room",
     description: "Professional meeting spaces",
     category: "events",
-    url: "/images/gallery/conference-1.jpg"
+    url: "/images/hotel/hotel-view.jpg",
+    fallback: "/images/hotel/hotel-lobby.jpg"
   },
   {
     id: 10,
     title: "Garden View",
     description: "Peaceful garden surroundings",
     category: "exterior",
-    url: "/images/gallery/garden-1.jpg"
+    url: "/images/hotel/hotel-garden.jpg",
+    fallback: "/images/hotel/hotel-exterior.jpg"
   },
   {
     id: 11,
     title: "Executive Lounge",
     description: "Exclusive lounge area for guests",
     category: "lobby",
-    url: "/images/gallery/lounge-1.jpg"
+    url: "/images/hotel/hotel-lobby.jpg",
+    fallback: "/images/hotel/hotel-bar.jpg"
   },
   {
     id: 12,
     title: "Wine Bar",
     description: "Sophisticated wine and cocktail bar",
     category: "restaurant",
-    url: "/images/gallery/bar-1.jpg"
+    url: "/images/hotel/hotel-bar.jpg",
+    fallback: "/images/hotel/hotel-restaurant.jpg"
   }
 ] 

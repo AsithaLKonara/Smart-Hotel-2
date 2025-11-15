@@ -308,14 +308,18 @@ export default function RoomsPage() {
                 })}
           </div>
 
-              {filteredRooms.length === 0 && !isLoading && (
+              {filteredRooms.length === 0 && !isLoading && !error && (
             <div className="text-center py-12">
               <div className="text-gray-400 mb-4">
                 <Search className="w-16 h-16 mx-auto" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">No rooms found</h3>
+              <h3 className="text-xl font-semibold mb-2">
+                {rooms.length === 0 ? 'No rooms available' : 'No rooms match your search'}
+              </h3>
               <p className="text-gray-600 dark:text-gray-300">
-                Try adjusting your search criteria or filters
+                {rooms.length === 0 
+                  ? 'Please check back later or contact us for availability.'
+                  : 'Try adjusting your search criteria or filters'}
               </p>
             </div>
               )}

@@ -128,7 +128,7 @@ export default async function AboutPage() {
               <div key={member.id} className="bg-white rounded-xl shadow-lg overflow-hidden">
                 <div className="relative h-64 bg-gradient-to-br from-amber-100 to-orange-100">
                   <FallbackImage
-                    src={`/images/hotel/staff-${member.department.toLowerCase() || 'team'}.jpg`}
+                    src={`/images/hotel/staff-${(member.department || 'team').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}.jpg`}
                     fallbackSrc="/images/hotel/hotel-lobby.jpg"
                     alt={member.name}
                     fill

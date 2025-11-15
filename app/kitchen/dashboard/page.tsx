@@ -96,16 +96,24 @@ function KitchenDashboardContent() {
 
   const fetchKitchenData = async () => {
     try {
+      setIsLoading(true)
       const response = await fetch('/api/kitchen/orders?today=true')
       const data = await response.json()
 
       if (response.ok) {
         setKitchenData(data)
+      } else if (response.status === 401) {
+        // Unauthorized - redirect to sign in
+        router.push('/auth/signin?callbackUrl=' + encodeURIComponent('/kitchen/dashboard'))
+        return
       } else {
         toast.error('Failed to load kitchen data')
+        setKitchenData(null)
       }
     } catch (error) {
       console.error('Failed to fetch kitchen data:', error)
+      toast.error('Failed to load kitchen data')
+      setKitchenData(null)
     } finally {
       setIsLoading(false)
     }

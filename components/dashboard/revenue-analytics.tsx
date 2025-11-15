@@ -240,6 +240,12 @@ function RevenueAnalyticsContent({ onExport }: RevenueAnalyticsProps) {
 
         const analyticsResponse = await fetch(`/api/analytics?range=${selectedRange}`)
 
+        if (analyticsResponse.status === 401) {
+          // Unauthorized - redirect to sign in
+          window.location.href = '/auth/signin?callbackUrl=' + encodeURIComponent('/dashboard/revenue')
+          return
+        }
+
         if (!analyticsResponse.ok) {
           throw new Error('Failed to load analytics data')
         }
@@ -248,6 +254,12 @@ function RevenueAnalyticsContent({ onExport }: RevenueAnalyticsProps) {
 
         const { startDate, endDate } = computeRangeBounds(selectedRange)
         const dashboardResponse = await fetch(`/api/analytics/dashboard?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`)
+        
+        if (dashboardResponse.status === 401) {
+          // Unauthorized - redirect to sign in
+          window.location.href = '/auth/signin?callbackUrl=' + encodeURIComponent('/dashboard/revenue')
+          return
+        }
         const dashboardData = dashboardResponse.ok ? await dashboardResponse.json() : null
 
         if (!isMounted) return

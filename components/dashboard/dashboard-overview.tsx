@@ -184,6 +184,12 @@ function DashboardOverviewContent({ onNavigate }: DashboardOverviewProps) {
       setIsLoading(true)
       const response = await fetch('/api/analytics/dashboard')
       
+      if (response.status === 401) {
+        // Unauthorized - redirect to sign in
+        window.location.href = '/auth/signin?callbackUrl=' + encodeURIComponent('/dashboard')
+        return
+      }
+      
       if (!response.ok) {
         throw new Error('Failed to load dashboard metrics')
       }

@@ -308,6 +308,12 @@ function BookingAnalyticsContent({ onExport, onBookingClick }: BookingAnalyticsP
           fetch(`/api/analytics/dashboard?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`)
         ])
 
+        if (bookingsResponse.status === 401 || analyticsResponse.status === 401 || (dashboardResponse.status === 401)) {
+          // Unauthorized - redirect to sign in
+          window.location.href = '/auth/signin?callbackUrl=' + encodeURIComponent('/dashboard/bookings')
+          return
+        }
+
         if (!bookingsResponse.ok) {
           throw new Error('Failed to load bookings')
         }
