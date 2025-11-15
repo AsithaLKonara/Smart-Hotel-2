@@ -116,7 +116,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;",
               "img-src 'self' data: https: images.unsplash.com res.cloudinary.com i.vimeocdn.com;",
               "font-src 'self' data: https://fonts.gstatic.com;",
-              "connect-src 'self' https://js.stripe.com https://checkout.stripe.com https://www.google-analytics.com https://www.googletagmanager.com;",
+              "connect-src 'self' https://js.stripe.com https://checkout.stripe.com https://www.google-analytics.com https://www.googletagmanager.com https://player.vimeo.com https://vimeo.com https://i.vimeocdn.com https://images.unsplash.com;",
               "frame-src https://checkout.stripe.com https://player.vimeo.com https://www.google.com;",
               "media-src 'self' https://player.vimeo.com https://vimeo.com https://i.vimeocdn.com;",
               "object-src 'none';",

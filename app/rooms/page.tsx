@@ -39,15 +39,32 @@ export default function RoomsPage() {
     async function fetchRooms() {
       try {
         setIsLoading(true)
+        setError(null)
         const response = await fetch('/api/rooms')
-        if (!response.ok) {
-          throw new Error('Failed to fetch rooms')
-        }
         const data = await response.json()
-        setRooms(data || [])
+        
+        // Handle different response formats
+        if (!response.ok) {
+          // API returned an error response
+          const errorMessage = data?.message || data?.error || 'Failed to fetch rooms'
+          throw new Error(errorMessage)
+        }
+        
+        // Handle both array and object with rooms property
+        if (Array.isArray(data)) {
+          setRooms(data)
+        } else if (data && Array.isArray(data.rooms)) {
+          setRooms(data.rooms)
+        } else if (data && data.error) {
+          throw new Error(data.message || data.error)
+        } else {
+          // Empty response or unexpected format
+          setRooms([])
+        }
       } catch (err) {
         console.error('Error fetching rooms:', err)
-        setError('Failed to load rooms. Please try again later.')
+        const errorMessage = err instanceof Error ? err.message : 'Failed to load rooms. Please try again later.'
+        setError(errorMessage)
         // Fallback to empty array
         setRooms([])
       } finally {
