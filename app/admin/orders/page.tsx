@@ -58,10 +58,12 @@ export default function AdminOrdersPage() {
       const response = await fetch('/api/restaurant/orders')
       if (!response.ok) throw new Error('Failed to fetch orders')
       const data = await response.json()
-      setOrders(data)
+      // Ensure data is always an array
+      setOrders(Array.isArray(data) ? data : (data.orders || []))
     } catch (error) {
       console.error('Error fetching orders:', error)
       toast.error('Failed to load orders')
+      setOrders([]) // Set empty array on error
     } finally {
       setLoading(false)
     }
@@ -85,9 +87,9 @@ export default function AdminOrdersPage() {
     }
   }
 
-  const filteredOrders = orders.filter(order => {
-    const matchesSearch = order.roomNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         order.id.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredOrders = (Array.isArray(orders) ? orders : []).filter(order => {
+    const matchesSearch = order.roomNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         order.id?.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = filterStatus === 'all' || order.status === filterStatus
     return matchesSearch && matchesStatus
   })
@@ -124,15 +126,16 @@ export default function AdminOrdersPage() {
     }
   }
 
+  const ordersArray = Array.isArray(orders) ? orders : []
   const statsData = {
-    total: orders.length,
-    pending: orders.filter(o => o.status === 'PENDING').length,
-    preparing: orders.filter(o => o.status === 'PREPARING').length,
-    ready: orders.filter(o => o.status === 'READY').length,
-    delivered: orders.filter(o => o.status === 'DELIVERED').length,
-    totalRevenue: orders
+    total: ordersArray.length,
+    pending: ordersArray.filter(o => o.status === 'PENDING').length,
+    preparing: ordersArray.filter(o => o.status === 'PREPARING').length,
+    ready: ordersArray.filter(o => o.status === 'READY').length,
+    delivered: ordersArray.filter(o => o.status === 'DELIVERED').length,
+    totalRevenue: ordersArray
       .filter(o => o.status === 'DELIVERED')
-      .reduce((sum, o) => sum + o.totalAmount, 0)
+      .reduce((sum, o) => sum + (o.totalAmount || 0), 0)
   }
 
   if (status === 'loading' || loading) {

@@ -204,27 +204,27 @@ async function staleWhileRevalidate(request, cacheName) {
   const cachedResponse = await caches.match(request)
   
   const fetchPromise = fetch(request)
-    .then((networkResponse) => {
-    if (networkResponse.ok) {
-      const cache = caches.open(cacheName)
-        cache.then((cache) => {
-          cache.put(request, networkResponse.clone()).catch(err => {
-            console.warn('Failed to cache response:', err)
-          })
-        }).catch(err => {
-          console.warn('Failed to open cache:', err)
-        })
-    }
-    return networkResponse
+    .then(async (networkResponse) => {
+      if (networkResponse.ok) {
+        // Clone the response BEFORE caching to avoid "body already used" error
+        const clonedResponse = networkResponse.clone()
+        try {
+          const cache = await caches.open(cacheName)
+          await cache.put(request, clonedResponse)
+        } catch (err) {
+          console.warn('Failed to cache response:', err)
+        }
+      }
+      return networkResponse
     })
     .catch(() => {
-    // Return cached response if network fails
+      // Return cached response if network fails
       return cachedResponse || new Response('Offline', {
         status: 503,
         statusText: 'Service Unavailable',
         headers: { 'Content-Type': 'text/plain' }
       })
-  })
+    })
   
   return cachedResponse || fetchPromise
 }

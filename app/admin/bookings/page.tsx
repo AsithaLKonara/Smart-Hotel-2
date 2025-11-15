@@ -59,10 +59,12 @@ export default function AdminBookingsPage() {
       const response = await fetch('/api/bookings')
       if (!response.ok) throw new Error('Failed to fetch bookings')
       const data = await response.json()
-      setBookings(data)
+      // Ensure data is always an array
+      setBookings(Array.isArray(data) ? data : (data.bookings || []))
     } catch (error) {
       console.error('Error fetching bookings:', error)
       toast.error('Failed to load bookings')
+      setBookings([]) // Set empty array on error
     } finally {
       setLoading(false)
     }
@@ -86,11 +88,11 @@ export default function AdminBookingsPage() {
     }
   }
 
-  const filteredBookings = bookings.filter(booking => {
+  const filteredBookings = (Array.isArray(bookings) ? bookings : []).filter(booking => {
     const matchesSearch = booking.confirmationCode?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         booking.room.number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         booking.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         booking.user.email.toLowerCase().includes(searchTerm.toLowerCase())
+                         booking.room?.number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         booking.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         booking.user?.email?.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = filterStatus === 'all' || booking.status === filterStatus
     const matchesPayment = filterPayment === 'all' || booking.paymentStatus === filterPayment
     return matchesSearch && matchesStatus && matchesPayment
@@ -124,15 +126,16 @@ export default function AdminBookingsPage() {
     }
   }
 
+  const bookingsArray = Array.isArray(bookings) ? bookings : []
   const statsData = {
-    total: bookings.length,
-    confirmed: bookings.filter(b => b.status === 'CONFIRMED').length,
-    checkedIn: bookings.filter(b => b.status === 'CHECKED_IN').length,
-    checkedOut: bookings.filter(b => b.status === 'CHECKED_OUT').length,
-    pending: bookings.filter(b => b.status === 'PENDING').length,
-    totalRevenue: bookings
+    total: bookingsArray.length,
+    confirmed: bookingsArray.filter(b => b.status === 'CONFIRMED').length,
+    checkedIn: bookingsArray.filter(b => b.status === 'CHECKED_IN').length,
+    checkedOut: bookingsArray.filter(b => b.status === 'CHECKED_OUT').length,
+    pending: bookingsArray.filter(b => b.status === 'PENDING').length,
+    totalRevenue: bookingsArray
       .filter(b => b.paymentStatus === 'PAID')
-      .reduce((sum, b) => sum + b.totalAmount, 0)
+      .reduce((sum, b) => sum + (b.totalAmount || 0), 0)
   }
 
   if (status === 'loading' || loading) {

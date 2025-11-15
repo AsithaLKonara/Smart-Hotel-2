@@ -55,10 +55,12 @@ export default function CheckInCheckOutPage() {
       const response = await fetch('/api/bookings')
       if (!response.ok) throw new Error('Failed to fetch bookings')
       const data = await response.json()
-      setBookings(data)
+      // Ensure data is always an array
+      setBookings(Array.isArray(data) ? data : (data.bookings || []))
     } catch (error) {
       console.error('Error fetching bookings:', error)
       toast.error('Failed to load bookings')
+      setBookings([]) // Set empty array on error
     } finally {
       setLoading(false)
     }
@@ -109,13 +111,16 @@ export default function CheckInCheckOutPage() {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
-  const checkInBookings = bookings.filter(booking => {
+  const bookingsArray = Array.isArray(bookings) ? bookings : []
+  const checkInBookings = bookingsArray.filter(booking => {
+    if (!booking.checkIn) return false
     const checkInDate = new Date(booking.checkIn)
     checkInDate.setHours(0, 0, 0, 0)
     return booking.status === 'CONFIRMED' && checkInDate.getTime() === today.getTime()
   })
 
-  const checkOutBookings = bookings.filter(booking => {
+  const checkOutBookings = bookingsArray.filter(booking => {
+    if (!booking.checkOut) return false
     const checkOutDate = new Date(booking.checkOut)
     checkOutDate.setHours(0, 0, 0, 0)
     return booking.status === 'CHECKED_IN' && checkOutDate.getTime() === today.getTime()
@@ -124,9 +129,9 @@ export default function CheckInCheckOutPage() {
   const filteredBookings = (activeTab === 'checkin' ? checkInBookings : checkOutBookings).filter(booking => {
     const searchLower = searchTerm.toLowerCase()
     return (
-      booking.user.name.toLowerCase().includes(searchLower) ||
-      booking.user.email.toLowerCase().includes(searchLower) ||
-      booking.room.number.toLowerCase().includes(searchLower)
+      booking.user?.name?.toLowerCase().includes(searchLower) ||
+      booking.user?.email?.toLowerCase().includes(searchLower) ||
+      booking.room?.number?.toLowerCase().includes(searchLower)
     )
   })
 
