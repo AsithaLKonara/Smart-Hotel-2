@@ -4,12 +4,12 @@
 export const dynamic = 'force-dynamic'
 
 import { useState, useEffect } from 'react'
-import Image from 'next/image'
 import Link from 'next/link'
 import { Search, Filter, Users, Star, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { FallbackImage } from '@/components/ui/fallback-image'
 // Navigation is handled by layout.tsx
 
 interface Room {
@@ -56,7 +56,12 @@ export default function RoomsPage() {
         } else if (data && Array.isArray(data.rooms)) {
           setRooms(data.rooms)
         } else if (data && data.error) {
-          throw new Error(data.message || data.error)
+          // API returned an error but still might have rooms array
+          if (Array.isArray(data.rooms)) {
+            setRooms(data.rooms)
+          } else {
+            throw new Error(data.message || data.error)
+          }
         } else {
           // Empty response or unexpected format
           setRooms([])
@@ -232,17 +237,13 @@ export default function RoomsPage() {
                   return (
               <Card key={room.id} data-testid="room-card" className="overflow-hidden hover:shadow-xl transition-shadow group">
                 <div className="relative h-64">
-                  <Image
-                          src={roomImage}
-                          alt={roomName}
+                  <FallbackImage
+                    src={roomImage}
+                    alt={roomName}
+                    fallbackSrc="/images/room-placeholder.jpg"
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
                     unoptimized={roomImage.startsWith('https://images.unsplash.com')}
-                    onError={(e) => {
-                      // Fallback to placeholder if image fails to load
-                      const target = e.target as HTMLImageElement
-                      target.src = '/images/room-placeholder.jpg'
-                    }}
                   />
                   <Badge className="absolute top-4 left-4 bg-luxury-600">
                     {room.type}

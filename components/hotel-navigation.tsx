@@ -119,6 +119,7 @@ export default function HotelNavigation() {
                   <Link
                     key={item.name}
                     href={item.href}
+                    prefetch={item.href === '/order' ? false : undefined}
                     className="text-gray-700 hover:text-amber-600 font-medium transition-colors whitespace-nowrap"
                   >
                     {item.name}
@@ -189,6 +190,7 @@ export default function HotelNavigation() {
                   <Link
                     key={item.name}
                     href={item.href}
+                    prefetch={item.href === '/order' ? false : undefined}
                     className="text-gray-700 hover:text-amber-600 font-medium transition-colors"
                     onClick={() => setIsMenuOpen(false)}
                   >
