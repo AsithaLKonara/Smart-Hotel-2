@@ -36,15 +36,15 @@ export const authOptions: NextAuthOptions = {
           console.info('Credentials authorize: user found', !!user)
 
           if (!user) {
-            // Log failed login attempt
-            await logAction(
+            // Log failed login attempt (non-blocking)
+            logAction(
               req as any,
               undefined,
               AUDIT_ACTIONS.USER_LOGIN,
               'User',
               undefined,
               { email: credentials.email, reason: 'User not found' }
-            )
+            ).catch(err => console.error('Failed to log action:', err))
             return null
           }
 
@@ -52,15 +52,15 @@ export const authOptions: NextAuthOptions = {
           console.info('Credentials authorize: password valid', isPasswordValid)
 
           if (!isPasswordValid) {
-            // Log failed login attempt
-            await logAction(
+            // Log failed login attempt (non-blocking)
+            logAction(
               req as any,
               user.id,
               AUDIT_ACTIONS.USER_LOGIN,
               'User',
               user.id,
               { email: credentials.email, reason: 'Invalid password' }
-            )
+            ).catch(err => console.error('Failed to log action:', err))
             return null
           }
 
@@ -69,15 +69,15 @@ export const authOptions: NextAuthOptions = {
             // Additional checks for guest accounts if needed
           }
 
-          // Log successful login
-          await logAction(
+          // Log successful login (non-blocking)
+          logAction(
             req as any,
             user.id,
             AUDIT_ACTIONS.USER_LOGIN,
             'User',
             user.id,
             { email: credentials.email, role: user.role }
-          )
+          ).catch(err => console.error('Failed to log action:', err))
 
           return {
             id: user.id,
