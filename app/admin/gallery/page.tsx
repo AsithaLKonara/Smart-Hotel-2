@@ -318,7 +318,7 @@ export default function AdminGalleryPage() {
                   <label className="block text-sm font-medium mb-2">Category *</label>
                   <select
                     value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value as GalleryItem['category'] })}
                     className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
                     required
                   >
