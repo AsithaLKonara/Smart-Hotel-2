@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from 'react'
-import { MessageCircle, X, Send, Bot } from 'lucide-react'
+import { MessageCircle, X, Send, Bot, MessageSquare } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { useSession } from 'next-auth/react'
@@ -85,27 +85,39 @@ export function ChatWidget() {
       {!isOpen && (
         <Button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg z-50"
+          className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg z-50 bg-primary-600 hover:bg-primary-700 transition-all duration-300 animate-pulse hover:animate-none"
           size="lg"
           type="button"
           aria-label="Open live chat"
         >
-          <MessageCircle className="h-6 w-6" />
+          <MessageSquare className="h-6 w-6 text-white" />
         </Button>
       )}
 
       {/* Blur Background Overlay */}
       {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 transition-opacity duration-300"
-          onClick={() => setIsOpen(false)}
-          aria-hidden="true"
-        />
+        <>
+          <div
+            className="fixed inset-0 bg-black/40 z-[45] transition-opacity duration-300"
+            onClick={() => setIsOpen(false)}
+            aria-hidden="true"
+            style={{
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+            }}
+          />
+        </>
       )}
 
       {/* Chat Window */}
       {isOpen && (
-        <Card className="fixed bottom-6 right-6 w-96 h-[600px] flex flex-col shadow-2xl z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border border-gray-200/50 dark:border-gray-700/50">
+        <Card 
+          className="fixed bottom-6 right-6 w-96 h-[600px] flex flex-col shadow-2xl z-50 border border-gray-200/50 dark:border-gray-700/50 bg-white/95 dark:bg-gray-900/95"
+          style={{
+            backdropFilter: 'blur(20px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+          }}
+        >
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b bg-primary-50 dark:bg-primary-900">
             <div className="flex items-center gap-2">
