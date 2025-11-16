@@ -5,7 +5,7 @@ import { z } from 'zod'
 
 const roomImageSchema = z.object({
   roomId: z.string().min(1),
-  imageUrl: z.string().url().optional(),
+  imageUrl: z.string().url().min(1),
   cloudinaryId: z.string().optional(),
   isMain: z.boolean().default(false),
   caption: z.string().optional(),

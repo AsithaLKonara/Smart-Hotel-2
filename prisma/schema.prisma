@@ -282,7 +282,7 @@ model RoomReview {
 model RoomImage {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
   roomId       String   @db.ObjectId
-  imageUrl     String
+  imageUrl     String?
   cloudinaryId String?
   isMain       Boolean  @default(false)
   caption      String?
