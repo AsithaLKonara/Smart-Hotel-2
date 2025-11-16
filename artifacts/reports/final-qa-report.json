@@ -1,13 +1,13 @@
 {
-  "timestamp": "2025-11-16T19:48:39.837Z",
+  "timestamp": "2025-11-16T19:55:10.089Z",
   "baseUrl": "https://smarthotel-demo.vercel.app",
   "summary": {
     "productionVerification": {
       "total": 25,
-      "passed": 24,
-      "failed": 1,
-      "warnings": 2,
-      "successRate": "96.0%"
+      "passed": 25,
+      "failed": 0,
+      "warnings": 0,
+      "successRate": "100.0%"
     },
     "crudVerification": {
       "status": "pending"
@@ -19,85 +19,85 @@
   "pages": {
     "/": {
       "status": 200,
-      "responseTime": 1150,
-      "contentLength": 77226,
+      "responseTime": 2526,
+      "contentLength": 75897,
       "passed": true
     },
     "/rooms": {
       "status": 200,
-      "responseTime": 877,
+      "responseTime": 1738,
       "contentLength": 27410,
       "passed": true
     },
     "/contact": {
       "status": 200,
-      "responseTime": 677,
+      "responseTime": 1105,
       "contentLength": 30409,
       "passed": true
     },
     "/order": {
       "status": 200,
-      "responseTime": 686,
+      "responseTime": 1015,
       "contentLength": 25729,
       "passed": true
     },
     "/gallery": {
       "status": 200,
-      "responseTime": 1067,
+      "responseTime": 1077,
       "contentLength": 41473,
       "passed": true
     },
     "/booking": {
       "status": 200,
-      "responseTime": 640,
+      "responseTime": 687,
       "contentLength": 24327,
       "passed": true
     },
     "/auth/signin": {
       "status": 200,
-      "responseTime": 664,
+      "responseTime": 831,
       "contentLength": 29569,
       "passed": true
     },
     "/admin": {
       "status": 307,
-      "responseTime": 808,
+      "responseTime": 925,
       "contentLength": 18203,
       "passed": true
     },
     "/admin/dashboard": {
       "status": 200,
-      "responseTime": 735,
+      "responseTime": 708,
       "contentLength": 38541,
       "passed": true
     },
     "/admin/bookings": {
       "status": 200,
-      "responseTime": 949,
+      "responseTime": 839,
       "contentLength": 38611,
       "passed": true
     },
     "/admin/rooms": {
       "status": 200,
-      "responseTime": 796,
+      "responseTime": 1001,
       "contentLength": 38596,
       "passed": true
     },
     "/admin/staff": {
       "status": 200,
-      "responseTime": 1152,
+      "responseTime": 701,
       "contentLength": 38596,
       "passed": true
     },
     "/admin/menu": {
       "status": 200,
-      "responseTime": 794,
+      "responseTime": 692,
       "contentLength": 38591,
       "passed": true
     },
     "/admin/inventory": {
       "status": 200,
-      "responseTime": 1380,
+      "responseTime": 1236,
       "contentLength": 38614,
       "passed": true
     }
@@ -105,88 +105,67 @@
   "apis": {
     "/api/rooms": {
       "status": 200,
-      "responseTime": 4803,
+      "responseTime": 5593,
       "method": "GET",
       "passed": true
     },
     "/api/bookings": {
       "status": 401,
-      "responseTime": 784,
+      "responseTime": 669,
       "method": "GET",
       "passed": true
     },
-    "/api/menu": {
-      "status": 404,
-      "responseTime": 486,
+    "/api/restaurant/menu": {
+      "status": 200,
+      "responseTime": 1516,
       "method": "GET",
-      "passed": false
+      "passed": true
     },
     "/api/gallery": {
       "status": 401,
-      "responseTime": 767,
+      "responseTime": 599,
       "method": "GET",
       "passed": true
     },
     "/api/staff": {
       "status": 401,
-      "responseTime": 746,
+      "responseTime": 707,
       "method": "GET",
       "passed": true
     },
     "/api/inventory": {
       "status": 401,
-      "responseTime": 829,
+      "responseTime": 1350,
       "method": "GET",
       "passed": true
     },
     "/api/faq": {
       "status": 200,
-      "responseTime": 642,
+      "responseTime": 844,
       "method": "GET",
       "passed": true
     },
     "/api/settings/contact": {
       "status": 200,
-      "responseTime": 701,
+      "responseTime": 845,
       "method": "GET",
       "passed": true
     },
     "/api/hero-slides": {
       "status": 200,
-      "responseTime": 824,
+      "responseTime": 949,
       "method": "GET",
       "passed": true
     },
     "/api/auth/session": {
       "status": 200,
-      "responseTime": 414,
+      "responseTime": 614,
       "method": "GET",
       "passed": true
     }
   },
   "crud": {},
   "dbChecks": {},
-  "errors": [
-    {
-      "type": "api",
-      "endpoint": "/api/menu",
-      "method": "GET",
-      "status": 404,
-      "expected": 200
-    }
-  ],
-  "warnings": [
-    {
-      "type": "external_resource",
-      "path": "/",
-      "resource": "player.vimeo.com",
-      "message": "Page still references Vimeo video"
-    },
-    {
-      "type": "external_resource",
-      "path": "/",
-      "resource": "player.vimeo.com",
-      "message": "Page still references Vimeo video"
-    }
-  ]
+  "errors": [],
+  "warnings": []
 }
