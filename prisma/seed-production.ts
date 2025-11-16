@@ -166,15 +166,37 @@ function generatePhoneNumber(countryCode = '+1') {
 }
 
 function generateImageUrl(collection: 'rooms' | 'gallery' | 'menu', seed: string, width = 1200, height = 800) {
-  const base = 'https://images.unsplash.com'
-  const hashedSeed = faker.string.alphanumeric(12)
-  const pathMap: Record<typeof collection, string> = {
-    rooms: 'photo-1600585154340-0ef3c08ef21a',
-    gallery: 'photo-1566073771259-6a8506099945',
-    menu: 'photo-1504674900247-0877df9cc836',
+  // Use local images instead of Unsplash URLs
+  const localImageMap: Record<typeof collection, string[]> = {
+    rooms: [
+      '/images/hotel/room-standard.jpg',
+      '/images/hotel/room-deluxe.jpg',
+      '/images/hotel/room-suite.jpg',
+      '/images/hotel/room-luxury.jpg',
+    ],
+    gallery: [
+      '/images/hotel/hotel-hero-1.jpg',
+      '/images/hotel/hotel-hero-2.jpg',
+      '/images/hotel/hotel-hero-3.jpg',
+      '/images/hotel/hotel-lobby.jpg',
+      '/images/hotel/hotel-pool.jpg',
+      '/images/hotel/hotel-restaurant.jpg',
+      '/images/hotel/hotel-spa.jpg',
+      '/images/hotel/hotel-gym.jpg',
+    ],
+    menu: [
+      '/images/hotel/food-breakfast.jpg',
+      '/images/hotel/food-lunch.jpg',
+      '/images/hotel/food-dinner.jpg',
+      '/images/hotel/food-dessert.jpg',
+      '/images/menu-placeholder.jpg',
+    ],
   }
-
-  return `${base}/${pathMap[collection]}?auto=format&fit=crop&w=${width}&h=${height}&q=80&sat=20&sig=${seed}-${hashedSeed}`
+  
+  // Use seed to deterministically pick an image
+  const images = localImageMap[collection]
+  const index = parseInt(seed.replace(/\D/g, '')) % images.length
+  return images[index] || images[0]
 }
 
 function generateRoomNumber(index: number) {

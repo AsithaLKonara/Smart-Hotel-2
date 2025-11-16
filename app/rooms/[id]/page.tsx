@@ -266,8 +266,8 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
                     alt={serializedRoom.type}
                     fill
                     className="object-cover"
-                    priority={!images[0]?.startsWith('https://images.unsplash.com')}
-                    unoptimized={images[0]?.startsWith('https://images.unsplash.com')}
+                    priority={true}
+                    unoptimized={false}
                   />
                 </div>
                 {images.length > 1 && (
@@ -280,7 +280,7 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
                           alt={`${serializedRoom.type} ${idx + 2}`}
                           fill
                           className="object-cover"
-                          unoptimized={img?.startsWith('https://images.unsplash.com')}
+                          unoptimized={false}
                         />
                       </div>
                     ))}

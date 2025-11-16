@@ -257,7 +257,7 @@ export default function RoomsPage() {
                     fallbackSrc="/images/room-placeholder.jpg"
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
-                    unoptimized={roomImage.startsWith('https://images.unsplash.com')}
+                    unoptimized={false}
                   />
                   <Badge className="absolute top-4 left-4 bg-luxury-600">
                     {room.type}

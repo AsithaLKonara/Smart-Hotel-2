@@ -1,0 +1,18 @@
+Full Production Verification Console Log
+============================================================
+Timestamp: 2025-11-16T19:11:15.939Z
+Base URL: https://smarthotel-demo.vercel.app
+
+Summary:
+  Total Tests: 25
+  Passed: 24
+  Failed: 1
+  Warnings: 2
+  Success Rate: 96.0%
+
+Errors:
+  [api] /api/menu: Status 404 (expected 200)
+
+Warnings:
+  [external_resource] /: Page still references Vimeo video
+  [external_resource] /: Page still references Vimeo video
