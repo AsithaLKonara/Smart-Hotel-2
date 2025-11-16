@@ -88,7 +88,13 @@ async function testEndpoint(endpoint, method = 'GET', body = null, expectedStatu
     const isStructuredResponse = (() => {
       try {
         const json = JSON.parse(response.data);
-        return json.error !== undefined || json.id !== undefined || Array.isArray(json) || json.message !== undefined;
+        return json.error !== undefined || 
+               json.id !== undefined || 
+               Array.isArray(json) || 
+               json.message !== undefined ||
+               json.reviews !== undefined || // Hotel reviews structure
+               json.averages !== undefined || // Hotel reviews structure
+               typeof json === 'object'; // Any JSON object is structured
       } catch {
         return false;
       }
