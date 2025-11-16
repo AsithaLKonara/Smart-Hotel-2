@@ -62,10 +62,22 @@ export default function AdminRoomsPage() {
       const response = await fetch('/api/rooms')
       if (!response.ok) throw new Error('Failed to fetch rooms')
       const data = await response.json()
-      setRooms(data)
+
+      // Normalise API response shape:
+      // - API currently returns { rooms: [...], count }
+      // - In case of legacy behaviour or unexpected shape, fall back safely to an array
+      const roomsArray: Room[] = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.rooms)
+        ? data.rooms
+        : []
+
+      setRooms(roomsArray)
     } catch (error) {
       console.error('Error fetching rooms:', error)
       toast.error('Failed to load rooms')
+      // Ensure we always reset rooms to a safe default array on error
+      setRooms([])
     } finally {
       setLoading(false)
     }
@@ -160,7 +172,10 @@ export default function AdminRoomsPage() {
     })
   }
 
-  const filteredRooms = rooms.filter(room => {
+  // Guard against any unexpected non-array state at runtime
+  const safeRoomsArray = Array.isArray(rooms) ? rooms : []
+
+  const filteredRooms = safeRoomsArray.filter(room => {
     const matchesSearch = room.number.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          room.type.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = filterStatus === 'all' || room.status === filterStatus

@@ -73,17 +73,25 @@ const defaultFormState = {
 function FAQSection() {
   const [faqs, setFaqs] = useState<Array<{ question: string; answer: string }>>([])
   const [loading, setLoading] = useState(true)
+  const [hasError, setHasError] = useState(false)
 
   useEffect(() => {
     async function loadFAQs() {
       try {
         const response = await fetch('/api/faq')
-        if (!response.ok) return
+        if (!response.ok) {
+          console.error('Failed to load FAQs. Status:', response.status)
+          setHasError(true)
+          setFaqs([])
+          return
+        }
         const data = await response.json()
         const items = Array.isArray(data) ? data : (data.items || [])
         setFaqs(items.map((item: any) => ({ question: item.question, answer: item.answer })))
       } catch (error) {
         console.error('Failed to load FAQs:', error)
+        setHasError(true)
+        setFaqs([])
       } finally {
         setLoading(false)
       }
@@ -103,7 +111,18 @@ function FAQSection() {
   }
 
   if (faqs.length === 0) {
-    return null
+    return (
+      <section className="mt-16">
+        <Card className="p-8">
+          <h2 className="text-2xl font-bold mb-8 text-center">Frequently Asked Questions</h2>
+          <p className="text-center text-gray-600">
+            {hasError
+              ? 'We were unable to load FAQs at this time. Please try again later.'
+              : 'No FAQs are available yet.'}
+          </p>
+        </Card>
+      </section>
+    )
   }
 
   return (

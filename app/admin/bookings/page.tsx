@@ -56,11 +56,27 @@ export default function AdminBookingsPage() {
 
   const fetchBookings = async () => {
     try {
-      const response = await fetch('/api/bookings')
-      if (!response.ok) throw new Error('Failed to fetch bookings')
+      const response = await fetch('/api/bookings', {
+        // Be explicit to avoid any caching / SW interference
+        method: 'GET',
+        cache: 'no-store',
+        credentials: 'include',
+      })
+
+      if (!response.ok) {
+        console.error('Failed to fetch bookings. Status:', response.status)
+        throw new Error('Failed to fetch bookings')
+      }
+
       const data = await response.json()
-      // Ensure data is always an array
-      setBookings(Array.isArray(data) ? data : (data.bookings || []))
+      // Ensure data is always an array even if the API returns { bookings: [...] }
+      const bookingsArray: Booking[] = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.bookings)
+        ? data.bookings
+        : []
+
+      setBookings(bookingsArray)
     } catch (error) {
       console.error('Error fetching bookings:', error)
       toast.error('Failed to load bookings')
