@@ -63,6 +63,12 @@ export default function AdminBookingsPage() {
         credentials: 'include',
       })
 
+      // Redirect unauthenticated users cleanly
+      if (response.status === 401) {
+        router.push('/auth/signin?callbackUrl=/admin/bookings')
+        return
+      }
+
       if (!response.ok) {
         console.error('Failed to fetch bookings. Status:', response.status)
         throw new Error('Failed to fetch bookings')

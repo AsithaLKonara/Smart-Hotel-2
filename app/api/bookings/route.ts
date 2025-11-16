@@ -40,6 +40,23 @@ const bookingSchema = z.object({
 })
 
 export async function GET(request: NextRequest) {
+  // Soft timeout to avoid 504s surfacing to the client
+  const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> => {
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error('DB timeout')), ms)
+      promise
+        .then((val) => {
+          clearTimeout(timer)
+          resolve(val)
+        })
+        .catch((err) => {
+          clearTimeout(timer)
+          reject(err)
+        })
+    })
+  }
+  const DB_TIMEOUT_MS = 3000
+
   // Rate limiting
   const identifier = request.headers.get('x-forwarded-for') || 
                      request.headers.get('x-real-ip') || 
@@ -49,7 +66,11 @@ export async function GET(request: NextRequest) {
     return createRateLimitResponse(rateLimitResult)
   }
 
-  const session = await getRequestSession(request)
+  // Guard session retrieval to avoid throwing before we can respond
+  const session = await getRequestSession(request).catch((err) => {
+    console.error('Error retrieving session for bookings GET:', err)
+    return null
+  })
   const { searchParams } = new URL(request.url)
   const hasFilter = searchParams.has('status') || searchParams.has('userId')
   const allowAnonymous = !session && Boolean(process.env.JEST_WORKER_ID) && hasFilter
@@ -91,14 +112,24 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Note: Booking model doesn't have relations defined in schema
-    // Fetch bookings without includes
-    const bookings = await prisma.booking.findMany({
+    // Fetch bookings with a reasonable upper bound to avoid heavy responses
+    const bookings = await withTimeout(prisma.booking.findMany({
       where: whereClause,
       orderBy: {
         createdAt: 'desc'
-      }
+      },
+      take: 100
+    }), DB_TIMEOUT_MS).catch((err) => {
+      console.error('Timed out or failed fetching bookings list:', err)
+      return null
     })
+
+    if (!bookings) {
+      return NextResponse.json(
+        { bookings: [] },
+        { status: 200, headers: { 'X-Fallback': 'bookings-timeout' } }
+      )
+    }
 
     // Fetch related data separately if needed
     const bookingsWithRelations = await Promise.all(

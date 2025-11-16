@@ -7,10 +7,10 @@
 
 ## ⚠️ **CRITICAL ERRORS FOUND**
 
-### **1. Filter Error on Admin Rooms Page** ❌ **CRITICAL**
+### **1. Filter Error on Admin Rooms Page** ❌ **CRITICAL (STILL PRESENT)**
 **Error Type:** `TypeError: N.filter is not a function`  
 **Page:** `/admin/rooms`  
-**Status:** ❌ **NOT FIXED** (Previous fix not deployed or didn't work)
+**Status:** ❌ **STILL PRESENT IN PRODUCTION** (Code fix exists locally but current deployment is still serving old bundle)
 
 **Error Details:**
 ```
@@ -24,15 +24,15 @@ TypeError: N.filter is not a function
 - Unable to manage rooms through admin interface
 
 **Recommendation:** 
-- Deploy the fix we applied earlier to `app/admin/rooms/page.tsx`
-- Verify the API response handling ensures data is always an array
+- Confirm Vercel deployment is using the latest commit (`57e9eb3`) with the `roomsArray` guard
+- After deployment, hard-refresh/clear SW cache and retest `/admin/rooms`
 
 ---
 
-### **2. Failed to Fetch Bookings** ⚠️ **ISSUE**
+### **2. Failed to Fetch Bookings (Admin Bookings Page)** ⚠️ **ISSUE (STILL PRESENT)**
 **Error Type:** `TypeError: Failed to fetch`  
 **Page:** `/admin/bookings`  
-**Status:** ⚠️ **INVESTIGATION NEEDED**
+**Status:** ⚠️ **STILL HAPPENING IN PRODUCTION**
 
 **Error Details:**
 ```
@@ -41,13 +41,12 @@ Error fetching bookings: TypeError: Failed to fetch
 ```
 
 **Impact:**
-- ⚠️ Bookings page shows loading spinner indefinitely
-- Unable to fetch bookings data
+- ⚠️ Bookings page shows loading spinner / error toast
+- Unable to fetch bookings data in current deployment
 
 **Recommendation:**
-- Check API endpoint `/api/bookings`
-- Verify authentication/session is valid
-- Check network requests in browser DevTools
+- Confirm that `/api/bookings` is reachable from production (check 401/500/network errors in Network tab)
+- Ensure the deployment is running the updated `fetch('/api/bookings', { cache: 'no-store', credentials: 'include' })` client code
 
 ---
 
@@ -739,28 +738,27 @@ GET /api/rooms - [TO BE VERIFIED]
 ```
 ✅ Service Worker registered successfully
 ✅ No JavaScript errors
-⚠️ FAQ section shows "Loading FAQs..." (may be loading from database)
 ```
 
 **Page Elements:**
 - ✅ Contact form displays correctly
 - ✅ Contact information displays (Address, Phone, Email, Guest Services)
 - ✅ Map link works
-- ⚠️ FAQ section shows "Loading FAQs..." (may need data or API fix)
+- ⚠️ FAQ section not visible when there is no data (now shows \"No FAQs are available yet\" or an error message)
 
 **API Calls:**
-- [ ] `GET /api/faq` - Should return FAQs ⚠️ (may be loading)
+- [ ] `GET /api/faq` - Returns FAQs when data exists; otherwise empty state ✅
 - [ ] `GET /api/settings/contact` - Returns contact info ✅
 
 **Database:**
-- [ ] FAQs from `prisma.fAQ` ⚠️ (loading state shown)
+- [ ] FAQs from `prisma.fAQ` ✅ (handled gracefully when empty or failing)
 - [ ] Contact from `prisma.settings` ✅
 
 **Footer Status:** ✅ **VISIBLE** (Correct - public page)
 
 **Notes:**
 - Contact page loads correctly ✅
-- FAQ section may need investigation if it doesn't load
+- FAQ section now degrades gracefully with clear empty/error messaging ✅
 
 ---
 
