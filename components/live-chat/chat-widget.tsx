@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { MessageCircle, X, Send, Bot, MessageSquare } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
 import { useSession } from 'next-auth/react'
 
 interface Message {
@@ -90,9 +89,23 @@ export function ChatWidget() {
           aria-label="Open live chat"
           style={{
             boxShadow: '0 10px 25px rgba(2, 132, 199, 0.4)',
+            color: '#ffffff',
           }}
         >
-          <MessageSquare className="h-6 w-6 text-white" strokeWidth={2} />
+          <svg 
+            xmlns="http://www.w3.org/2000/svg" 
+            width="24" 
+            height="24" 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            stroke="currentColor" 
+            strokeWidth="2.5" 
+            strokeLinecap="round" 
+            strokeLinejoin="round"
+            className="text-white"
+          >
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
         </button>
       )}
 
@@ -112,17 +125,26 @@ export function ChatWidget() {
         />
       )}
 
-      {/* Chat Window */}
+      {/* Chat Window - Glass Morphism Style */}
       {isOpen && (
-        <Card 
-          className="fixed bottom-6 right-6 w-96 h-[600px] flex flex-col shadow-2xl z-50 border border-gray-200/50 dark:border-gray-700/50 bg-white/95 dark:bg-gray-900/95"
+        <div 
+          className="fixed bottom-6 right-6 w-96 h-[600px] flex flex-col z-50 rounded-lg overflow-hidden"
           style={{
-            backdropFilter: 'blur(20px) saturate(180%)',
-            WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-          }}
+            backgroundColor: 'rgba(255, 255, 255, 0.8)',
+            backdropFilter: 'blur(30px) saturate(180%) brightness(1.1)',
+            WebkitBackdropFilter: 'blur(30px) saturate(180%) brightness(1.1)',
+            border: '1px solid rgba(255, 255, 255, 0.4)',
+            boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37), inset 0 1px 0 rgba(255, 255, 255, 0.5)',
+          } as React.CSSProperties}
+          onMouseDown={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b bg-primary-50 dark:bg-primary-900">
+          <div className="flex items-center justify-between p-4 border-b" style={{
+            backgroundColor: 'rgba(240, 249, 255, 0.6)',
+            backdropFilter: 'blur(10px)',
+            WebkitBackdropFilter: 'blur(10px)',
+            borderColor: 'rgba(255, 255, 255, 0.2)',
+          } as React.CSSProperties}>
             <div className="flex items-center gap-2">
               <Bot className="h-5 w-5 text-primary-600" />
               <div>
@@ -199,7 +221,7 @@ export function ChatWidget() {
               {session?.user?.name ? `Chatting as ${session.user.name}` : 'Chatting as guest'}
             </p>
           </div>
-        </Card>
+        </div>
       )}
     </>
   )
