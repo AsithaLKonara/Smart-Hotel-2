@@ -89,23 +89,18 @@ export function ChatWidget() {
           aria-label="Open live chat"
           style={{
             boxShadow: '0 10px 25px rgba(2, 132, 199, 0.4)',
-            color: '#ffffff',
           }}
         >
-          <svg 
-            xmlns="http://www.w3.org/2000/svg" 
-            width="24" 
-            height="24" 
-            viewBox="0 0 24 24" 
-            fill="none" 
-            stroke="currentColor" 
-            strokeWidth="2.5" 
-            strokeLinecap="round" 
-            strokeLinejoin="round"
-            className="text-white"
-          >
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-          </svg>
+          <MessageSquare 
+            className="h-6 w-6 text-white" 
+            strokeWidth={2.5}
+            fill="none"
+            style={{ 
+              stroke: '#ffffff',
+              color: '#ffffff',
+              display: 'block'
+            }}
+          />
         </button>
       )}
 
@@ -116,11 +111,11 @@ export function ChatWidget() {
           onClick={() => setIsOpen(false)}
           aria-hidden="true"
           style={{
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            backdropFilter: 'blur(12px) saturate(180%)',
-            WebkitBackdropFilter: 'blur(12px) saturate(180%)',
+            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+            backdropFilter: 'blur(16px) saturate(200%)',
+            WebkitBackdropFilter: 'blur(16px) saturate(200%)',
             // @ts-ignore - MozBackdropFilter for Firefox support
-            MozBackdropFilter: 'blur(12px) saturate(180%)',
+            MozBackdropFilter: 'blur(16px) saturate(200%)',
           } as React.CSSProperties}
         />
       )}
@@ -130,20 +125,24 @@ export function ChatWidget() {
         <div 
           className="fixed bottom-6 right-6 w-96 h-[600px] flex flex-col z-50 rounded-lg overflow-hidden"
           style={{
-            backgroundColor: 'rgba(255, 255, 255, 0.8)',
-            backdropFilter: 'blur(30px) saturate(180%) brightness(1.1)',
-            WebkitBackdropFilter: 'blur(30px) saturate(180%) brightness(1.1)',
-            border: '1px solid rgba(255, 255, 255, 0.4)',
-            boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37), inset 0 1px 0 rgba(255, 255, 255, 0.5)',
+            backgroundColor: 'rgba(255, 255, 255, 0.75)',
+            backdropFilter: 'blur(40px) saturate(200%) brightness(1.15)',
+            WebkitBackdropFilter: 'blur(40px) saturate(200%) brightness(1.15)',
+            // @ts-ignore - MozBackdropFilter for Firefox support
+            MozBackdropFilter: 'blur(40px) saturate(200%) brightness(1.15)',
+            border: '1px solid rgba(255, 255, 255, 0.5)',
+            boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.6), inset 0 -1px 0 rgba(255, 255, 255, 0.2)',
           } as React.CSSProperties}
           onMouseDown={(e) => e.stopPropagation()}
         >
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b" style={{
-            backgroundColor: 'rgba(240, 249, 255, 0.6)',
-            backdropFilter: 'blur(10px)',
-            WebkitBackdropFilter: 'blur(10px)',
-            borderColor: 'rgba(255, 255, 255, 0.2)',
+            backgroundColor: 'rgba(240, 249, 255, 0.7)',
+            backdropFilter: 'blur(15px) saturate(150%)',
+            WebkitBackdropFilter: 'blur(15px) saturate(150%)',
+            // @ts-ignore - MozBackdropFilter for Firefox support
+            MozBackdropFilter: 'blur(15px) saturate(150%)',
+            borderColor: 'rgba(255, 255, 255, 0.3)',
           } as React.CSSProperties}>
             <div className="flex items-center gap-2">
               <Bot className="h-5 w-5 text-primary-600" />
