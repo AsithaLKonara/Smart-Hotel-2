@@ -1,0 +1,192 @@
+{
+  "timestamp": "2025-11-16T19:48:39.837Z",
+  "baseUrl": "https://smarthotel-demo.vercel.app",
+  "summary": {
+    "productionVerification": {
+      "total": 25,
+      "passed": 24,
+      "failed": 1,
+      "warnings": 2,
+      "successRate": "96.0%"
+    },
+    "crudVerification": {
+      "status": "pending"
+    },
+    "dbIntegrity": {
+      "status": "pending"
+    }
+  },
+  "pages": {
+    "/": {
+      "status": 200,
+      "responseTime": 1150,
+      "contentLength": 77226,
+      "passed": true
+    },
+    "/rooms": {
+      "status": 200,
+      "responseTime": 877,
+      "contentLength": 27410,
+      "passed": true
+    },
+    "/contact": {
+      "status": 200,
+      "responseTime": 677,
+      "contentLength": 30409,
+      "passed": true
+    },
+    "/order": {
+      "status": 200,
+      "responseTime": 686,
+      "contentLength": 25729,
+      "passed": true
+    },
+    "/gallery": {
+      "status": 200,
+      "responseTime": 1067,
+      "contentLength": 41473,
+      "passed": true
+    },
+    "/booking": {
+      "status": 200,
+      "responseTime": 640,
+      "contentLength": 24327,
+      "passed": true
+    },
+    "/auth/signin": {
+      "status": 200,
+      "responseTime": 664,
+      "contentLength": 29569,
+      "passed": true
+    },
+    "/admin": {
+      "status": 307,
+      "responseTime": 808,
+      "contentLength": 18203,
+      "passed": true
+    },
+    "/admin/dashboard": {
+      "status": 200,
+      "responseTime": 735,
+      "contentLength": 38541,
+      "passed": true
+    },
+    "/admin/bookings": {
+      "status": 200,
+      "responseTime": 949,
+      "contentLength": 38611,
+      "passed": true
+    },
+    "/admin/rooms": {
+      "status": 200,
+      "responseTime": 796,
+      "contentLength": 38596,
+      "passed": true
+    },
+    "/admin/staff": {
+      "status": 200,
+      "responseTime": 1152,
+      "contentLength": 38596,
+      "passed": true
+    },
+    "/admin/menu": {
+      "status": 200,
+      "responseTime": 794,
+      "contentLength": 38591,
+      "passed": true
+    },
+    "/admin/inventory": {
+      "status": 200,
+      "responseTime": 1380,
+      "contentLength": 38614,
+      "passed": true
+    }
+  },
+  "apis": {
+    "/api/rooms": {
+      "status": 200,
+      "responseTime": 4803,
+      "method": "GET",
+      "passed": true
+    },
+    "/api/bookings": {
+      "status": 401,
+      "responseTime": 784,
+      "method": "GET",
+      "passed": true
+    },
+    "/api/menu": {
+      "status": 404,
+      "responseTime": 486,
+      "method": "GET",
+      "passed": false
+    },
+    "/api/gallery": {
+      "status": 401,
+      "responseTime": 767,
+      "method": "GET",
+      "passed": true
+    },
+    "/api/staff": {
+      "status": 401,
+      "responseTime": 746,
+      "method": "GET",
+      "passed": true
+    },
+    "/api/inventory": {
+      "status": 401,
+      "responseTime": 829,
+      "method": "GET",
+      "passed": true
+    },
+    "/api/faq": {
+      "status": 200,
+      "responseTime": 642,
+      "method": "GET",
+      "passed": true
+    },
+    "/api/settings/contact": {
+      "status": 200,
+      "responseTime": 701,
+      "method": "GET",
+      "passed": true
+    },
+    "/api/hero-slides": {
+      "status": 200,
+      "responseTime": 824,
+      "method": "GET",
+      "passed": true
+    },
+    "/api/auth/session": {
+      "status": 200,
+      "responseTime": 414,
+      "method": "GET",
+      "passed": true
+    }
+  },
+  "crud": {},
+  "dbChecks": {},
+  "errors": [
+    {
+      "type": "api",
+      "endpoint": "/api/menu",
+      "method": "GET",
+      "status": 404,
+      "expected": 200
+    }
+  ],
+  "warnings": [
+    {
+      "type": "external_resource",
+      "path": "/",
+      "resource": "player.vimeo.com",
+      "message": "Page still references Vimeo video"
+    },
+    {
+      "type": "external_resource",
+      "path": "/",
+      "resource": "player.vimeo.com",
+      "message": "Page still references Vimeo video"
+    }
+  ]
+}

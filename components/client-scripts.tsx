@@ -14,7 +14,10 @@ export default function ClientScripts() {
         navigator.serviceWorker
           .register('/sw.js')
           .then(function(registration) {
-            console.log('SW registered: ', registration);
+            // SW registration log kept for monitoring (expected behavior)
+            if (process.env.NODE_ENV !== 'production') {
+              console.log('SW registered: ', registration);
+            }
             
             // Check for updates
             registration.addEventListener('updatefound', function() {
@@ -24,7 +27,10 @@ export default function ClientScripts() {
                   if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
                     // New content is available, show update notification
                     // Only show notification, don't force reload
-                    console.log('New service worker available');
+                    // SW update notification (only in dev)
+                    if (process.env.NODE_ENV !== 'production') {
+                      console.log('New service worker available');
+                    }
                   }
                 });
               }
@@ -32,7 +38,10 @@ export default function ClientScripts() {
           })
           .catch(function(registrationError) {
             // Silently fail - service worker is optional
-            console.warn('SW registration failed: ', registrationError);
+            // Only log in dev mode
+            if (process.env.NODE_ENV !== 'production') {
+              console.warn('SW registration failed: ', registrationError);
+            }
           });
       });
     }
