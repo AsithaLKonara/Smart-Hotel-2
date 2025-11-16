@@ -30,12 +30,12 @@ export async function PUT(
       updateData.completedAt = new Date()
     }
 
-    const request = await prisma.maintenanceRequest.update({
+    const maintenanceRequest = await prisma.maintenanceRequest.update({
       where: { id },
       data: updateData,
     })
 
-    return NextResponse.json(request)
+    return NextResponse.json(maintenanceRequest)
   } catch (error: any) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(

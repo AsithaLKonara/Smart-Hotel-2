@@ -42,9 +42,6 @@ export async function GET(request: NextRequest) {
 
     const requests = await prisma.maintenanceRequest.findMany({
       where,
-      include: {
-        // Note: Would need User relation for user info
-      },
       orderBy: {
         createdAt: 'desc',
       },
@@ -77,11 +74,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const request = await prisma.maintenanceRequest.create({
+    const maintenanceRequest = await prisma.maintenanceRequest.create({
       data: validatedData,
     })
 
-    return NextResponse.json(request, { status: 201 })
+    return NextResponse.json(maintenanceRequest, { status: 201 })
   } catch (error: any) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(

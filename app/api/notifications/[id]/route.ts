@@ -19,7 +19,7 @@ export async function PATCH(
     // Check if user owns this notification
     const notification = await prisma.notification.findUnique({
       where: { id },
-      select: { userId: true },
+      select: { userId: true, read: true },
     })
 
     if (!notification) {
