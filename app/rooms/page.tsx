@@ -47,7 +47,8 @@ export default function RoomsPage() {
       try {
         setIsLoading(true)
         setError(null)
-        // Public pages: 2.0-2.5s max timeout
+        // Public pages: 2.0-2.5s max timeout (increased to 6s to handle slow DB queries)
+        // Note: This timeout is generous to handle slow database queries on first load
         const response = await fetchWithTimeout('/api/rooms', {
           method: 'GET',
           cache: 'no-store',
@@ -55,7 +56,7 @@ export default function RoomsPage() {
           headers: {
             'Accept': 'application/json'
           }
-        }, 2500)
+        }, 6000) // Increased to 6s to match actual API response time
         const data = await response.json()
         
         // Handle different response formats
@@ -82,11 +83,20 @@ export default function RoomsPage() {
           setRooms([])
         }
       } catch (err) {
-        console.error('Error fetching rooms:', err)
-        const errorMessage = err instanceof Error ? err.message : 'Failed to load rooms. Please try again later.'
-        setError(errorMessage)
-        // Fallback to empty array
-        setRooms([])
+        // Handle timeout/abort errors gracefully
+        if (err instanceof Error && (err.name === 'AbortError' || err.message.includes('abort'))) {
+          // Timeout occurred - this is expected for slow responses
+          setError('Loading rooms is taking longer than expected. Please refresh the page.')
+          setRooms([])
+        } else {
+          // Other errors
+          if (process.env.NODE_ENV !== 'production') {
+            console.error('Error fetching rooms:', err)
+          }
+          const errorMessage = err instanceof Error ? err.message : 'Failed to load rooms. Please try again later.'
+          setError(errorMessage)
+          setRooms([])
+        }
       } finally {
         setIsLoading(false)
       }
