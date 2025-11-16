@@ -37,7 +37,7 @@ export default function EnhancedHeroSection() {
       subtitle: 'Award-Winning Dining',
       description: 'Savor exquisite cuisine crafted by world-renowned chefs in our elegant restaurants and bars.',
       cta: 'Explore Dining',
-      ctaLink: '/restaurant'
+      ctaLink: '/order'
     }
   ])
 
@@ -122,13 +122,13 @@ export default function EnhancedHeroSection() {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <Link href={currentSlideData.ctaLink}>
+              <Link href={currentSlideData.ctaLink} prefetch={false}>
                 <Button size="lg" className="bg-amber-700 hover:bg-amber-800 text-white px-8 py-4 text-lg font-semibold">
                   {currentSlideData.cta}
                 </Button>
               </Link>
               
-              <Link href="/contact">
+              <Link href="/contact" prefetch={false}>
                 <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-gray-900 px-8 py-4 text-lg">
                   Contact Us
                 </Button>

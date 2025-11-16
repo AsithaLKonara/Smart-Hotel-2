@@ -73,7 +73,7 @@ async function testStaticPages() {
   const pages = [
     '/',
     '/rooms',
-    '/restaurant',
+    '/order',
     '/gallery',
     '/about',
     '/contact',
