@@ -83,30 +83,33 @@ export function ChatWidget() {
     <>
       {/* Chat Button */}
       {!isOpen && (
-        <Button
+        <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg z-50 bg-primary-600 hover:bg-primary-700 transition-all duration-300 animate-pulse hover:animate-none"
-          size="lg"
+          className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg z-50 bg-primary-600 hover:bg-primary-700 transition-all duration-300 animate-pulse hover:animate-none flex items-center justify-center"
           type="button"
           aria-label="Open live chat"
+          style={{
+            boxShadow: '0 10px 25px rgba(2, 132, 199, 0.4)',
+          }}
         >
-          <MessageSquare className="h-6 w-6 text-white" />
-        </Button>
+          <MessageSquare className="h-6 w-6 text-white" strokeWidth={2} />
+        </button>
       )}
 
       {/* Blur Background Overlay */}
       {isOpen && (
-        <>
-          <div
-            className="fixed inset-0 bg-black/40 z-[45] transition-opacity duration-300"
-            onClick={() => setIsOpen(false)}
-            aria-hidden="true"
-            style={{
-              backdropFilter: 'blur(8px)',
-              WebkitBackdropFilter: 'blur(8px)',
-            }}
-          />
-        </>
+        <div
+          className="fixed inset-0 z-[45] transition-all duration-300"
+          onClick={() => setIsOpen(false)}
+          aria-hidden="true"
+          style={{
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            backdropFilter: 'blur(12px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(12px) saturate(180%)',
+            // @ts-ignore - MozBackdropFilter for Firefox support
+            MozBackdropFilter: 'blur(12px) saturate(180%)',
+          } as React.CSSProperties}
+        />
       )}
 
       {/* Chat Window */}
