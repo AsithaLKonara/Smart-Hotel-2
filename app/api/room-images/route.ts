@@ -5,7 +5,7 @@ import { z } from 'zod'
 
 const roomImageSchema = z.object({
   roomId: z.string().min(1),
-  imageUrl: z.string().url(),
+  imageUrl: z.string().url().optional(),
   cloudinaryId: z.string().optional(),
   isMain: z.boolean().default(false),
   caption: z.string().optional(),
@@ -21,7 +21,10 @@ export async function GET(request: NextRequest) {
     if (roomId) where.roomId = roomId
 
     const images = await prisma.roomImage.findMany({
-      where,
+      where: {
+        ...where,
+        imageUrl: { not: null }, // Filter out null imageUrl entries
+      },
       orderBy: [
         { isMain: 'desc' },
         { displayOrder: 'asc' },

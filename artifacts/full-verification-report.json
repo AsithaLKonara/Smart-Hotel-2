@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-11-16T19:53:57.772Z",
+  "timestamp": "2025-11-16T21:03:15.170Z",
   "baseUrl": "https://smarthotel-demo.vercel.app",
   "summary": {
     "total": 25,
@@ -11,85 +11,85 @@
   "pages": {
     "/": {
       "status": 200,
-      "responseTime": 2526,
+      "responseTime": 2548,
       "contentLength": 75897,
       "passed": true
     },
     "/rooms": {
       "status": 200,
-      "responseTime": 1738,
+      "responseTime": 920,
       "contentLength": 27410,
       "passed": true
     },
     "/contact": {
       "status": 200,
-      "responseTime": 1105,
+      "responseTime": 1478,
       "contentLength": 30409,
       "passed": true
     },
     "/order": {
       "status": 200,
-      "responseTime": 1015,
+      "responseTime": 1584,
       "contentLength": 25729,
       "passed": true
     },
     "/gallery": {
       "status": 200,
-      "responseTime": 1077,
+      "responseTime": 805,
       "contentLength": 41473,
       "passed": true
     },
     "/booking": {
       "status": 200,
-      "responseTime": 687,
+      "responseTime": 691,
       "contentLength": 24327,
       "passed": true
     },
     "/auth/signin": {
       "status": 200,
-      "responseTime": 831,
+      "responseTime": 1035,
       "contentLength": 29569,
       "passed": true
     },
     "/admin": {
       "status": 307,
-      "responseTime": 925,
+      "responseTime": 1101,
       "contentLength": 18203,
       "passed": true
     },
     "/admin/dashboard": {
       "status": 200,
-      "responseTime": 708,
+      "responseTime": 693,
       "contentLength": 38541,
       "passed": true
     },
     "/admin/bookings": {
       "status": 200,
-      "responseTime": 839,
+      "responseTime": 702,
       "contentLength": 38611,
       "passed": true
     },
     "/admin/rooms": {
       "status": 200,
-      "responseTime": 1001,
+      "responseTime": 753,
       "contentLength": 38596,
       "passed": true
     },
     "/admin/staff": {
       "status": 200,
-      "responseTime": 701,
+      "responseTime": 697,
       "contentLength": 38596,
       "passed": true
     },
     "/admin/menu": {
       "status": 200,
-      "responseTime": 692,
+      "responseTime": 764,
       "contentLength": 38591,
       "passed": true
     },
     "/admin/inventory": {
       "status": 200,
-      "responseTime": 1236,
+      "responseTime": 935,
       "contentLength": 38614,
       "passed": true
     }
@@ -97,61 +97,61 @@
   "apis": {
     "/api/rooms": {
       "status": 200,
-      "responseTime": 5593,
+      "responseTime": 5279,
       "method": "GET",
       "passed": true
     },
     "/api/bookings": {
       "status": 401,
-      "responseTime": 669,
+      "responseTime": 680,
       "method": "GET",
       "passed": true
     },
     "/api/restaurant/menu": {
       "status": 200,
-      "responseTime": 1516,
+      "responseTime": 1524,
       "method": "GET",
       "passed": true
     },
     "/api/gallery": {
       "status": 401,
-      "responseTime": 599,
+      "responseTime": 653,
       "method": "GET",
       "passed": true
     },
     "/api/staff": {
       "status": 401,
-      "responseTime": 707,
+      "responseTime": 617,
       "method": "GET",
       "passed": true
     },
     "/api/inventory": {
       "status": 401,
-      "responseTime": 1350,
+      "responseTime": 646,
       "method": "GET",
       "passed": true
     },
     "/api/faq": {
       "status": 200,
-      "responseTime": 844,
+      "responseTime": 870,
       "method": "GET",
       "passed": true
     },
     "/api/settings/contact": {
       "status": 200,
-      "responseTime": 845,
+      "responseTime": 850,
       "method": "GET",
       "passed": true
     },
     "/api/hero-slides": {
       "status": 200,
-      "responseTime": 949,
+      "responseTime": 1028,
       "method": "GET",
       "passed": true
     },
     "/api/auth/session": {
       "status": 200,
-      "responseTime": 614,
+      "responseTime": 720,
       "method": "GET",
       "passed": true
     }
