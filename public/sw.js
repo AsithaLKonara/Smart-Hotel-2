@@ -1,9 +1,9 @@
 // Service Worker for SmartHotel PWA
 // Provides offline functionality and caching
 
-const CACHE_NAME = 'smarthotel-v1.0.0'
-const STATIC_CACHE = 'smarthotel-static-v1.0.0'
-const DYNAMIC_CACHE = 'smarthotel-dynamic-v1.0.0'
+const CACHE_NAME = 'smarthotel-v1.0.1'
+const STATIC_CACHE = 'smarthotel-static-v1.0.1'
+const DYNAMIC_CACHE = 'smarthotel-dynamic-v1.0.1'
 
 // Assets to cache on install (only essential ones to avoid failures)
 const STATIC_ASSETS = [

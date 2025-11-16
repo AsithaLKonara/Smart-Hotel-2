@@ -36,11 +36,25 @@ export default function RoomsPage() {
 
   // Fetch rooms from API
   useEffect(() => {
+    const fetchWithTimeout = (input: RequestInfo | URL, init: RequestInit = {}, timeoutMs = 6000): Promise<Response> => {
+      const controller = new AbortController()
+      const id = setTimeout(() => controller.abort(), timeoutMs)
+      return fetch(input, { ...init, signal: controller.signal })
+        .finally(() => clearTimeout(id))
+    }
+
     async function fetchRooms() {
       try {
         setIsLoading(true)
         setError(null)
-        const response = await fetch('/api/rooms')
+        const response = await fetchWithTimeout('/api/rooms', {
+          method: 'GET',
+          cache: 'no-store',
+          credentials: 'include',
+          headers: {
+            'Accept': 'application/json'
+          }
+        }, 6000)
         const data = await response.json()
         
         // Handle different response formats

@@ -76,9 +76,19 @@ function FAQSection() {
   const [hasError, setHasError] = useState(false)
 
   useEffect(() => {
+    const fetchWithTimeout = (input: RequestInfo | URL, init: RequestInit = {}, timeoutMs = 6000): Promise<Response> => {
+      const controller = new AbortController()
+      const id = setTimeout(() => controller.abort(), timeoutMs)
+      return fetch(input, { ...init, signal: controller.signal }).finally(() => clearTimeout(id))
+    }
+
     async function loadFAQs() {
       try {
-        const response = await fetch('/api/faq')
+        const response = await fetchWithTimeout('/api/faq', {
+          method: 'GET',
+          cache: 'no-store',
+          headers: { 'Accept': 'application/json' }
+        }, 5000)
         if (!response.ok) {
           console.error('Failed to load FAQs. Status:', response.status)
           setHasError(true)
@@ -155,7 +165,15 @@ export default function ContactPage() {
 
     async function loadContactInfo() {
       try {
-        const response = await fetch('/api/settings/contact')
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 6000)
+        const response = await fetch('/api/settings/contact', {
+          method: 'GET',
+          cache: 'no-store',
+          headers: { 'Accept': 'application/json' },
+          signal: controller.signal
+        })
+        clearTimeout(timeoutId)
         if (!response.ok) {
           throw new Error('Unable to load contact information')
         }
