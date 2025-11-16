@@ -56,12 +56,17 @@ export default function AdminBookingsPage() {
 
   const fetchBookings = async () => {
     try {
+      // Regular admin pages: 2.5-3.0s timeout
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 3000)
       const response = await fetch('/api/bookings', {
         // Be explicit to avoid any caching / SW interference
         method: 'GET',
         cache: 'no-store',
         credentials: 'include',
+        signal: controller.signal,
       })
+      clearTimeout(timeoutId)
 
       // Redirect unauthenticated users cleanly
       if (response.status === 401) {

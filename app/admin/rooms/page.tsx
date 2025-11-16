@@ -59,7 +59,15 @@ export default function AdminRoomsPage() {
 
   const fetchRooms = async () => {
     try {
-      const response = await fetch('/api/rooms')
+      // Regular admin pages: 2.5-3.0s timeout
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 3000)
+      const response = await fetch('/api/rooms', {
+        signal: controller.signal,
+        cache: 'no-store',
+        credentials: 'include',
+      })
+      clearTimeout(timeoutId)
       if (!response.ok) throw new Error('Failed to fetch rooms')
       const data = await response.json()
 

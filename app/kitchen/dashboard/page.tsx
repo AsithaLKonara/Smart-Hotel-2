@@ -98,7 +98,15 @@ function KitchenDashboardContent() {
   const fetchKitchenData = async () => {
     try {
       setIsLoading(true)
-      const response = await fetch('/api/kitchen/orders?today=true')
+      // Dashboards: 2.5-3.0s timeout
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 3000)
+      const response = await fetch('/api/kitchen/orders?today=true', {
+        signal: controller.signal,
+        cache: 'no-store',
+        credentials: 'include',
+      })
+      clearTimeout(timeoutId)
       const data = await response.json()
 
       if (response.ok) {

@@ -108,7 +108,15 @@ function AdminDashboardContent() {
   const fetchDashboardData = async () => {
     try {
       setIsLoading(true)
-      const response = await fetch('/api/analytics/dashboard')
+      // Admin stats pages: 3.5s timeout (heavy queries)
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 3500)
+      const response = await fetch('/api/analytics/dashboard', {
+        signal: controller.signal,
+        cache: 'no-store',
+        credentials: 'include',
+      })
+      clearTimeout(timeoutId)
       const data = await response.json()
 
       if (response.ok) {

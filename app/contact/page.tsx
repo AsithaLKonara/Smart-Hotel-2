@@ -84,11 +84,12 @@ function FAQSection() {
 
     async function loadFAQs() {
       try {
+        // Public pages: 2.0-2.5s max timeout
         const response = await fetchWithTimeout('/api/faq', {
           method: 'GET',
           cache: 'no-store',
           headers: { 'Accept': 'application/json' }
-        }, 5000)
+        }, 2500)
         if (!response.ok) {
           console.error('Failed to load FAQs. Status:', response.status)
           setHasError(true)
@@ -165,8 +166,9 @@ export default function ContactPage() {
 
     async function loadContactInfo() {
       try {
+        // Public pages: 2.0-2.5s max timeout
         const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 6000)
+        const timeoutId = setTimeout(() => controller.abort(), 2500)
         const response = await fetch('/api/settings/contact', {
           method: 'GET',
           cache: 'no-store',

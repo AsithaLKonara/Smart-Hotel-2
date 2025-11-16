@@ -47,6 +47,7 @@ export default function RoomsPage() {
       try {
         setIsLoading(true)
         setError(null)
+        // Public pages: 2.0-2.5s max timeout
         const response = await fetchWithTimeout('/api/rooms', {
           method: 'GET',
           cache: 'no-store',
@@ -54,7 +55,7 @@ export default function RoomsPage() {
           headers: {
             'Accept': 'application/json'
           }
-        }, 6000)
+        }, 2500)
         const data = await response.json()
         
         // Handle different response formats

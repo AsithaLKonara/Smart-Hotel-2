@@ -51,18 +51,11 @@ export default function ClientScripts() {
         const errorString = JSON.stringify(args)
         
         // Suppress expected errors:
-        // 1. Unsplash image 404s (handled by FallbackImage component)
-        // 2. Vimeo video 404s (handled by video fallback)
+        // 1. Unsplash image 404s (handled by FallbackImage component) - now obsolete but keeping for compatibility
         const isExpectedError = 
           errorMessage.includes('images.unsplash.com') ||
-          errorMessage.includes('player.vimeo.com') ||
-          errorMessage.includes('vimeo.com/external') ||
           errorString.includes('images.unsplash.com') ||
-          errorString.includes('player.vimeo.com') ||
-          errorString.includes('Failed to load resource') && (
-            errorString.includes('unsplash') || 
-            errorString.includes('vimeo')
-          )
+          (errorString.includes('Failed to load resource') && errorString.includes('unsplash'))
         
         // Only suppress expected errors - log all others
         if (!isExpectedError) {
@@ -76,10 +69,10 @@ export default function ClientScripts() {
         const target = event.target as HTMLElement
         const src = (target as HTMLImageElement)?.src || (target as HTMLVideoElement)?.src || ''
         
-        // Suppress expected resource loading errors
+        // Suppress expected resource loading errors (only Unsplash now, Vimeo removed)
         if (
-          (target instanceof HTMLImageElement || target instanceof HTMLVideoElement) &&
-          (src.includes('images.unsplash.com') || src.includes('player.vimeo.com') || src.includes('vimeo.com/external'))
+          target instanceof HTMLImageElement &&
+          src.includes('images.unsplash.com')
         ) {
           event.preventDefault()
           event.stopPropagation()
