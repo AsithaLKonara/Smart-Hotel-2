@@ -79,8 +79,7 @@ export function ChatWidget() {
           className="fixed inset-0 z-[45]"
           onClick={() => setIsOpen(false)}
           style={{
-            backgroundColor: "rgba(0,0,0,0.55)",
-            backdropFilter: "blur(14px)"
+            backgroundColor: "rgba(0, 0, 0, 0.55)",
           }}
         />
       )}
@@ -92,10 +91,11 @@ export function ChatWidget() {
           style={{
             background: "rgba(255,255,255,0.75)",
             backdropFilter: "blur(40px) saturate(200%) brightness(1.2)",
+            WebkitBackdropFilter: "blur(40px) saturate(200%) brightness(1.2)",
             boxShadow:
               "0 8px 32px rgba(31,38,135,0.4), inset 0 1px 0 rgba(255,255,255,0.6)",
             border: "1px solid rgba(255,255,255,0.45)"
-          }}
+          } as React.CSSProperties}
         >
           {/* HEADER */}
           <div
@@ -124,10 +124,10 @@ export function ChatWidget() {
             style={{
               backgroundImage:
                 `linear-gradient(
-                  rgba(255, 244, 233, 0.85),
-                  rgba(245, 230, 214, 0.9)
+                  rgba(255, 255, 255, 0.9),
+                  rgba(250, 250, 250, 0.95)
                 ),
-                url("https://i.imgur.com/JKW9S4Y.png")`, // woven raffia texture
+                url("https:///images/hotel/hotel-hero-1.jpg")`, // woven raffia texture
               backgroundSize: "cover",
               backgroundBlendMode: "overlay",
               backgroundPosition: "center",
@@ -137,18 +137,16 @@ export function ChatWidget() {
             {messages.map((message) => (
               <div
                 key={message.id}
-                className={`flex ${
-                  message.sender === 'user'
+                className={`flex ${message.sender === 'user'
                     ? 'justify-end'
                     : 'justify-start'
-                }`}
+                  }`}
               >
                 <div
-                  className={`max-w-[80%] rounded-lg p-3 ${
-                    message.sender === 'user'
+                  className={`max-w-[80%] rounded-lg p-3 ${message.sender === 'user'
                       ? 'bg-primary-600 text-white'
                       : 'bg-[rgba(255,255,255,0.7)] text-gray-900 backdrop-blur-sm'
-                  }`}
+                    }`}
                   style={{
                     boxShadow:
                       message.sender === 'support'
