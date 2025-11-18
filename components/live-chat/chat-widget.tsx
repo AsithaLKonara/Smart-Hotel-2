@@ -17,18 +17,48 @@ interface Message {
 
 export function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false)
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      text: 'Salama! How can I help you today?',
-      sender: 'support',
-      timestamp: new Date()
-    }
-  ])
+  const [messages, setMessages] = useState<Message[]>([])
   const [inputText, setInputText] = useState('')
   const [isTyping, setIsTyping] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const { data: session } = useSession()
+
+  // Load messages from API
+  useEffect(() => {
+    if (!isOpen) return
+    
+    async function loadMessages() {
+      try {
+        setIsLoading(true)
+        const response = await fetch('/api/chat/messages')
+        if (response.ok) {
+          const data = await response.json()
+          if (data.messages && Array.isArray(data.messages)) {
+            setMessages(data.messages.map((msg: any) => ({
+              id: msg.id,
+              text: msg.text,
+              sender: msg.sender,
+              timestamp: new Date(msg.timestamp)
+            })))
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load chat messages:', error)
+        // Fallback to default welcome message
+        setMessages([{
+          id: 'welcome-1',
+          text: 'Salama! How can I help you today?',
+          sender: 'support',
+          timestamp: new Date()
+        }])
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    
+    loadMessages()
+  }, [isOpen])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -38,26 +68,71 @@ export function ChatWidget() {
     if (!inputText.trim()) return
 
     const userMessage: Message = {
-      id: Date.now().toString(),
+      id: `temp-${Date.now()}`,
       text: inputText,
       sender: 'user',
       timestamp: new Date()
     }
 
+    // Optimistically add user message
     setMessages(prev => [...prev, userMessage])
+    const messageText = inputText
     setInputText('')
     setIsTyping(true)
 
-    setTimeout(() => {
-      const supportMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        text: "Misaotra! We received your message — how may we assist you?",
-        sender: 'support',
-        timestamp: new Date()
+    try {
+      // Send message to API
+      const response = await fetch('/api/chat/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: messageText,
+          sender: 'user'
+        })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        // Replace temp message with server message
+        setMessages(prev => {
+          const updated = prev.map(msg => 
+            msg.id === userMessage.id ? {
+              id: data.message.id,
+              text: data.message.text,
+              sender: data.message.sender,
+              timestamp: new Date(data.message.timestamp)
+            } : msg
+          )
+          
+          // Add support response if available
+          if (data.supportResponse) {
+            updated.push({
+              id: data.supportResponse.id,
+              text: data.supportResponse.text,
+              sender: data.supportResponse.sender,
+              timestamp: new Date(data.supportResponse.timestamp)
+            })
+          }
+          
+          return updated
+        })
+        
+        setIsTyping(false)
+      } else {
+        // Remove temp message on error
+        setMessages(prev => prev.filter(msg => msg.id !== userMessage.id))
+        setIsTyping(false)
+        alert('Failed to send message. Please try again.')
       }
-      setMessages(prev => [...prev, supportMessage])
+    } catch (error) {
+      console.error('Failed to send message:', error)
+      // Remove temp message on error
+      setMessages(prev => prev.filter(msg => msg.id !== userMessage.id))
       setIsTyping(false)
-    }, 1000)
+      alert('Failed to send message. Please try again.')
+    }
   }
 
   return (

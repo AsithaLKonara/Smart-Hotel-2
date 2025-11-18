@@ -6,9 +6,10 @@ import { ChevronLeft, ChevronRight, Play, Pause } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 
-const heroSlides = [
+// Default fallback slides
+const defaultHeroSlides = [
   {
-    id: 1,
+    id: '1',
     title: "Luxury Redefined",
     subtitle: "Experience unparalleled comfort and elegance",
     description: "Discover our world-class amenities and exceptional service in the heart of the city.",
@@ -17,7 +18,7 @@ const heroSlides = [
     ctaLink: "/booking"
   },
   {
-    id: 2,
+    id: '2',
     title: "Perfect Getaway",
     subtitle: "Your ideal destination for relaxation",
     description: "Escape to tranquility with our premium rooms and stunning city views.",
@@ -26,7 +27,7 @@ const heroSlides = [
     ctaLink: "/rooms"
   },
   {
-    id: 3,
+    id: '3',
     title: "Exclusive Experience",
     subtitle: "Where luxury meets convenience",
     description: "Indulge in our signature services and create unforgettable memories.",
@@ -37,12 +38,41 @@ const heroSlides = [
 ]
 
 export default function HeroSection() {
+  const [heroSlides, setHeroSlides] = useState(defaultHeroSlides)
   const [currentSlide, setCurrentSlide] = useState(0)
   const [isPlaying, setIsPlaying] = useState(true)
   const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
     setIsLoaded(true)
+    
+    // Fetch hero slides from API
+    async function loadSlides() {
+      try {
+        const response = await fetch('/api/hero-slides')
+        if (!response.ok) return
+        
+        const data = await response.json()
+        const loadedSlides = Array.isArray(data) ? data : (data.items || [])
+        
+        if (loadedSlides.length > 0) {
+          setHeroSlides(loadedSlides.map((slide: any) => ({
+            id: slide.id,
+            title: slide.title,
+            subtitle: slide.subtitle,
+            description: slide.description,
+            image: slide.image,
+            cta: slide.cta,
+            ctaLink: slide.ctaLink
+          })))
+        }
+      } catch (error) {
+        console.error('Failed to load hero slides:', error)
+        // Keep default slides on error
+      }
+    }
+    
+    loadSlides()
   }, [])
 
   useEffect(() => {

@@ -35,14 +35,14 @@ const isEmailConfigured = !!(process.env.SMTP_HOST && process.env.SMTP_USER && p
 
 const transporter = isEmailConfigured
   ? nodemailerInstance.createTransport({
-      host: process.env.SMTP_HOST || 'smtp.gmail.com',
-      port: parseInt(process.env.SMTP_PORT || '587'),
-      secure: false,
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    })
+  host: process.env.SMTP_HOST || 'smtp.gmail.com',
+  port: parseInt(process.env.SMTP_PORT || '587'),
+  secure: false,
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+})
   : null
 
 const defaultFromEmail = process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER || 'noreply@smarthotel.com'
@@ -666,13 +666,13 @@ export async function sendContactEmail(data: {
   `
 
   try {
-    await transporter.sendMail({
-      from: `"${defaultFromName}" <${defaultFromEmail}>`,
-      replyTo: data.email,
-      to: recipient,
-      subject: `[Contact] ${data.subject}`,
-      html,
-    })
+  await transporter.sendMail({
+    from: `"${defaultFromName}" <${defaultFromEmail}>`,
+    replyTo: data.email,
+    to: recipient,
+    subject: `[Contact] ${data.subject}`,
+    html,
+  })
 
     console.log('Contact email sent:', { to: recipient, subject: `[Contact] ${data.subject}` })
   } catch (error) {
