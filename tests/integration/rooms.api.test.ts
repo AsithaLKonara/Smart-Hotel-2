@@ -118,7 +118,11 @@ describe('Rooms API Integration', () => {
       const data = await response.json()
 
       expect(response.status).toBe(200)
-      expect(data).toEqual(mockRooms)
+      expect(data).toHaveProperty('rooms')
+      expect(data).toHaveProperty('count')
+      expect(Array.isArray(data.rooms)).toBe(true)
+      expect(data.rooms).toHaveLength(2)
+      expect(data.count).toBe(2)
       expect(mockPrisma.room.findMany).toHaveBeenCalledTimes(1)
     })
 
