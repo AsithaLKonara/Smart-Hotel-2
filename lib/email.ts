@@ -30,16 +30,20 @@ function resolveNodemailer(): NodemailerModule {
 
 const nodemailerInstance = resolveNodemailer()
 
-// Email configuration
-const transporter = nodemailerInstance.createTransport({
-  host: process.env.SMTP_HOST || 'smtp.gmail.com',
-  port: parseInt(process.env.SMTP_PORT || '587'),
-  secure: false,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-})
+// Email configuration with fallback for missing credentials
+const isEmailConfigured = !!(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS)
+
+const transporter = isEmailConfigured
+  ? nodemailerInstance.createTransport({
+      host: process.env.SMTP_HOST || 'smtp.gmail.com',
+      port: parseInt(process.env.SMTP_PORT || '587'),
+      secure: false,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    })
+  : null
 
 const defaultFromEmail = process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER || 'noreply@smarthotel.com'
 const defaultFromName = process.env.SMTP_FROM_NAME || 'SmartHotel'
@@ -357,7 +361,7 @@ export const emailTemplates = {
   }),
 }
 
-// Email sending functions
+// Email sending functions with fallback for missing SMTP configuration
 export async function sendBookingConfirmation(data: {
   guestName: string
   guestEmail: string
@@ -371,6 +375,12 @@ export async function sendBookingConfirmation(data: {
   confirmationCode: string
   specialRequests?: string
 }) {
+  if (!isEmailConfigured || !transporter) {
+    console.warn('SMTP not configured - email not sent. Booking confirmation would be sent to:', data.guestEmail)
+    console.log('Email template:', emailTemplates.bookingConfirmation(data).subject)
+    return // Gracefully skip email sending
+  }
+
   try {
     const template = emailTemplates.bookingConfirmation(data)
     
@@ -384,7 +394,7 @@ export async function sendBookingConfirmation(data: {
     console.log(`Booking confirmation email sent to ${data.guestEmail}`)
   } catch (error) {
     console.error('Failed to send booking confirmation email:', error)
-    throw error
+    // Don't throw - log error but don't break the flow
   }
 }
 
@@ -397,6 +407,11 @@ export async function sendAdminBookingAlert(data: {
   checkOut: Date
   totalAmount: number
 }) {
+  if (!isEmailConfigured || !transporter) {
+    console.warn('SMTP not configured - admin alert not sent for booking:', data.bookingId)
+    return
+  }
+
   try {
     const template = emailTemplates.adminBookingAlert(data)
     
@@ -410,7 +425,7 @@ export async function sendAdminBookingAlert(data: {
     console.log(`Admin booking alert sent for booking ${data.bookingId}`)
   } catch (error) {
     console.error('Failed to send admin booking alert:', error)
-    throw error
+    // Don't throw - log error but don't break the flow
   }
 }
 
@@ -421,6 +436,11 @@ export async function sendBookingReminder(data: {
   checkIn: Date
   confirmationCode: string
 }) {
+  if (!isEmailConfigured || !transporter) {
+    console.warn('SMTP not configured - booking reminder not sent to:', data.guestEmail)
+    return
+  }
+
   try {
     const template = emailTemplates.bookingReminder(data)
     
@@ -434,7 +454,7 @@ export async function sendBookingReminder(data: {
     console.log(`Booking reminder sent to ${data.guestEmail}`)
   } catch (error) {
     console.error('Failed to send booking reminder:', error)
-    throw error
+    // Don't throw - log error but don't break the flow
   }
 }
 
@@ -448,6 +468,11 @@ export async function sendBookingStatusUpdate(data: {
   checkIn: Date
   checkOut: Date
 }) {
+  if (!isEmailConfigured || !transporter) {
+    console.warn('SMTP not configured - booking status update not sent to:', data.guestEmail)
+    return
+  }
+
   try {
     const template = {
       subject: `Booking Update - ${data.status}`,
@@ -496,7 +521,7 @@ export async function sendBookingStatusUpdate(data: {
     console.log(`Booking status update sent to ${data.guestEmail}`)
   } catch (error) {
     console.error('Failed to send booking status update:', error)
-    throw error
+    // Don't throw - log error but don't break the flow
   }
 }
 
@@ -506,6 +531,13 @@ export async function sendPasswordResetEmail(data: {
   email: string
   resetUrl: string
 }) {
+  if (!isEmailConfigured || !transporter) {
+    console.warn('SMTP not configured - password reset email not sent. Reset URL would be:', data.resetUrl)
+    console.log('Email would be sent to:', data.email)
+    // Return success to prevent email enumeration, but log the attempt
+    return
+  }
+
   try {
     const template = emailTemplates.passwordReset(data)
     
@@ -519,7 +551,7 @@ export async function sendPasswordResetEmail(data: {
     console.log(`Password reset email sent to ${data.email}`)
   } catch (error) {
     console.error('Failed to send password reset email:', error)
-    throw error
+    // Don't throw - return gracefully to prevent email enumeration
   }
 }
 
@@ -527,6 +559,11 @@ export async function sendPasswordResetConfirmation(data: {
   name: string
   email: string
 }) {
+  if (!isEmailConfigured || !transporter) {
+    console.warn('SMTP not configured - password reset confirmation not sent to:', data.email)
+    return
+  }
+
   try {
     const template = emailTemplates.passwordResetConfirmation(data)
     
@@ -546,6 +583,11 @@ export async function sendPasswordResetConfirmation(data: {
 
 // Test email configuration
 export async function testEmailConfiguration() {
+  if (!isEmailConfigured || !transporter) {
+    console.warn('Email configuration not set up - SMTP credentials missing')
+    return false
+  }
+
   try {
     await transporter.verify()
     console.log('Email configuration is valid')
@@ -562,6 +604,14 @@ export async function sendContactEmail(data: {
   subject: string
   message: string
 }) {
+  if (!isEmailConfigured || !transporter) {
+    console.warn('SMTP not configured - contact email not sent. Message details:')
+    console.log('From:', data.name, `<${data.email}>`)
+    console.log('Subject:', data.subject)
+    console.log('Message:', data.message)
+    return
+  }
+
   const recipient =
     process.env.CONTACT_EMAIL ||
     adminNotificationEmail ||
@@ -615,25 +665,18 @@ export async function sendContactEmail(data: {
     </html>
   `
 
-  await transporter.sendMail({
-    from: `"${defaultFromName}" <${defaultFromEmail}>`,
-    replyTo: data.email,
-    to: recipient,
-    subject: `[Contact] ${data.subject}`,
-    html,
-  })
-
-  // Note: EmailLog model doesn't exist in schema
-  // Logging would need to be implemented via a separate service or added to schema
-  console.log('Email log:', { to: recipient, subject: `[Contact] ${data.subject}` })
-  /* await prisma.emailLog.create({
-    data: {
+  try {
+    await transporter.sendMail({
+      from: `"${defaultFromName}" <${defaultFromEmail}>`,
+      replyTo: data.email,
       to: recipient,
       subject: `[Contact] ${data.subject}`,
-      template: 'contact',
-      status: 'SENT',
-      sentAt: new Date(),
-      error: null,
-    },
-  }) */
+      html,
+    })
+
+    console.log('Contact email sent:', { to: recipient, subject: `[Contact] ${data.subject}` })
+  } catch (error) {
+    console.error('Failed to send contact email:', error)
+    // Don't throw - log error but don't break the flow
+  }
 }

@@ -4,16 +4,30 @@ import Stripe from 'stripe'
 import prisma from '@/lib/db'
 import { logAction, AUDIT_ACTIONS } from '@/lib/audit'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2023-10-16',
-})
+// Stripe configuration with fallback for missing keys
+const isStripeConfigured = !!(process.env.STRIPE_SECRET_KEY && process.env.STRIPE_WEBHOOK_SECRET)
 
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!
+const stripe = isStripeConfigured && process.env.STRIPE_SECRET_KEY
+  ? new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2023-10-16',
+    })
+  : null
+
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || ''
 
 // Idempotency tracking for webhook processing (in production, use Redis)
 const processedEvents = new Set<string>()
 
 export async function POST(request: NextRequest) {
+  // Check if Stripe is configured
+  if (!isStripeConfigured || !stripe || !webhookSecret) {
+    console.warn('Stripe webhook: Stripe not configured - webhook ignored')
+    return NextResponse.json(
+      { error: 'Stripe not configured' },
+      { status: 503 }
+    )
+  }
+
   try {
     const body = await request.text()
     const signature = request.headers.get('stripe-signature')
