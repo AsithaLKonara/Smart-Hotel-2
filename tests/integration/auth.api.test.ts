@@ -11,6 +11,7 @@ jest.mock('@/lib/db', () => {
   const mockPrismaClient = {
     user: {
       findUnique: jest.fn(),
+      findFirst: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
     },
@@ -83,7 +84,7 @@ describe('Auth API Integration Tests', () => {
 
   describe('POST /api/auth/register', () => {
     it('should register a new user successfully', async () => {
-      mockPrismaUser.findUnique.mockResolvedValue(null)
+      mockPrismaUser.findFirst.mockResolvedValue(null)
       mockPrismaUser.create.mockResolvedValue({
         id: 'user-123',
         email: 'newuser@example.com',
@@ -112,7 +113,7 @@ describe('Auth API Integration Tests', () => {
     })
 
     it('should return 400 if user already exists', async () => {
-      mockPrismaUser.findUnique.mockResolvedValue({
+      mockPrismaUser.findFirst.mockResolvedValue({
         id: 'existing-user',
         email: 'existing@example.com',
       } as any)

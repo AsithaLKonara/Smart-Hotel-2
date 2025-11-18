@@ -494,7 +494,7 @@ describe('Admin API Integration', () => {
 
       prismaMocks.mockNotificationFindMany.mockResolvedValue(mockUnreadNotifications)
 
-      const request = new NextRequest('http://localhost:3000/api/notifications?unread=true', {
+      const request = new NextRequest('http://localhost:3000/api/notifications?read=false', {
         headers: {
           'Authorization': 'Bearer user-token',
         },
