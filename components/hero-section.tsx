@@ -83,7 +83,7 @@ export default function HeroSection() {
     }, 5000)
 
     return () => clearInterval(interval)
-  }, [isPlaying])
+  }, [isPlaying, heroSlides.length])
 
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % heroSlides.length)

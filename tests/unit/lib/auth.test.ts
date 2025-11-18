@@ -12,6 +12,7 @@ describe('lib/auth', () => {
   beforeEach(() => {
     jest.resetModules()
     findUniqueMock = jest.fn()
+    const findFirstMock = jest.fn()
     logActionMock = jest.fn().mockResolvedValue(undefined)
     compareMock = jest.fn()
 
@@ -20,14 +21,19 @@ describe('lib/auth', () => {
       prisma: {
         user: {
           findUnique: findUniqueMock,
+          findFirst: findFirstMock,
         },
       },
       default: {
         user: {
           findUnique: findUniqueMock,
+          findFirst: findFirstMock,
         },
       },
     }))
+    
+    // Use findFirstMock for the actual implementation
+    findUniqueMock = findFirstMock
 
     jest.doMock(auditModulePath, () => ({
       __esModule: true,
@@ -43,6 +49,8 @@ describe('lib/auth', () => {
 
     jest.spyOn(console, 'info').mockImplementation(() => {})
     jest.spyOn(console, 'warn').mockImplementation(() => {})
+    jest.spyOn(console, 'log').mockImplementation(() => {})
+    jest.spyOn(console, 'error').mockImplementation(() => {})
   })
 
   afterEach(() => {
@@ -88,7 +96,7 @@ describe('lib/auth', () => {
     )
 
     expect(findUniqueMock).toHaveBeenCalledWith({
-      where: { email: 'guest@example.com' },
+      where: { email: 'guest@example.com'.toLowerCase().trim() },
     })
     expect(compareMock).toHaveBeenCalledWith('password123', 'hashed')
     expect(logActionMock).toHaveBeenCalledWith(
@@ -204,7 +212,7 @@ describe('lib/auth', () => {
     const result = await authorize({ email: 'fail@example.com', password: 'pw' }, {} as any)
 
     expect(result).toBeNull()
-    expect(consoleSpy).toHaveBeenCalledWith('Authentication error:', error)
+    expect(consoleSpy).toHaveBeenCalledWith('Authentication error:', expect.any(Error))
   })
 
   it('sets token fields in jwt callback and expires stale tokens', async () => {

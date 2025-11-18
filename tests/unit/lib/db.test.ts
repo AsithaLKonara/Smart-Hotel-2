@@ -6,6 +6,10 @@ const prismaInstance = {
 } as any
 const eventHandlers: Record<string, Function> = {}
 
+const logErrorMock = jest.fn()
+const logWarnMock = jest.fn()
+const logDebugMock = jest.fn()
+
 const mockPrismaModule = () => {
   PrismaClientMock.mockImplementation(() => prismaInstance)
   prismaInstance.$on.mockImplementation((event: string, handler: Function) => {
@@ -15,6 +19,14 @@ const mockPrismaModule = () => {
   jest.doMock('@prisma/client', () => ({
     PrismaClient: PrismaClientMock,
     Prisma: {},
+  }))
+
+  jest.doMock('@/lib/logger', () => ({
+    log: {
+      error: logErrorMock,
+      warn: logWarnMock,
+      debug: logDebugMock,
+    },
   }))
 }
 
@@ -31,6 +43,9 @@ describe('lib/db', () => {
     Object.keys(eventHandlers).forEach(key => delete eventHandlers[key])
     PrismaClientMock.mockClear()
     prismaInstance.$on.mockClear()
+    logErrorMock.mockClear()
+    logWarnMock.mockClear()
+    logDebugMock.mockClear()
     delete (global as any).prisma
 
     process.env = {
@@ -40,9 +55,6 @@ describe('lib/db', () => {
     }
 
     mockPrismaModule()
-    jest.spyOn(console, 'error').mockImplementation(() => {})
-    jest.spyOn(console, 'warn').mockImplementation(() => {})
-    jest.spyOn(console, 'debug').mockImplementation(() => {})
   })
 
   afterEach(() => {
@@ -79,11 +91,10 @@ describe('lib/db', () => {
     eventHandlers.error?.({ message: 'boom', target: 'User' })
     eventHandlers.warn?.({ message: 'slow query', target: 'Booking' })
 
-    expect(console.error).toHaveBeenCalledWith('[Prisma Error]', {
-      message: 'boom',
+    expect(logErrorMock).toHaveBeenCalledWith('Prisma Error', expect.any(Error), {
       target: 'User',
     })
-    expect(console.warn).toHaveBeenCalledWith('[Prisma Warning]', {
+    expect(logWarnMock).toHaveBeenCalledWith('Prisma Warning', {
       message: 'slow query',
       target: 'Booking',
     })
@@ -95,8 +106,8 @@ describe('lib/db', () => {
     importDbModule()
 
     expect(prismaInstance.$on).toHaveBeenCalledWith('query', expect.any(Function))
-    eventHandlers.query?.({ query: 'SELECT 1', params: '[]', duration: 12 })
-    expect(console.debug).toHaveBeenCalledWith('[Prisma Query]', {
+    eventHandlers.query?.({ query: 'SELECT 1', params: '[]', duration: 12, target: 'User' })
+    expect(logDebugMock).toHaveBeenCalledWith('Prisma Query', {
       query: 'SELECT 1',
       params: '[]',
       duration: '12ms',

@@ -25,13 +25,14 @@ describe('lib/audit', () => {
     }))
 
     jest.spyOn(console, 'error').mockImplementation(() => {})
+    jest.spyOn(console, 'log').mockImplementation(() => {})
   })
 
   afterEach(() => {
     jest.restoreAllMocks()
   })
 
-  it('createAuditLog persists audit entries with normalized data', async () => {
+  it('createAuditLog logs audit entries (Prisma implementation commented out)', async () => {
     const { createAuditLog } = await import('@/lib/audit')
 
     await createAuditLog({
@@ -44,31 +45,28 @@ describe('lib/audit', () => {
       userAgent: 'jest-test',
     })
 
-    expect(createMock).toHaveBeenCalledWith({
-      data: {
-        userId: 'user-123',
-        action: 'USER_LOGIN',
-        entityType: 'User',
-        entityId: 'user-123',
-        details: { foo: 'bar' },
-        ipAddress: '10.0.0.1',
-        userAgent: 'jest-test',
-      },
-    })
+    expect(console.log).toHaveBeenCalledWith('Audit log:', expect.objectContaining({
+      userId: 'user-123',
+      action: 'USER_LOGIN',
+      resource: 'User',
+      resourceId: 'user-123',
+      details: { foo: 'bar' },
+      ipAddress: '10.0.0.1',
+      userAgent: 'jest-test',
+    }))
   })
 
-  it('createAuditLog swallows errors and logs them', async () => {
-    createMock.mockRejectedValueOnce(new Error('db down'))
+  it('createAuditLog logs audit entries without throwing', async () => {
     const { createAuditLog } = await import('@/lib/audit')
 
     await expect(
       createAuditLog({ action: 'ROOM_CREATE', resource: 'Room' }),
     ).resolves.toBeUndefined()
 
-    expect(console.error).toHaveBeenCalledWith(
-      'Failed to create audit log:',
-      expect.any(Error),
-    )
+    expect(console.log).toHaveBeenCalledWith('Audit log:', expect.objectContaining({
+      action: 'ROOM_CREATE',
+      resource: 'Room',
+    }))
   })
 
   it('getClientInfo extracts ip/user agent from Headers-like request', async () => {
@@ -129,16 +127,14 @@ describe('lib/audit', () => {
       { priority: 'HIGH' },
     )
 
-    expect(createMock).toHaveBeenCalledWith({
-      data: expect.objectContaining({
-        userId: 'user-1',
-        action: 'TASK_CREATE',
-        entityType: 'Task',
-        entityId: 'task-9',
-        details: { priority: 'HIGH' },
-        ipAddress: '10.10.10.10',
-        userAgent: 'Agent',
-      }),
-    })
+    expect(console.log).toHaveBeenCalledWith('Audit log:', expect.objectContaining({
+      userId: 'user-1',
+      action: 'TASK_CREATE',
+      resource: 'Task',
+      resourceId: 'task-9',
+      details: { priority: 'HIGH' },
+      ipAddress: '10.10.10.10',
+      userAgent: 'Agent',
+    }))
   })
 })

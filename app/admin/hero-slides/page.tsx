@@ -8,6 +8,7 @@ import { Plus, Edit, Trash2, Image as ImageIcon, X, ArrowUp, ArrowDown } from 'l
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import toast from 'react-hot-toast'
+import Image from 'next/image'
 
 interface HeroSlide {
   id: string
@@ -160,11 +161,11 @@ export default function AdminHeroSlidesPage() {
         {sortedItems.map((item) => (
           <Card key={item.id} className={!item.active ? 'opacity-60' : ''}>
             <div className="relative h-48 overflow-hidden rounded-t-lg">
-              <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+              <Image src={item.image} alt={item.title} fill className="object-cover" />
               {!item.active && (
-                <div className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded">Inactive</div>
+                <div className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded z-10">Inactive</div>
               )}
-              <div className="absolute top-2 left-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
+              <div className="absolute top-2 left-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded z-10">
                 Order: {item.order}
               </div>
             </div>

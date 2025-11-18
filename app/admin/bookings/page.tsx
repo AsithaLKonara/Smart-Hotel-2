@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { canAccessReceptionistFeatures } from '@/lib/rbac-helpers'
@@ -43,18 +43,7 @@ export default function AdminBookingsPage() {
   const [filterStatus, setFilterStatus] = useState('all')
   const [filterPayment, setFilterPayment] = useState('all')
 
-  useEffect(() => {
-    if (status === 'loading') return
-    
-    if (!canAccessReceptionistFeatures(session)) {
-      router.push('/auth/signin')
-      return
-    }
-
-    fetchBookings()
-  }, [session, status, router])
-
-  const fetchBookings = async () => {
+  const fetchBookings = useCallback(async () => {
     try {
       // Regular admin pages: 2.5-3.0s timeout
       const controller = new AbortController()
@@ -95,7 +84,18 @@ export default function AdminBookingsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [router])
+
+  useEffect(() => {
+    if (status === 'loading') return
+    
+    if (!canAccessReceptionistFeatures(session)) {
+      router.push('/auth/signin')
+      return
+    }
+
+    fetchBookings()
+  }, [session, status, router, fetchBookings])
 
   const handleStatusUpdate = async (bookingId: string, newStatus: string) => {
     try {

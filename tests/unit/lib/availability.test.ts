@@ -62,32 +62,35 @@ describe('lib/availability', () => {
         {
           id: 'room-available',
           status: 'AVAILABLE',
-          capacity: 3,
-          bookings: [],
+          capacity: BigInt(3),
         },
         {
           id: 'room-conflict',
           status: 'AVAILABLE',
-          capacity: 4,
-          bookings: [{ id: 'booking-xyz' }],
+          capacity: BigInt(4),
         },
+      ])
+      // Mock booking query to return conflicting booking for room-conflict
+      bookingFindManySpy.mockResolvedValueOnce([
+        { roomId: 'room-conflict' },
       ])
 
       const rooms = await getAvailableRooms(checkIn, checkOut, 3)
 
+      // Function converts BigInt to Number and filters out rooms with conflicting bookings
       expect(rooms).toEqual([
-        {
+        expect.objectContaining({
           id: 'room-available',
           status: 'AVAILABLE',
           capacity: 3,
-        },
+        }),
       ])
 
       expect(roomFindManySpy).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
             status: { in: ['AVAILABLE', 'RESERVED'] },
-            capacity: { gte: 3 },
+            capacity: { gte: BigInt(3) },
           }),
         }),
       )
@@ -146,13 +149,15 @@ describe('lib/availability', () => {
         {
           id: 'room-a',
           status: 'AVAILABLE',
-          bookings: [],
         },
         {
           id: 'room-b',
           status: 'RESERVED',
-          bookings: [{ id: 'booking-a', status: 'CONFIRMED' }],
         },
+      ])
+      // Mock booking query - room-b has a booking, room-a doesn't
+      bookingFindManySpy.mockResolvedValueOnce([
+        { id: 'booking-a', roomId: 'room-b', checkIn, checkOut, status: 'CONFIRMED' },
       ])
 
       const calendar = await getAvailabilityCalendar(checkIn, checkOut)
@@ -162,7 +167,7 @@ describe('lib/availability', () => {
         {
           id: 'room-b',
           status: 'RESERVED',
-          bookings: [{ id: 'booking-a', status: 'CONFIRMED' }],
+          bookings: [{ id: 'booking-a', roomId: 'room-b', checkIn, checkOut, status: 'CONFIRMED' }],
           isAvailable: false,
         },
       ])
