@@ -16,6 +16,10 @@ jest.mock('@/lib/db', () => {
     },
     staff: {
       findUnique: jest.fn(),
+      findFirst: jest.fn(),
+    },
+    user: {
+      findUnique: jest.fn(),
     },
     booking: {
       findUnique: jest.fn(),
@@ -67,16 +71,20 @@ describe('Tasks API Integration Tests', () => {
         user: { id: 'staff-123', role: 'HOUSEKEEPING' },
       } as any)
 
-      mockPrismaTask.findMany.mockResolvedValue([
+      const mockTasks = [
         {
           id: 'task-1',
           title: 'Clean Room 101',
           status: 'PENDING',
           priority: 'HIGH',
           assignedTo: 'staff-123',
+          createdBy: 'user-123',
           createdAt: new Date(),
         },
-      ] as any)
+      ]
+      mockPrismaTask.findMany.mockResolvedValue(mockTasks as any)
+      mockPrisma.staff.findFirst.mockResolvedValue(null) // For tasksWithRelations
+      mockPrisma.user.findUnique.mockResolvedValue(null) // For tasksWithRelations
 
       const req = new NextRequest('http://localhost:3000/api/tasks')
       const response = await getTasks(req)
@@ -91,12 +99,17 @@ describe('Tasks API Integration Tests', () => {
         user: { id: 'staff-123', role: 'HOUSEKEEPING' },
       } as any)
 
-      mockPrismaTask.findMany.mockResolvedValue([
+      const mockTasks = [
         {
           id: 'task-1',
           status: 'PENDING',
+          assignedTo: 'staff-123',
+          createdBy: 'user-123',
         },
-      ] as any)
+      ]
+      mockPrismaTask.findMany.mockResolvedValue(mockTasks as any)
+      mockPrisma.staff.findFirst.mockResolvedValue(null)
+      mockPrisma.user.findUnique.mockResolvedValue(null)
 
       const req = new NextRequest('http://localhost:3000/api/tasks?status=PENDING')
       const response = await getTasks(req)
@@ -125,18 +138,25 @@ describe('Tasks API Integration Tests', () => {
         user: { id: 'manager-123', role: 'MANAGER' },
       } as any)
 
-      mockPrismaStaff.findUnique.mockResolvedValue({
-        id: 'staff-123',
-        name: 'Staff Member',
-      } as any)
-
-      mockPrismaTask.create.mockResolvedValue({
+      const mockTask = {
         id: 'task-new',
         title: 'New Task',
         status: 'PENDING',
         priority: 'MEDIUM',
-        assignedToId: 'staff-123',
+        assignedTo: 'staff-123',
+        createdBy: 'manager-123',
         createdAt: new Date(),
+      }
+      mockPrismaTask.create.mockResolvedValue(mockTask as any)
+      mockPrisma.staff.findFirst.mockResolvedValue({
+        id: 'staff-123',
+        name: 'Staff Member',
+        email: 'staff@example.com',
+      } as any)
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: 'manager-123',
+        name: 'Manager',
+        email: 'manager@example.com',
       } as any)
 
       const req = new NextRequest('http://localhost:3000/api/tasks', {
@@ -181,15 +201,27 @@ describe('Tasks API Integration Tests', () => {
         user: { id: 'staff-123', role: 'RECEPTIONIST' },
       } as any)
 
-      mockPrismaTask.findUnique.mockResolvedValue({
+      const mockTask = {
         id: 'task-1',
-        assignedToId: 'staff-123',
+        assignedTo: 'staff-123',
+        createdBy: 'user-123',
         status: 'PENDING',
-      } as any)
-
-      mockPrismaTask.update.mockResolvedValue({
-        id: 'task-1',
+      }
+      mockPrismaTask.findUnique.mockResolvedValue(mockTask as any)
+      const updatedTask = {
+        ...mockTask,
         status: 'IN_PROGRESS',
+      }
+      mockPrismaTask.update.mockResolvedValue(updatedTask as any)
+      mockPrisma.staff.findFirst.mockResolvedValue({
+        id: 'staff-123',
+        name: 'Staff',
+        email: 'staff@example.com',
+      } as any)
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: 'user-123',
+        name: 'User',
+        email: 'user@example.com',
       } as any)
 
       const req = new NextRequest('http://localhost:3000/api/tasks/task-1', {

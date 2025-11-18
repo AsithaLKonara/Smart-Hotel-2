@@ -38,6 +38,7 @@ jest.mock('@/lib/db', () => {
     },
     user: {
       findUnique: jest.fn(),
+      findFirst: jest.fn(),
       create: jest.fn(),
     },
     invoice: {
@@ -291,12 +292,29 @@ describe('Bookings API Integration', () => {
         id: 'deluxe-king',
         price: 299,
         status: 'AVAILABLE',
-      })
+        number: '101',
+        type: 'Deluxe King',
+        capacity: BigInt(2),
+        floor: BigInt(1),
+        size: BigInt(450),
+      } as any)
       mockPrisma.user.findUnique.mockResolvedValue(mockUser)
+      mockPrisma.booking.findFirst.mockResolvedValue(null) // No conflicting booking
       mockPrisma.booking.create.mockResolvedValue(mockBooking)
-      getServerSession.mockResolvedValue({
+      mockPrisma.user.findUnique.mockResolvedValue(mockUser) // For bookingWithRelations
+      mockPrisma.room.findUnique.mockResolvedValue({
+        id: 'deluxe-king',
+        price: 299,
+        status: 'AVAILABLE',
+        number: '101',
+        type: 'Deluxe King',
+        capacity: BigInt(2),
+        floor: BigInt(1),
+        size: BigInt(450),
+      } as any) // For bookingWithRelations
+      mockGetRequestSession.mockResolvedValue({
         user: { id: 'user-123', role: 'GUEST' }
-      })
+      } as any)
 
       const requestBody = {
         roomId: 'deluxe-king',
@@ -349,11 +367,25 @@ describe('Bookings API Integration', () => {
         id: 'executive-suite',
         price: 499,
         status: 'AVAILABLE',
-      })
-      mockPrisma.user.findUnique.mockResolvedValue(null)
+        number: '205',
+        type: 'Executive Suite',
+      } as any)
+      mockPrisma.user.findFirst.mockResolvedValue(null) // User doesn't exist
       mockPrisma.user.create.mockResolvedValue(mockGuestUser)
+      mockPrisma.booking.findFirst.mockResolvedValue(null) // No conflicting booking
       mockPrisma.booking.create.mockResolvedValue(mockBooking)
-      mockGetRequestSession.mockResolvedValue(null)
+      mockPrisma.user.findUnique.mockResolvedValue(mockGuestUser) // For bookingWithRelations
+      mockPrisma.room.findUnique.mockResolvedValue({
+        id: 'executive-suite',
+        price: 499,
+        status: 'AVAILABLE',
+        number: '205',
+        type: 'Executive Suite',
+        capacity: BigInt(3),
+        floor: BigInt(2),
+        size: BigInt(650),
+      } as any) // For bookingWithRelations
+      mockGetRequestSession.mockResolvedValue(null) // No session - guest checkout
 
       const requestBody = {
         roomId: 'executive-suite',
@@ -420,10 +452,12 @@ describe('Bookings API Integration', () => {
         id: 'deluxe-king',
         price: 299,
         status: 'AVAILABLE',
-      })
-      getServerSession.mockResolvedValue({
+        number: '101',
+        type: 'Deluxe King',
+      } as any)
+      mockGetRequestSession.mockResolvedValue({
         user: { id: 'user-123', role: 'GUEST' }
-      })
+      } as any)
       mockPrisma.booking.findFirst.mockResolvedValue(existingBooking)
 
       const requestBody = {

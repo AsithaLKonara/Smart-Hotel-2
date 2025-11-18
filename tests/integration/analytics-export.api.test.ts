@@ -15,6 +15,7 @@ jest.mock('@/lib/db', () => {
     room: {
       findMany: jest.fn(),
     },
+    $disconnect: jest.fn(),
   }
   return {
     __esModule: true,
@@ -30,38 +31,10 @@ jest.mock('next-auth', () => ({
   }),
 }))
 
-jest.mock('@/app/api/analytics/route', () => ({
-  buildAnalytics: jest.fn().mockResolvedValue({
-    revenue: { total: 10000, thisMonth: 5000, thisWeek: 1000, today: 200 },
-    occupancy: { 
-      current: 75, 
-      average: 70, 
-      trend: 5,
-      series: []
-    },
-    bookings: { total: 100, confirmed: 80, pending: 15, cancelled: 5 },
-    topRooms: [],
-    guestSources: [],
-    dailyRevenue: [],
-  }),
-}))
+// Remove this mock - buildAnalytics is in lib/analytics/core, not app/api/analytics/route
 
-jest.mock('@/lib/analytics/core', () => ({
-  normalizeAnalyticsRange: jest.fn((range) => range || '30d'),
-  computeAnalytics: jest.fn().mockResolvedValue({
-    revenue: { total: 10000, thisMonth: 5000, thisWeek: 1000, today: 200 },
-    occupancy: { 
-      current: 75, 
-      average: 70, 
-      trend: 5,
-      series: []
-    },
-    bookings: { total: 100, confirmed: 80, pending: 15, cancelled: 5 },
-    topRooms: [],
-    guestSources: [],
-    dailyRevenue: [],
-  }),
-}))
+// Don't mock buildAnalytics - let it use the actual implementation with mocked Prisma
+// The mocks above will handle the Prisma calls
 
 jest.mock('@/lib/rate-limit-enhanced', () => ({
   enhancedRateLimit: jest.fn().mockReturnValue({ allowed: true }),
@@ -157,9 +130,13 @@ describe('Analytics Export API Integration Tests', () => {
         user: { id: 'manager-123', role: 'MANAGER' },
       } as any)
 
-      mockPrismaBooking.findMany.mockResolvedValue([])
-      mockPrismaInvoice.findMany.mockResolvedValue([])
-      mockPrismaRoom.findMany.mockResolvedValue([])
+      // Mock data for buildAnalytics -> computeAnalytics
+      mockPrismaRoom.findMany.mockResolvedValue([
+        { id: 'room-1', number: '101', type: 'Standard', status: 'AVAILABLE', totalAmount: 100 },
+      ] as any)
+      mockPrismaBooking.findMany.mockResolvedValue([
+        { id: 'booking-1', totalAmount: 500, status: 'CONFIRMED', checkIn: new Date(), checkOut: new Date(), createdAt: new Date() },
+      ] as any)
 
       const req = new NextRequest('http://localhost:3000/api/analytics/export?type=pdf')
       const response = await exportAnalytics(req)
@@ -173,9 +150,13 @@ describe('Analytics Export API Integration Tests', () => {
         user: { id: 'manager-123', role: 'MANAGER' },
       } as any)
 
-      mockPrismaBooking.findMany.mockResolvedValue([])
-      mockPrismaInvoice.findMany.mockResolvedValue([])
-      mockPrismaRoom.findMany.mockResolvedValue([])
+      // Mock data for buildAnalytics -> computeAnalytics
+      mockPrismaRoom.findMany.mockResolvedValue([
+        { id: 'room-1', number: '101', type: 'Standard', status: 'AVAILABLE', totalAmount: 100 },
+      ] as any)
+      mockPrismaBooking.findMany.mockResolvedValue([
+        { id: 'booking-1', totalAmount: 500, status: 'CONFIRMED', checkIn: new Date(), checkOut: new Date(), createdAt: new Date() },
+      ] as any)
 
       const req = new NextRequest('http://localhost:3000/api/analytics/export?type=excel')
       const response = await exportAnalytics(req)
