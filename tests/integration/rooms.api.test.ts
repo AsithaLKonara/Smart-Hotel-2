@@ -487,18 +487,21 @@ describe('Bookings API Integration', () => {
         id: 'deluxe-king',
         price: 299,
         status: 'AVAILABLE',
-      })
+        number: '101',
+        type: 'Deluxe King',
+      } as any)
       mockPrisma.user.findUnique.mockResolvedValue({
         id: 'user-123',
         email: 'test@example.com',
         name: 'John Doe',
         role: 'GUEST',
-      })
+      } as any)
+      mockPrisma.booking.findFirst.mockResolvedValue(null) // No conflicting booking
 
       mockPrisma.booking.create.mockRejectedValue(new Error('Database error'))
-      getServerSession.mockResolvedValue({
+      mockGetRequestSession.mockResolvedValue({
         user: { id: 'user-123', role: 'GUEST' }
-      })
+      } as any)
 
       const requestBody = {
         roomId: 'deluxe-king',
