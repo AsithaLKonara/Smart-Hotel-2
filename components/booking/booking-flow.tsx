@@ -205,46 +205,8 @@ function BookingStep2({
         setRooms(roomsWithNumbers)
       } catch (error) {
         console.error('Error fetching rooms:', error)
-        // Fallback to mock data if API fails
-        const mockRooms: Room[] = [
-          {
-            id: '1',
-            number: '101',
-            type: 'Deluxe Ocean View',
-            price: 299,
-            capacity: 2,
-            amenities: ['wifi', 'breakfast', 'parking'],
-            images: ['/images/rooms/deluxe-1.jpg', '/images/rooms/deluxe-2.jpg'],
-            description: 'Spacious room with stunning ocean views and premium amenities',
-            floor: 1,
-            status: 'AVAILABLE'
-          },
-          {
-            id: '2',
-            number: '201',
-            type: 'Presidential Suite',
-            price: 599,
-            capacity: 4,
-            amenities: ['wifi', 'breakfast', 'parking', 'spa'],
-            images: ['/images/rooms/presidential-1.jpg', '/images/rooms/presidential-2.jpg'],
-            description: 'Luxurious suite with private balcony and butler service',
-            floor: 2,
-            status: 'AVAILABLE'
-          },
-          {
-            id: '3',
-            number: '301',
-            type: 'Standard Room',
-            price: 199,
-            capacity: 2,
-            amenities: ['wifi'],
-            images: ['/images/rooms/standard-1.jpg'],
-            description: 'Comfortable room with modern amenities',
-            floor: 3,
-            status: 'AVAILABLE'
-          }
-        ]
-        setRooms(mockRooms)
+        // Show empty state instead of mock data - let user know there was an error
+        setRooms([])
       } finally {
         setLoading(false)
       }
