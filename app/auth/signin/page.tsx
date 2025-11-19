@@ -33,11 +33,18 @@ export default function SignInPage() {
         return
       }
 
-      // Wait a bit for session to be established
-      await new Promise(resolve => setTimeout(resolve, 100))
+      // Wait for session to be established
+      // Use a more reliable approach with retries
+      let session = null
+      let attempts = 0
+      const maxAttempts = 5
       
-      // Check for session and redirect
-      let session = await getSession()
+      while (attempts < maxAttempts && !session?.user?.role) {
+        await new Promise(resolve => setTimeout(resolve, 200 * (attempts + 1)))
+        session = await getSession()
+        attempts++
+      }
+      
       if (session?.user?.role) {
         toast.success('Signed in successfully')
         // Use window.location for more reliable redirect
@@ -49,34 +56,17 @@ export default function SignInPage() {
         return
       }
       
-      // Session not available yet, try once more after a short delay
-      await new Promise(resolve => setTimeout(resolve, 300))
-      session = await getSession()
-      if (session?.user?.role) {
+      // If still no session, try redirecting anyway (session might be set but not yet readable)
+      if (result?.ok || result?.url) {
         toast.success('Signed in successfully')
-        if (session.user.role === 'GUEST') {
-          window.location.href = '/'
-        } else {
-          window.location.href = '/admin'
-        }
+        // Redirect based on expected role (we'll let the server handle it)
+        const callbackUrl = new URLSearchParams(window.location.search).get('callbackUrl') || '/admin'
+        window.location.href = callbackUrl
         return
       }
       
-      // Final attempt after longer delay
-      await new Promise(resolve => setTimeout(resolve, 500))
-      session = await getSession()
-      if (session?.user?.role) {
-        toast.success('Signed in successfully')
-        if (session.user.role === 'GUEST') {
-          window.location.href = '/'
-        } else {
-          window.location.href = '/admin'
-        }
-        return
-      }
-      
-      console.error('Session not available after login', { session })
-      toast.error('An error occurred during sign in')
+      console.error('Session not available after login', { session, result })
+      toast.error('An error occurred during sign in. Please try again.')
     } catch (error) {
       console.error('Sign in exception:', error)
       toast.error('An error occurred during sign in')
