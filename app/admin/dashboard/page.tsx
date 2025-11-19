@@ -108,15 +108,20 @@ function AdminDashboardContent() {
   const fetchDashboardData = async () => {
     try {
       setIsLoading(true)
-      // Admin stats pages: 3.5s timeout (heavy queries)
+      // Admin stats pages: 10s timeout (heavy queries, allow more time for initial load)
       const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 3500)
+      const timeoutId = setTimeout(() => controller.abort(), 10000)
       const response = await fetch('/api/analytics/dashboard', {
         signal: controller.signal,
         cache: 'no-store',
         credentials: 'include',
       })
       clearTimeout(timeoutId)
+      
+      if (controller.signal.aborted) {
+        throw new Error('Request timeout - analytics computation took too long')
+      }
+      
       const data = await response.json()
 
       if (response.ok) {
@@ -170,8 +175,14 @@ function AdminDashboardContent() {
       } else {
         toast.error('Failed to load dashboard data')
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching dashboard data:', error)
+      // Handle AbortError gracefully
+      if (error.name === 'AbortError' || error.message?.includes('timeout') || error.message?.includes('aborted')) {
+        toast.error('Dashboard data is taking longer than expected. Please refresh the page.')
+      } else {
+        toast.error('Failed to load dashboard data')
+      }
       toast.error('Failed to load dashboard data')
     } finally {
       setIsLoading(false)

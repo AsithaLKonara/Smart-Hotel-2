@@ -382,6 +382,9 @@ async function main() {
       await new Promise(resolve => setTimeout(resolve, 100))
     }
 
+    // Generate unique confirmation code
+    const confirmationCode = `GP${Date.now().toString().slice(-6)}${Math.floor(Math.random() * 1000)}${i}`
+    
     try {
       const record = await prisma.booking.create({
         data: {
@@ -395,16 +398,41 @@ async function main() {
           paymentStatus: booking.paymentStatus,
           paymentMethod: booking.paymentMethod,
           specialRequests: booking.specialRequests || null,
+          confirmationCode,
           createdAt: booking.createdAt,
           updatedAt: booking.createdAt,
         },
       })
       bookings.push(record)
     } catch (error: any) {
-      // If confirmationCode constraint error, skip this booking
-      if (error.code === 'P2002' && error.meta?.target === 'Booking_confirmationCode_key') {
-        console.warn(`⚠️ Skipping booking ${i + 1} due to confirmationCode constraint (database may have existing data)`)
-        continue
+      // If confirmationCode constraint error, try with a different code
+      if (error.code === 'P2002' && error.meta?.target?.includes('confirmationCode')) {
+        // Retry with a more unique code
+        const retryCode = `GP${Date.now()}${Math.floor(Math.random() * 10000)}${i}${Math.random().toString(36).substring(7)}`
+        try {
+          const record = await prisma.booking.create({
+            data: {
+              userId: users[booking.userKey].id,
+              roomId: room.id,
+              checkIn: booking.checkIn,
+              checkOut: booking.checkOut,
+              guests: BigInt(booking.guests),
+              totalAmount: booking.totalAmount,
+              status: booking.status,
+              paymentStatus: booking.paymentStatus,
+              paymentMethod: booking.paymentMethod,
+              specialRequests: booking.specialRequests || null,
+              confirmationCode: retryCode,
+              createdAt: booking.createdAt,
+              updatedAt: booking.createdAt,
+            },
+          })
+          bookings.push(record)
+          continue
+        } catch (retryError: any) {
+          console.warn(`⚠️ Skipping booking ${i + 1} due to confirmationCode constraint after retry`)
+          continue
+        }
       }
       throw error
     }

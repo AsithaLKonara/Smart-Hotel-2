@@ -65,7 +65,8 @@ export default function AdminTasksPage() {
       const response = await fetch('/api/tasks')
       if (!response.ok) throw new Error('Failed to fetch tasks')
       const data = await response.json()
-      setTasks(data)
+      // API returns { tasks: [...] }, so extract the tasks array
+      setTasks(data.tasks || data || [])
     } catch (error) {
       console.error('Error fetching tasks:', error)
       toast.error('Failed to load tasks')

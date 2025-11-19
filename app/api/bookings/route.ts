@@ -289,7 +289,7 @@ export async function POST(request: NextRequest) {
     const totalAmount = room.price * nights
 
     // Generate confirmation code
-    const confirmationCode = `GP${Date.now().toString().slice(-6)}`
+    const confirmationCode = `GP${Date.now().toString().slice(-6)}${Math.floor(Math.random() * 1000)}`
 
     // Create booking
     const booking = await prisma.booking.create({
@@ -304,6 +304,7 @@ export async function POST(request: NextRequest) {
         status: 'PENDING',
         paymentStatus: validatedData.paymentMethod === 'pay_now' ? 'PENDING' : 'PENDING',
         paymentMethod: validatedData.paymentMethod === 'pay_now' ? 'CARD' : 'CASH',
+        confirmationCode,
         createdAt: new Date(),
         updatedAt: new Date(),
       }

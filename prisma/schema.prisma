@@ -22,6 +22,7 @@ model Booking {
   totalAmount     Float
   updatedAt       DateTime     @db.Date
   userId          String       @db.ObjectId
+  confirmationCode String?     @unique
   payments        Payment[]
   reviews         RoomReview[]
 }
