@@ -26,21 +26,73 @@ async function clearDatabase() {
   // await prisma.guestReview.deleteMany()
   // Note: These models don't exist in schema - skip clearing
   // await prisma.wishlist.deleteMany()
-  // await prisma.orderItem.deleteMany()
+  
+  // Delete in correct order to respect foreign key constraints
+  // Delete child records first, then parent records
+  
+  // Delete OrderItem first (child) before FoodOrder (parent)
+  try {
+    await prisma.orderItem.deleteMany()
+  } catch (e) {
+    // OrderItem might not exist, continue
+  }
+  
+  // Delete Payment (references Booking, FoodOrder, User)
+  try {
+    await prisma.payment.deleteMany()
+  } catch (e) {
+    // Continue if doesn't exist
+  }
+  
+  // Delete RoomImage (references Room)
+  try {
+    await prisma.roomImage.deleteMany()
+  } catch (e) {
+    // Continue if doesn't exist
+  }
+  
+  // Delete RoomReview (references Room, User, Booking)
+  try {
+    await prisma.roomReview.deleteMany()
+  } catch (e) {
+    // Continue if doesn't exist
+  }
+  
+  // Delete FoodOrder (references User)
   await prisma.foodOrder.deleteMany()
+  
+  // Delete FoodMenu (no dependencies)
   await prisma.foodMenu.deleteMany()
+  
+  // Delete Task (references User/Staff)
   await prisma.task.deleteMany()
-  // await prisma.invoice.deleteMany()
+  
+  // Delete Booking (references Room, User)
   await prisma.booking.deleteMany()
-  // await prisma.roomImage.deleteMany()
-  // await prisma.roomFeature.deleteMany()
+  
+  // Delete Room (after deleting dependent records)
   await prisma.room.deleteMany()
+  
+  // Delete Staff (no dependencies)
   await prisma.staff.deleteMany()
+  
+  // Delete Inventory (no dependencies)
   await prisma.inventory.deleteMany()
+  
+  // Delete Gallery (no dependencies)
   await prisma.gallery.deleteMany()
+  
+  // Delete Setting (no dependencies)
   await prisma.setting.deleteMany()
-  // await prisma.auditLog.deleteMany()
-  // await prisma.notification.deleteMany()
+  
+  // Delete Notification (references User)
+  try {
+    await prisma.notification.deleteMany()
+  } catch (e) {
+    // Continue if doesn't exist
+  }
+  
+  // Delete User last (after all dependent records)
   await prisma.user.deleteMany()
 }
 
@@ -86,6 +138,8 @@ async function main() {
         password,
         phone: user.phone,
         role: user.role,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
     })
     users[user.key] = { id: record.id }
@@ -111,6 +165,8 @@ async function main() {
           ...staff,
           hireDate: new Date(`2020-0${(index % 6) + 1}-15`),
           isActive: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
         },
       })
     )
@@ -143,6 +199,8 @@ async function main() {
         status: room.status,
         floor: room.floor,
         size: room.size,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
     })
     rooms.push(record)
@@ -161,19 +219,21 @@ async function main() {
     await prisma.roomImage.create({
       data: {
         roomId: room.id,
-        url: `/images/gallery/${room.number}-main.jpg`,
-        alt: `${room.type} main view`,
+        imageUrl: `/images/gallery/${room.number}-main.jpg`,
         isMain: true,
-        order: 1,
+        displayOrder: 1,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
     })
     await prisma.roomImage.create({
       data: {
         roomId: room.id,
-        url: `/images/gallery/${room.number}-detail.jpg`,
-        alt: `${room.type} detail`,
+        imageUrl: `/images/gallery/${room.number}-detail.jpg`,
         isMain: false,
-        order: 2,
+        displayOrder: 2,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
     })
   }
@@ -190,7 +250,6 @@ async function main() {
       paymentStatus: 'PAID' as PaymentStatus,
       paymentMethod: 'pay_now',
       specialRequests: 'Late-night airport transfer',
-      confirmationCode: 'GP-742315',
       createdAt: new Date('2025-01-05'),
     },
     {
@@ -204,7 +263,6 @@ async function main() {
       paymentStatus: 'PENDING' as PaymentStatus,
       paymentMethod: 'pay_now',
       specialRequests: 'Private chef dinner for first evening',
-      confirmationCode: 'GP-958432',
       createdAt: new Date('2025-02-10'),
     },
     {
@@ -218,7 +276,6 @@ async function main() {
       paymentStatus: 'PAID' as PaymentStatus,
       paymentMethod: 'pay_later',
       specialRequests: 'Feather-free pillows',
-      confirmationCode: 'GP-614278',
       createdAt: new Date('2025-01-05'),
     },
     {
@@ -232,7 +289,6 @@ async function main() {
       paymentStatus: 'PAID' as PaymentStatus,
       paymentMethod: 'pay_now',
       specialRequests: 'Children amenities on arrival',
-      confirmationCode: 'GP-328417',
       createdAt: new Date('2024-12-20'),
     },
     {
@@ -246,7 +302,6 @@ async function main() {
       paymentStatus: 'PARTIAL' as PaymentStatus,
       paymentMethod: 'pay_now',
       specialRequests: 'Vegan minibar selection',
-      confirmationCode: 'GP-772934',
       createdAt: new Date('2025-02-28'),
     },
     {
@@ -260,10 +315,7 @@ async function main() {
       paymentStatus: 'REFUNDED' as PaymentStatus,
       paymentMethod: 'pay_now',
       specialRequests: 'Corner room requested',
-      confirmationCode: 'GP-441203',
       createdAt: new Date('2025-01-15'),
-      cancelledAt: new Date('2025-01-25'),
-      cancellationReason: 'Travel itinerary change',
     },
     {
       userKey: 'guest7',
@@ -276,7 +328,6 @@ async function main() {
       paymentStatus: 'PAID' as PaymentStatus,
       paymentMethod: 'pay_now',
       specialRequests: 'Accessible airport transfer',
-      confirmationCode: 'GP-118825',
       createdAt: new Date('2025-01-12'),
     },
     {
@@ -290,7 +341,6 @@ async function main() {
       paymentStatus: 'PAID' as PaymentStatus,
       paymentMethod: 'pay_later',
       specialRequests: 'Extra bed for child',
-      confirmationCode: 'GP-552019',
       createdAt: new Date('2024-11-25'),
     },
     {
@@ -304,7 +354,6 @@ async function main() {
       paymentStatus: 'PENDING' as PaymentStatus,
       paymentMethod: 'pay_now',
       specialRequests: 'Renovation update before arrival',
-      confirmationCode: 'GP-229471',
       createdAt: new Date('2025-03-20'),
     },
     {
@@ -318,135 +367,165 @@ async function main() {
       paymentStatus: 'PAID' as PaymentStatus,
       paymentMethod: 'pay_now',
       specialRequests: 'Butler to arrange city tour',
-      confirmationCode: 'GP-619337',
       createdAt: new Date('2025-01-30'),
     },
   ]
 
   const bookings = []
-  for (const booking of bookingSeeds) {
+  for (let i = 0; i < bookingSeeds.length; i++) {
+    const booking = bookingSeeds[i]
     const room = rooms.find(r => r.number === booking.roomNumber)
     if (!room) continue
 
-    const record = await prisma.booking.create({
-      data: {
-        userId: users[booking.userKey].id,
-        roomId: room.id,
-        checkIn: booking.checkIn,
-        checkOut: booking.checkOut,
-        guests: booking.guests,
-        totalAmount: booking.totalAmount,
-        status: booking.status,
-        paymentStatus: booking.paymentStatus,
-        paymentMethod: booking.paymentMethod,
-        specialRequests: booking.specialRequests,
-        confirmationCode: booking.confirmationCode,
-        createdAt: booking.createdAt,
-        cancelledAt: booking.cancelledAt,
-        cancellationReason: booking.cancellationReason,
-      },
-    })
-    bookings.push(record)
+    // Add small delay to ensure unique timestamps for confirmationCode generation
+    if (i > 0) {
+      await new Promise(resolve => setTimeout(resolve, 100))
+    }
 
-    const tax = Number((booking.totalAmount * 0.1).toFixed(2))
-    await prisma.invoice.create({
-      data: {
-        bookingId: record.id,
-        amount: booking.totalAmount,
-        tax,
-        total: booking.totalAmount + tax,
-        status: booking.paymentStatus,
-        dueDate: new Date(record.checkIn.getTime() - 3 * 24 * 60 * 60 * 1000),
-      },
-    })
+    try {
+      const record = await prisma.booking.create({
+        data: {
+          userId: users[booking.userKey].id,
+          roomId: room.id,
+          checkIn: booking.checkIn,
+          checkOut: booking.checkOut,
+          guests: BigInt(booking.guests),
+          totalAmount: booking.totalAmount,
+          status: booking.status,
+          paymentStatus: booking.paymentStatus,
+          paymentMethod: booking.paymentMethod,
+          specialRequests: booking.specialRequests || null,
+          createdAt: booking.createdAt,
+          updatedAt: booking.createdAt,
+        },
+      })
+      bookings.push(record)
+    } catch (error: any) {
+      // If confirmationCode constraint error, skip this booking
+      if (error.code === 'P2002' && error.meta?.target === 'Booking_confirmationCode_key') {
+        console.warn(`⚠️ Skipping booking ${i + 1} due to confirmationCode constraint (database may have existing data)`)
+        continue
+      }
+      throw error
+    }
+
+    // Note: Invoice model doesn't exist in schema - skipping
+    // const tax = Number((booking.totalAmount * 0.1).toFixed(2))
+    // await prisma.invoice.create({
+    //   data: {
+    //     bookingId: record.id,
+    //     amount: booking.totalAmount,
+    //     tax,
+    //     total: booking.totalAmount + tax,
+    //     status: booking.paymentStatus,
+    //     dueDate: new Date(record.checkIn.getTime() - 3 * 24 * 60 * 60 * 1000),
+    //   },
+    // })
   }
 
-  const taskSeeds = [
-    {
+  // Only create tasks if we have bookings and staff
+  const taskSeeds = []
+  if (bookings.length > 0 && staffMembers.length > 0) {
+    taskSeeds.push({
       title: 'Refresh welcome amenities',
       description: 'Set up champagne, chocolates, and personalized welcome note in Executive Suite 201',
-      type: 'GUEST_REQUEST' as TaskType,
-      priority: 'HIGH' as TaskPriority,
-      status: 'IN_PROGRESS' as TaskStatus,
-      assignedTo: staffMembers[0].id,
-      bookingId: bookings[0].id,
-      dueDate: new Date('2025-02-12T16:00:00'),
-    },
-    {
-      title: 'Coordinate private chef dinner',
-      description: 'Liaise with culinary team for five-course tasting menu on March 1st',
       type: 'ROOM_SERVICE' as TaskType,
       priority: 'HIGH' as TaskPriority,
-      status: 'PENDING' as TaskStatus,
-      assignedTo: staffMembers[2].id,
-      bookingId: bookings[1].id,
-      dueDate: new Date('2025-02-28T18:00:00'),
-    },
-    {
-      title: 'Repair rainfall shower',
-      description: 'Resolve low pressure complaint in Deluxe King room 101',
-      type: 'MAINTENANCE' as TaskType,
-      priority: 'URGENT' as TaskPriority,
-      status: 'PENDING' as TaskStatus,
-      assignedTo: staffMembers[5].id,
-      bookingId: bookings[5].id,
-      dueDate: new Date('2025-01-26T10:00:00'),
-    },
-    {
-      title: 'Daily turndown aromatherapy',
-      description: 'Apply lavender aromatherapy preference for family suite 502',
-      type: 'HOUSEKEEPING' as TaskType,
-      priority: 'MEDIUM' as TaskPriority,
-      status: 'COMPLETED' as TaskStatus,
-      assignedTo: staffMembers[6].id,
-      bookingId: bookings[3].id,
-      dueDate: new Date('2025-01-10T20:00:00'),
-      completedAt: new Date('2025-01-10T19:30:00'),
-    },
-    {
-      title: 'Assist VIP sky tour booking',
-      description: 'Confirm helicopter sky tour with concierge partners for Skyline Suite guests',
-      type: 'ADMINISTRATIVE' as TaskType,
-      priority: 'MEDIUM' as TaskPriority,
       status: 'IN_PROGRESS' as TaskStatus,
-      assignedTo: staffMembers[1].id,
-      bookingId: bookings[4].id,
-      dueDate: new Date('2025-03-20T17:00:00'),
-    },
-  ]
+      assignedTo: staffMembers[0]?.id || staffMembers[0].id,
+      dueDate: new Date('2025-02-12T16:00:00'),
+    })
+    if (bookings.length > 1 && staffMembers.length > 2) {
+      taskSeeds.push({
+        title: 'Coordinate private chef dinner',
+        description: 'Liaise with culinary team for five-course tasting menu on March 1st',
+        type: 'ROOM_SERVICE' as TaskType,
+        priority: 'HIGH' as TaskPriority,
+        status: 'PENDING' as TaskStatus,
+        assignedTo: staffMembers[2]?.id || staffMembers[0].id,
+        dueDate: new Date('2025-02-28T18:00:00'),
+      })
+    }
+    if (bookings.length > 5 && staffMembers.length > 5) {
+      taskSeeds.push({
+        title: 'Repair rainfall shower',
+        description: 'Resolve low pressure complaint in Deluxe King room 101',
+        type: 'MAINTENANCE' as TaskType,
+        priority: 'URGENT' as TaskPriority,
+        status: 'PENDING' as TaskStatus,
+        assignedTo: staffMembers[5]?.id || staffMembers[0].id,
+        dueDate: new Date('2025-01-26T10:00:00'),
+      })
+    }
+    if (bookings.length > 3 && staffMembers.length > 6) {
+      taskSeeds.push({
+        title: 'Daily turndown aromatherapy',
+        description: 'Apply lavender aromatherapy preference for family suite 502',
+        type: 'CLEANING' as TaskType,
+        priority: 'MEDIUM' as TaskPriority,
+        status: 'COMPLETED' as TaskStatus,
+        assignedTo: staffMembers[6]?.id || staffMembers[0].id,
+        dueDate: new Date('2025-01-10T20:00:00'),
+        completedAt: new Date('2025-01-10T19:30:00'),
+      })
+    }
+    if (bookings.length > 4 && staffMembers.length > 1) {
+      taskSeeds.push({
+        title: 'Assist VIP sky tour booking',
+        description: 'Confirm helicopter sky tour with concierge partners for Skyline Suite guests',
+        type: 'CONCIERGE' as TaskType,
+        priority: 'MEDIUM' as TaskPriority,
+        status: 'IN_PROGRESS' as TaskStatus,
+        assignedTo: staffMembers[1]?.id || staffMembers[0].id,
+        dueDate: new Date('2025-03-20T17:00:00'),
+      })
+    }
+  }
 
   const taskRecords = []
   for (const task of taskSeeds) {
+    const { bookingId, ...taskData } = task // Remove bookingId as it doesn't exist in schema
     const record = await prisma.task.create({
       data: {
-        ...task,
+        ...taskData,
         createdBy: users.manager.id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
     })
     taskRecords.push(record)
   }
 
   const menuSeeds = [
-    { name: 'Sunrise Acai Bowl', description: 'Acai puree with seasonal berries and almond granola', price: 18.5, category: 'BREAKFAST' as FoodCategory, image: '/images/menu/acai-bowl.jpg', preparationTime: 8 },
-    { name: 'Truffle Omelette', description: 'Cage-free eggs, black truffle shavings, manchego', price: 24, category: 'BREAKFAST' as FoodCategory, image: '/images/menu/truffle-omelette.jpg', preparationTime: 12 },
-    { name: 'Heritage Tomato Burrata', description: 'Heirloom tomatoes, basil oil, aged balsamic', price: 22, category: 'LUNCH' as FoodCategory, image: '/images/menu/burrata.jpg', preparationTime: 10 },
-    { name: 'Seared Atlantic Salmon', description: 'Citrus beurre blanc, fennel pollen, charred broccolini', price: 42, category: 'LUNCH' as FoodCategory, image: '/images/menu/salmon.jpg', preparationTime: 18 },
-    { name: 'Prime Wagyu Tenderloin', description: 'Miyazaki wagyu with pomme puree and bordelaise', price: 98, category: 'DINNER' as FoodCategory, image: '/images/menu/wagyu.jpg', preparationTime: 25 },
-    { name: 'Porcini Risotto', description: 'Aged carnaroli rice, porcini broth, Parmigiano Reggiano', price: 36, category: 'DINNER' as FoodCategory, image: '/images/menu/risotto.jpg', preparationTime: 22 },
-    { name: 'Valrhona Chocolate Soufflé', description: '70% Guanaja chocolate, Tahitian vanilla anglaise', price: 18, category: 'DESSERTS' as FoodCategory, image: '/images/menu/souffle.jpg', preparationTime: 15 },
-    { name: 'Passionfruit Pavlova', description: 'Crisp meringue, tropical fruits, coconut cream', price: 17, category: 'DESSERTS' as FoodCategory, image: '/images/menu/pavlova.jpg', preparationTime: 12 },
-    { name: 'Cold Brew Negroni', description: 'Coffee-infused Campari, gin, vermouth', price: 16, category: 'BEVERAGES' as FoodCategory, image: '/images/menu/negroni.jpg', preparationTime: 5 },
-    { name: 'Cucumber Elderflower Fizz', description: 'House soda, cucumber, elderflower cordial', price: 12, category: 'BEVERAGES' as FoodCategory, image: '/images/menu/fizz.jpg', preparationTime: 4 },
-    { name: 'Lobster Benedict', description: 'Maine lobster, brown butter hollandaise, brioche', price: 32, category: 'BREAKFAST' as FoodCategory, image: '/images/menu/lobster-benedict.jpg', preparationTime: 14 },
-    { name: 'Grilled Octopus', description: 'Smoked paprika aioli, crispy chickpeas, lemon', price: 28, category: 'LUNCH' as FoodCategory, image: '/images/menu/octopus.jpg', preparationTime: 16 },
+    { name: 'Sunrise Acai Bowl', description: 'Acai puree with seasonal berries and almond granola', price: 18.5, category: 'BREAKFAST' as FoodCategory, preparationTime: 8 },
+    { name: 'Truffle Omelette', description: 'Cage-free eggs, black truffle shavings, manchego', price: 24, category: 'BREAKFAST' as FoodCategory, preparationTime: 12 },
+    { name: 'Heritage Tomato Burrata', description: 'Heirloom tomatoes, basil oil, aged balsamic', price: 22, category: 'LUNCH' as FoodCategory, preparationTime: 10 },
+    { name: 'Seared Atlantic Salmon', description: 'Citrus beurre blanc, fennel pollen, charred broccolini', price: 42, category: 'LUNCH' as FoodCategory, preparationTime: 18 },
+    { name: 'Prime Wagyu Tenderloin', description: 'Miyazaki wagyu with pomme puree and bordelaise', price: 98, category: 'DINNER' as FoodCategory, preparationTime: 25 },
+    { name: 'Porcini Risotto', description: 'Aged carnaroli rice, porcini broth, Parmigiano Reggiano', price: 36, category: 'DINNER' as FoodCategory, preparationTime: 22 },
+    { name: 'Valrhona Chocolate Soufflé', description: '70% Guanaja chocolate, Tahitian vanilla anglaise', price: 18, category: 'DESSERTS' as FoodCategory, preparationTime: 15 },
+    { name: 'Passionfruit Pavlova', description: 'Crisp meringue, tropical fruits, coconut cream', price: 17, category: 'DESSERTS' as FoodCategory, preparationTime: 12 },
+    { name: 'Cold Brew Negroni', description: 'Coffee-infused Campari, gin, vermouth', price: 16, category: 'BEVERAGES' as FoodCategory, preparationTime: 5 },
+    { name: 'Cucumber Elderflower Fizz', description: 'House soda, cucumber, elderflower cordial', price: 12, category: 'BEVERAGES' as FoodCategory, preparationTime: 4 },
+    { name: 'Lobster Benedict', description: 'Maine lobster, brown butter hollandaise, brioche', price: 32, category: 'BREAKFAST' as FoodCategory, preparationTime: 14 },
+    { name: 'Grilled Octopus', description: 'Smoked paprika aioli, crispy chickpeas, lemon', price: 28, category: 'LUNCH' as FoodCategory, preparationTime: 16 },
   ]
 
-  const menuItems = await Promise.all(menuSeeds.map(item => prisma.foodMenu.create({ data: item })))
+  const menuItems = await Promise.all(menuSeeds.map(item => prisma.foodMenu.create({ 
+    data: {
+      ...item,
+      available: true, // Add required available field
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }
+  })))
 
-  const orders = [
-    {
+  // Only create orders if we have bookings
+  const orders = []
+  if (bookings.length > 0) {
+    orders.push({
       roomNumber: '201',
-      bookingId: bookings[0].id,
+      bookingId: bookings[0]?.id,
       guestId: users.guest1.id,
       status: 'DELIVERED' as OrderStatus,
       totalAmount: 140,
@@ -455,45 +534,51 @@ async function main() {
         { menuName: 'Prime Wagyu Tenderloin', quantity: 2 },
         { menuName: 'Valrhona Chocolate Soufflé', quantity: 2 },
       ],
-    },
-    {
-      roomNumber: '301',
-      bookingId: bookings[1].id,
-      guestId: users.guest2.id,
-      status: 'PREPARING' as OrderStatus,
-      totalAmount: 210,
-      specialRequests: 'Chef tasting menu amuse bouche',
-      items: [
-        { menuName: 'Heritage Tomato Burrata', quantity: 2 },
-        { menuName: 'Seared Atlantic Salmon', quantity: 2 },
-        { menuName: 'Cold Brew Negroni', quantity: 2 },
-      ],
-    },
-    {
-      roomNumber: '102',
-      bookingId: bookings[2].id,
-      guestId: users.guest3.id,
-      status: 'PENDING' as OrderStatus,
-      totalAmount: 62,
-      specialRequests: 'Room service breakfast for 8am',
-      items: [
-        { menuName: 'Truffle Omelette', quantity: 1 },
-        { menuName: 'Sunrise Acai Bowl', quantity: 1 },
-        { menuName: 'Cucumber Elderflower Fizz', quantity: 2 },
-      ],
-    },
-  ]
+    })
+    if (bookings.length > 1) {
+      orders.push({
+        roomNumber: '301',
+        bookingId: bookings[1]?.id,
+        guestId: users.guest2.id,
+        status: 'PREPARING' as OrderStatus,
+        totalAmount: 210,
+        specialRequests: 'Chef tasting menu amuse bouche',
+        items: [
+          { menuName: 'Heritage Tomato Burrata', quantity: 2 },
+          { menuName: 'Seared Atlantic Salmon', quantity: 2 },
+          { menuName: 'Cold Brew Negroni', quantity: 2 },
+        ],
+      })
+    }
+    if (bookings.length > 2) {
+      orders.push({
+        roomNumber: '102',
+        bookingId: bookings[2]?.id,
+        guestId: users.guest3.id,
+        status: 'PENDING' as OrderStatus,
+        totalAmount: 62,
+        specialRequests: 'Room service breakfast for 8am',
+        items: [
+          { menuName: 'Truffle Omelette', quantity: 1 },
+          { menuName: 'Sunrise Acai Bowl', quantity: 1 },
+          { menuName: 'Cucumber Elderflower Fizz', quantity: 2 },
+        ],
+      })
+    }
+  }
 
   for (const order of orders) {
+    if (!order.bookingId) continue // Skip if booking doesn't exist
     const createdOrder = await prisma.foodOrder.create({
       data: {
         roomNumber: order.roomNumber,
         guestId: order.guestId,
-        bookingId: order.bookingId,
         status: order.status,
         totalAmount: order.totalAmount,
         specialRequests: order.specialRequests,
         deliveryTime: new Date(order.status === 'PENDING' as OrderStatus ? Date.now() + 60 * 60 * 1000 : Date.now()),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
     })
 
@@ -521,7 +606,13 @@ async function main() {
     { name: 'Crystal Champagne Flutes', description: 'Hand-cut crystal flutes for in-room celebrations', category: 'Food & Beverage', quantity: 26, unit: 'pairs', minQuantity: 20, status: 'IN_STOCK' as InventoryStatus },
   ]
   for (const item of inventorySeeds) {
-    await prisma.inventory.create({ data: item })
+    await prisma.inventory.create({ 
+      data: {
+        ...item,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+    })
   }
 
   const gallerySeeds = [
@@ -538,7 +629,13 @@ async function main() {
     { title: 'Luxury Suite Bathroom', imageUrl: '/images/gallery/luxury-bathroom.jpg', category: 'ROOM' as GalleryCategory },
     { title: 'Skyline Champagne Lounge', imageUrl: '/images/gallery/champagne-lounge.jpg', category: 'EVENT' as GalleryCategory },
   ]
-  await prisma.gallery.createMany({ data: gallerySeeds })
+  await prisma.gallery.createMany({ 
+    data: gallerySeeds.map(item => ({
+      ...item,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }))
+  })
 
   const settingsSeeds = [
     { key: 'hotel_name', value: 'SmartHotel Grand Palace' },
@@ -566,11 +663,16 @@ async function main() {
   ]
 
   for (const setting of settingsSeeds) {
-    await prisma.setting.upsert({
-      where: { key: setting.key },
-      update: { value: setting.value },
-      create: setting,
-    })
+    // Check if setting exists, then update or create
+    const existing = await prisma.setting.findFirst({ where: { key: setting.key } })
+    if (existing) {
+      await prisma.setting.update({
+        where: { id: existing.id },
+        data: { value: setting.value },
+      })
+    } else {
+      await prisma.setting.create({ data: setting })
+    }
   }
 
   // Note: GuestReview model doesn't exist in schema
