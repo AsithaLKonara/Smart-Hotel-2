@@ -187,6 +187,8 @@ async function main() {
 
   const rooms = []
   for (const room of roomSeeds) {
+    // Use empty array to trigger frontend fallback to type-specific placeholders
+    // Frontend will automatically use appropriate placeholder based on room type
     const record = await prisma.room.create({
       data: {
         number: room.number,
@@ -195,7 +197,7 @@ async function main() {
         capacity: room.capacity,
         description: `${room.type} featuring ${room.amenities.slice(0, 2).join(', ').toLowerCase()} and bespoke SmartHotel touches.`,
         amenities: room.amenities,
-        images: [`/images/rooms/${room.number}-1.jpg`, `/images/rooms/${room.number}-2.jpg`],
+        images: [], // Empty array - frontend will use type-specific placeholders
         status: room.status,
         floor: room.floor,
         size: room.size,
@@ -215,28 +217,9 @@ async function main() {
   // Note: roomFeature model doesn't exist in schema
   // await prisma.roomFeature.createMany({ data: roomFeatureSeeds })
 
-  for (const room of rooms) {
-    await prisma.roomImage.create({
-      data: {
-        roomId: room.id,
-        imageUrl: `/images/gallery/${room.number}-main.jpg`,
-        isMain: true,
-        displayOrder: 1,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-    })
-    await prisma.roomImage.create({
-      data: {
-        roomId: room.id,
-        imageUrl: `/images/gallery/${room.number}-detail.jpg`,
-        isMain: false,
-        displayOrder: 2,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-    })
-  }
+  // Skip roomImage creation - frontend will use type-specific placeholders
+  // This prevents 400 errors from missing image files
+  // Room images can be added later via admin panel when actual images are available
 
   const bookingSeeds = [
     {
