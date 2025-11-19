@@ -249,7 +249,7 @@ export default function AdminOrdersPage() {
             <CardContent>
               <div className="space-y-3">
                 <div className="text-sm">
-                  <p className="text-gray-600 dark:text-gray-400">Items: {order.items.length}</p>
+                  <p className="text-gray-600 dark:text-gray-400">Items: {order.items?.length || 0}</p>
                   <p className="font-semibold text-lg">${order.totalAmount.toFixed(2)}</p>
                   <p className="text-xs text-gray-500">
                     {new Date(order.createdAt).toLocaleTimeString()}

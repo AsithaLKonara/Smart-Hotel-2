@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
-import prisma from '@/lib/db'
+import { getRequestSession } from '@/lib/session'
+import { prisma } from '@/lib/db'
 import { z } from 'zod'
 import { logAction, AUDIT_ACTIONS } from '@/lib/audit'
 
@@ -17,7 +16,7 @@ const inventorySchema = z.object({
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getRequestSession(request)
     
     if (!session) {
       return NextResponse.json(
@@ -59,7 +58,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getRequestSession(request)
     
     if (!session || !['SUPER_ADMIN', 'MANAGER'].includes(session.user.role)) {
       return NextResponse.json(

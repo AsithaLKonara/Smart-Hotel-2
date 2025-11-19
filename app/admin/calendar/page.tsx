@@ -47,7 +47,9 @@ export default function AdminCalendarPage() {
       const response = await fetch('/api/bookings')
       if (!response.ok) throw new Error('Failed to fetch bookings')
       const data = await response.json()
-      setBookings(data)
+      // API returns { bookings: [...] } but we need an array
+      const bookingsArray = Array.isArray(data) ? data : (Array.isArray(data?.bookings) ? data.bookings : [])
+      setBookings(bookingsArray)
     } catch (error) {
       console.error('Error fetching bookings:', error)
       toast.error('Failed to load bookings')

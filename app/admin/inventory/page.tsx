@@ -57,7 +57,9 @@ export default function AdminInventoryPage() {
       const response = await fetch('/api/inventory')
       if (!response.ok) throw new Error('Failed to fetch inventory')
       const data = await response.json()
-      setItems(data)
+      // API returns { items: [...] } but we need an array
+      const itemsArray = Array.isArray(data) ? data : (Array.isArray(data?.items) ? data.items : [])
+      setItems(itemsArray)
     } catch (error) {
       console.error('Error fetching inventory:', error)
       toast.error('Failed to load inventory')

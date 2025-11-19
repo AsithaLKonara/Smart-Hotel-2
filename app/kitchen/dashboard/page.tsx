@@ -110,7 +110,26 @@ function KitchenDashboardContent() {
       const data = await response.json()
 
       if (response.ok) {
-        setKitchenData(data)
+        // Ensure data has the expected structure
+        const kitchenData: KitchenData = {
+          orders: Array.isArray(data?.orders) ? data.orders : [],
+          ordersByStatus: data?.ordersByStatus || {
+            PENDING: [],
+            CONFIRMED: [],
+            PREPARING: [],
+            READY: [],
+            DELIVERED: [],
+            CANCELLED: []
+          },
+          summary: data?.summary || {
+            total: 0,
+            pending: 0,
+            preparing: 0,
+            ready: 0,
+            delivered: 0
+          }
+        }
+        setKitchenData(kitchenData)
       } else if (response.status === 401) {
         // Unauthorized - redirect to sign in
         router.push('/auth/signin?callbackUrl=' + encodeURIComponent('/kitchen/dashboard'))
@@ -188,8 +207,11 @@ function KitchenDashboardContent() {
   }
 
   const getEstimatedPrepTime = (order: Order) => {
-    const maxPrepTime = Math.max(...order.items.map(item => item.menu.preparationTime || 0))
-    return maxPrepTime
+    if (!order.items || !Array.isArray(order.items) || order.items.length === 0) {
+      return 0
+    }
+    const prepTimes = order.items.map(item => item.menu?.preparationTime || 0)
+    return Math.max(...prepTimes, 0)
   }
 
   if (isLoading) {
@@ -217,7 +239,23 @@ function KitchenDashboardContent() {
     )
   }
 
-  const { ordersByStatus, summary } = kitchenData
+  const { ordersByStatus, summary } = kitchenData || {
+    ordersByStatus: {
+      PENDING: [],
+      CONFIRMED: [],
+      PREPARING: [],
+      READY: [],
+      DELIVERED: [],
+      CANCELLED: []
+    },
+    summary: {
+      total: 0,
+      pending: 0,
+      preparing: 0,
+      ready: 0,
+      delivered: 0
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
