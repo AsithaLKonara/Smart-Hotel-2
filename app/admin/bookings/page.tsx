@@ -45,9 +45,9 @@ export default function AdminBookingsPage() {
 
   const fetchBookings = useCallback(async () => {
     try {
-      // Regular admin pages: 2.5-3.0s timeout
+      // Bookings page: 6s timeout (may have many bookings with relations)
       const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 3000)
+      const timeoutId = setTimeout(() => controller.abort(), 6000)
       const response = await fetch('/api/bookings', {
         // Be explicit to avoid any caching / SW interference
         method: 'GET',
@@ -56,6 +56,10 @@ export default function AdminBookingsPage() {
         signal: controller.signal,
       })
       clearTimeout(timeoutId)
+
+      if (controller.signal.aborted) {
+        throw new Error('Request timeout - bookings data took too long to load')
+      }
 
       // Redirect unauthenticated users cleanly
       if (response.status === 401) {
@@ -77,9 +81,14 @@ export default function AdminBookingsPage() {
         : []
 
       setBookings(bookingsArray)
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching bookings:', error)
-      toast.error('Failed to load bookings')
+      // Handle timeout errors gracefully
+      if (error.name === 'AbortError' || error.message?.includes('timeout')) {
+        toast.error('Bookings are taking longer than expected. Please refresh the page.')
+      } else {
+        toast.error('Failed to load bookings')
+      }
       setBookings([]) // Set empty array on error
     } finally {
       setLoading(false)
