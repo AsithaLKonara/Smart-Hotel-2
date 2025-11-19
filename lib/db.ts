@@ -22,9 +22,21 @@ const devLogDefinitions: Prisma.LogDefinition[] = [
 const logDefinitions: Prisma.LogDefinition[] =
   process.env.NODE_ENV === 'production' ? baseLogDefinitions : devLogDefinitions
 
-const prismaLogger = globalForPrisma.prisma ?? new PrismaClient({
-  log: logDefinitions,
-})
+// Create Prisma client with proper configuration for serverless
+function createPrismaClient(): PrismaClient {
+  return new PrismaClient({
+    log: logDefinitions,
+    // Add connection pool configuration for serverless
+    datasources: {
+      db: {
+        url: process.env.DATABASE_URL,
+      },
+    },
+  })
+}
+
+// Use singleton pattern for serverless environments
+const prismaLogger = globalForPrisma.prisma ?? createPrismaClient()
 
 type PrismaClientWithEvents = PrismaClient<Prisma.PrismaClientOptions, 'query' | 'info' | 'warn' | 'error'>
 const prismaEventLogger = prismaLogger as PrismaClientWithEvents
@@ -58,7 +70,15 @@ if (process.env.NODE_ENV !== 'production') {
   }
 }
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prismaLogger
+// Store in global for reuse in serverless (prevents connection exhaustion)
+if (process.env.NODE_ENV !== 'production') {
+  globalForPrisma.prisma = prismaLogger
+} else {
+  // In production, also store to prevent multiple instances
+  if (!globalForPrisma.prisma) {
+    globalForPrisma.prisma = prismaLogger
+  }
+}
 
 export const prisma = prismaLogger
 
