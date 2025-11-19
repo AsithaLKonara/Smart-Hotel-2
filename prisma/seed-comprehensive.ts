@@ -500,16 +500,16 @@ async function main() {
     for (const item of order.items) {
       const menu = menuItems.find(m => m.name === item.menuName)
       if (!menu) continue
-      // Note: OrderItem model doesn't exist in schema
+      // Note: OrderItem model doesn't exist in schema - skipping
       // await prisma.orderItem.create({
-        data: {
-          orderId: createdOrder.id,
-          menuId: menu.id,
-          quantity: item.quantity,
-          unitPrice: menu.price,
-          notes: 'Prepared according to SmartHotel plating standards',
-        },
-      })
+      //   data: {
+      //     orderId: createdOrder.id,
+      //     menuId: menu.id,
+      //     quantity: item.quantity,
+      //     unitPrice: menu.price,
+      //     notes: 'Prepared according to SmartHotel plating standards',
+      //   },
+      // })
     }
   }
 
@@ -575,168 +575,168 @@ async function main() {
 
   // Note: GuestReview model doesn't exist in schema
   // await prisma.guestReview.createMany({
-    data: [
-      {
-        bookingId: bookings[3].id,
-        userId: users.guest4.id,
-        roomId: rooms.find(r => r.number === '502')!.id,
-        rating: 5,
-        title: 'Unforgettable family retreat',
-        comment: 'The attention to detail for our children was extraordinary, from bedtime stories to customized turndown service.',
-        isVerified: true,
-        isPublic: true,
-      },
-      {
-        bookingId: bookings[0].id,
-        userId: users.guest1.id,
-        roomId: rooms.find(r => r.number === '201')!.id,
-        rating: 5,
-        title: 'Executive perfection',
-        comment: 'Butler service and culinary experiences exceeded expectations. The team anticipated every need.',
-        isVerified: true,
-        isPublic: true,
-      },
-      {
-        bookingId: bookings[2].id,
-        userId: users.guest3.id,
-        roomId: rooms.find(r => r.number === '102')!.id,
-        rating: 4,
-        title: 'Excellent service',
-        comment: 'Room service breakfast was sublime and the concierge made brilliant dining recommendations.',
-        isVerified: true,
-        isPublic: true,
-      },
-    ],
-  })
+  //   data: [
+  //     {
+  //       bookingId: bookings[3].id,
+  //       userId: users.guest4.id,
+  //       roomId: rooms.find(r => r.number === '502')!.id,
+  //       rating: 5,
+  //       title: 'Unforgettable family retreat',
+  //       comment: 'The attention to detail for our children was extraordinary, from bedtime stories to customized turndown service.',
+  //       isVerified: true,
+  //       isPublic: true,
+  //     },
+  //     {
+  //       bookingId: bookings[0].id,
+  //       userId: users.guest1.id,
+  //       roomId: rooms.find(r => r.number === '201')!.id,
+  //       rating: 5,
+  //       title: 'Executive perfection',
+  //       comment: 'Butler service and culinary experiences exceeded expectations. The team anticipated every need.',
+  //       isVerified: true,
+  //       isPublic: true,
+  //     },
+  //     {
+  //       bookingId: bookings[2].id,
+  //       userId: users.guest3.id,
+  //       roomId: rooms.find(r => r.number === '102')!.id,
+  //       rating: 4,
+  //       title: 'Excellent service',
+  //       comment: 'Room service breakfast was sublime and the concierge made brilliant dining recommendations.',
+  //       isVerified: true,
+  //       isPublic: true,
+  //     },
+  //   ],
+  // })
 
   // Note: Promotion model doesn't exist in schema
   // await prisma.promotion.createMany({
-    data: [
-      {
-        title: 'Skyline Escape',
-        description: 'Save 20% on Skyline Suite bookings with rooftop sunset tasting.',
-        code: 'SKYLINE20',
-        type: 'PERCENTAGE' as PromotionType,
-        value: 20,
-        minAmount: 500,
-        maxDiscount: 300,
-        startDate: new Date('2025-02-01'),
-        endDate: new Date('2025-05-31'),
-      },
-      {
-        title: 'Stay 3 Pay 2',
-        description: 'Complimentary third night in Grand Deluxe Rooms.',
-        code: 'STAY3PAY2',
-        type: 'FREE_NIGHT' as PromotionType,
-        value: 1,
-        minAmount: 0,
-        startDate: new Date('2025-01-15'),
-        endDate: new Date('2025-12-20'),
-      },
-    ],
-  })
+  //   data: [
+  //     {
+  //       title: 'Skyline Escape',
+  //       description: 'Save 20% on Skyline Suite bookings with rooftop sunset tasting.',
+  //       code: 'SKYLINE20',
+  //       type: 'PERCENTAGE' as PromotionType,
+  //       value: 20,
+  //       minAmount: 500,
+  //       maxDiscount: 300,
+  //       startDate: new Date('2025-02-01'),
+  //       endDate: new Date('2025-05-31'),
+  //     },
+  //     {
+  //       title: 'Stay 3 Pay 2',
+  //       description: 'Complimentary third night in Grand Deluxe Rooms.',
+  //       code: 'STAY3PAY2',
+  //       type: 'FREE_NIGHT' as PromotionType,
+  //       value: 1,
+  //       minAmount: 0,
+  //       startDate: new Date('2025-01-15'),
+  //       endDate: new Date('2025-12-20'),
+  //     },
+  //   ],
+  // })
 
   // Note: EmailTemplate model doesn't exist in schema
   // await prisma.emailTemplate.createMany({
-    data: [
-      {
-        name: 'booking_confirmation',
-        subject: 'Your SmartHotel Grand Palace Reservation',
-        body: '<p>Dear {{guestName}},</p><p>Your reservation for {{roomType}} is confirmed from {{checkIn}} to {{checkOut}}. Confirmation: {{confirmationCode}}</p><p>We look forward to welcoming you.</p>',
-        variables: ['guestName', 'roomType', 'checkIn', 'checkOut', 'confirmationCode'],
-      },
-      {
-        name: 'contact_acknowledgement',
-        subject: 'We received your message',
-        body: '<p>Dear {{name}},</p><p>Thank you for contacting SmartHotel Grand Palace. Our concierge desk will respond shortly.</p>',
-        variables: ['name'],
-      },
-    ],
-  })
+  //   data: [
+  //     {
+  //       name: 'booking_confirmation',
+  //       subject: 'Your SmartHotel Grand Palace Reservation',
+  //       body: '<p>Dear {{guestName}},</p><p>Your reservation for {{roomType}} is confirmed from {{checkIn}} to {{checkOut}}. Confirmation: {{confirmationCode}}</p><p>We look forward to welcoming you.</p>',
+  //       variables: ['guestName', 'roomType', 'checkIn', 'checkOut', 'confirmationCode'],
+  //     },
+  //     {
+  //       name: 'contact_acknowledgement',
+  //       subject: 'We received your message',
+  //       body: '<p>Dear {{name}},</p><p>Thank you for contacting SmartHotel Grand Palace. Our concierge desk will respond shortly.</p>',
+  //       variables: ['name'],
+  //     },
+  //   ],
+  // })
 
   // Note: EmailLog model doesn't exist in schema
   // await prisma.emailLog.createMany({
-    data: [
-      {
-        to: 'emily.carter@example.com',
-        subject: 'Your SmartHotel Grand Palace Reservation',
-        template: 'booking_confirmation',
-        status: 'DELIVERED' as EmailStatus,
-        sentAt: new Date('2025-01-05T09:30:00'),
-      },
-      {
-        to: 'michael.rivera@example.com',
-        subject: 'Your SmartHotel Grand Palace Reservation',
-        template: 'booking_confirmation',
-        status: 'SENT' as EmailStatus,
-        sentAt: new Date('2025-02-10T11:15:00'),
-      },
-      {
-        to: 'info@smarthotel.com',
-        subject: 'Inquiry from wellness columnist',
-        template: null,
-        status: 'PENDING' as EmailStatus,
-      },
-    ],
-  })
+  //   data: [
+  //     {
+  //       to: 'emily.carter@example.com',
+  //       subject: 'Your SmartHotel Grand Palace Reservation',
+  //       template: 'booking_confirmation',
+  //       status: 'DELIVERED' as EmailStatus,
+  //       sentAt: new Date('2025-01-05T09:30:00'),
+  //     },
+  //     {
+  //       to: 'michael.rivera@example.com',
+  //       subject: 'Your SmartHotel Grand Palace Reservation',
+  //       template: 'booking_confirmation',
+  //       status: 'SENT' as EmailStatus,
+  //       sentAt: new Date('2025-02-10T11:15:00'),
+  //     },
+  //     {
+  //       to: 'info@smarthotel.com',
+  //       subject: 'Inquiry from wellness columnist',
+  //       template: null,
+  //       status: 'PENDING' as EmailStatus,
+  //     },
+  //   ],
+  // })
 
   // Note: Notification model doesn't exist in schema
   // await prisma.notification.createMany({
-    data: [
-      {
-        userId: users.manager.id,
-        title: 'VIP Arrival Alert',
-        message: 'Executive Suite 201 guests arriving 30 minutes early. Butler team notified.',
-        type: 'BOOKING_REMINDER' as NotificationType,
-        isRead: false,
-        data: { bookingId: bookings[0].id },
-      },
-      {
-        userId: users.admin.id,
-        title: 'Maintenance Flag',
-        message: 'Room 401 scheduled for maintenance review prior to May bookings.',
-        type: 'GENERAL' as NotificationType,
-        isRead: true,
-      },
-      {
-        userId: users.guest4.id,
-        title: 'Thank you for staying',
-        message: 'We hope you enjoyed your stay. Share feedback for a personalized offer.',
-        type: 'BOOKING_REMINDER' as NotificationType,
-        isRead: false,
-        data: { surveyUrl: 'https://smarthotel.com/feedback' },
-      },
-    ],
-  })
+  //   data: [
+  //     {
+  //       userId: users.manager.id,
+  //       title: 'VIP Arrival Alert',
+  //       message: 'Executive Suite 201 guests arriving 30 minutes early. Butler team notified.',
+  //       type: 'BOOKING_REMINDER' as NotificationType,
+  //       isRead: false,
+  //       data: { bookingId: bookings[0].id },
+  //     },
+  //     {
+  //       userId: users.admin.id,
+  //       title: 'Maintenance Flag',
+  //       message: 'Room 401 scheduled for maintenance review prior to May bookings.',
+  //       type: 'GENERAL' as NotificationType,
+  //       isRead: true,
+  //     },
+  //     {
+  //       userId: users.guest4.id,
+  //       title: 'Thank you for staying',
+  //       message: 'We hope you enjoyed your stay. Share feedback for a personalized offer.',
+  //       type: 'BOOKING_REMINDER' as NotificationType,
+  //       isRead: false,
+  //       data: { surveyUrl: 'https://smarthotel.com/feedback' },
+  //     },
+  //   ],
+  // })
 
   // Note: Wishlist model doesn't exist in schema
   // await prisma.wishlist.createMany({
-    data: [
-      { userId: users.guest1.id, roomId: rooms.find(r => r.number === '301')!.id },
-      { userId: users.guest2.id, roomId: rooms.find(r => r.number === '302')!.id },
-      { userId: users.guest3.id, roomId: rooms.find(r => r.number === '201')!.id },
-    ],
-  })
+  //   data: [
+  //     { userId: users.guest1.id, roomId: rooms.find(r => r.number === '301')!.id },
+  //     { userId: users.guest2.id, roomId: rooms.find(r => r.number === '302')!.id },
+  //     { userId: users.guest3.id, roomId: rooms.find(r => r.number === '201')!.id },
+  //   ],
+  // })
 
   // Note: AuditLog model doesn't exist in schema
   // await prisma.auditLog.createMany({
-    data: [
-      {
-        userId: users.manager.id,
-        action: 'BOOKING_CREATE',
-        entityType: 'Booking',
-        entityId: bookings[0].id,
-        details: { confirmationCode: bookings[0].confirmationCode, roomNumber: '201' },
-      },
-      {
-        userId: users.admin.id,
-        action: 'TASK_ASSIGN',
-        entityType: 'Task',
-        entityId: taskRecords[0].id,
-        details: { assignedTo: taskRecords[0].assignedTo, priority: taskRecords[0].priority },
-      },
-    ],
-  })
+  //   data: [
+  //     {
+  //       userId: users.manager.id,
+  //       action: 'BOOKING_CREATE',
+  //       entityType: 'Booking',
+  //       entityId: bookings[0].id,
+  //       details: { confirmationCode: bookings[0].confirmationCode, roomNumber: '201' },
+  //     },
+  //     {
+  //       userId: users.admin.id,
+  //       action: 'TASK_ASSIGN',
+  //       entityType: 'Task',
+  //       entityId: taskRecords[0].id,
+  //       details: { assignedTo: taskRecords[0].assignedTo, priority: taskRecords[0].priority },
+  //     },
+  //   ],
+  // })
 
   console.log('✅ Seeding complete!')
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
