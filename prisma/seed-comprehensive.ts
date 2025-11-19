@@ -626,19 +626,20 @@ async function main() {
     })
   }
 
+  // Gallery images - use placeholder images that exist or empty strings to trigger frontend fallbacks
   const gallerySeeds = [
-    { title: 'Skyline Infinity Pool', imageUrl: '/images/gallery/infinity-pool.jpg', category: 'AMENITY' as GalleryCategory },
-    { title: 'Grand Lobby Arrival', imageUrl: '/images/gallery/grand-lobby.jpg', category: 'EVENT' as GalleryCategory },
-    { title: 'Presidential Living Room', imageUrl: '/images/gallery/presidential-suite.jpg', category: 'ROOM' as GalleryCategory },
-    { title: 'Executive Chef Tasting', imageUrl: '/images/gallery/tasting-menu.jpg', category: 'FOOD' as GalleryCategory },
-    { title: 'SmartHotel Spa Retreat', imageUrl: '/images/gallery/spa-suite.jpg', category: 'AMENITY' as GalleryCategory },
-    { title: 'Sky Terrace Sunset', imageUrl: '/images/gallery/sky-terrace.jpg', category: 'EXTERIOR' as GalleryCategory },
-    { title: 'The Grand Ballroom', imageUrl: '/images/gallery/ballroom.jpg', category: 'EVENT' as GalleryCategory },
-    { title: 'Candlelight Dinner', imageUrl: '/images/gallery/dinner.jpg', category: 'FOOD' as GalleryCategory },
-    { title: 'Digital Concierge Tablet', imageUrl: '/images/gallery/digital-concierge.jpg', category: 'AMENITY' as GalleryCategory },
-    { title: 'Fitness and Wellness Club', imageUrl: '/images/gallery/fitness-club.jpg', category: 'AMENITY' as GalleryCategory },
-    { title: 'Luxury Suite Bathroom', imageUrl: '/images/gallery/luxury-bathroom.jpg', category: 'ROOM' as GalleryCategory },
-    { title: 'Skyline Champagne Lounge', imageUrl: '/images/gallery/champagne-lounge.jpg', category: 'EVENT' as GalleryCategory },
+    { title: 'Skyline Infinity Pool', imageUrl: '/images/hotel/hotel-pool.jpg', category: 'AMENITY' as GalleryCategory },
+    { title: 'Grand Lobby Arrival', imageUrl: '/images/hotel/hotel-lobby.jpg', category: 'EVENT' as GalleryCategory },
+    { title: 'Presidential Living Room', imageUrl: '/images/hotel/room-suite.jpg', category: 'ROOM' as GalleryCategory },
+    { title: 'Executive Chef Tasting', imageUrl: '/images/hotel/food-dinner.jpg', category: 'FOOD' as GalleryCategory },
+    { title: 'SmartHotel Spa Retreat', imageUrl: '/images/hotel/hotel-spa.jpg', category: 'AMENITY' as GalleryCategory },
+    { title: 'Sky Terrace Sunset', imageUrl: '/images/hotel/hotel-view.jpg', category: 'EXTERIOR' as GalleryCategory },
+    { title: 'The Grand Ballroom', imageUrl: '/images/hotel/hotel-view.jpg', category: 'EVENT' as GalleryCategory },
+    { title: 'Candlelight Dinner', imageUrl: '/images/hotel/food-dinner.jpg', category: 'FOOD' as GalleryCategory },
+    { title: 'Digital Concierge Tablet', imageUrl: '/images/hotel/hotel-lobby.jpg', category: 'AMENITY' as GalleryCategory },
+    { title: 'Fitness and Wellness Club', imageUrl: '/images/hotel/hotel-spa.jpg', category: 'AMENITY' as GalleryCategory },
+    { title: 'Luxury Suite Bathroom', imageUrl: '/images/hotel/room-suite.jpg', category: 'ROOM' as GalleryCategory },
+    { title: 'Skyline Champagne Lounge', imageUrl: '/images/hotel/hotel-bar.jpg', category: 'EVENT' as GalleryCategory },
   ]
   await prisma.gallery.createMany({ 
     data: gallerySeeds.map(item => ({
