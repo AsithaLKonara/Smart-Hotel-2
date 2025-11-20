@@ -25,6 +25,14 @@ model Booking {
   confirmationCode String?     @unique
   payments        Payment[]
   reviews         RoomReview[]
+  
+  // Performance indexes
+  @@index([status])
+  @@index([checkIn])
+  @@index([checkOut])
+  @@index([userId])
+  @@index([roomId])
+  @@index([createdAt])
 }
 
 model FoodMenu {
@@ -52,6 +60,12 @@ model FoodOrder {
   updatedAt       DateTime    @db.Date
   items           OrderItem[]
   payments        Payment[]
+  
+  // Performance indexes
+  @@index([status])
+  @@index([guestId])
+  @@index([roomNumber])
+  @@index([createdAt])
 }
 
 model OrderItem {
@@ -106,6 +120,13 @@ model Room {
   updatedAt   DateTime     @db.Date
   roomImages  RoomImage[]
   reviews     RoomReview[]
+  
+  // Performance indexes
+  @@index([status])
+  @@index([type])
+  @@index([price])
+  @@index([number])
+  @@index([createdAt])
 }
 
 model Setting {
@@ -223,6 +244,13 @@ model Task {
   title       String
   type        String
   updatedAt   DateTime  @db.Date
+  
+  // Performance indexes
+  @@index([status])
+  @@index([assignedTo])
+  @@index([priority])
+  @@index([dueDate])
+  @@index([createdAt])
 }
 
 model User {
@@ -240,6 +268,11 @@ model User {
   hotelReviews     HotelReview[]
   loyaltyPoints    LoyaltyPoint[]
   payments         Payment[]
+  
+  // Performance indexes
+  @@index([email])
+  @@index([role])
+  @@index([createdAt])
 }
 
 // Payment Transactions

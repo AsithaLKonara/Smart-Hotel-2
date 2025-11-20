@@ -533,7 +533,10 @@ export default function AdminInventoryPage() {
                   </Button>
                 </div>
               </form>
-      </Modal>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   )
 }
