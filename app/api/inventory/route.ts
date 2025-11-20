@@ -50,7 +50,14 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    return NextResponse.json({ items: inventory })
+    // Convert BigInt values to numbers for JSON serialization
+    const serializedInventory = inventory.map(item => ({
+      ...item,
+      quantity: Number(item.quantity),
+      minQuantity: Number(item.minQuantity),
+    }))
+
+    return NextResponse.json({ items: serializedInventory })
   } catch (error) {
     console.error('Error fetching inventory:', error)
     return NextResponse.json(
@@ -111,7 +118,14 @@ export async function POST(request: NextRequest) {
       console.error('Failed to log inventory action:', logError)
     }
 
-    return NextResponse.json({ item: inventory }, { status: 201 })
+    // Convert BigInt values to numbers for JSON serialization
+    const serializedInventory = {
+      ...inventory,
+      quantity: Number(inventory.quantity),
+      minQuantity: Number(inventory.minQuantity),
+    }
+
+    return NextResponse.json({ item: serializedInventory }, { status: 201 })
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
