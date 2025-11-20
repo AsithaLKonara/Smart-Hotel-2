@@ -45,9 +45,9 @@ export default function AdminBookingsPage() {
 
   const fetchBookings = useCallback(async () => {
     try {
-      // Bookings page: 6s timeout (may have many bookings with relations)
+      // Bookings page: 10s timeout (may have many bookings with relations)
       const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 6000)
+      const timeoutId = setTimeout(() => controller.abort(), 10000)
       const response = await fetch('/api/bookings', {
         // Be explicit to avoid any caching / SW interference
         method: 'GET',
