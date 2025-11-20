@@ -83,9 +83,9 @@ export async function POST(request: NextRequest) {
         name: validatedData.name,
         description: validatedData.description || '',
         category: validatedData.category,
-        quantity: validatedData.quantity,
+        quantity: BigInt(validatedData.quantity), // Convert to BigInt as per schema
         unit: validatedData.unit,
-        minQuantity: validatedData.minQuantity,
+        minQuantity: BigInt(validatedData.minQuantity), // Convert to BigInt as per schema
         status: validatedData.status,
         createdAt: new Date(),
         updatedAt: new Date(),
