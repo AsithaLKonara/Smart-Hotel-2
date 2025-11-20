@@ -329,11 +329,11 @@ function KitchenDashboardContent() {
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900">Pending</h3>
               <Badge className="bg-yellow-100 text-yellow-800">
-                {ordersByStatus.PENDING.length}
+                {(ordersByStatus.PENDING || []).length}
               </Badge>
             </div>
             <div className="space-y-3">
-              {ordersByStatus.PENDING.map((order) => (
+              {(ordersByStatus.PENDING || []).map((order) => (
                 <div key={order.id} className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-medium text-gray-900">#{order.orderNumber}</span>
@@ -341,9 +341,9 @@ function KitchenDashboardContent() {
                   </div>
                   <p className="text-sm text-gray-600 mb-2">{order.user.name}</p>
                   <div className="text-sm text-gray-600 mb-3">
-                    {order.items.map((item, index) => (
+                    {(order.items && Array.isArray(order.items) ? order.items : []).map((item, index) => (
                       <div key={index} className="flex justify-between">
-                        <span>{item.quantity}x {item.menu.name}</span>
+                        <span>{item.quantity}x {item.menu?.name || 'Unknown Item'}</span>
                       </div>
                     ))}
                   </div>
@@ -361,7 +361,7 @@ function KitchenDashboardContent() {
                   </Button>
                 </div>
               ))}
-              {ordersByStatus.PENDING.length === 0 && (
+              {(ordersByStatus.PENDING || []).length === 0 && (
                 <p className="text-gray-500 text-center py-4">No pending orders</p>
               )}
             </div>
@@ -372,11 +372,11 @@ function KitchenDashboardContent() {
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900">Confirmed</h3>
               <Badge className="bg-blue-100 text-blue-800">
-                {ordersByStatus.CONFIRMED.length}
+                {(ordersByStatus.CONFIRMED || []).length}
               </Badge>
             </div>
             <div className="space-y-3">
-              {ordersByStatus.CONFIRMED.map((order) => (
+              {(ordersByStatus.CONFIRMED || []).map((order) => (
                 <div key={order.id} className="p-3 bg-blue-50 rounded-lg border border-blue-200">
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-medium text-gray-900">#{order.orderNumber}</span>
@@ -387,9 +387,9 @@ function KitchenDashboardContent() {
                     Est. prep time: {getEstimatedPrepTime(order)} min
                   </div>
                   <div className="text-sm text-gray-600 mb-3">
-                    {order.items.map((item, index) => (
+                    {(order.items && Array.isArray(order.items) ? order.items : []).map((item, index) => (
                       <div key={index} className="flex justify-between">
-                        <span>{item.quantity}x {item.menu.name}</span>
+                        <span>{item.quantity}x {item.menu?.name || 'Unknown Item'}</span>
                       </div>
                     ))}
                   </div>
@@ -407,7 +407,7 @@ function KitchenDashboardContent() {
                   </Button>
                 </div>
               ))}
-              {ordersByStatus.CONFIRMED.length === 0 && (
+              {(ordersByStatus.CONFIRMED || []).length === 0 && (
                 <p className="text-gray-500 text-center py-4">No confirmed orders</p>
               )}
             </div>
@@ -418,11 +418,11 @@ function KitchenDashboardContent() {
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900">Preparing</h3>
               <Badge className="bg-orange-100 text-orange-800">
-                {ordersByStatus.PREPARING.length}
+                {(ordersByStatus.PREPARING || []).length}
               </Badge>
             </div>
             <div className="space-y-3">
-              {ordersByStatus.PREPARING.map((order) => (
+              {(ordersByStatus.PREPARING || []).map((order) => (
                 <div key={order.id} className="p-3 bg-orange-50 rounded-lg border border-orange-200">
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-medium text-gray-900">#{order.orderNumber}</span>
@@ -433,9 +433,9 @@ function KitchenDashboardContent() {
                     Est. prep time: {getEstimatedPrepTime(order)} min
                   </div>
                   <div className="text-sm text-gray-600 mb-3">
-                    {order.items.map((item, index) => (
+                    {(order.items && Array.isArray(order.items) ? order.items : []).map((item, index) => (
                       <div key={index} className="flex justify-between">
-                        <span>{item.quantity}x {item.menu.name}</span>
+                        <span>{item.quantity}x {item.menu?.name || 'Unknown Item'}</span>
                       </div>
                     ))}
                   </div>
@@ -453,7 +453,7 @@ function KitchenDashboardContent() {
                   </Button>
                 </div>
               ))}
-              {ordersByStatus.PREPARING.length === 0 && (
+              {(ordersByStatus.PREPARING || []).length === 0 && (
                 <p className="text-gray-500 text-center py-4">No orders being prepared</p>
               )}
             </div>
@@ -464,11 +464,11 @@ function KitchenDashboardContent() {
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900">Ready</h3>
               <Badge className="bg-green-100 text-green-800">
-                {ordersByStatus.READY.length}
+                {(ordersByStatus.READY || []).length}
               </Badge>
             </div>
             <div className="space-y-3">
-              {ordersByStatus.READY.map((order) => (
+              {(ordersByStatus.READY || []).map((order) => (
                 <div key={order.id} className="p-3 bg-green-50 rounded-lg border border-green-200">
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-medium text-gray-900">#{order.orderNumber}</span>
@@ -476,9 +476,9 @@ function KitchenDashboardContent() {
                   </div>
                   <p className="text-sm text-gray-600 mb-2">{order.user.name}</p>
                   <div className="text-sm text-gray-600 mb-3">
-                    {order.items.map((item, index) => (
+                    {(order.items && Array.isArray(order.items) ? order.items : []).map((item, index) => (
                       <div key={index} className="flex justify-between">
-                        <span>{item.quantity}x {item.menu.name}</span>
+                        <span>{item.quantity}x {item.menu?.name || 'Unknown Item'}</span>
                       </div>
                     ))}
                   </div>
@@ -496,7 +496,7 @@ function KitchenDashboardContent() {
                   </Button>
                 </div>
               ))}
-              {ordersByStatus.READY.length === 0 && (
+              {(ordersByStatus.READY || []).length === 0 && (
                 <p className="text-gray-500 text-center py-4">No orders ready for delivery</p>
               )}
             </div>

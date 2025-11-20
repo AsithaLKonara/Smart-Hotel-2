@@ -84,19 +84,24 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // Log the action
-    await logAction(
-      request,
-      session.user.id,
-      AUDIT_ACTIONS.INVENTORY_CREATE,
-      'Inventory',
-      inventory.id,
-      {
-        name: validatedData.name,
-        category: validatedData.category,
-        quantity: validatedData.quantity,
-      }
-    )
+    // Log the action (non-blocking)
+    try {
+      await logAction(
+        request,
+        session.user.id,
+        AUDIT_ACTIONS.INVENTORY_CREATE,
+        'Inventory',
+        inventory.id,
+        {
+          name: validatedData.name,
+          category: validatedData.category,
+          quantity: validatedData.quantity,
+        }
+      )
+    } catch (logError) {
+      // Don't fail the request if logging fails
+      console.error('Failed to log inventory action:', logError)
+    }
 
     return NextResponse.json({ item: inventory }, { status: 201 })
   } catch (error) {
