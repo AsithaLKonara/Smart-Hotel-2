@@ -437,29 +437,17 @@ export default function AdminRoomsPage() {
       )}
 
       {/* Add/Edit Room Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>
-                  {editingRoom ? 'Edit Room' : 'Add New Room'}
-                </CardTitle>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setShowModal(false)
-                    setEditingRoom(null)
-                    resetForm()
-                  }}
-                >
-                  <X className="w-5 h-5" />
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
+      <Modal
+        open={showModal}
+        onClose={() => {
+          setShowModal(false)
+          setEditingRoom(null)
+          resetForm()
+        }}
+        title={editingRoom ? 'Edit Room' : 'Add New Room'}
+        maxWidth="2xl"
+      >
+        <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-2">
