@@ -16,7 +16,11 @@ const inventorySchema = z.object({
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getRequestSession(request)
+    // Guard session retrieval to avoid throwing before we can respond
+    const session = await getRequestSession(request).catch((err) => {
+      console.error('Error retrieving session for inventory GET:', err)
+      return null
+    })
     
     if (!session) {
       return NextResponse.json(
@@ -50,7 +54,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error fetching inventory:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch inventory' },
+      { error: 'Failed to fetch inventory', message: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }
@@ -58,7 +62,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getRequestSession(request)
+    // Guard session retrieval to avoid throwing before we can respond
+    const session = await getRequestSession(request).catch((err) => {
+      console.error('Error retrieving session for inventory POST:', err)
+      return null
+    })
     
     if (!session || !['SUPER_ADMIN', 'MANAGER'].includes(session.user.role)) {
       return NextResponse.json(
