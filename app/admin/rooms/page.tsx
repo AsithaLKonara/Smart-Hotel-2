@@ -8,6 +8,8 @@ import { Plus, Edit, Trash2, Search, Filter, Bed, Users, DollarSign, Loader2, Sa
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Modal } from '@/components/ui/modal'
+import { Breadcrumbs } from '@/components/ui/breadcrumbs'
 import toast from 'react-hot-toast'
 
 interface Room {
@@ -216,6 +218,13 @@ export default function AdminRoomsPage() {
 
   return (
     <div className="p-6">
+      <Breadcrumbs
+        items={[
+          { label: 'Admin', href: '/admin' },
+          { label: 'Rooms' },
+        ]}
+        className="mb-4"
+      />
       <div className="mb-6">
         <h1 className="text-3xl font-bold mb-2">Room Management</h1>
         <p className="text-gray-600 dark:text-gray-400">
@@ -604,10 +613,7 @@ export default function AdminRoomsPage() {
                   </Button>
                 </div>
               </form>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+      </Modal>
     </div>
   )
 }

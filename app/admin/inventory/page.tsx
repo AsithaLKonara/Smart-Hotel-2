@@ -8,6 +8,8 @@ import { Plus, Edit, Trash2, Search, Package, AlertTriangle, CheckCircle, Loader
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Modal } from '@/components/ui/modal'
+import { Breadcrumbs } from '@/components/ui/breadcrumbs'
 import toast from 'react-hot-toast'
 
 interface InventoryItem {
@@ -203,6 +205,13 @@ export default function AdminInventoryPage() {
 
   return (
     <div className="p-6">
+      <Breadcrumbs
+        items={[
+          { label: 'Admin', href: '/admin' },
+          { label: 'Inventory' },
+        ]}
+        className="mb-4"
+      />
       <div className="mb-6">
         <h1 className="text-3xl font-bold mb-2">Inventory Management</h1>
         <p className="text-gray-600 dark:text-gray-400">
@@ -524,10 +533,7 @@ export default function AdminInventoryPage() {
                   </Button>
                 </div>
               </form>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+      </Modal>
     </div>
   )
 }

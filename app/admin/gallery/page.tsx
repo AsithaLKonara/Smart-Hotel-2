@@ -8,6 +8,9 @@ import { Plus, Edit, Trash2, Search, Image as ImageIcon, Loader2, X } from 'luci
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Modal } from '@/components/ui/modal'
+import { FileUpload } from '@/components/ui/file-upload'
+import { Breadcrumbs } from '@/components/ui/breadcrumbs'
 import Image from 'next/image'
 import toast from 'react-hot-toast'
 
@@ -149,6 +152,13 @@ export default function AdminGalleryPage() {
 
   return (
     <div className="p-6">
+      <Breadcrumbs
+        items={[
+          { label: 'Admin', href: '/admin' },
+          { label: 'Gallery' },
+        ]}
+        className="mb-4"
+      />
       <div className="mb-6">
         <h1 className="text-3xl font-bold mb-2">Gallery Management</h1>
         <p className="text-gray-600 dark:text-gray-400">
@@ -269,50 +279,45 @@ export default function AdminGalleryPage() {
       )}
 
       {/* Add Image Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-md">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>{editingItem ? 'Edit Image' : 'Add New Image'}</CardTitle>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setShowModal(false)
-                    resetForm()
-                    setEditingItem(null)
-                  }}
-                >
-                  <X className="w-5 h-5" />
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Title *</label>
-                  <input
-                    type="text"
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
-                    required
-                  />
-                </div>
+      <Modal
+        open={showModal}
+        onClose={() => {
+          setShowModal(false)
+          resetForm()
+          setEditingItem(null)
+        }}
+        title={editingItem ? 'Edit Image' : 'Add New Image'}
+        maxWidth="md"
+      >
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-2">Title *</label>
+            <input
+              type="text"
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
+              required
+            />
+          </div>
 
-                <div>
-                  <label className="block text-sm font-medium mb-2">Image URL *</label>
-                  <input
-                    type="url"
-                    value={formData.imageUrl}
-                    onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
-                    required
-                    placeholder="https://example.com/image.jpg"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Enter the full URL of the image</p>
-                </div>
+          <div>
+            <FileUpload
+              onUploadComplete={(url) => setFormData({ ...formData, imageUrl: url })}
+              folder="gallery"
+              currentUrl={formData.imageUrl}
+              label="Image"
+              required
+            />
+            <p className="text-xs text-gray-500 mt-1">Or enter image URL manually below</p>
+            <input
+              type="url"
+              value={formData.imageUrl}
+              onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 mt-2"
+              placeholder="https://example.com/image.jpg"
+            />
+          </div>
 
                 <div>
                   <label className="block text-sm font-medium mb-2">Category *</label>
@@ -346,10 +351,7 @@ export default function AdminGalleryPage() {
                   </Button>
                 </div>
               </form>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+      </Modal>
     </div>
   )
 }

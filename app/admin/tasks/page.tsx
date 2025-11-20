@@ -7,6 +7,7 @@ import { Plus, Edit, Trash2, Search, CheckCircle, Clock, AlertTriangle, Loader2,
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Modal } from '@/components/ui/modal'
 import toast from 'react-hot-toast'
 
 interface Task {
@@ -244,6 +245,13 @@ export default function AdminTasksPage() {
 
   return (
     <div className="p-6">
+      <Breadcrumbs
+        items={[
+          { label: 'Admin', href: '/admin' },
+          { label: 'Tasks' },
+        ]}
+        className="mb-4"
+      />
       <div className="mb-6">
         <h1 className="text-3xl font-bold mb-2">Task Management</h1>
         <p className="text-gray-600 dark:text-gray-400">
@@ -448,29 +456,17 @@ export default function AdminTasksPage() {
       )}
 
       {/* Add/Edit Task Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-2xl">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>
-                  {editingTask ? 'Edit Task' : 'Create New Task'}
-                </CardTitle>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setShowModal(false)
-                    setEditingTask(null)
-                    resetForm()
-                  }}
-                >
-                  <X className="w-5 h-5" />
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
+      <Modal
+        open={showModal}
+        onClose={() => {
+          setShowModal(false)
+          setEditingTask(null)
+          resetForm()
+        }}
+        title={editingTask ? 'Edit Task' : 'Create New Task'}
+        maxWidth="2xl"
+      >
+        <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">Title *</label>
                   <input
@@ -587,10 +583,7 @@ export default function AdminTasksPage() {
                   </Button>
                 </div>
               </form>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+      </Modal>
     </div>
   )
 }
