@@ -14,28 +14,28 @@ const TEST_USERS = [
   {
     email: 'admin@smarthotel.com',
     name: 'Super Admin',
-    password: 'admin123',
+    password: 'SmartHotel@2025!Admin',
     role: 'SUPER_ADMIN',
     phone: '+1-800-555-0001'
   },
   {
     email: 'manager@smarthotel.com',
     name: 'Hotel Manager',
-    password: 'manager123',
+    password: 'SmartHotel@2025!Manager',
     role: 'MANAGER',
     phone: '+1-800-555-0002'
   },
   {
     email: 'receptionist@smarthotel.com',
     name: 'Front Desk Receptionist',
-    password: 'receptionist123',
+    password: 'SmartHotel@2025!Reception',
     role: 'RECEPTIONIST',
     phone: '+1-800-555-0003'
   },
   {
     email: 'guest@example.com',
     name: 'John Doe',
-    password: 'guest123',
+    password: 'SmartHotel@2025!Guest',
     role: 'GUEST',
     phone: '+1-555-0104'
   }

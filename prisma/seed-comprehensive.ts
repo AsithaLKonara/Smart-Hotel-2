@@ -101,10 +101,10 @@ async function main() {
   await clearDatabase()
 
   const passwordHashes = {
-    admin: await bcrypt.hash('admin123', 12),
-    manager: await bcrypt.hash('manager123', 12),
-    receptionist: await bcrypt.hash('receptionist123', 12),
-    guest: await bcrypt.hash('guest123', 12),
+    admin: await bcrypt.hash('SmartHotel@2025!Admin', 12),
+    manager: await bcrypt.hash('SmartHotel@2025!Manager', 12),
+    receptionist: await bcrypt.hash('SmartHotel@2025!Reception', 12),
+    guest: await bcrypt.hash('SmartHotel@2025!Guest', 12),
   }
 
   const userSeeds = [

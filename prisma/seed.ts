@@ -6,11 +6,12 @@ const prisma = new PrismaClient()
 async function main() {
   console.log('🌱 Starting database seeding...')
 
-  // Create sample users with correct demo passwords
-  const adminHash = await bcrypt.hash('admin123', 12)
-  const managerHash = await bcrypt.hash('manager123', 12)
-  const receptionistHash = await bcrypt.hash('receptionist123', 12)
-  const guestHash = await bcrypt.hash('guest123', 12)
+  // Create sample users with secure demo passwords (not in breach databases)
+  // Using unique passwords that won't trigger Chrome security warnings
+  const adminHash = await bcrypt.hash('SmartHotel@2025!Admin', 12)
+  const managerHash = await bcrypt.hash('SmartHotel@2025!Manager', 12)
+  const receptionistHash = await bcrypt.hash('SmartHotel@2025!Reception', 12)
+  const guestHash = await bcrypt.hash('SmartHotel@2025!Guest', 12)
 
   // Helper function to create or update user
   async function createOrUpdateUser(email: string, data: any) {
@@ -551,10 +552,10 @@ async function main() {
   console.log('- 6 Settings')
   console.log('\n🔐 Demo Login Credentials:')
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-  console.log('👑 Admin: admin@smarthotel.com / admin123')
-  console.log('👨‍💼 Manager: manager@smarthotel.com / manager123')
-  console.log('👩‍💼 Receptionist: receptionist@smarthotel.com / receptionist123')
-  console.log('👤 Guest: guest@example.com / guest123')
+  console.log('👑 Admin: admin@smarthotel.com / SmartHotel@2025!Admin')
+  console.log('👨‍💼 Manager: manager@smarthotel.com / SmartHotel@2025!Manager')
+  console.log('👩‍💼 Receptionist: receptionist@smarthotel.com / SmartHotel@2025!Reception')
+  console.log('👤 Guest: guest@example.com / SmartHotel@2025!Guest')
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
   console.log('\n🚀 For comprehensive demo data, run: npm run db:seed:demo')
 }
