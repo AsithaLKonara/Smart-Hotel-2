@@ -3,7 +3,7 @@ import { PrismaAdapter } from '@next-auth/prisma-adapter'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import GoogleProvider from 'next-auth/providers/google'
 import bcrypt from 'bcryptjs'
-import prisma from './db'
+import prisma, { connectWithRetry } from './db'
 import { logAction, AUDIT_ACTIONS } from './audit'
 // Note: UserRole enum doesn't exist in Prisma schema - define locally
 type UserRole = 'GUEST' | 'STAFF' | 'MANAGER' | 'SUPER_ADMIN' | 'RECEPTIONIST'
@@ -30,9 +30,14 @@ export const authOptions: NextAuthOptions = {
 
         try {
           console.info('Credentials authorize: lookup user', credentials.email)
-          const user = await prisma.user.findFirst({ 
-            where: { email: credentials.email.toLowerCase().trim() } 
-          })
+          
+          // Use connection retry wrapper to handle MongoDB Atlas sleeping
+          const user = await connectWithRetry(async () => {
+            return await prisma.user.findFirst({ 
+              where: { email: credentials.email.toLowerCase().trim() } 
+            })
+          }, 3, 1000)
+          
           console.info('Credentials authorize: user found', !!user)
 
           if (!user) {
