@@ -2,11 +2,9 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
-import { Filter, X } from 'lucide-react'
+import { Filter, X, Maximize2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { FallbackImage } from '@/components/ui/fallback-image'
-// Navigation is handled by layout.tsx
+import { AnimatePresence, motion } from 'framer-motion'
 
 export default function GalleryPage() {
   const [selectedCategory, setSelectedCategory] = useState('all')
@@ -18,121 +16,146 @@ export default function GalleryPage() {
 
   const categories = [
     { id: 'all', name: 'All' },
-    { id: 'rooms', name: 'Rooms' },
+    { id: 'rooms', name: 'Suites' },
     { id: 'lobby', name: 'Lobby' },
-    { id: 'restaurant', name: 'Restaurant' },
-    { id: 'pool', name: 'Pool & Spa' },
-    { id: 'events', name: 'Events' },
-    { id: 'exterior', name: 'Exterior' }
+    { id: 'dining', name: 'Dining' },
+    { id: 'wellness', name: 'Wellness' },
+    { id: 'events', name: 'Events' }
   ]
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      
-      {/* Header */}
-      <section className="pt-20 pb-12 bg-gradient-to-r from-primary-600 to-primary-800 text-white">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-5xl font-serif font-bold mb-4">Hotel Gallery</h1>
-          <p className="text-xl opacity-90 max-w-2xl mx-auto">
-            Explore our beautiful spaces, luxurious rooms, and world-class amenities 
-            through our curated collection of images.
-          </p>
+    <div className="bg-white text-midnight min-h-screen">
+      {/* Hero Section */}
+      <section className="relative h-[40vh] min-h-[300px] overflow-hidden bg-midnight">
+        <div className="absolute inset-0">
+          <Image 
+            src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&q=80&w=1920" 
+            alt="Hotel Gallery" 
+            fill 
+            className="object-cover opacity-40" 
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-midnight/20 via-midnight/60 to-midnight" />
+        </div>
+        
+        <div className="relative z-10 container mx-auto px-4 h-full flex flex-col justify-center items-center text-center">
+          <div className="space-y-6 max-w-4xl">
+            <div className="flex items-center justify-center space-x-3 text-luxury uppercase tracking-[0.4em] text-xs font-bold">
+              <div className="w-12 h-px bg-luxury" />
+              <span>Visual Journey</span>
+              <div className="w-12 h-px bg-luxury" />
+            </div>
+            <h1 className="text-5xl md:text-7xl font-serif font-bold text-white leading-tight">
+              The <span className="text-luxury italic">Gallery</span>
+            </h1>
+          </div>
         </div>
       </section>
 
       {/* Filters */}
-      <section className="py-8 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+      <section className="sticky top-20 z-40 bg-white/80 backdrop-blur-xl border-b border-gray-100 py-6">
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-center space-x-4">
-            <Filter className="w-5 h-5 text-gray-600" />
-            <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Filter by:</span>
+          <div className="flex items-center justify-center gap-4 flex-wrap">
             {categories.map((category) => (
-              <Button
+              <button
                 key={category.id}
-                variant={selectedCategory === category.id ? 'default' : 'outline'}
-                size="sm"
                 onClick={() => setSelectedCategory(category.id)}
-                className="text-sm"
+                className={`px-8 py-2 text-[10px] uppercase tracking-[0.2em] font-bold transition-all border ${
+                  selectedCategory === category.id 
+                  ? 'bg-midnight text-white border-midnight' 
+                  : 'border-transparent text-gray-400 hover:text-luxury'
+                }`}
               >
                 {category.name}
-              </Button>
+              </button>
             ))}
           </div>
         </div>
       </section>
 
       {/* Gallery Grid */}
-      <section className="py-12">
+      <section className="py-20">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredImages.map((image) => (
-              <div
-                key={image.id}
-                className="group relative overflow-hidden rounded-lg cursor-pointer transform transition-transform hover:scale-105"
-                onClick={() => setSelectedImage(image)}
-              >
-                <FallbackImage
-                  src={image.url}
-                  fallbackSrc={image.fallback || "/images/hotel/hotel-lobby.jpg"}
-                  alt={image.title}
-                  width={400}
-                  height={300}
-                  className="w-full h-64 object-cover"
-                />
-                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all duration-300 flex items-end">
-                  <div className="p-4 text-white transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                    <h3 className="font-semibold text-lg">{image.title}</h3>
-                    <p className="text-sm opacity-90">{image.description}</p>
-                    <Badge className="mt-2 bg-white/20 text-white border-white/30">
-                      {image.category}
-                    </Badge>
+          <motion.div 
+            layout
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          >
+            <AnimatePresence mode='popLayout'>
+              {filteredImages.map((image) => (
+                <motion.div
+                  layout
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.5 }}
+                  key={image.id}
+                  className="group relative aspect-square overflow-hidden bg-gray-100 cursor-pointer"
+                  onClick={() => setSelectedImage(image)}
+                >
+                  <Image
+                    src={image.url}
+                    alt={image.title}
+                    fill
+                    className="object-cover transition-transform duration-1000 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-midnight/60 opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col justify-center items-center text-center p-8">
+                    <div className="space-y-4 translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                      <div className="w-10 h-10 bg-luxury/20 flex items-center justify-center mx-auto text-luxury mb-4">
+                        <Maximize2 className="w-5 h-5" />
+                      </div>
+                      <p className="text-luxury text-[10px] uppercase tracking-[0.3em] font-bold">{image.category}</p>
+                      <h3 className="text-white text-2xl font-serif font-bold">{image.title}</h3>
+                      <p className="text-white/60 text-sm font-light italic">{image.description}</p>
+                    </div>
                   </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {filteredImages.length === 0 && (
-            <div className="text-center py-12">
-              <div className="text-gray-400 mb-4">
-                <Filter className="w-16 h-16 mx-auto" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">No images found</h3>
-              <p className="text-gray-600 dark:text-gray-300">
-                Try selecting a different category
-              </p>
-            </div>
-          )}
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </motion.div>
         </div>
       </section>
 
-      {/* Lightbox Modal */}
-      {selectedImage && (
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center p-4">
-          <div className="relative max-w-4xl max-h-full">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute top-4 right-4 z-10 bg-black/50 text-white hover:bg-black/70"
+      {/* Lightbox */}
+      <AnimatePresence>
+        {selectedImage && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-midnight flex items-center justify-center p-4 md:p-20"
+          >
+            <button 
               onClick={() => setSelectedImage(null)}
+              className="absolute top-10 right-10 text-white/50 hover:text-white transition-colors z-[110]"
             >
-              <X className="w-6 h-6" />
-            </Button>
-            <FallbackImage
-              src={selectedImage.url}
-              fallbackSrc={selectedImage.fallback || "/images/hotel/hotel-lobby.jpg"}
-              alt={selectedImage.title}
-              width={800}
-              height={600}
-              className="max-w-full max-h-[80vh] object-contain rounded-lg"
-            />
-            <div className="absolute bottom-4 left-4 right-4 text-white">
-              <h3 className="text-xl font-semibold mb-2">{selectedImage.title}</h3>
-              <p className="text-sm opacity-90">{selectedImage.description}</p>
+              <X className="w-10 h-10" />
+            </button>
+            
+            <div className="relative w-full h-full flex flex-col md:flex-row gap-12 items-center">
+              <div className="relative flex-1 w-full h-full">
+                <Image
+                  src={selectedImage.url}
+                  alt={selectedImage.title}
+                  fill
+                  className="object-contain"
+                />
+              </div>
+              <div className="w-full md:w-96 text-left space-y-6">
+                <p className="text-luxury text-xs uppercase tracking-[0.4em] font-bold">{selectedImage.category}</p>
+                <h2 className="text-4xl md:text-6xl font-serif font-bold text-white leading-tight">{selectedImage.title}</h2>
+                <p className="text-white/60 text-lg font-light leading-relaxed">{selectedImage.description}</p>
+                <div className="w-20 h-px bg-luxury" />
+                <Button 
+                  onClick={() => setSelectedImage(null)}
+                  variant="outline" 
+                  className="border-white/20 text-white rounded-none px-10 h-14 uppercase tracking-widest text-[10px] font-bold hover:bg-white hover:text-midnight transition-all"
+                >
+                  Close Gallery
+                </Button>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
@@ -140,98 +163,66 @@ export default function GalleryPage() {
 const galleryImages = [
   {
     id: 1,
-    title: "Luxury Suite",
-    description: "Spacious suite with panoramic city views",
+    title: "The Royal Suite",
+    description: "Panoramic views of the city skyline from our premier suite.",
     category: "rooms",
-    url: "/images/hotel/room-suite.jpg",
-    fallback: "/images/hotel/room-luxury.jpg"
+    url: "https://images.unsplash.com/photo-1590490359683-658d3d23f972?auto=format&fit=crop&q=80&w=1200",
   },
   {
     id: 2,
-    title: "Hotel Lobby",
-    description: "Elegant lobby with modern design",
+    title: "Grand Entrance",
+    description: "The sweeping architecture of our main lobby.",
     category: "lobby",
-    url: "/images/hotel/hotel-lobby.jpg",
-    fallback: "/images/hotel/hotel-exterior.jpg"
+    url: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&q=80&w=1200",
   },
   {
     id: 3,
-    title: "Fine Dining Restaurant",
-    description: "World-class dining experience",
-    category: "restaurant",
-    url: "/images/hotel/hotel-restaurant.jpg",
-    fallback: "/images/hotel/hotel-bar.jpg"
+    title: "The Gilded Plate",
+    description: "Intimate fine dining in a Michelin-starred setting.",
+    category: "dining",
+    url: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&q=80&w=1200",
   },
   {
     id: 4,
-    title: "Infinity Pool",
-    description: "Relaxing pool with city skyline",
-    category: "pool",
-    url: "/images/hotel/hotel-pool.jpg",
-    fallback: "/images/hotel/hotel-spa.jpg"
+    title: "Celestial Pool",
+    description: "Infinity edges that blend with the horizon.",
+    category: "wellness",
+    url: "https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?auto=format&fit=crop&q=80&w=1200",
   },
   {
     id: 5,
-    title: "Wedding Venue",
-    description: "Perfect setting for special events",
+    title: "Midnight Ballroom",
+    description: "Setting the stage for unforgettable gala events.",
     category: "events",
-    url: "/images/hotel/hotel-view.jpg",
-    fallback: "/images/hotel/hotel-garden.jpg"
+    url: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80&w=1200",
   },
   {
     id: 6,
-    title: "Hotel Exterior",
-    description: "Stunning architectural design",
-    category: "exterior",
-    url: "/images/hotel/hotel-exterior.jpg",
-    fallback: "/images/hotel/hotel-lobby.jpg"
+    title: "Serenity Spa",
+    description: "An oasis of calm designed for total rejuvenation.",
+    category: "wellness",
+    url: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&q=80&w=1200",
   },
   {
     id: 7,
-    title: "Deluxe Room",
-    description: "Comfortable and modern room design",
+    title: "Executive Penthouse",
+    description: "Modern luxury with bespoke artisanal finishes.",
     category: "rooms",
-    url: "/images/hotel/room-deluxe.jpg",
-    fallback: "/images/hotel/room-standard.jpg"
+    url: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&q=80&w=1200",
   },
   {
     id: 8,
-    title: "Spa Center",
-    description: "Relaxation and wellness facilities",
-    category: "pool",
-    url: "/images/hotel/hotel-spa.jpg",
-    fallback: "/images/hotel/hotel-pool.jpg"
+    url: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=1200",
+    title: "Morning Sun Lobby",
+    description: "Natural light illuminating our grand marble staircase.",
+    category: "lobby"
   },
   {
     id: 9,
-    title: "Conference Room",
-    description: "Professional meeting spaces",
-    category: "events",
-    url: "/images/hotel/hotel-view.jpg",
-    fallback: "/images/hotel/hotel-lobby.jpg"
-  },
-  {
-    id: 10,
-    title: "Garden View",
-    description: "Peaceful garden surroundings",
-    category: "exterior",
-    url: "/images/hotel/hotel-garden.jpg",
-    fallback: "/images/hotel/hotel-exterior.jpg"
-  },
-  {
-    id: 11,
-    title: "Executive Lounge",
-    description: "Exclusive lounge area for guests",
-    category: "lobby",
-    url: "/images/hotel/hotel-lobby.jpg",
-    fallback: "/images/hotel/hotel-bar.jpg"
-  },
-  {
-    id: 12,
-    title: "Wine Bar",
-    description: "Sophisticated wine and cocktail bar",
-    category: "restaurant",
-    url: "/images/hotel/hotel-bar.jpg",
-    fallback: "/images/hotel/hotel-restaurant.jpg"
+    url: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&q=80&w=1200",
+    title: "Chef's Table",
+    description: "An exclusive culinary experience for the discerning palate.",
+    category: "dining"
   }
-] 
+]
+ 

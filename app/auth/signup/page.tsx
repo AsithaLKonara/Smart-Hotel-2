@@ -2,10 +2,10 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Eye, EyeOff, Building2 } from 'lucide-react'
+import { Eye, EyeOff, ShieldCheck, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import toast from 'react-hot-toast'
+import Image from 'next/image'
 
 export default function SignUpPage() {
   const [formData, setFormData] = useState({
@@ -14,10 +14,8 @@ export default function SignUpPage() {
     password: '',
     confirmPassword: '',
     phone: '',
-    address: '',
   })
   const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
@@ -29,15 +27,8 @@ export default function SignUpPage() {
     e.preventDefault()
     setIsLoading(true)
 
-    // Validation
     if (formData.password !== formData.confirmPassword) {
       toast.error('Passwords do not match')
-      setIsLoading(false)
-      return
-    }
-
-    if (formData.password.length < 6) {
-      toast.error('Password must be at least 6 characters long')
       setIsLoading(false)
       return
     }
@@ -45,200 +36,150 @@ export default function SignUpPage() {
     try {
       const response = await fetch('/api/auth/register', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: formData.name,
           email: formData.email,
           password: formData.password,
           phone: formData.phone,
-          address: formData.address,
         }),
       })
 
-      const data = await response.json()
-
       if (response.ok) {
-        toast.success('Account created successfully! Please sign in.')
+        toast.success('Sanctuary account created')
         router.push('/auth/signin')
       } else {
-        toast.error(data.error || 'Failed to create account')
+        const data = await response.json()
+        toast.error(data.error || 'Registration failed')
       }
     } catch (error) {
-      toast.error('An error occurred during registration')
+      toast.error('Registration failed')
     } finally {
       setIsLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div className="text-center">
-          <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-primary-100 dark:bg-primary-900">
-            <Building2 className="h-6 w-6 text-primary-600 dark:text-primary-400" />
+    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-midnight">
+      {/* Visual Side */}
+      <div className="hidden lg:block relative overflow-hidden">
+        <Image 
+          src="https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&q=80&w=1200" 
+          alt="Luxury Resort" 
+          fill 
+          className="object-cover opacity-60"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-midnight via-midnight/40 to-transparent" />
+        <div className="absolute bottom-20 left-20 right-20 space-y-6">
+          <div className="flex items-center space-x-3 text-luxury uppercase tracking-[0.4em] text-[10px] font-bold">
+            <div className="w-10 h-px bg-luxury" />
+            <span>Join Our Legacy</span>
           </div>
-          <h2 className="mt-6 text-3xl font-bold text-gray-900 dark:text-white">
-            Create your account
+          <h2 className="text-5xl font-serif font-bold text-white leading-tight">
+            A Sanctuary <span className="text-luxury italic">Awaits</span>
           </h2>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            Join SmartHotel to start booking and managing your stays
+          <p className="text-white/50 font-light text-lg leading-relaxed max-w-md">
+            Create your account to unlock curated experiences, seamless reservations, and a world of refined luxury.
           </p>
         </div>
+      </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Sign up</CardTitle>
-            <CardDescription>
-              Create your account to access all features
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Full Name
-                </label>
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
+      {/* Form Side */}
+      <div className="flex items-center justify-center p-8 lg:p-16 bg-white overflow-y-auto">
+        <div className="w-full max-w-md space-y-10 my-12">
+          <div className="space-y-4">
+             <Link href="/" className="inline-block">
+               <span className="text-2xl font-serif font-bold tracking-tighter text-midnight">SMART<span className="text-luxury">HOTEL</span></span>
+             </Link>
+             <h1 className="text-3xl font-serif font-bold text-midnight">Begin Your Journey</h1>
+             <p className="text-gray-400 font-light">Join the SmartHotel inner circle today.</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 gap-6">
+              <div className="space-y-2">
+                <label className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Full Name</label>
+                <input 
+                  type="text" 
                   required
+                  className="w-full bg-gray-50 border-none px-6 py-4 text-sm focus:ring-1 focus:ring-luxury transition-all"
+                  placeholder="Your illustrious name"
                   value={formData.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
-                  placeholder="Enter your full name"
                 />
               </div>
 
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Email address
-                </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
+              <div className="space-y-2">
+                <label className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Email Address</label>
+                <input 
+                  type="email" 
                   required
+                  className="w-full bg-gray-50 border-none px-6 py-4 text-sm focus:ring-1 focus:ring-luxury transition-all"
+                  placeholder="name@example.com"
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
-                  placeholder="Enter your email"
                 />
               </div>
 
-              <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Phone Number
-                </label>
-                <input
-                  id="phone"
-                  name="phone"
-                  type="tel"
+              <div className="space-y-2">
+                <label className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Phone Number</label>
+                <input 
+                  type="tel" 
+                  className="w-full bg-gray-50 border-none px-6 py-4 text-sm focus:ring-1 focus:ring-luxury transition-all"
+                  placeholder="+1 (000) 000-0000"
                   value={formData.phone}
                   onChange={(e) => handleInputChange('phone', e.target.value)}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
-                  placeholder="Enter your phone number"
                 />
               </div>
 
-              <div>
-                <label htmlFor="address" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Address
-                </label>
-                <textarea
-                  id="address"
-                  name="address"
-                  rows={3}
-                  value={formData.address}
-                  onChange={(e) => handleInputChange('address', e.target.value)}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
-                  placeholder="Enter your address"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Password
-                </label>
-                <div className="mt-1 relative">
-                  <input
-                    id="password"
-                    name="password"
-                    type={showPassword ? 'text' : 'password'}
-                    autoComplete="new-password"
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Password</label>
+                  <input 
+                    type="password" 
                     required
+                    className="w-full bg-gray-50 border-none px-6 py-4 text-sm focus:ring-1 focus:ring-luxury transition-all"
+                    placeholder="••••••••"
                     value={formData.password}
                     onChange={(e) => handleInputChange('password', e.target.value)}
-                    className="block w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
-                    placeholder="Create a password"
                   />
-                  <button
-                    type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-5 w-5 text-gray-400" />
-                    ) : (
-                      <Eye className="h-5 w-5 text-gray-400" />
-                    )}
-                  </button>
                 </div>
-              </div>
-
-              <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Confirm Password
-                </label>
-                <div className="mt-1 relative">
-                  <input
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    type={showConfirmPassword ? 'text' : 'password'}
-                    autoComplete="new-password"
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Confirm</label>
+                  <input 
+                    type="password" 
                     required
+                    className="w-full bg-gray-50 border-none px-6 py-4 text-sm focus:ring-1 focus:ring-luxury transition-all"
+                    placeholder="••••••••"
                     value={formData.confirmPassword}
                     onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                    className="block w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
-                    placeholder="Confirm your password"
                   />
-                  <button
-                    type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  >
-                    {showConfirmPassword ? (
-                      <EyeOff className="h-5 w-5 text-gray-400" />
-                    ) : (
-                      <Eye className="h-5 w-5 text-gray-400" />
-                    )}
-                  </button>
                 </div>
               </div>
-
-              <Button
-                type="submit"
-                disabled={isLoading}
-                className="w-full"
-              >
-                {isLoading ? 'Creating account...' : 'Create account'}
-              </Button>
-            </form>
-
-            <div className="mt-6 text-center">
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Already have an account?{' '}
-                <Link href="/auth/signin" className="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400">
-                  Sign in
-                </Link>
-              </p>
             </div>
-          </CardContent>
-        </Card>
+
+            <Button 
+              type="submit" 
+              disabled={isLoading}
+              className="w-full bg-midnight text-white h-16 rounded-none uppercase tracking-[0.2em] text-xs font-bold hover:bg-midnight/90 group"
+            >
+              {isLoading ? 'Creating Account...' : 'Join The Circle'}
+              <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+            </Button>
+          </form>
+
+          <div className="pt-8 border-t border-gray-100 flex flex-col items-center space-y-4">
+             <p className="text-sm text-gray-400 font-light">
+               Already a member? <Link href="/auth/signin" className="text-luxury font-bold italic">Sign in</Link>
+             </p>
+             <div className="flex items-center space-x-2 text-[10px] text-gray-300 uppercase tracking-widest font-bold">
+               <ShieldCheck className="w-3 h-3" />
+               <span>Privacy Guaranteed</span>
+             </div>
+          </div>
+        </div>
       </div>
     </div>
   )
-} 
+}
+ 

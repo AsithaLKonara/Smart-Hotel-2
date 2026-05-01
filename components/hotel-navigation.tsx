@@ -4,7 +4,8 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { usePathname } from 'next/navigation'
-import { Menu, X, Phone, Mail, MapPin, LogOut, User } from 'lucide-react'
+import { Menu, X, Phone, Mail, MapPin, LogOut, User, ShoppingBag } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 interface NavigationContact {
   name: string
@@ -24,25 +25,34 @@ const defaultContact: NavigationContact = {
 
 export default function HotelNavigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
   const [contactInfo, setContactInfo] = useState<NavigationContact>(defaultContact)
   const [navigation, setNavigation] = useState([
     { name: 'Home', href: '/' },
     { name: 'Rooms', href: '/rooms' },
-    { name: 'Restaurant', href: '/order' },
+    { name: 'Dining', href: '/dining' },
     { name: 'Gallery', href: '/gallery' },
+    { name: 'Facilities', href: '/facilities' },
     { name: 'Contact', href: '/contact' },
   ])
   const { data: session } = useSession()
   const pathname = usePathname()
   
-  // Hide navigation on dashboard/admin routes (they have their own navigation)
+  // Hide navigation on dashboard/admin routes
   const isDashboardRoute = pathname?.startsWith('/dashboard') || pathname?.startsWith('/admin')
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20)
+    }
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   useEffect(() => {
     let isMounted = true
 
     async function loadData() {
-      // Load contact info
       try {
         const response = await fetch('/api/settings/contact')
         if (!response.ok) return
@@ -60,7 +70,6 @@ export default function HotelNavigation() {
         console.error('Failed to load contact info for navigation:', error)
       }
 
-      // Load navigation links
       try {
         const navResponse = await fetch('/api/navigation')
         if (!navResponse.ok) return
@@ -75,193 +84,164 @@ export default function HotelNavigation() {
     }
 
     loadData()
-
-    return () => {
-      isMounted = false
-    }
+    return () => { isMounted = false }
   }, [])
   
-  // Hide navigation on dashboard/admin routes (they have their own navigation)
-  if (isDashboardRoute) {
-    return null
-  }
+  if (isDashboardRoute) return null
 
   return (
-    <header role="banner" className="bg-white shadow-sm">
-      {/* Top Bar */}
-      <div className="bg-amber-800 text-white py-2">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex flex-col sm:flex-row justify-between items-center text-sm">
-            <div className="flex flex-col sm:flex-row items-center gap-4 mb-2 sm:mb-0">
-              <div className="flex items-center gap-2">
-                <Phone className="w-4 h-4" />
+    <header 
+      role="banner" 
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+        scrolled ? 'bg-midnight/95 backdrop-blur-lg shadow-2xl py-2' : 'bg-transparent py-4'
+      }`}
+    >
+      {/* Top Bar - Hidden on scroll for cleaner look */}
+      {!scrolled && (
+        <div className="border-b border-white/10 text-white/70 py-2 hidden lg:block">
+          <div className="max-w-7xl mx-auto px-4 flex justify-between items-center text-xs tracking-widest uppercase">
+            <div className="flex items-center gap-6">
+              <div className="flex items-center gap-2 hover:text-luxury transition-colors">
+                <Phone className="w-3 h-3" />
                 <span>{contactInfo.phone}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Mail className="w-4 h-4" />
+              <div className="flex items-center gap-2 hover:text-luxury transition-colors">
+                <Mail className="w-3 h-3" />
                 <span>{contactInfo.email}</span>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <MapPin className="w-4 h-4" />
+            <div className="flex items-center gap-2 hover:text-luxury transition-colors">
+              <MapPin className="w-3 h-3" />
               <span>{contactInfo.address}</span>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Main Navigation */}
-      <nav className="bg-white shadow-lg sticky top-0 z-50" aria-label="Primary navigation">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex justify-between items-center h-20 gap-4">
-            {/* Logo */}
-            <Link href="/" className="flex items-center space-x-3 flex-shrink-0 min-w-0">
-              <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
-                <span className="text-white font-bold text-xl">GP</span>
-              </div>
-              <div className="min-w-0">
-                <h1 className="text-xl lg:text-2xl font-bold text-gray-900 truncate">{contactInfo.name}</h1>
-                <p className="text-xs lg:text-sm text-gray-600 truncate hidden sm:block">{contactInfo.tagline}</p>
-              </div>
-            </Link>
-
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-4 overflow-x-auto flex-1 justify-end min-w-0">
-              <div className="flex items-center space-x-4 flex-shrink-0">
-                {navigation.map((item) => (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    prefetch={item.href === '/order' ? false : undefined}
-                    className="text-gray-700 hover:text-amber-600 font-medium transition-colors whitespace-nowrap"
-                  >
-                    {item.name}
-                  </Link>
-                ))}
-                
-                {/* Authentication & Actions */}
-                {session?.user ? (
-                  <>
-                    <Link
-                      href="/my-bookings"
-                      className="text-gray-700 hover:text-amber-600 font-medium transition-colors whitespace-nowrap"
-                    >
-                      My Bookings
-                    </Link>
-                    {session.user.role && session.user.role !== 'GUEST' && (
-                      <Link
-                        href="/admin"
-                        className="text-gray-700 hover:text-amber-600 font-medium transition-colors whitespace-nowrap"
-                      >
-                        Admin
-                      </Link>
-                    )}
-                    <button
-                      onClick={() => signOut()}
-                      className="text-gray-700 hover:text-amber-600 font-medium transition-colors flex items-center gap-1 whitespace-nowrap"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      <span className="hidden lg:inline">Sign Out</span>
-                    </button>
-                  </>
-                ) : (
-                  <Link
-                    href="/auth/signin"
-                    className="text-gray-700 hover:text-amber-600 font-medium transition-colors whitespace-nowrap"
-                  >
-                    Sign In
-                  </Link>
-                )}
-                
-                <Link
-                  href="/booking"
-                  className="bg-amber-800 hover:bg-amber-900 text-white px-4 lg:px-6 py-2 rounded-lg font-medium transition-colors whitespace-nowrap flex-shrink-0"
-                >
-                  <span className="hidden xl:inline">Book Now</span>
-                  <span className="xl:hidden">Book</span>
-                </Link>
-              </div>
+      <nav className="max-w-7xl mx-auto px-4" aria-label="Primary navigation">
+        <div className="flex justify-between items-center h-20 gap-8">
+          {/* Logo */}
+          <Link href="/" className="group flex items-center space-x-4 flex-shrink-0">
+            <div className="relative w-12 h-12 flex items-center justify-center">
+              <div className="absolute inset-0 bg-gold-gradient rounded-full rotate-45 group-hover:rotate-180 transition-transform duration-700" />
+              <span className="relative text-white font-serif font-bold text-xl">GP</span>
             </div>
+            <div className="hidden sm:block">
+              <h1 className="text-xl lg:text-2xl font-serif font-bold text-white tracking-tight">
+                {contactInfo.name.split(' ')[0]} <span className="text-luxury">{contactInfo.name.split(' ').slice(1).join(' ')}</span>
+              </h1>
+            </div>
+          </Link>
 
-            {/* Mobile menu button */}
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden p-2 rounded-md text-gray-700 hover:text-amber-600"
-              aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
-              aria-expanded={isMenuOpen}
-              data-testid="mobile-menu-toggle"
-            >
-              {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
+          {/* Desktop Navigation */}
+          <div className="hidden lg:flex items-center space-x-8">
+            {navigation.map((item) => (
+              <Link
+                key={item.name}
+                href={item.href}
+                className={`text-sm font-medium tracking-wide transition-all duration-300 hover:text-luxury ${
+                  pathname === item.href ? 'text-luxury' : 'text-white'
+                }`}
+              >
+                {item.name}
+              </Link>
+            ))}
           </div>
 
-          {/* Mobile Navigation */}
-          {isMenuOpen && (
-            <div className="md:hidden py-4 border-t border-gray-200" data-testid="mobile-menu">
-              <div className="flex flex-col space-y-4">
-                {navigation.map((item) => (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    prefetch={item.href === '/order' ? false : undefined}
-                    className="text-gray-700 hover:text-amber-600 font-medium transition-colors"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    {item.name}
-                  </Link>
-                ))}
-                
-                {/* Mobile Authentication */}
-                {session?.user ? (
-                  <>
-                    <Link
-                      href="/my-bookings"
-                      className="text-gray-700 hover:text-amber-600 font-medium transition-colors"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      My Bookings
-                    </Link>
-                    {session.user.role && session.user.role !== 'GUEST' && (
-                      <Link
-                        href="/admin"
-                        className="text-gray-700 hover:text-amber-600 font-medium transition-colors"
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        Admin
-                      </Link>
-                    )}
-                    <button
-                      onClick={() => {
-                        signOut()
-                        setIsMenuOpen(false)
-                      }}
-                      className="text-gray-700 hover:text-amber-600 font-medium transition-colors flex items-center gap-2 text-left"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      Sign Out
-                    </button>
-                  </>
-                ) : (
-                  <Link
-                    href="/auth/signin"
-                    className="text-gray-700 hover:text-amber-600 font-medium transition-colors"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Sign In
-                  </Link>
-                )}
-                
+          {/* Actions */}
+          <div className="hidden lg:flex items-center space-x-6">
+            {session?.user ? (
+              <div className="flex items-center space-x-4">
+                <Link href="/my-bookings" className="text-white hover:text-luxury transition-colors">
+                  <ShoppingBag className="w-5 h-5" />
+                </Link>
+                <div className="h-4 w-px bg-white/20" />
+                <button
+                  onClick={() => signOut()}
+                  className="text-white/80 hover:text-white transition-colors flex items-center gap-2 text-sm"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Logout</span>
+                </button>
+              </div>
+            ) : (
+              <Link
+                href="/auth/signin"
+                className="text-white hover:text-luxury transition-colors text-sm font-medium"
+              >
+                Sign In
+              </Link>
+            )}
+            
+            <Link href="/booking">
+              <Button className="bg-gold-gradient hover:opacity-90 text-white px-8 rounded-none border-none font-serif tracking-widest uppercase text-xs h-12 transition-all hover:scale-105 active:scale-95 shadow-luxury">
+                Book Your Stay
+              </Button>
+            </Link>
+          </div>
+
+          {/* Mobile menu button */}
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="lg:hidden p-2 rounded-md text-white hover:text-luxury transition-colors"
+            aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
+          >
+            {isMenuOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
+          </button>
+        </div>
+
+        {/* Mobile Navigation */}
+        {isMenuOpen && (
+          <div className="lg:hidden fixed inset-0 top-20 bg-midnight/98 backdrop-blur-2xl p-8 z-50 animate-fade-in">
+            <div className="flex flex-col space-y-8 text-center">
+              {navigation.map((item) => (
                 <Link
-                  href="/booking"
-                  className="bg-amber-700 hover:bg-amber-800 text-white px-6 py-2 rounded-lg font-medium transition-colors text-center"
+                  key={item.name}
+                  href={item.href}
+                  className="text-2xl font-serif text-white hover:text-luxury"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  Book Now
+                  {item.name}
                 </Link>
-              </div>
+              ))}
+              
+              <div className="h-px bg-white/10 w-24 mx-auto" />
+              
+              {session?.user ? (
+                <>
+                  <Link
+                    href="/my-bookings"
+                    className="text-xl text-white/80"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    My Bookings
+                  </Link>
+                  <button
+                    onClick={() => { signOut(); setIsMenuOpen(false) }}
+                    className="text-xl text-red-400 font-medium"
+                  >
+                    Sign Out
+                  </button>
+                </>
+              ) : (
+                <Link
+                  href="/auth/signin"
+                  className="text-xl text-white/80"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Sign In
+                </Link>
+              )}
+              
+              <Link href="/booking" onClick={() => setIsMenuOpen(false)}>
+                <Button className="w-full bg-gold-gradient text-white py-8 text-lg font-serif">
+                  Book Now
+                </Button>
+              </Link>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </nav>
     </header>
   )

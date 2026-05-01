@@ -11,7 +11,6 @@ function getFormattedDate(): string {
       day: 'numeric'
     })
   } catch (error) {
-    console.error('Error formatting date:', error)
     return 'January 1, 2025'
   }
 }
@@ -20,157 +19,82 @@ export default function TermsPage() {
   const lastUpdated = getFormattedDate()
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        {/* Header */}
-      <section className="pt-20 pb-12 bg-gradient-to-r from-primary-600 to-primary-800 text-white">
-        <div className="container mx-auto px-4">
-          <Link href="/" className="inline-flex items-center gap-2 mb-6 text-white/80 hover:text-white transition-colors">
-            <ArrowLeft className="w-5 h-5" />
-            Back to Home
+    <div className="bg-white text-midnight min-h-screen">
+      {/* Header */}
+      <section className="relative pt-32 pb-20 bg-midnight overflow-hidden">
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-luxury via-transparent to-transparent" />
+        </div>
+        <div className="container mx-auto px-4 relative z-10">
+          <Link href="/" className="inline-flex items-center gap-2 mb-8 text-luxury uppercase tracking-[0.3em] text-[10px] font-bold hover:opacity-70 transition-opacity">
+            <ArrowLeft className="w-4 h-4" />
+            Return Home
           </Link>
-          <div className="flex items-center gap-3 mb-4">
-            <Scale className="w-8 h-8" />
-            <h1 className="text-4xl md:text-5xl font-serif font-bold">Terms of Service</h1>
+          <div className="space-y-4 max-w-4xl">
+            <h1 className="text-5xl md:text-7xl font-serif font-bold text-white leading-tight">
+              Terms of <span className="text-luxury italic">Excellence</span>
+            </h1>
+            <p className="text-white/50 font-light max-w-2xl leading-relaxed">
+              Our commitment to providing an unparalleled experience is governed by these standards of service and mutual respect.
+            </p>
+            <p className="text-[10px] uppercase tracking-widest text-luxury font-bold pt-4">Revised: {lastUpdated}</p>
           </div>
-          <p className="text-xl opacity-90 max-w-3xl">
-            Please read these terms carefully before using our services or making a reservation.
-          </p>
-          <p className="text-sm opacity-75 mt-2">Last updated: {lastUpdated}</p>
         </div>
       </section>
 
-        {/* Content */}
-      <section className="py-12">
-        <div className="container mx-auto px-4 max-w-4xl">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 space-y-8">
-          <section>
-              <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                <FileText className="w-6 h-6" />
-              Acceptance of Terms
-            </h2>
-              <p className="text-gray-600 dark:text-gray-300">
-                By accessing and using this website or making a reservation, you accept and agree to be bound by 
-                the terms and provision of this agreement. If you do not agree to these terms, please do not use 
-                our services.
-            </p>
-          </section>
-
-          <section>
-              <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                <CheckCircle className="w-6 h-6" />
-                Reservations and Bookings
-              </h2>
-              <div className="space-y-4 text-gray-600 dark:text-gray-300">
-                <p>
-                  <strong>Booking Confirmation:</strong> All reservations are subject to availability and confirmation 
-                  by the hotel. A booking confirmation will be sent to the email address provided.
-                </p>
-                <p>
-                  <strong>Payment:</strong> Payment terms vary by booking type. Some reservations require full payment 
-                  at the time of booking, while others may require a deposit. All prices are subject to applicable taxes 
-                  and fees.
-                </p>
-                <p>
-                  <strong>Modifications:</strong> Changes to reservations are subject to availability and may incur 
-                  additional charges. Please contact us as soon as possible if you need to modify your booking.
-                </p>
+      {/* Content */}
+      <section className="py-24">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto space-y-16">
+            {[
+              { 
+                num: '01', 
+                title: 'The Covenant', 
+                content: 'By engaging with the SmartHotel digital platform or securing a reservation, you enter into a covenant of mutual respect and adherence to these refined standards.' 
+              },
+              { 
+                num: '02', 
+                title: 'Reservations', 
+                content: 'All bookings are a promise of sanctuary. We require accurate guest particulars to ensure your experience is bespoke. Confirmation is subject to availability and our unyielding standards of verification.' 
+              },
+              { 
+                num: '03', 
+                title: 'Cancellation', 
+                content: 'We understand that plans evolve. However, our commitment to excellence requires prior notice for cancellations. Specific terms are detailed in your bespoke booking confirmation.' 
+              },
+              { 
+                num: '04', 
+                title: 'Guest Conduct', 
+                content: 'We curate a sanctuary for all. We expect our guests to maintain the atmosphere of tranquility and respect that defines the SmartHotel experience.' 
+              }
+            ].map((item) => (
+              <div key={item.num} className="grid grid-cols-1 md:grid-cols-12 gap-12">
+                 <div className="md:col-span-1 border-t-2 border-luxury pt-4">
+                    <span className="text-2xl font-serif italic text-luxury">{item.num}</span>
+                 </div>
+                 <div className="md:col-span-11 space-y-6">
+                    <h2 className="text-3xl font-serif font-bold text-midnight">{item.title}</h2>
+                    <p className="text-gray-500 font-light leading-relaxed">{item.content}</p>
+                 </div>
               </div>
-            </section>
+            ))}
 
-            <section>
-              <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                <AlertCircle className="w-6 h-6" />
-                Cancellation Policy
-              </h2>
-              <div className="space-y-4 text-gray-600 dark:text-gray-300">
-                <p>
-                  <strong>Cancellation Deadlines:</strong> Cancellation policies vary by rate type and booking channel. 
-                  Please review your booking confirmation for specific cancellation terms.
-                </p>
-                <p>
-                  <strong>Refunds:</strong> Refunds, if applicable, will be processed according to the cancellation 
-                  policy in effect at the time of booking. Processing times may vary.
-                </p>
-                <p>
-                  <strong>No-Shows:</strong> Guests who fail to arrive without prior cancellation may be charged 
-                  according to the hotel's no-show policy.
-                </p>
-              </div>
-            </section>
-
-            <section>
-              <h2 className="text-2xl font-bold mb-4">Guest Responsibilities</h2>
-              <ul className="list-disc list-inside space-y-2 text-gray-600 dark:text-gray-300 ml-4">
-                <li>Provide accurate and complete information when making reservations</li>
-                <li>Comply with hotel policies and local laws</li>
-                <li>Respect other guests and hotel property</li>
-                <li>Report any issues or concerns promptly to hotel staff</li>
-                <li>Be responsible for any damage caused to hotel property</li>
-            </ul>
-          </section>
-
-          <section>
-              <h2 className="text-2xl font-bold mb-4">Hotel Services</h2>
-              <p className="text-gray-600 dark:text-gray-300 mb-4">
-                We strive to provide the best possible service, but we reserve the right to:
-              </p>
-              <ul className="list-disc list-inside space-y-2 text-gray-600 dark:text-gray-300 ml-4">
-                <li>Modify or discontinue services without prior notice</li>
-                <li>Refuse service to anyone for any reason at any time</li>
-                <li>Remove guests who violate hotel policies or disturb other guests</li>
-                <li>Make changes to facilities, amenities, or services as needed</li>
-            </ul>
-          </section>
-
-          <section>
-              <h2 className="text-2xl font-bold mb-4">Limitation of Liability</h2>
-              <p className="text-gray-600 dark:text-gray-300">
-                To the maximum extent permitted by law, the hotel shall not be liable for any indirect, incidental, 
-                special, consequential, or punitive damages, or any loss of profits or revenues, whether incurred directly 
-                or indirectly, or any loss of data, use, goodwill, or other intangible losses resulting from your use 
-                of our services.
-              </p>
-            </section>
-
-            <section>
-              <h2 className="text-2xl font-bold mb-4">Intellectual Property</h2>
-              <p className="text-gray-600 dark:text-gray-300">
-                All content on this website, including text, graphics, logos, images, and software, is the property 
-                of SmartHotel Grand Palace or its content suppliers and is protected by copyright and other intellectual 
-                property laws. You may not reproduce, distribute, or create derivative works without our written permission.
-              </p>
-          </section>
-
-          <section>
-              <h2 className="text-2xl font-bold mb-4">Governing Law</h2>
-              <p className="text-gray-600 dark:text-gray-300">
-                These terms shall be governed by and construed in accordance with the laws of the jurisdiction in which 
-                the hotel is located, without regard to its conflict of law provisions.
-            </p>
-          </section>
-
-          <section>
-              <h2 className="text-2xl font-bold mb-4">Changes to Terms</h2>
-              <p className="text-gray-600 dark:text-gray-300">
-                We reserve the right to modify these terms at any time. Changes will be effective immediately upon 
-                posting to this page. Your continued use of our services after changes are posted constitutes acceptance 
-                of the modified terms.
-            </p>
-          </section>
-
-          <section>
-              <h2 className="text-2xl font-bold mb-4">Contact Information</h2>
-              <p className="text-gray-600 dark:text-gray-300 mb-4">
-              If you have any questions about these Terms of Service, please contact us:
-            </p>
-              <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                <p className="text-gray-700 dark:text-gray-300">
-                  <strong>Email:</strong> legal@smarthotel.com<br />
-                  <strong>Phone:</strong> +1 (800) 555-HOTEL<br />
-                  <strong>Address:</strong> 123 Grand Boulevard, City Center, Metropolitan Area, ST 10001
-                </p>
+            <div className="pt-12 border-t border-gray-100">
+               <div className="bg-gray-50 p-12 space-y-6">
+                  <h3 className="text-xl font-serif font-bold text-midnight">Legal Assistance</h3>
+                  <p className="text-gray-500 text-sm font-light">For formal inquiries regarding our standards and protocols, please contact our legal concierge.</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 text-[11px] uppercase tracking-widest font-bold text-midnight">
+                    <div>
+                      <p className="text-luxury mb-1">Electronic Mail</p>
+                      <p>legal@smarthotel.com</p>
+                    </div>
+                    <div>
+                      <p className="text-luxury mb-1">Direct Assistance</p>
+                      <p>+1 (800) LUX-LEGAL</p>
+                    </div>
+                  </div>
+               </div>
             </div>
-          </section>
           </div>
         </div>
       </section>
