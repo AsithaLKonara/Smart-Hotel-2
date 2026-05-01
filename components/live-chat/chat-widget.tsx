@@ -1,249 +1,255 @@
-"use client"
+"use client";
+import { useState, useEffect, useRef } from "react";
+import { MessageCircle, Send, X, Minus, Sparkles, Bot, Command } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
-import { useState, useEffect, useRef } from 'react'
-import { X, Send, Sparkles, User, Headset, MessageSquare } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { useSession } from 'next-auth/react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { cn } from "@/lib/utils";
+import { getSystemContext } from "@/lib/chatbot/context";
+import ReactMarkdown from "react-markdown";
 
-interface Message {
-  id: string
-  text: string
-  sender: 'user' | 'support'
-  timestamp: Date
-}
+export function ChatWidget({
+    defaultOpen = false,
+}: {
+    defaultOpen?: boolean,
+}) {
+    const [isOpen, setIsOpen] = useState(defaultOpen);
+    const [messages, setMessages] = useState<{ id?: string; sender: 'user' | 'support'; text: string; timestamp: Date }[]>([]);
+    const [input, setInput] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [sessionId, setSessionId] = useState("");
+    const scrollRef = useRef<HTMLDivElement>(null);
 
-export function ChatWidget() {
-  const [isOpen, setIsOpen] = useState(false)
-  const [messages, setMessages] = useState<Message[]>([])
-  const [inputText, setInputText] = useState('')
-  const [isTyping, setIsTyping] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
-  const { data: session } = useSession()
-
-  useEffect(() => {
-    if (!isOpen) return
-    
-    async function loadMessages() {
-      try {
-        setIsLoading(true)
-        const response = await fetch('/api/chat/messages')
-        if (response.ok) {
-          const data = await response.json()
-          if (data.messages && Array.isArray(data.messages)) {
-            setMessages(data.messages.map((msg: any) => ({
-              id: msg.id,
-              text: msg.text,
-              sender: msg.sender,
-              timestamp: new Date(msg.timestamp)
-            })))
-          }
+    useEffect(() => {
+        const key = "smarthotel_chat_session";
+        const existing = localStorage.getItem(key);
+        if (existing) {
+            setSessionId(existing);
+            fetchHistory(existing);
+        } else {
+            const created = crypto.randomUUID();
+            localStorage.setItem(key, created);
+            setSessionId(created);
+            fetchHistory(created);
         }
-      } catch (error) {
-        console.error('Failed to load chat messages:', error)
-        setMessages([{
-          id: 'welcome-1',
-          text: 'Welcome to the Sanctuary. I am your personal concierge. How may I elevate your experience today?',
-          sender: 'support',
-          timestamp: new Date()
-        }])
-      } finally {
-        setIsLoading(false)
-      }
-    }
-    
-    loadMessages()
-  }, [isOpen])
+    }, []);
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+    const fetchHistory = async (sid: string) => {
+        try {
+            const res = await fetch(`/api/chat/messages?sessionId=${sid}`);
+            const data = await res.json();
+            if (data.messages) {
+                setMessages(data.messages);
+            }
+        } catch (e) {
+            console.error("Failed to fetch history:", e);
+        }
+    };
 
-  const sendMessage = async () => {
-    if (!inputText.trim()) return
+    useEffect(() => {
+        if (scrollRef.current) {
+            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+        }
+    }, [messages, loading]);
 
-    const userMessage: Message = {
-      id: `temp-${Date.now()}`,
-      text: inputText,
-      sender: 'user',
-      timestamp: new Date()
-    }
+    const sendMessage = async () => {
+        if (!input.trim() || loading) return;
+        const userMsg = input.trim();
+        const newUserMsg = { id: Date.now().toString(), sender: 'user' as const, text: userMsg, timestamp: new Date() };
+        setMessages(prev => [...prev, newUserMsg]);
+        setInput("");
+        setLoading(true);
 
-    setMessages(prev => [...prev, userMessage])
-    const messageText = inputText
-    setInputText('')
-    setIsTyping(true)
+        try {
+            const res = await fetch("/api/chat/messages", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ 
+                    message: userMsg, 
+                    messages: messages.slice(-5).map(m => ({ 
+                        sender: m.sender, 
+                        text: m.text 
+                    })),
+                    sessionId: sessionId,
+                    context: getSystemContext()
+                }),
+            });
 
-    try {
-      const response = await fetch('/api/chat/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: messageText, sender: 'user' })
-      })
+            if (!res.body) return;
+            const reader = res.body.getReader();
+            const decoder = new TextDecoder();
+            let assistantContent = "";
+            
+            const assistantMsgId = (Date.now() + 1).toString();
+            setMessages(prev => [...prev, { id: assistantMsgId, sender: 'support', text: "", timestamp: new Date() }]);
 
-      if (response.ok) {
-        const data = await response.json()
-        setMessages(prev => {
-          const updated = prev.map(msg => 
-            msg.id === userMessage.id ? {
-              id: data.message.id,
-              text: data.message.text,
-              sender: data.message.sender,
-              timestamp: new Date(data.message.timestamp)
-            } : msg
-          )
-          
-          if (data.supportResponse) {
-            updated.push({
-              id: data.supportResponse.id,
-              text: data.supportResponse.text,
-              sender: data.supportResponse.sender,
-              timestamp: new Date(data.supportResponse.timestamp)
-            })
-          }
-          
-          return updated
-        })
-        setIsTyping(false)
-      } else {
-        setMessages(prev => prev.filter(msg => msg.id !== userMessage.id))
-        setIsTyping(false)
-      }
-    } catch (error) {
-      console.error('Failed to send message:', error)
-      setMessages(prev => prev.filter(msg => msg.id !== userMessage.id))
-      setIsTyping(false)
-    }
-  }
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                assistantContent += decoder.decode(value, { stream: true });
+                setMessages((prev) => {
+                    const updated = [...prev];
+                    const last = updated[updated.length - 1];
+                    if (last && last.id === assistantMsgId) {
+                        updated[updated.length - 1] = { ...last, text: assistantContent };
+                    }
+                    return updated;
+                });
+            }
+        } catch (e) {
+            console.error("Chat error:", e);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-  return (
-    <>
-      <AnimatePresence>
-        {!isOpen && (
-          <motion.button
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0, opacity: 0 }}
-            onClick={() => setIsOpen(true)}
-            className="fixed bottom-8 right-8 h-16 w-16 rounded-full shadow-luxury z-50 bg-gold-gradient flex items-center justify-center group"
-            type="button"
-          >
-            <MessageSquare className="h-7 w-7 text-white group-hover:scale-110 transition-transform" />
-            <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-white animate-pulse" />
-          </motion.button>
-        )}
-      </AnimatePresence>
+    return (
+        <div className="fixed bottom-6 right-6 z-[9999] font-sans">
+            <AnimatePresence>
+                {isOpen ? (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9, y: 24, filter: "blur(10px)" }}
+                        animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
+                        exit={{ opacity: 0, scale: 0.9, y: 24, filter: "blur(10px)" }}
+                        className="w-[380px] md:w-[420px] h-[600px] flex flex-col overflow-hidden relative shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)]"
+                        style={{
+                            background: "rgba(10, 25, 47, 0.85)", // Deep Navy
+                            backdropFilter: "blur(32px) saturate(200%)",
+                            borderRadius: "32px",
+                            border: "1px solid rgba(193, 155, 84, 0.2)", // Subtle Gold Border
+                        }}
+                    >
+                        {/* Status Bar */}
+                        <div className="px-5 py-2 bg-black/20 border-b border-gold/10 flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse" />
+                                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-gold/40">Sanctuary Network Active</span>
+                            </div>
+                            <span className="text-[9px] font-mono text-gold/20 uppercase tracking-widest">Concierge v5.0</span>
+                        </div>
 
-      <AnimatePresence>
-        {isOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[45] bg-midnight/20 backdrop-blur-sm"
-              onClick={() => setIsOpen(false)}
-            />
+                        {/* Header */}
+                        <div className="p-6 flex justify-between items-center border-b border-gold/10 bg-gradient-to-b from-gold/5 to-transparent">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-2xl bg-gold/10 flex items-center justify-center text-gold border border-gold/20 shadow-2xl">
+                                    <Sparkles size={24} />
+                                </div>
+                                <div>
+                                    <h3 className="font-black text-white text-base leading-tight uppercase tracking-tighter">Sanctuary Concierge</h3>
+                                    <div className="flex items-center gap-1.5 mt-0.5">
+                                        <div className="w-1 h-1 rounded-full bg-gold" />
+                                        <span className="text-[10px] text-gold/60 font-black uppercase tracking-widest">Elite AI Assistant</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="flex gap-2">
+                                <button onClick={() => setIsOpen(false)} className="p-2.5 hover:bg-gold/10 rounded-2xl transition-all text-gold/40 hover:text-gold">
+                                    <Minus size={20} />
+                                </button>
+                                <button onClick={() => setIsOpen(false)} className="p-2.5 hover:bg-gold/10 rounded-2xl transition-all text-gold/40 hover:text-gold">
+                                    <X size={20} />
+                                </button>
+                            </div>
+                        </div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 100, scale: 0.9 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 100, scale: 0.9 }}
-              className="fixed bottom-8 right-8 w-[400px] h-[650px] flex flex-col z-50 rounded-2xl overflow-hidden bg-midnight border border-white/10 shadow-glass"
-            >
-              {/* Header */}
-              <div className="p-6 bg-gradient-to-b from-white/10 to-transparent border-b border-white/5 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-gold-gradient flex items-center justify-center border border-luxury/30">
-                    <Sparkles className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-serif font-bold text-lg text-white leading-tight">Sanctuary Concierge</h3>
-                    <div className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 bg-luxury rounded-full animate-pulse" />
-                      <p className="text-[10px] uppercase tracking-widest text-luxury font-bold">Always Available</p>
-                    </div>
-                  </div>
-                </div>
-                <button 
-                  onClick={() => setIsOpen(false)}
-                  className="p-2 hover:bg-white/5 rounded-full transition-colors text-white/50 hover:text-white"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
+                        {/* Messages */}
+                        <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-8 scrollbar-hide scroll-smooth">
+                            {messages.length === 0 && (
+                                <div className="h-full flex flex-col items-center justify-center text-center p-10 opacity-30 space-y-4">
+                                    <div className="w-16 h-16 rounded-full bg-gold/5 flex items-center justify-center mb-2 animate-pulse">
+                                        <Command size={32} className="text-gold" />
+                                    </div>
+                                    <p className="text-[10px] font-black uppercase tracking-[0.3em] leading-loose text-gold">Initializing Sanctuary Link...<br/>Awaiting Guest Request...</p>
+                                </div>
+                            )}
+                            {messages.map((m, i) => (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    key={i}
+                                    className={cn("flex", m.sender === "user" ? "justify-end" : "justify-start")}
+                                >
+                                    <div
+                                        className={cn(
+                                            "max-w-[90%] px-5 py-4 text-sm leading-[1.6]",
+                                            m.sender === "user"
+                                                ? "bg-gradient-to-br from-gold to-[#c19b54] text-navy font-bold rounded-[24px] rounded-tr-sm shadow-xl"
+                                                : "bg-white/5 border border-gold/20 text-white/90 rounded-[24px] rounded-tl-sm backdrop-blur-sm prose-invert prose-gold"
+                                        )}
+                                    >
+                                        <ReactMarkdown 
+                                            remarkPlugins={[remarkGfm]}
+                                            components={{
+                                                p: (props) => <p className="mb-2 last:mb-0" {...props} />,
+                                                ul: (props) => <ul className="list-disc ml-4 mb-2" {...props} />,
+                                                li: (props) => <li className="mb-1" {...props} />,
+                                                strong: (props) => <strong className="text-gold font-bold" {...props} />,
+                                                code: (props) => <code className="bg-gold/10 text-gold px-1.5 py-0.5 rounded text-xs font-mono" {...props} />,
+                                            }}
+                                        >
+                                            {m.text}
+                                        </ReactMarkdown>
+                                    </div>
+                                </motion.div>
+                            ))}
+                            {loading && (
+                                <div className="flex justify-start">
+                                    <div className="bg-gold/5 border border-gold/20 px-5 py-3 rounded-2xl flex gap-1.5 items-center">
+                                        <span className="w-1.5 h-1.5 bg-gold/40 rounded-full animate-bounce" />
+                                        <span className="w-1.5 h-1.5 bg-gold/40 rounded-full animate-bounce [animation-delay:0.2s]" />
+                                        <span className="w-1.5 h-1.5 bg-gold/40 rounded-full animate-bounce [animation-delay:0.4s]" />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
 
-              {/* Messages Area */}
-              <div className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] bg-fixed opacity-90">
-                {messages.map((message) => (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    key={message.id}
-                    className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-                  >
-                    <div className={`flex flex-col max-w-[85%] ${message.sender === 'user' ? 'items-end' : 'items-start'}`}>
-                      <div
-                        className={`rounded-2xl px-5 py-3 text-sm leading-relaxed ${
-                          message.sender === 'user'
-                            ? 'bg-gold-gradient text-white rounded-tr-none shadow-luxury'
-                            : 'bg-white/5 text-white/90 border border-white/10 backdrop-blur-md rounded-tl-none'
-                        }`}
-                      >
-                        {message.text}
-                      </div>
-                      <span className="text-[10px] uppercase tracking-tighter text-white/30 mt-2 font-medium">
-                        {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                    </div>
-                  </motion.div>
-                ))}
-
-                {isTyping && (
-                  <div className="flex justify-start">
-                    <div className="bg-white/5 rounded-2xl px-5 py-3 border border-white/10 backdrop-blur-md">
-                      <div className="flex gap-1.5">
-                        <motion.div animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6 }} className="w-1.5 h-1.5 bg-luxury rounded-full" />
-                        <motion.div animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.2 }} className="w-1.5 h-1.5 bg-luxury rounded-full" />
-                        <motion.div animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.4 }} className="w-1.5 h-1.5 bg-luxury rounded-full" />
-                      </div>
-                    </div>
-                  </div>
+                        {/* Input Area */}
+                        <div className="p-6 bg-gradient-to-t from-gold/5 to-transparent border-t border-gold/10">
+                            <div className="relative flex items-center gap-3 bg-white/[0.03] border border-gold/20 rounded-[28px] p-2 pr-2.5 shadow-2xl focus-within:border-gold/40 focus-within:bg-white/[0.05] transition-all group">
+                                <input
+                                    className="flex-1 bg-transparent px-5 py-3 text-sm text-white placeholder-gold/30 outline-none font-medium"
+                                    placeholder="Speak with the concierge..."
+                                    value={input}
+                                    onChange={(e) => setInput(e.target.value)}
+                                    onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+                                />
+                                <button
+                                    onClick={sendMessage}
+                                    disabled={!input.trim() || loading}
+                                    className="w-12 h-12 bg-gradient-to-br from-gold to-[#c19b54] text-navy rounded-[22px] hover:scale-105 active:scale-95 transition-all disabled:opacity-20 disabled:scale-100 flex items-center justify-center shadow-lg"
+                                >
+                                    <Send size={18} />
+                                </button>
+                            </div>
+                            <div className="mt-4 flex justify-center items-center gap-2 opacity-20 cursor-default hover:opacity-40 transition-opacity">
+                                <Sparkles size={10} className="text-gold" />
+                                <span className="text-[8px] font-black uppercase tracking-[0.4em] text-gold">Sanctuary Digital Experience</span>
+                            </div>
+                        </div>
+                    </motion.div>
+                ) : (
+                    <motion.button
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setIsOpen(true)}
+                        className="w-16 h-16 bg-gradient-to-br from-gold to-[#c19b54] text-navy rounded-[24px] shadow-[0_20px_40px_-10px_rgba(193,155,84,0.4)] flex items-center justify-center group relative overflow-hidden"
+                    >
+                        <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity" />
+                        <MessageCircle size={28} className="relative z-10" />
+                        <div className="absolute top-3 right-3 w-3 h-3 bg-navy border-2 border-gold rounded-full z-20 shadow-lg" />
+                    </motion.button>
                 )}
-                <div ref={messagesEndRef} />
-              </div>
-
-              {/* Input Area */}
-              <div className="p-6 bg-gradient-to-t from-white/10 to-transparent border-t border-white/5">
-                <div className="relative group">
-                  <input
-                    type="text"
-                    value={inputText}
-                    onChange={(e) => setInputText(e.target.value)}
-                    onKeyPress={(e) => e.key === "Enter" && sendMessage()}
-                    placeholder="How may I assist you?"
-                    className="w-full bg-white/5 border border-white/10 text-white pl-5 pr-14 py-4 rounded-xl text-sm focus:outline-none focus:border-luxury transition-all placeholder:text-white/20"
-                  />
-                  <button
-                    onClick={sendMessage}
-                    disabled={!inputText.trim()}
-                    className="absolute right-2 top-2 bottom-2 px-4 bg-luxury hover:bg-luxury/90 disabled:opacity-30 disabled:hover:bg-luxury text-white rounded-lg transition-all"
-                  >
-                    <Send className="h-4 w-4" />
-                  </button>
-                </div>
-                <div className="flex items-center justify-center gap-2 mt-4">
-                  <Headset className="h-3 w-3 text-luxury" />
-                  <p className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold">
-                    Premium Support Active
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-    </>
-  )
+            </AnimatePresence>
+            <style jsx global>{`
+                .scrollbar-hide::-webkit-scrollbar { display: none; }
+                .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+                .prose-gold strong { color: #c19b54 !important; }
+            `}</style>
+        </div>
+    );
 }

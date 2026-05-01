@@ -427,3 +427,47 @@ model HotelReview {
   updatedAt         DateTime @default(now()) @db.Date
   user              User     @relation(fields: [userId], references: [id])
 }
+
+// ─── Chatbot Models ────────────────────────────────────────────────────────────
+
+model ChatCustomer {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  phone        String   @unique
+  name         String?
+  lastOrderId  String?
+  preferences  Json?
+  createdAt    DateTime @default(now()) @db.Date
+  updatedAt    DateTime @default(now()) @db.Date
+}
+
+model Knowledge {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  content   String
+  embedding Float[]
+  metadata  Json?
+  timestamp DateTime @default(now()) @db.Date
+}
+
+model Conversation {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  sessionId String
+  userId    String
+  message   String
+  response  String
+  timestamp DateTime @default(now()) @db.Date
+
+  @@index([sessionId, timestamp])
+}
+
+model ChatSession {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String?
+  createdAt DateTime @default(now()) @db.Date
+}
+
+model EmbeddingCache {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  text      String   @unique
+  embedding Float[]
+  createdAt DateTime @default(now()) @db.Date
+}
