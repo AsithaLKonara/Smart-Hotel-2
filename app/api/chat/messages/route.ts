@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({
         messages: [{
           id: 'welcome-1',
-          text: 'Salama! How can I help you today?',
+          text: 'Welcome to the Sanctuary. I am your personal concierge, dedicated to making your stay extraordinary. How may I assist you this evening?',
           sender: 'support',
           timestamp: new Date()
         }]
@@ -78,13 +78,26 @@ export async function POST(request: NextRequest) {
     }
     chatMessagesStore.get(sessionId)!.push(message)
     
-    // Auto-respond for support messages (in production, this would be handled by a support agent or AI)
+    // Sophisticated AI Persona Response Logic
     let supportResponse = null
     if (data.sender === 'user') {
-      // Create support response immediately (in production, this would be handled by a support agent or AI)
+      const input = data.text.toLowerCase()
+      let responseText = "Thank you for reaching out. A member of our concierge team will be with you momentarily to assist with your request."
+
+      // Simple intent detection
+      if (input.includes('booking') || input.includes('reserve') || input.includes('room')) {
+        responseText = "I would be delighted to assist with your reservation. You may explore our Signature Suites directly on our booking page, or I can check availability for specific dates for you."
+      } else if (input.includes('dining') || input.includes('restaurant') || input.includes('food')) {
+        responseText = "Our Michelin-starred culinary team is ready to serve you. Would you like me to secure a table at the Grand Salon for this evening?"
+      } else if (input.includes('spa') || input.includes('massage') || input.includes('wellness')) {
+        responseText = "The Royal Spa offers a sanctuary for the senses. I can arrange a bespoke holistic treatment for you at your earliest convenience."
+      } else if (input.includes('location') || input.includes('where') || input.includes('address')) {
+        responseText = "We are located in the prestigious heart of the city at 123 Grand Boulevard. I can arrange a private chauffeur to bring you to our doors if you wish."
+      }
+
       supportResponse = {
         id: `msg-${Date.now() + 1}-${Math.random().toString(36).substr(2, 9)}`,
-        text: "Misaotra! We received your message — how may we assist you?",
+        text: responseText,
         sender: 'support' as const,
         timestamp: new Date(),
       }
@@ -98,7 +111,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ 
       success: true, 
       message,
-      supportResponse // Include support response if available
+      supportResponse 
     }, { status: 201 })
   } catch (error) {
     if (error instanceof z.ZodError) {
