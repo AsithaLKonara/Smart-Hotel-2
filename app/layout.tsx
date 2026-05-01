@@ -9,6 +9,7 @@ import ConditionalFooter from "@/components/conditional-footer"
 import { ChatWrapper } from "@/components/live-chat/chat-wrapper"
 import { Providers } from "@/components/providers"
 import { WebVitalsTracker } from "@/components/web-vitals-tracker"
+import HotelSchema from "@/components/seo/hotel-schema"
 
 // Initialize Sentry on the server (optional)
 // Only initialize if SENTRY_DSN is set and package is available
@@ -169,6 +170,7 @@ export default function RootLayout({
       <body className="min-h-screen bg-background font-sans antialiased">
         <ErrorBoundary>
           <Providers>
+            <HotelSchema />
             <div className="flex min-h-screen flex-col">
             <HotelNavigation />
               <main id="main-content" role="main" className="flex-1">
