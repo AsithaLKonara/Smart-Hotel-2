@@ -1,3 +1,4 @@
+import { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowLeft, Star, Users, Wifi, Car, Utensils, Waves, Dumbbell, Shield, MapPin, Home } from 'lucide-react'
@@ -13,6 +14,26 @@ export const dynamic = 'force-dynamic'
 
 interface RoomDetailPageProps {
   params: Promise<{ id: string }>
+}
+
+export async function generateMetadata({ params }: RoomDetailPageProps): Promise<Metadata> {
+  const { id } = await params
+  
+  if (!isDatabaseConfigured()) return { title: 'Room Details' }
+  
+  const room = await prisma.room.findUnique({ where: { id } })
+  
+  if (!room) return { title: 'Room Not Found' }
+  
+  return {
+    title: `${room.type} | SmartHotel Grand Palace`,
+    description: room.description || `Book our luxurious ${room.type} starting from ${formatPrice(room.price)} per night.`,
+    openGraph: {
+      title: room.type,
+      description: room.description || `Experience unparalleled luxury in our ${room.type}.`,
+      images: Array.isArray(room.images) && room.images[0] ? [room.images[0]] : [],
+    }
+  }
 }
 
 export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
@@ -225,6 +246,33 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "HotelRoom",
+            "name": serializedRoom.type,
+            "description": serializedRoom.description,
+            "image": images[0],
+            "occupancy": {
+              "@type": "QuantitativeValue",
+              "value": serializedRoom.capacity
+            },
+            "offers": {
+              "@type": "Offer",
+              "price": serializedRoom.price,
+              "priceCurrency": "USD",
+              "availability": "https://schema.org/InStock"
+            },
+            "amenityFeature": amenities.map(a => ({
+              "@type": "LocationFeatureSpecification",
+              "name": a,
+              "value": true
+            }))
+          })
+        }}
+      />
       {/* Header */}
       <section className="pt-20 pb-12 bg-gradient-to-r from-primary-600 to-primary-800 text-white">
         <div className="container mx-auto px-4">
