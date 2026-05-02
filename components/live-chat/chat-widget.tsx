@@ -21,16 +21,31 @@ export function ChatWidget({
     const [sessionId, setSessionId] = useState("");
     const scrollRef = useRef<HTMLDivElement>(null);
 
-    // Welcome Greeting
-    const welcomeMessage = {
-        id: "welcome",
-        sender: 'support' as const,
-        text: "Welcome to the Sanctuary. I am your personal concierge, dedicated to making your stay extraordinary. How may I assist you today?",
-        timestamp: new Date()
-    };
-
     useEffect(() => {
         setIsMounted(true);
+
+        const welcomeMessage = {
+            id: "welcome",
+            sender: 'support' as const,
+            text: "Welcome to the Sanctuary. I am your personal concierge, dedicated to making your stay extraordinary. How may I assist you today?",
+            timestamp: new Date()
+        };
+
+        const fetchHistory = async (sid: string) => {
+            try {
+                const res = await fetch(`/api/chat/messages?sessionId=${sid}`);
+                const data = await res.json();
+                if (data.messages && data.messages.length > 0) {
+                    setMessages(data.messages.map((m: any) => ({ ...m, timestamp: new Date(m.timestamp) })));
+                } else {
+                    setMessages([welcomeMessage]);
+                }
+            } catch (e) {
+                console.error("Failed to fetch history:", e);
+                setMessages([welcomeMessage]);
+            }
+        };
+
         const key = "smarthotel_chat_session";
         let existing = localStorage.getItem(key);
         if (!existing) {
@@ -40,21 +55,6 @@ export function ChatWidget({
         setSessionId(existing);
         fetchHistory(existing);
     }, []);
-
-    const fetchHistory = async (sid: string) => {
-        try {
-            const res = await fetch(`/api/chat/messages?sessionId=${sid}`);
-            const data = await res.json();
-            if (data.messages && data.messages.length > 0) {
-                setMessages(data.messages.map((m: any) => ({ ...m, timestamp: new Date(m.timestamp) })));
-            } else {
-                setMessages([welcomeMessage]);
-            }
-        } catch (e) {
-            console.error("Failed to fetch history:", e);
-            setMessages([welcomeMessage]);
-        }
-    };
 
     useEffect(() => {
         if (scrollRef.current) {

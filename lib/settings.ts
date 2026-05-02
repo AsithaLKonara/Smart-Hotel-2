@@ -1,6 +1,8 @@
 import { cache as reactCache } from 'react'
 import prisma from '@/lib/db'
 
+import { isDatabaseConfigured } from './db-helpers'
+
 interface SettingsMap {
   [key: string]: string
 }
@@ -30,8 +32,8 @@ const cache =
 export const getHotelSettings = cache(async () => {
   try {
     // Check if database is configured before making query
-    if (!process.env.DATABASE_URL) {
-      console.warn('DATABASE_URL not configured - returning empty settings')
+    if (!isDatabaseConfigured()) {
+      console.warn('DATABASE_URL not configured or contains placeholder - returning empty settings')
       return {}
     }
     

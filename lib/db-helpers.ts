@@ -5,7 +5,16 @@ import prisma from '@/lib/db'
  * Check if DATABASE_URL is configured
  */
 export function isDatabaseConfigured(): boolean {
-  return !!process.env.DATABASE_URL
+  const url = process.env.DATABASE_URL
+  if (!url) return false
+  
+  // Check if the URL is a known placeholder
+  const isPlaceholder = 
+    url.includes('placeholder.mongodb.net') || 
+    url.includes('your-mongodb-connection-string') ||
+    url.includes('YOUR_MONGODB_URI_HERE')
+  
+  return !isPlaceholder
 }
 
 /**
