@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { formatPrice, formatDate } from '@/lib/utils'
 import toast from 'react-hot-toast'
+import { PremiumSpinner } from '@/components/ui/premium-spinner'
 
 interface Booking {
   id: string
@@ -176,8 +177,8 @@ export default function AdminBookingsPage() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <Loader2 className="w-8 h-8 animate-spin" />
+      <div className="flex items-center justify-center h-screen bg-gray-50/50">
+        <PremiumSpinner size="lg" text="Fetching Bookings..." />
       </div>
     )
   }

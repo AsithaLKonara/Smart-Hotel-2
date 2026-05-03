@@ -6,6 +6,8 @@ import { logAction, AUDIT_ACTIONS } from '@/lib/audit'
 import Stripe from 'stripe'
 import { sendBookingConfirmation, sendAdminBookingAlert } from '@/lib/email'
 import { getRequestSession } from '@/lib/session'
+import { isDatabaseConfigured, getDatabaseErrorMessage } from '@/lib/db-helpers'
+import { MOCK_ROOMS } from '@/lib/mock-rooms'
 
 // Initialize Stripe only if secret key is configured
 const stripe = process.env.STRIPE_SECRET_KEY && process.env.STRIPE_SECRET_KEY !== ''
@@ -77,6 +79,15 @@ export async function GET(request: NextRequest) {
 
   if (!session && !allowAnonymous) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  // Check database configuration
+  if (!isDatabaseConfigured()) {
+    return NextResponse.json({ 
+      bookings: [],
+      isMock: true,
+      message: 'Database not configured. Using empty booking list for preview.'
+    })
   }
 
   try {
@@ -180,6 +191,16 @@ export async function POST(request: NextRequest) {
   }
 
   const session = await getRequestSession(request)
+
+  if (!isDatabaseConfigured()) {
+    return NextResponse.json(
+      { 
+        error: 'Database not configured',
+        message: 'Booking creation is disabled in preview mode without a database.'
+      },
+      { status: 503 }
+    )
+  }
 
   try {
     const body = await request.json()
@@ -363,7 +384,7 @@ export async function POST(request: NextRequest) {
         } else {
           paymentIntent = await stripe.paymentIntents.create({
             amount: Math.round((totalAmount + tax) * 100), // Convert to cents
-            currency: 'usd',
+            currency: 'lkr',
             metadata: {
               bookingId: booking.id,
               roomId: room.id,

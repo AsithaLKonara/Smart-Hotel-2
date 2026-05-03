@@ -21,21 +21,42 @@ function getNightCount(checkInDate: Date, checkOutDate: Date): number {
 }
 
 export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url)
+
   // Check database configuration first
   if (!isDatabaseConfigured()) {
-    return NextResponse.json(
-      {
-        error: 'Database not configured',
-        message: 'DATABASE_URL environment variable is not set',
-        availableRooms: [],
-        totalAvailable: 0
-      },
-      { status: 503 }
-    )
+    try {
+      const { MOCK_ROOMS } = await import('@/lib/mock-rooms')
+      const availableRooms = MOCK_ROOMS.filter(r => r.status === 'AVAILABLE').map(r => ({
+        ...r,
+        nights: 1,
+        totalPrice: r.price,
+        averageRating: 4.8,
+        reviewCount: 12,
+        mainImage: r.images[0]
+      }))
+      return NextResponse.json({
+        availableRooms,
+        totalAvailable: availableRooms.length,
+        checkIn: searchParams.get('checkIn'),
+        checkOut: searchParams.get('checkOut'),
+        isMock: true,
+        message: 'Database not configured. Using mock availability for preview.'
+      })
+    } catch (e) {
+      return NextResponse.json(
+        {
+          error: 'Database not configured',
+          message: 'DATABASE_URL environment variable is not set',
+          availableRooms: [],
+          totalAvailable: 0
+        },
+        { status: 503 }
+      )
+    }
   }
 
   try {
-    const { searchParams } = new URL(request.url)
     const checkIn = searchParams.get('checkIn') ?? searchParams.get('checkin')
     const checkOut = searchParams.get('checkOut') ?? searchParams.get('checkout')
     const guests = searchParams.get('guests')

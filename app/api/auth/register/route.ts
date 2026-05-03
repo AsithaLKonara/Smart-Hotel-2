@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import prisma from '@/lib/db'
 import { z } from 'zod'
+import { isDatabaseConfigured } from '@/lib/db-helpers'
 
 const registerSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -11,6 +12,16 @@ const registerSchema = z.object({
 })
 
 export async function POST(request: NextRequest) {
+  if (!isDatabaseConfigured()) {
+    return NextResponse.json(
+      { 
+        error: 'Database not configured',
+        message: 'Account registration is disabled in preview mode.'
+      },
+      { status: 503 }
+    )
+  }
+  
   try {
     const body = await request.json()
     const validatedData = registerSchema.parse(body)

@@ -5,17 +5,37 @@ import GoogleProvider from 'next-auth/providers/google'
 import bcrypt from 'bcryptjs'
 import prisma, { connectWithRetry } from './db'
 import { logAction, AUDIT_ACTIONS } from './audit'
+import { isDatabaseConfigured } from './db-helpers'
 // Note: UserRole enum doesn't exist in Prisma schema - define locally
 type UserRole = 'GUEST' | 'STAFF' | 'MANAGER' | 'SUPER_ADMIN' | 'RECEPTIONIST'
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
+  ...(isDatabaseConfigured() ? { adapter: PrismaAdapter(prisma) } : {}),
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || '',
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
-      allowDangerousEmailAccountLinking: true, // Allow linking accounts with same email
+      allowDangerousEmailAccountLinking: true,
     }),
+    {
+      id: "facebook",
+      name: "Facebook",
+      type: "oauth",
+      clientId: process.env.FACEBOOK_CLIENT_ID || '',
+      clientSecret: process.env.FACEBOOK_CLIENT_SECRET || '',
+      wellKnown: "https://www.facebook.com/.well-known/openid-configuration/",
+      authorization: { params: { scope: "email,public_profile" } },
+      idToken: true,
+      profile(profile) {
+        return {
+          id: profile.id,
+          name: profile.name,
+          email: profile.email,
+          image: profile.picture.data.url,
+          role: "GUEST",
+        }
+      },
+    },
     CredentialsProvider({
       name: 'credentials',
       credentials: {
@@ -32,11 +52,30 @@ export const authOptions: NextAuthOptions = {
           console.info('Credentials authorize: lookup user', credentials.email)
           
           // Use connection retry wrapper to handle MongoDB Atlas sleeping
-          const user = await connectWithRetry(async () => {
-            return await prisma.user.findFirst({ 
-              where: { email: credentials.email.toLowerCase().trim() } 
-            })
-          }, 3, 1000)
+          let user = null;
+          if (isDatabaseConfigured()) {
+            user = await connectWithRetry(async () => {
+              return await prisma.user.findFirst({ 
+                where: { email: credentials.email.toLowerCase().trim() } 
+              })
+            }, 3, 1000)
+          } else {
+            // Mock authentication for demo purposes when DB is not configured
+            const demoUsers = [
+              { email: 'admin@smarthotel.com', password: 'SmartHotel@2025!Admin', role: 'SUPER_ADMIN', name: 'Demo Admin' },
+              { email: 'manager@smarthotel.com', password: 'SmartHotel@2025!Manager', role: 'MANAGER', name: 'Demo Manager' },
+              { email: 'guest@example.com', password: 'SmartHotel@2025!Guest', role: 'GUEST', name: 'Demo Guest' }
+            ]
+            const demoUser = demoUsers.find(u => u.email === credentials.email.toLowerCase().trim())
+            if (demoUser && credentials.password === demoUser.password) {
+              return {
+                id: 'demo-user-id',
+                email: demoUser.email,
+                name: demoUser.name,
+                role: demoUser.role as UserRole,
+              }
+            }
+          }
           
           console.info('Credentials authorize: user found', !!user)
 

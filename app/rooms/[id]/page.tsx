@@ -262,7 +262,7 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
             "offers": {
               "@type": "Offer",
               "price": serializedRoom.price,
-              "priceCurrency": "USD",
+              "priceCurrency": "LKR",
               "availability": "https://schema.org/InStock"
             },
             "amenityFeature": amenities.map(a => ({

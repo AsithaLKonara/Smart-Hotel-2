@@ -1,9 +1,14 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-import { MessageCircle, Send, X, Minus, Sparkles, Shield, Headphones } from "lucide-react";
+import { MessageCircle, Send, X, Minus, Sparkles, Shield, Bot, Command, Zap } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import ReactMarkdown from "react-markdown";
+import dynamic from "next/dynamic";
 import remarkGfm from "remark-gfm";
+
+const ReactMarkdown = dynamic(() => import("react-markdown"), { 
+    ssr: false,
+    loading: () => <div className="animate-pulse bg-white/5 h-20 w-full" />
+});
 
 import { cn } from "@/lib/utils";
 import { getSystemContext } from "@/lib/chatbot/context";
@@ -18,8 +23,16 @@ export function ChatWidget({
     const [messages, setMessages] = useState<{ id?: string; sender: 'user' | 'support'; text: string; timestamp: Date }[]>([]);
     const [input, setInput] = useState("");
     const [loading, setLoading] = useState(false);
+    const [isTyping, setIsTyping] = useState(false);
     const [sessionId, setSessionId] = useState("");
     const scrollRef = useRef<HTMLDivElement>(null);
+
+    const suggestions = [
+        "Book a Luxury Suite",
+        "View Dining Options",
+        "Spa & Wellness",
+        "Concierge Services"
+    ];
 
     useEffect(() => {
         setIsMounted(true);
@@ -62,10 +75,19 @@ export function ChatWidget({
         }
     }, [messages, loading]);
 
-    const sendMessage = async () => {
-        if (!input.trim() || loading) return;
-        const userMsg = input.trim();
-        const newUserMsg = { id: Date.now().toString(), sender: 'user' as const, text: userMsg, timestamp: new Date() };
+    const sleep = (ms: number) => new Promise(res => setTimeout(res, ms));
+
+    const getDelay = (word: string) => {
+        if (/[.,!?]/.test(word)) return 120;
+        if (word.length > 8) return 35;
+        return 18 + Math.random() * 20;
+    };
+
+    const sendMessage = async (overrideInput?: string) => {
+        const textToSend = (overrideInput || input).trim();
+        if (!textToSend || loading) return;
+        
+        const newUserMsg = { id: Date.now().toString(), sender: 'user' as const, text: textToSend, timestamp: new Date() };
         setMessages(prev => [...prev, newUserMsg]);
         setInput("");
         setLoading(true);
@@ -75,7 +97,7 @@ export function ChatWidget({
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ 
-                    message: userMsg, 
+                    message: textToSend, 
                     messages: messages.slice(-5).map(m => ({ 
                         sender: m.sender, 
                         text: m.text 
@@ -90,7 +112,7 @@ export function ChatWidget({
                 setMessages(prev => [...prev, { 
                     id: Date.now().toString(), 
                     sender: 'support', 
-                    text: errorData.error || "I apologize, but our sanctuary network is experiencing a momentary interruption. Please allow me a moment to re-establish the connection.", 
+                    text: errorData.error || "I apologize, but our sanctuary network is experiencing a momentary interruption.", 
                     timestamp: new Date() 
                 }]);
                 return;
@@ -99,20 +121,44 @@ export function ChatWidget({
             if (!res.body) return;
             const reader = res.body.getReader();
             const decoder = new TextDecoder();
-            let assistantContent = "";
             
+            let buffer = "";
+            let displayedText = "";
             const assistantMsgId = (Date.now() + 1).toString();
+            
             setMessages(prev => [...prev, { id: assistantMsgId, sender: 'support', text: "", timestamp: new Date() }]);
+            setLoading(false);
+            setIsTyping(true);
 
             while (true) {
                 const { done, value } = await reader.read();
                 if (done) break;
-                assistantContent += decoder.decode(value, { stream: true });
-                setMessages((prev) => {
+                
+                buffer += decoder.decode(value, { stream: true });
+                const words = buffer.split(" ");
+                buffer = words.pop() || "";
+
+                for (const word of words) {
+                    displayedText += (displayedText ? " " : "") + word;
+                    await sleep(getDelay(word));
+                    setMessages(prev => {
+                        const updated = [...prev];
+                        const last = updated[updated.length - 1];
+                        if (last && last.id === assistantMsgId) {
+                            updated[updated.length - 1] = { ...last, text: displayedText };
+                        }
+                        return updated;
+                    });
+                }
+            }
+
+            if (buffer) {
+                displayedText += (displayedText ? " " : "") + buffer;
+                setMessages(prev => {
                     const updated = [...prev];
                     const last = updated[updated.length - 1];
                     if (last && last.id === assistantMsgId) {
-                        updated[updated.length - 1] = { ...last, text: assistantContent };
+                        updated[updated.length - 1] = { ...last, text: displayedText };
                     }
                     return updated;
                 });
@@ -122,154 +168,181 @@ export function ChatWidget({
             setMessages(prev => [...prev, { 
                 id: Date.now().toString(), 
                 sender: 'support', 
-                text: "I am having difficulty reaching our servers. One of our human staff members will be alerted if the issue persists.", 
+                text: "I am having difficulty reaching our servers.", 
                 timestamp: new Date() 
             }]);
         } finally {
             setLoading(false);
+            setIsTyping(false);
         }
     };
 
     if (!isMounted) return null;
 
     return (
-        <div className="fixed bottom-6 right-6 z-[9999] font-sans">
-            <AnimatePresence mode="wait">
+        <div className="fixed bottom-6 right-6 z-[9999] font-sans selection:bg-white/20">
+            <AnimatePresence>
                 {isOpen ? (
                     <motion.div
-                        key="chat-window"
-                        initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                        transition={{ duration: 0.2, ease: "easeOut" }}
-                        className="w-[380px] md:w-[450px] h-[650px] flex flex-col overflow-hidden relative shadow-[0_32px_128px_-16px_rgba(0,0,0,0.8)] border border-white/5"
+                        initial={{ opacity: 0, scale: 0.9, y: 24, filter: "blur(10px)" }}
+                        animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
+                        exit={{ opacity: 0, scale: 0.9, y: 24, filter: "blur(10px)" }}
+                        className="chatbot-window w-[380px] md:w-[420px] h-[650px] flex flex-col overflow-hidden relative shadow-[0_32px_128px_-16px_rgba(0,0,0,0.8)]"
                         style={{
-                            background: "rgba(6, 15, 28, 0.85)", 
+                            background: "rgba(6, 15, 28, 0.75)",
                             backdropFilter: "blur(12px) saturate(180%)",
-                            borderRadius: "0px",
+                            borderRadius: "32px",
                         }}
                     >
-                        {/* Status Bar */}
-                        <div className="px-5 py-2 bg-blue-500/10 flex items-center justify-between">
+                        {/* Status bar */}
+                        <div className="px-5 py-3 bg-blue-500/10 flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
-                                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-blue-300/60">Sanctuary Network Active</span>
+                                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-blue-200/60">Sanctuary Sync Active</span>
                             </div>
-                            <span className="text-[9px] font-mono text-blue-300/30 uppercase tracking-widest">Concierge v5.0</span>
+                            <span className="text-[9px] font-mono text-blue-200/30 uppercase tracking-widest">v5.0-Neural</span>
                         </div>
 
                         {/* Header */}
                         <div className="p-6 flex justify-between items-center bg-gradient-to-b from-blue-500/10 to-transparent">
                             <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 bg-blue-500/20 flex items-center justify-center text-blue-400 border border-blue-400/30 shadow-2xl">
-                                    <Sparkles size={24} />
+                                <div className="w-12 h-12 rounded-2xl bg-blue-500/20 flex items-center justify-center text-blue-100 shadow-2xl">
+                                    <Sparkles size={24} className="group-hover:scale-110 transition-transform text-blue-300" />
                                 </div>
                                 <div>
                                     <h3 className="font-black text-white text-base leading-tight uppercase tracking-tighter">Sanctuary Concierge</h3>
                                     <div className="flex items-center gap-1.5 mt-0.5">
                                         <div className="w-1 h-1 rounded-full bg-blue-400" />
-                                        <span className="text-[10px] text-blue-300/60 font-black uppercase tracking-widest">Elite AI Assistant</span>
+                                        <span className="text-[10px] text-blue-200/40 font-black uppercase tracking-widest">Neural Cluster #A1</span>
                                     </div>
                                 </div>
                             </div>
                             <div className="flex gap-2">
-                                <button onClick={() => setIsOpen(false)} className="p-2.5 hover:bg-white/10 transition-all text-white/70 hover:text-white">
+                                <button onClick={() => setIsOpen(false)} className="p-2.5 hover:bg-white/10 rounded-2xl transition-all text-white/40 hover:text-white">
                                     <Minus size={20} />
                                 </button>
-                                <button onClick={() => setIsOpen(false)} className="p-2.5 hover:bg-white/10 transition-all text-white/70 hover:text-white">
+                                <button onClick={() => setIsOpen(false)} className="p-2.5 hover:bg-white/10 rounded-2xl transition-all text-white/40 hover:text-white">
                                     <X size={20} />
                                 </button>
                             </div>
                         </div>
 
-                        {/* Messages */}
+                        {/* Messages Area */}
                         <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-8 scrollbar-hide scroll-smooth">
                             {messages.map((m, i) => (
                                 <motion.div
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    key={m.id || i}
+                                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    key={i}
                                     className={cn("flex", m.sender === "user" ? "justify-end" : "justify-start")}
                                 >
                                     <div
                                         className={cn(
-                                            "max-w-[85%] px-6 py-4 text-[13px] leading-[1.7] transition-all",
+                                            "max-w-[90%] px-5 py-4 text-[13px] leading-[1.6]",
                                             m.sender === "user"
-                                                ? "bg-blue-600 text-white font-semibold rounded-none shadow-blue-500/20 shadow-xl"
-                                                : "bg-white/[0.05] text-white/95 rounded-none backdrop-blur-md prose-invert border-l-2 border-blue-500"
+                                                ? "bg-gradient-to-br from-blue-500/30 to-blue-600/50 text-blue-50 font-semibold rounded-[24px] rounded-tr-sm shadow-xl backdrop-blur-md"
+                                                : "bg-gradient-to-br from-yellow-500/10 to-yellow-600/20 text-yellow-50 rounded-[24px] rounded-tl-sm backdrop-blur-md prose-invert border-l border-yellow-500/30"
                                         )}
                                     >
                                         <ReactMarkdown 
                                             remarkPlugins={[remarkGfm]}
                                             components={{
-                                                p: (props) => <p className="mb-2 last:mb-0" {...props} />,
-                                                ul: (props) => <ul className="list-disc ml-4 mb-2" {...props} />,
-                                                li: (props) => <li className="mb-1" {...props} />,
-                                                strong: (props) => <strong className="text-blue-300 font-bold" {...props} />,
-                                                code: (props) => <code className="bg-blue-500/20 text-blue-200 px-1.5 py-0.5 rounded-none text-xs font-mono" {...props} />,
+                                                p: (props: any) => <p className="mb-2 last:mb-0" {...props} />,
+                                                ul: (props: any) => <ul className="list-disc ml-4 mb-2" {...props} />,
+                                                ol: (props: any) => <ol className="list-decimal ml-4 mb-2" {...props} />,
+                                                li: (props: any) => <li className="mb-1" {...props} />,
+                                                h1: (props: any) => <h1 className="text-lg font-black uppercase tracking-tight mb-2 text-blue-400" {...props} />,
+                                                h2: (props: any) => <h2 className="text-base font-black uppercase tracking-tight mb-2 text-blue-400" {...props} />,
+                                                code: (props: any) => <code className="bg-white/10 px-1.5 py-0.5 rounded text-xs font-mono text-blue-200" {...props} />,
+                                                pre: (props: any) => <pre className="bg-white/5 p-3 rounded-xl overflow-x-auto text-[13px] font-mono mb-2 border border-white/5" {...props} />,
                                             }}
                                         >
                                             {m.text}
                                         </ReactMarkdown>
+                                        {isTyping && i === messages.length - 1 && m.sender === "support" && (
+                                            <span className="inline-block ml-1 w-1 h-3.5 bg-blue-500 animate-pulse align-middle" />
+                                        )}
                                     </div>
                                 </motion.div>
                             ))}
+                            
+                            {/* Suggestions */}
+                            {messages.length === 1 && !loading && (
+                                <motion.div 
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="flex flex-wrap gap-2 px-1"
+                                >
+                                    {suggestions.map((s) => (
+                                        <button
+                                            key={s}
+                                            onClick={() => sendMessage(s)}
+                                            className="text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-full bg-blue-500/10 hover:bg-blue-500/20 text-blue-200 border-none transition-all active:scale-95"
+                                        >
+                                            {s}
+                                        </button>
+                                    ))}
+                                </motion.div>
+                            )}
+
                             {loading && (
                                 <div className="flex justify-start">
-                                    <div className="bg-blue-500/10 border-l-2 border-blue-500 px-5 py-3 rounded-none flex gap-1.5 items-center">
-                                        <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" />
-                                        <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce [animation-delay:0.2s]" />
-                                        <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce [animation-delay:0.4s]" />
+                                    <div className="bg-blue-500/10 px-5 py-3 rounded-2xl flex gap-1.5 items-center">
+                                        <motion.span animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6 }} className="w-1.5 h-1.5 bg-blue-400 rounded-full" />
+                                        <motion.span animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.2 }} className="w-1.5 h-1.5 bg-blue-400 rounded-full" />
+                                        <motion.span animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.4 }} className="w-1.5 h-1.5 bg-blue-400 rounded-full" />
                                     </div>
                                 </div>
                             )}
                         </div>
 
                         {/* Input Area */}
-                        <div className="p-6 bg-gradient-to-t from-blue-500/5 to-transparent">
-                            <div className="relative flex items-center gap-3 bg-white/[0.03] border border-blue-500/20 rounded-none p-2 shadow-2xl focus-within:border-blue-500/50 focus-within:bg-white/[0.05] transition-all group">
+                        <div className="p-6 bg-gradient-to-t from-blue-900/40 to-transparent backdrop-blur-xl">
+                            <div className="relative flex items-center gap-3 bg-white/[0.05] rounded-[28px] p-2 pr-2.5 shadow-2xl focus-within:bg-white/[0.1] transition-all group">
                                 <input
-                                    className="flex-1 bg-transparent px-5 py-3 text-sm text-white placeholder-blue-300/30 outline-none font-medium"
+                                    className="flex-1 bg-transparent px-5 py-3 text-sm text-blue-50 placeholder-blue-200/30 outline-none font-medium"
                                     placeholder="Speak with the concierge..."
                                     value={input}
                                     onChange={(e) => setInput(e.target.value)}
                                     onKeyDown={(e) => e.key === "Enter" && sendMessage()}
                                 />
                                 <button
-                                    onClick={sendMessage}
+                                    onClick={() => sendMessage()}
                                     disabled={!input.trim() || loading}
-                                    className="w-12 h-12 bg-blue-600 text-white rounded-none hover:bg-blue-500 transition-all disabled:opacity-20 flex items-center justify-center shadow-lg"
+                                    className="w-12 h-12 bg-blue-400 text-white rounded-[22px] hover:scale-105 active:scale-95 transition-all disabled:opacity-20 disabled:scale-100 flex items-center justify-center shadow-lg shadow-blue-500/20"
                                 >
                                     <Send size={18} />
                                 </button>
                             </div>
-                            <div className="mt-4 flex justify-between items-center opacity-30 text-[9px] font-black uppercase tracking-[0.2em] text-blue-300">
-                                <div className="flex items-center gap-1.5">
+                            <div className="mt-4 flex justify-between items-center opacity-30 text-[8px] font-black uppercase tracking-[0.4em] text-blue-200">
+                                <div className="flex items-center gap-2">
                                     <Shield size={10} /> <span>Encrypted</span>
                                 </div>
-                                <div className="flex items-center gap-1.5">
-                                    <Headphones size={10} /> <span>Live Support</span>
+                                <div className="flex items-center gap-2">
+                                    <Zap size={10} /> <span>Neural Engine</span>
                                 </div>
                             </div>
                         </div>
                     </motion.div>
                 ) : (
                     <motion.button
-                        key="chat-trigger"
-                        initial={{ scale: 0.9, opacity: 0 }}
+                        initial={{ scale: 0.8, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
-                        exit={{ scale: 0.9, opacity: 0 }}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => setIsOpen(true)}
-                        className="w-16 h-16 bg-transparent text-white rounded-none flex items-center justify-center group relative overflow-hidden border border-white/10 hover:bg-white/5 transition-all"
+                        className="w-16 h-16 bg-blue-500 text-white rounded-[24px] shadow-[0_20px_40px_-10px_rgba(0,0,0,0.5)] flex items-center justify-center group relative overflow-hidden"
                     >
                         <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity" />
                         <MessageCircle size={28} className="relative z-10" />
-                        <div className="absolute top-0 right-0 w-3 h-3 bg-blue-400 z-20" />
+                        <div className="absolute top-3 right-3 w-3 h-3 bg-blue-400 border-2 border-white rounded-full z-20 shadow-lg" />
                     </motion.button>
                 )}
             </AnimatePresence>
+            <style jsx global>{`
+                .scrollbar-hide::-webkit-scrollbar { display: none; }
+                .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+            `}</style>
         </div>
     );
 }

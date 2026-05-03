@@ -15,15 +15,16 @@ import HotelSchema from "@/components/seo/hotel-schema"
 // Only initialize if SENTRY_DSN is set and package is available
 if (process.env.NODE_ENV === 'production' && process.env.SENTRY_DSN) {
   try {
-    // Use dynamic require to avoid webpack bundling issues
-    const sentryPath = '@sentry/nextjs'
-    if (require.resolve && require.resolve(sentryPath)) {
-      const Sentry = require(sentryPath)
+    // Use static require string to avoid webpack bundling issues
+    try {
+      const Sentry = require('@sentry/nextjs')
       Sentry.init({
         dsn: process.env.SENTRY_DSN,
         tracesSampleRate: 0.1,
         environment: process.env.NODE_ENV,
       })
+    } catch (e) {
+      // Sentry not found or failed to load
     }
   } catch (error) {
     // Sentry not installed or configuration error - continue without it

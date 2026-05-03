@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { isDatabaseConfigured } from "@/lib/db-helpers";
 
 // ─── Conversation Memory ────────────────────────────────────────────────────────
 
@@ -8,6 +9,8 @@ export async function saveMessage(
     message: string,
     response: string
 ): Promise<void> {
+    if (!isDatabaseConfigured()) return;
+    
     await prisma.conversation.create({
         data: {
             sessionId,
@@ -22,6 +25,8 @@ export async function getHistory(
     sessionId: string,
     userId: string
 ): Promise<{ message: string; response: string }[]> {
+    if (!isDatabaseConfigured()) return [];
+
     const data = await prisma.conversation.findMany({
         where: {
             sessionId,
@@ -52,6 +57,8 @@ export interface CustomerProfile {
 
 // Retrieve a customer profile by WhatsApp phone number or internal identifier
 export async function getCustomerProfile(phone: string): Promise<CustomerProfile | null> {
+    if (!isDatabaseConfigured()) return null;
+
     const data = await prisma.chatCustomer.findUnique({
         where: { phone },
     });
@@ -71,6 +78,8 @@ export async function upsertCustomerProfile(
     phone: string,
     updates: Partial<Omit<CustomerProfile, "phone" | "createdAt">>
 ): Promise<void> {
+    if (!isDatabaseConfigured()) return;
+
     await prisma.chatCustomer.upsert({
         where: { phone },
         update: updates,

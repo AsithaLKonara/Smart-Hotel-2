@@ -157,13 +157,13 @@ export default function HotelNavigation() {
                   <ShoppingBag className="w-5 h-5" />
                 </Link>
                 <div className="h-4 w-px bg-white/20" />
-                <button
-                  onClick={() => signOut()}
+                <Link
+                  href={session.user.role === 'GUEST' ? '/' : '/admin'}
                   className="text-white/80 hover:text-white transition-colors flex items-center gap-2 text-sm"
                 >
-                  <LogOut className="w-4 h-4" />
-                  <span>Logout</span>
-                </button>
+                  <User className="w-4 h-4" />
+                  <span>Dashboard</span>
+                </Link>
               </div>
             ) : (
               <Link
@@ -217,12 +217,13 @@ export default function HotelNavigation() {
                   >
                     My Bookings
                   </Link>
-                  <button
-                    onClick={() => { signOut(); setIsMenuOpen(false) }}
-                    className="text-xl text-red-400 font-medium"
+                  <Link
+                    href={session.user.role === 'GUEST' ? '/' : '/admin'}
+                    onClick={() => setIsMenuOpen(false)}
+                    className="text-xl text-white/80 hover:text-luxury"
                   >
-                    Sign Out
-                  </button>
+                    Dashboard
+                  </Link>
                 </>
               ) : (
                 <Link

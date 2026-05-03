@@ -5,7 +5,7 @@
  * Note: Requires an active Partner account and API credentials.
  */
 
-import { logger } from './logger';
+import logger from './logger';
 
 export interface BookingComReservation {
   id: string;

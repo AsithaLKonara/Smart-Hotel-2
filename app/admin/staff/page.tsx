@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import toast from 'react-hot-toast'
+import { PremiumSpinner } from '@/components/ui/premium-spinner'
+import { formatPrice } from '@/lib/utils'
 
 interface Staff {
   id: string
@@ -179,8 +181,8 @@ export default function AdminStaffPage() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <Loader2 className="w-8 h-8 animate-spin" />
+      <div className="flex items-center justify-center h-screen bg-gray-50/50">
+        <PremiumSpinner size="lg" text="Loading Staff Directory..." />
       </div>
     )
   }
@@ -320,6 +322,9 @@ export default function AdminStaffPage() {
                     Status
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    Salary
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                     Actions
                   </th>
                 </tr>
@@ -352,6 +357,9 @@ export default function AdminStaffPage() {
                       <Badge className={member.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
                         {member.isActive ? 'Active' : 'Inactive'}
                       </Badge>
+                    </td>
+                    <td className="px-6 py-4 text-sm font-medium">
+                      {formatPrice(member.salary)}
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex gap-2">

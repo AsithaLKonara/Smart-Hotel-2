@@ -22,14 +22,24 @@ const roomSchema = z.object({
 export async function GET(request: NextRequest) {
   // Check database configuration first
   if (!isDatabaseConfigured()) {
-    return NextResponse.json(
-      {
-        error: 'Database not configured',
-        message: 'DATABASE_URL environment variable is not set',
-        rooms: []
-      },
-      { status: 503 }
-    )
+    try {
+      const { MOCK_ROOMS } = await import('@/lib/mock-rooms')
+      return NextResponse.json({
+        rooms: MOCK_ROOMS,
+        count: MOCK_ROOMS.length,
+        isMock: true,
+        message: 'Database not configured. Using mock data for preview.'
+      })
+    } catch (e) {
+      return NextResponse.json(
+        {
+          error: 'Database not configured',
+          message: 'DATABASE_URL environment variable is not set',
+          rooms: []
+        },
+        { status: 503 }
+      )
+    }
   }
 
   try {
@@ -140,15 +150,26 @@ export async function GET(request: NextRequest) {
     })
   } catch (error: any) {
     console.error('Error fetching rooms:', error)
-    const message = getDatabaseErrorMessage(error)
-    return NextResponse.json(
-      {
-        error: 'Failed to fetch rooms',
-        message,
-        rooms: []
-      },
-      { status: 503 }
-    )
+    
+    // Fallback to mock data on error instead of 503
+    try {
+      const { MOCK_ROOMS } = await import('@/lib/mock-rooms')
+      return NextResponse.json({
+        rooms: MOCK_ROOMS,
+        count: MOCK_ROOMS.length,
+        isMock: true,
+        message: 'Using fallback data: ' + getDatabaseErrorMessage(error)
+      })
+    } catch (fallbackError) {
+      return NextResponse.json(
+        {
+          error: 'Failed to fetch rooms',
+          message: getDatabaseErrorMessage(error),
+          rooms: []
+        },
+        { status: 503 }
+      )
+    }
   }
 }
 
@@ -160,6 +181,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
+      )
+    }
+
+    if (!isDatabaseConfigured()) {
+      return NextResponse.json(
+        { 
+          error: 'Database not configured',
+          message: 'Room creation is disabled in preview mode without a database.'
+        },
+        { status: 503 }
       )
     }
 

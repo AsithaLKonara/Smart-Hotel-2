@@ -12,7 +12,9 @@ export function isDatabaseConfigured(): boolean {
   const isPlaceholder = 
     url.includes('placeholder.mongodb.net') || 
     url.includes('your-mongodb-connection-string') ||
-    url.includes('YOUR_MONGODB_URI_HERE')
+    url.includes('YOUR_MONGODB_URI_HERE') ||
+    url.includes('example.com') ||
+    url.includes('mongodb+srv://guest:guest')
   
   return !isPlaceholder
 }
@@ -67,7 +69,6 @@ export async function executeDatabaseQuery<T>(
     const data = await queryFn()
     return { success: true, data }
   } catch (error: any) {
-    console.error('Database query error:', error)
     const message = getDatabaseErrorMessage(error)
     
     return {
@@ -83,4 +84,3 @@ export async function executeDatabaseQuery<T>(
     }
   }
 }
-

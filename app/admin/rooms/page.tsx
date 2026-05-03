@@ -11,6 +11,8 @@ import { Badge } from '@/components/ui/badge'
 import { Modal } from '@/components/ui/modal'
 import { Breadcrumbs } from '@/components/ui/breadcrumbs'
 import toast from 'react-hot-toast'
+import { PremiumSpinner } from '@/components/ui/premium-spinner'
+import { formatPrice } from '@/lib/utils'
 
 interface Room {
   id: string
@@ -210,8 +212,8 @@ export default function AdminRoomsPage() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <Loader2 className="w-8 h-8 animate-spin" />
+      <div className="flex items-center justify-center h-screen bg-gray-50/50">
+        <PremiumSpinner size="lg" text="Loading Rooms..." />
       </div>
     )
   }
@@ -364,8 +366,7 @@ export default function AdminRoomsPage() {
               <div className="space-y-3">
                 <div className="flex items-center justify-between text-sm">
                   <div className="flex items-center gap-2">
-                    <DollarSign className="w-4 h-4 text-gray-500" />
-                    <span className="font-semibold">${room.price}/night</span>
+                    <span className="font-semibold text-primary-600">{formatPrice(room.price)}/night</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Users className="w-4 h-4 text-gray-500" />

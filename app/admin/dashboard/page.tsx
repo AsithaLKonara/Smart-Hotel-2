@@ -27,6 +27,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import toast from 'react-hot-toast'
 import { canAccessAdminDashboard, getUserRole } from '@/lib/rbac-helpers'
+import { PremiumSpinner } from '@/components/ui/premium-spinner'
 
 interface DashboardData {
   summary: {
@@ -190,9 +191,10 @@ function AdminDashboardContent() {
   }
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-LK', {
       style: 'currency',
-      currency: 'USD'
+      currency: 'LKR',
+      minimumFractionDigits: 0
     }).format(amount)
   }
 
@@ -223,10 +225,7 @@ function AdminDashboardContent() {
   if (status === 'loading') {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading dashboard...</p>
-        </div>
+        <PremiumSpinner size="lg" text="Authenticating..." />
       </div>
     )
   }
@@ -239,10 +238,7 @@ function AdminDashboardContent() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading dashboard...</p>
-        </div>
+        <PremiumSpinner size="lg" text="Loading Analytics..." />
       </div>
     )
   }

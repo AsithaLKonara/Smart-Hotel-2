@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { bookingComService } from '@/lib/booking-com';
-import { logger } from '@/lib/logger';
+import logger from '@/lib/logger';
 import prisma from '@/lib/db';
 
 /**

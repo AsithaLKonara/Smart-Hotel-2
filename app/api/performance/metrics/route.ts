@@ -47,7 +47,12 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
+    const rawBody = await request.text()
+    if (!rawBody) {
+      return NextResponse.json({ success: false, error: 'Empty body' }, { status: 200 })
+    }
+    
+    const body = JSON.parse(rawBody)
     const { name, value, unit = 'ms', tags } = body
 
     if (!name || typeof value !== 'number') {

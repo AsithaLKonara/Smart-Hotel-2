@@ -5,11 +5,10 @@ const nextConfig = {
   compress: true,
   
   // Next.js 15 compatible configuration
+  transpilePackages: ['lucide-react', 'framer-motion', 'react-markdown', 'remark-gfm'],
   experimental: {
     // Enable modern features
     optimizePackageImports: [
-      'lucide-react', 
-      'framer-motion',
       '@radix-ui/react-slot',
       '@radix-ui/react-dialog',
       '@radix-ui/react-dropdown-menu',
@@ -19,7 +18,7 @@ const nextConfig = {
       'tailwind-merge'
     ],
     // Optimize CSS
-    optimizeCss: true,
+    optimizeCss: false,
   },
   
   // Exclude test files and unnecessary files from build

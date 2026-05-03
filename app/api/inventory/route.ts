@@ -3,6 +3,7 @@ import { getRequestSession } from '@/lib/session'
 import { prisma } from '@/lib/db'
 import { z } from 'zod'
 import { logAction, AUDIT_ACTIONS } from '@/lib/audit'
+import { isDatabaseConfigured } from '@/lib/db-helpers'
 
 const inventorySchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -15,6 +16,10 @@ const inventorySchema = z.object({
 })
 
 export async function GET(request: NextRequest) {
+  if (!isDatabaseConfigured()) {
+    return NextResponse.json({ items: [] })
+  }
+
   try {
     // Guard session retrieval to avoid throwing before we can respond
     const session = await getRequestSession(request).catch((err) => {
@@ -68,6 +73,13 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  if (!isDatabaseConfigured()) {
+    return NextResponse.json(
+      { error: 'Database not configured', message: 'Inventory creation is disabled in preview mode.' },
+      { status: 503 }
+    )
+  }
+
   try {
     // Guard session retrieval to avoid throwing before we can respond
     const session = await getRequestSession(request).catch((err) => {

@@ -8,6 +8,8 @@ import { Search, Filter, Users, Star, Loader2, ChevronRight, MapPin, Wind, Wifi,
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import Image from 'next/image'
+import { formatPrice } from '@/lib/utils'
+import { PremiumSpinner } from '@/components/ui/premium-spinner'
 
 interface Room {
   id: string
@@ -118,8 +120,7 @@ export default function RoomsPage() {
         <div className="container mx-auto px-4">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-20 space-y-4">
-              <Loader2 className="w-10 h-10 animate-spin text-luxury" />
-              <p className="text-xs uppercase tracking-widest font-bold text-gray-400">Curating our finest suites...</p>
+              <PremiumSpinner size="lg" text="Curating our finest suites..." />
             </div>
           ) : filteredRooms.length === 0 ? (
             <div className="text-center py-20">
@@ -138,7 +139,7 @@ export default function RoomsPage() {
                     />
                     <div className="absolute top-6 left-6">
                       <div className="bg-midnight/80 backdrop-blur-md px-4 py-2">
-                        <span className="text-luxury font-serif italic text-lg">${room.price}</span>
+                        <span className="text-luxury font-serif italic text-lg">{formatPrice(room.price)}</span>
                         <span className="text-[10px] text-white/50 uppercase tracking-tighter ml-1">/ Night</span>
                       </div>
                     </div>

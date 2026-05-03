@@ -22,6 +22,7 @@ import { Button } from '@/components/ui/button'
 import { formatPrice } from '@/lib/utils'
 import toast from 'react-hot-toast'
 import Image from 'next/image'
+import { PremiumSpinner } from '@/components/ui/premium-spinner'
 
 function BookingPageContent() {
   const searchParams = useSearchParams()
@@ -249,7 +250,7 @@ function BookingPageContent() {
                             className="object-cover group-hover:scale-105 transition-transform duration-700"
                           />
                           <div className="absolute top-4 right-4 bg-midnight/80 backdrop-blur-md px-4 py-2 text-luxury font-serif italic">
-                            ${room.totalPrice} <span className="text-[10px] text-white/50 uppercase tracking-tighter not-italic ml-1">Total</span>
+                            {formatPrice(room.totalPrice)} <span className="text-[10px] text-white/50 uppercase tracking-tighter not-italic ml-1">Total</span>
                           </div>
                        </div>
                        <div className="p-8 flex-1 flex flex-col space-y-6">
@@ -357,7 +358,7 @@ function BookingPageContent() {
                     <div className="pt-6 border-t border-white/10 space-y-6">
                       <div className="flex justify-between items-end">
                         <span className="text-luxury uppercase tracking-widest text-[10px] font-bold">Total Amount</span>
-                        <span className="text-3xl font-serif font-bold text-luxury">${totalAmount}</span>
+                        <span className="text-3xl font-serif font-bold text-luxury">{formatPrice(totalAmount)}</span>
                       </div>
                       <Button 
                         onClick={createBooking}
@@ -403,10 +404,7 @@ export default function BookingPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-midnight flex items-center justify-center">
-        <div className="text-center space-y-6">
-          <Loader2 className="w-12 h-12 animate-spin text-luxury mx-auto" />
-          <p className="text-luxury text-[10px] uppercase tracking-[0.4em] font-bold">Preparing Your Experience...</p>
-        </div>
+        <PremiumSpinner size="lg" text="Preparing Your Experience..." color="text-luxury" />
       </div>
     }>
       <BookingPageContent />

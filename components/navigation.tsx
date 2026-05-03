@@ -69,9 +69,11 @@ export default function Navigation() {
                     <Link href="/admin">Admin Panel</Link>
                   </Button>
                 )}
-                <Button variant="outline" onClick={() => signOut()}>
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Sign Out
+                <Button variant="outline" asChild>
+                  <Link href="/dashboard">
+                    <User className="h-4 w-4 mr-2" />
+                    Dashboard
+                  </Link>
                 </Button>
               </div>
             ) : (
@@ -131,10 +133,12 @@ export default function Navigation() {
                                   </Button>
                                 </Link>
                               )}
-                              <Button variant="outline" className="w-full" onClick={() => signOut()}>
-                                <LogOut className="h-4 w-4 mr-2" />
-                                Sign Out
-                              </Button>
+                              <Link href="/dashboard" className="w-full">
+                                <Button variant="outline" className="w-full">
+                                  <User className="h-4 w-4 mr-2" />
+                                  Dashboard
+                                </Button>
+                              </Link>
                             </div>
                           ) : (
                 <div className="px-3 py-2 space-y-2">

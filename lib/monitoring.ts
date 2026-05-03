@@ -12,10 +12,12 @@ let Sentry: any = null
 if (process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN) {
   try {
     if (typeof window === 'undefined') {
-      // Server-side - use dynamic require to avoid webpack bundling
-      const sentryModule = '@sentry/nextjs'
-      if (require.resolve && require.resolve(sentryModule)) {
-        Sentry = require(sentryModule)
+      // Server-side - use static require string to avoid webpack warnings
+      try {
+        Sentry = require('@sentry/nextjs')
+      } catch (e) {
+        // Module not found or failed to load
+        Sentry = null
       }
     } else {
       // Client-side - Sentry is loaded via sentry.client.config.ts

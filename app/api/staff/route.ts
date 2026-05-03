@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { logAction, AUDIT_ACTIONS } from '@/lib/audit'
 import { getRequestSession } from '@/lib/session'
 import { prisma } from '@/lib/db'
+import { isDatabaseConfigured } from '@/lib/db-helpers'
 
 const staffSchema = z.object({
   employeeId: z.string().min(1, 'Employee ID is required'),
@@ -18,6 +19,10 @@ const staffSchema = z.object({
 })
 
 export async function GET(request: NextRequest) {
+  if (!isDatabaseConfigured()) {
+    return NextResponse.json([])
+  }
+  
   try {
     const session = await getRequestSession(request)
     const { searchParams } = new URL(request.url)
@@ -91,6 +96,13 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  if (!isDatabaseConfigured()) {
+    return NextResponse.json(
+      { error: 'Database not configured', message: 'Staff creation is disabled in preview mode.' },
+      { status: 503 }
+    )
+  }
+
   try {
     const session = await getRequestSession(request)
     

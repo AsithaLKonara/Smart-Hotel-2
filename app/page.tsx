@@ -14,6 +14,7 @@ import { getHotelContactInfo } from '@/lib/settings'
 import { isDatabaseConfigured } from '@/lib/db-helpers'
 import prisma from '@/lib/db'
 import { Button } from '@/components/ui/button'
+import { formatPrice } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
 
@@ -131,7 +132,7 @@ export default async function HomePage() {
                   />
                   <div className="absolute top-6 left-6">
                     <div className="bg-midnight/80 backdrop-blur-md px-4 py-2">
-                      <span className="text-luxury font-serif italic text-lg">${room.price || '450'}+</span>
+                      <span className="text-luxury font-serif italic text-lg">{formatPrice(Number(room.price || '450'))}+</span>
                     </div>
                   </div>
                 </div>
