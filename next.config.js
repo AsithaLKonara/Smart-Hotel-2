@@ -2,12 +2,11 @@
 const nextConfig = {
   // Basic configuration
   poweredByHeader: false,
+  optimizeFonts: false,
   
   // Next.js 15 compatible configuration
   transpilePackages: ['lucide-react', 'framer-motion'],
   
-  // Specify the correct workspace root
-  outputFileTracingRoot: __dirname,
   
   // Image optimization
   images: {
