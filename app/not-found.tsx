@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Home, Search, Hotel, Utensils, Image, Phone } from 'lucide-react'
+import { Home, Search, Hotel, Utensils, ImageIcon, Phone } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 
@@ -62,7 +62,7 @@ export default function NotFound() {
             href="/gallery"
             className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700"
           >
-            <Image className="h-6 w-6 mx-auto mb-2 text-amber-600 dark:text-amber-500" aria-label="Gallery icon" />
+            <ImageIcon className="h-6 w-6 mx-auto mb-2 text-amber-600 dark:text-amber-500" aria-label="Gallery icon" />
             <p className="text-sm font-medium text-gray-900 dark:text-white">Gallery</p>
           </Link>
           <Link
