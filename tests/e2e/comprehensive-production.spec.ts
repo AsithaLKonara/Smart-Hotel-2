@@ -1,6 +1,6 @@
 import { test, expect, Page } from '@playwright/test'
 
-const PRODUCTION_URL = 'https://smarthotel-demo.vercel.app'
+const PRODUCTION_URL = 'https://smart-hotel-2.vercel.app'
 
 test.describe('Production E2E - Comprehensive Test Suite', () => {
   test.beforeEach(async ({ page }) => {

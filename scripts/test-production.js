@@ -8,7 +8,7 @@
 const { execSync } = require('child_process');
 const https = require('https');
 
-const PRODUCTION_URL = 'https://smarthotel-demo.vercel.app';
+const PRODUCTION_URL = 'https://smart-hotel-2.vercel.app';
 
 console.log('🧪 SmartHotel Production Testing');
 console.log('================================');

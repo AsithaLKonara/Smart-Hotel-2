@@ -6,7 +6,7 @@ export default function HotelSchema() {
     "@type": "Hotel",
     "name": "SmartHotel Grand Palace",
     "description": "Luxury 5-Star Accommodation featuring award-winning dining, world-class spa, and bespoke concierge services.",
-    "url": "https://smarthotel-demo.vercel.app",
+    "url": "https://smart-hotel-2.vercel.app",
     "telephone": "+1 (800) 555-HOTEL",
     "address": {
       "@type": "PostalAddress",

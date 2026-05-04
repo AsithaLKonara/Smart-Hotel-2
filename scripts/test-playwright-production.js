@@ -8,7 +8,7 @@
 const https = require('https');
 const http = require('http');
 
-const PRODUCTION_URL = 'https://smarthotel-demo.vercel.app';
+const PRODUCTION_URL = 'https://smart-hotel-2.vercel.app';
 
 console.log('🎭 SmartHotel Production E2E Testing');
 console.log('=====================================');
