@@ -158,18 +158,6 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id
         token.role = user.role
         token.hotelId = user.hotelId
-        token.iat = Math.floor(Date.now() / 1000)
-      }
-      
-      // Add session validation
-      if (token.iat && typeof token.iat === 'number' && Date.now() - (token.iat * 1000) > 8 * 60 * 60 * 1000) {
-        // Token expired, force re-authentication
-        return {
-          id: '',
-          role: 'GUEST',
-          hotelId: null,
-          iat: 0
-        }
       }
       
       return token
@@ -191,35 +179,4 @@ export const authOptions: NextAuthOptions = {
     signIn: '/auth/signin'
   },
   secret: process.env.NEXTAUTH_SECRET,
-  cookies: {
-    sessionToken: {
-      name: `next-auth.session-token`,
-      options: {
-        httpOnly: true,
-        sameSite: 'strict', // Stricter same-site policy
-        path: '/',
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: 8 * 60 * 60, // 8 hours
-      }
-    },
-    callbackUrl: {
-      name: `next-auth.callback-url`,
-      options: {
-        sameSite: 'strict',
-        path: '/',
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: 8 * 60 * 60,
-      }
-    },
-    csrfToken: {
-      name: `next-auth.csrf-token`,
-      options: {
-        httpOnly: true,
-        sameSite: 'strict',
-        path: '/',
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: 8 * 60 * 60,
-      }
-    }
-  }
 } 

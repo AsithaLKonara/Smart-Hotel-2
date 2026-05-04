@@ -95,15 +95,21 @@ function AdminDashboardContent() {
   const [selectedPeriod, setSelectedPeriod] = useState('today')
 
   useEffect(() => {
-    if (status === 'loading') return
-    
-    // Use RBAC helper for safe role checking
-    if (!canAccessAdminDashboard(session)) {
+    // Only redirect if we're sure the user is unauthenticated or has wrong role
+    if (status === 'unauthenticated') {
       router.push('/auth/signin')
       return
     }
 
-    fetchDashboardData()
+    if (status === 'authenticated' && session && !canAccessAdminDashboard(session)) {
+      toast.error('You do not have permission to access the admin dashboard')
+      router.push('/auth/signin')
+      return
+    }
+
+    if (status === 'authenticated' && session) {
+      fetchDashboardData()
+    }
   }, [session, status, router])
 
   const fetchDashboardData = async () => {
