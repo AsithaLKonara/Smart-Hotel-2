@@ -129,7 +129,7 @@ export default function RoomsPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
               {filteredRooms.map((room) => (
-                <div key={room.id} className="group">
+                <div key={room.id} className="group" data-testid="room-card">
                   <div className="relative aspect-[4/5] overflow-hidden mb-8 shadow-2xl">
                     <Image 
                       src={room.roomImages?.[0]?.url || 'https://images.unsplash.com/photo-1590490359683-658d3d23f972?auto=format&fit=crop&q=80&w=800'} 

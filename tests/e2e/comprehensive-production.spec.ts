@@ -108,7 +108,7 @@ test.describe('Production E2E - Comprehensive Test Suite', () => {
       
       // Check if rooms are displayed (either cards or empty state)
       const hasRooms = await page.locator('[data-testid="room-card"], .room-card, [class*="room"]').count()
-      const hasEmptyState = await page.locator('text=No rooms').isVisible().catch(() => false)
+      const hasEmptyState = await page.locator('text=No suites').isVisible().catch(() => false)
       
       expect(hasRooms > 0 || hasEmptyState).toBeTruthy()
     })

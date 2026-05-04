@@ -101,6 +101,7 @@ export default function SignUpPage() {
                 <label className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Full Name</label>
                 <input 
                   type="text" 
+                  name="name"
                   required
                   className="w-full bg-gray-50 border-none px-6 py-4 text-sm focus:ring-1 focus:ring-luxury transition-all"
                   placeholder="Your illustrious name"
@@ -113,6 +114,7 @@ export default function SignUpPage() {
                 <label className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Email Address</label>
                 <input 
                   type="email" 
+                  name="email"
                   required
                   className="w-full bg-gray-50 border-none px-6 py-4 text-sm focus:ring-1 focus:ring-luxury transition-all"
                   placeholder="name@example.com"
@@ -137,6 +139,7 @@ export default function SignUpPage() {
                   <label className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Password</label>
                   <input 
                     type="password" 
+                    name="password"
                     required
                     className="w-full bg-gray-50 border-none px-6 py-4 text-sm focus:ring-1 focus:ring-luxury transition-all"
                     placeholder="••••••••"
