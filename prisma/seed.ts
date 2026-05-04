@@ -17,6 +17,8 @@ async function main() {
   const managerHash = await bcrypt.hash('SmartHotel@2025!Manager', 12)
   const receptionistHash = await bcrypt.hash('SmartHotel@2025!Reception', 12)
   const guestHash = await bcrypt.hash('SmartHotel@2025!Guest', 12)
+  const kitchenHash = await bcrypt.hash('SmartHotel@2025!Kitchen', 12)
+  const housekeepingHash = await bcrypt.hash('SmartHotel@2025!Housekeeping', 12)
 
   // Helper function to create or update user
   async function createOrUpdateUser(email: string, data: any) {
@@ -66,6 +68,26 @@ async function main() {
     password: guestHash,
     phone: '+1-555-0104',
     role: 'GUEST',
+    createdAt: new Date(),
+    updatedAt: new Date()
+  })
+
+  await createOrUpdateUser('kitchen@smarthotel.com', {
+    name: 'Chef Kitchen',
+    email: 'kitchen@smarthotel.com',
+    password: kitchenHash,
+    phone: '+1-800-555-0005',
+    role: 'KITCHEN_STAFF',
+    createdAt: new Date(),
+    updatedAt: new Date()
+  })
+
+  await createOrUpdateUser('housekeeping@smarthotel.com', {
+    name: 'Housekeeping Staff',
+    email: 'housekeeping@smarthotel.com',
+    password: housekeepingHash,
+    phone: '+1-800-555-0006',
+    role: 'HOUSEKEEPING',
     createdAt: new Date(),
     updatedAt: new Date()
   })

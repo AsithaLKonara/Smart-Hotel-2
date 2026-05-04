@@ -39,7 +39,17 @@ export default function HotelNavigation() {
   const pathname = usePathname()
   
   // Hide navigation on dashboard/admin routes
-  const isDashboardRoute = pathname?.startsWith('/dashboard') || pathname?.startsWith('/admin')
+  const isDashboardRoute = pathname?.startsWith('/dashboard') || pathname?.startsWith('/admin') || pathname?.startsWith('/kitchen')
+
+  const getDashboardUrl = () => {
+    if (!session?.user) return '/auth/signin'
+    const role = session.user.role
+    if (role === 'SUPER_ADMIN' || role === 'MANAGER') return '/admin/dashboard'
+    if (role === 'RECEPTIONIST') return '/admin/bookings'
+    if (role === 'KITCHEN_STAFF') return '/kitchen/dashboard'
+    if (role === 'HOUSEKEEPING') return '/admin/tasks'
+    return '/dashboard'
+  }
 
   useEffect(() => {
     const handleScroll = () => {
@@ -158,7 +168,7 @@ export default function HotelNavigation() {
                 </Link>
                 <div className="h-4 w-px bg-white/20" />
                 <Link
-                  href={session.user.role === 'GUEST' ? '/' : '/admin'}
+                  href={getDashboardUrl()}
                   className="text-white/80 hover:text-white transition-colors flex items-center gap-2 text-sm"
                 >
                   <User className="w-4 h-4" />
@@ -218,7 +228,7 @@ export default function HotelNavigation() {
                     My Bookings
                   </Link>
                   <Link
-                    href={session.user.role === 'GUEST' ? '/' : '/admin'}
+                    href={getDashboardUrl()}
                     onClick={() => setIsMenuOpen(false)}
                     className="text-xl text-white/80 hover:text-luxury"
                   >

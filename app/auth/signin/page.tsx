@@ -18,6 +18,8 @@ export default function SignInPage() {
   const DEMO_CREDENTIALS = [
     { role: 'Admin', email: 'admin@smarthotel.com', password: 'SmartHotel@2025!Admin', color: 'border-red-200 text-red-600 bg-red-50' },
     { role: 'Manager', email: 'manager@smarthotel.com', password: 'SmartHotel@2025!Manager', color: 'border-blue-200 text-blue-600 bg-blue-50' },
+    { role: 'Receptionist', email: 'receptionist@smarthotel.com', password: 'SmartHotel@2025!Reception', color: 'border-purple-200 text-purple-600 bg-purple-50' },
+    { role: 'Kitchen', email: 'kitchen@smarthotel.com', password: 'SmartHotel@2025!Kitchen', color: 'border-orange-200 text-orange-600 bg-orange-50' },
     { role: 'Guest', email: 'guest@example.com', password: 'SmartHotel@2025!Guest', color: 'border-emerald-200 text-emerald-600 bg-emerald-50' }
   ]
 
@@ -44,7 +46,21 @@ export default function SignInPage() {
       let session = await getSession()
       if (session?.user?.role) {
         toast.success('Welcome back')
-        window.location.href = '/dashboard'
+        
+        const role = session.user.role
+        let targetUrl = '/dashboard' // default guest portal
+        
+        if (role === 'SUPER_ADMIN' || role === 'MANAGER') {
+          targetUrl = '/admin/dashboard'
+        } else if (role === 'RECEPTIONIST') {
+          targetUrl = '/admin/bookings'
+        } else if (role === 'KITCHEN_STAFF') {
+          targetUrl = '/kitchen/dashboard'
+        } else if (role === 'HOUSEKEEPING') {
+          targetUrl = '/admin/tasks'
+        }
+        
+        window.location.href = targetUrl
       }
     } catch (error) {
       toast.error('Authentication failed')

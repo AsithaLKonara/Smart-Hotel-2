@@ -9,3 +9,7 @@ test-results/
 logs/
 *.log
 VERCEL_ENV_VALUES.txt
+.env
+test-auth.js
+test-mongo.js
+test-url.js

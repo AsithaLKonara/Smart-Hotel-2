@@ -22,7 +22,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import toast from 'react-hot-toast'
-import { canAccessReceptionistFeatures } from '@/lib/rbac-helpers'
+import { canAccessKitchenFeatures } from '@/lib/rbac-helpers'
 
 interface OrderItem {
   id: string
@@ -82,7 +82,7 @@ function KitchenDashboardContent() {
   useEffect(() => {
     if (status === 'loading') return
     
-    if (!canAccessReceptionistFeatures(session)) {
+    if (!canAccessKitchenFeatures(session)) {
       router.push('/')
       return
     }

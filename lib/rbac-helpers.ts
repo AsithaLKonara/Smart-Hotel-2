@@ -64,6 +64,20 @@ export function canAccessSuperAdminFeatures(session: Session | null | undefined)
 }
 
 /**
+ * Check if user can access kitchen features
+ */
+export function canAccessKitchenFeatures(session: Session | null | undefined): boolean {
+  return hasRole(session, ['KITCHEN_STAFF', 'MANAGER', 'SUPER_ADMIN']);
+}
+
+/**
+ * Check if user can access housekeeping features
+ */
+export function canAccessHousekeepingFeatures(session: Session | null | undefined): boolean {
+  return hasRole(session, ['HOUSEKEEPING', 'MANAGER', 'SUPER_ADMIN']);
+}
+
+/**
  * Get allowed roles for a route
  */
 export function getAllowedRoles(route: string): UserRole[] {
@@ -79,9 +93,9 @@ export function getAllowedRoles(route: string): UserRole[] {
     '/admin/bookings': ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'],
     '/admin/calendar': ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'],
     '/admin/dashboard/checkin-checkout': ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'],
-    '/admin/tasks': ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'],
+    '/admin/tasks': ['RECEPTIONIST', 'HOUSEKEEPING', 'MANAGER', 'SUPER_ADMIN'],
     '/admin/qr-codes': ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'],
-    '/kitchen/dashboard': ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'],
+    '/kitchen/dashboard': ['KITCHEN_STAFF', 'MANAGER', 'SUPER_ADMIN'],
   };
   
   return routeRoles[route] || [];
