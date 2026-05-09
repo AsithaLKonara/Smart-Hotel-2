@@ -1,0 +1,243 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "SmartHotel OS Enterprise API Catalog",
+    "description": "Standardized REST API specifications, query parameters, payload models, and RBAC requirements for the SmartHotel OS hospitality platform.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "SmartHotel Operations Engineering Team",
+      "email": "engineering@smarthotel.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "/api",
+      "description": "Local / Production relative root path"
+    }
+  ],
+  "paths": {
+    "/bookings": {
+      "get": {
+        "summary": "Retrieve Reservation Portfolios",
+        "description": "Returns list of active bookings filtered by status or check-in boundaries. For guests, results are constrained to their authenticated user identifier.",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success payload listing matching room bookings.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookingsArray"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized access attempt"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create Room Reservation",
+        "description": "Acquires room-specific concurrency lock, performs atomic date overlap validation, and issues a standard booking transaction.",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unique UUID to protect against transaction double-creation and retry storms."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BookingPayload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Booking processed. Details returned with generated invoice and Stripe payload if pay_now mode active.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookingResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Payload constraint check failed (validation error)"
+          },
+          "409": {
+            "description": "Conflict: Room double booked or concurrency lock active."
+          }
+        }
+      }
+    },
+    "/payments": {
+      "post": {
+        "summary": "Submit Stripe Payment Capture",
+        "description": "Registers credit-card payment captures, writes double-entry ledger entries, and initiates cash drawer summaries.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentPayload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Payment completed. Cash accounts debited, guest receivables credited."
+          },
+          "402": {
+            "description": "Payment processing declined by Stripe terminal."
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "NextAuthCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "next-auth.session-token"
+      },
+      "BearerToken": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "BookingPayload": {
+        "type": "object",
+        "required": [
+          "roomId",
+          "checkIn",
+          "checkOut",
+          "guests"
+        ],
+        "properties": {
+          "roomId": {
+            "type": "string",
+            "description": "Valid MongoDB ObjectId"
+          },
+          "checkIn": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-05-10"
+          },
+          "checkOut": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-05-15"
+          },
+          "guests": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10
+          },
+          "specialRequests": {
+            "type": "string"
+          },
+          "paymentMethod": {
+            "type": "string",
+            "enum": [
+              "pay_now",
+              "pay_later"
+            ]
+          }
+        }
+      },
+      "BookingResponse": {
+        "type": "object",
+        "properties": {
+          "booking": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "roomId": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "totalAmount": {
+                "type": "number"
+              },
+              "confirmationCode": {
+                "type": "string"
+              },
+              "invoice": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      },
+      "PaymentPayload": {
+        "type": "object",
+        "required": [
+          "amount",
+          "paymentMethod",
+          "userId"
+        ],
+        "properties": {
+          "bookingId": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number"
+          },
+          "paymentMethod": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          }
+        }
+      },
+      "BookingsArray": {
+        "type": "object",
+        "properties": {
+          "bookings": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    }
+  }
+}

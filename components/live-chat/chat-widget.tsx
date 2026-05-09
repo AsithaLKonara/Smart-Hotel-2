@@ -195,33 +195,33 @@ export function ChatWidget({
                         }}
                     >
                         {/* Status bar */}
-                        <div className="px-5 py-3 bg-blue-500/10 flex items-center justify-between">
+                        <div className="px-5 py-3 bg-primary/10 flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                                <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
-                                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-blue-200/60">Sanctuary Sync Active</span>
+                                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-primary/60">Sanctuary Sync Active</span>
                             </div>
-                            <span className="text-[9px] font-mono text-blue-200/30 uppercase tracking-widest">v5.0-Neural</span>
+                            <span className="text-[9px] font-mono text-primary/30 uppercase tracking-widest">v5.0-Neural</span>
                         </div>
 
                         {/* Header */}
-                        <div className="p-6 flex justify-between items-center bg-gradient-to-b from-blue-500/10 to-transparent">
+                        <div className="p-6 flex justify-between items-center bg-gradient-to-b from-primary/10 to-transparent">
                             <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-2xl bg-blue-500/20 flex items-center justify-center text-blue-100 shadow-2xl">
-                                    <Sparkles size={24} className="group-hover:scale-110 transition-transform text-blue-300" />
+                                <div className="w-12 h-12 rounded-2xl bg-gold-gradient flex items-center justify-center text-white shadow-luxury">
+                                    <Sparkles size={24} className="relative z-10" />
                                 </div>
                                 <div>
                                     <h3 className="font-black text-white text-base leading-tight uppercase tracking-tighter">Sanctuary Concierge</h3>
                                     <div className="flex items-center gap-1.5 mt-0.5">
-                                        <div className="w-1 h-1 rounded-full bg-blue-400" />
-                                        <span className="text-[10px] text-blue-200/40 font-black uppercase tracking-widest">Neural Cluster #A1</span>
+                                        <div className="w-1 h-1 rounded-full bg-primary" />
+                                        <span className="text-[10px] text-primary/50 font-black uppercase tracking-widest">Neural Cluster #A1</span>
                                     </div>
                                 </div>
                             </div>
                             <div className="flex gap-2">
-                                <button onClick={() => setIsOpen(false)} className="p-2.5 hover:bg-white/10 rounded-2xl transition-all text-white/40 hover:text-white">
+                                <button aria-label="Minimize chat" onClick={() => setIsOpen(false)} className="p-2.5 hover:bg-white/10 rounded-2xl transition-all text-white/40 hover:text-white">
                                     <Minus size={20} />
                                 </button>
-                                <button onClick={() => setIsOpen(false)} className="p-2.5 hover:bg-white/10 rounded-2xl transition-all text-white/40 hover:text-white">
+                                <button aria-label="Close chat" onClick={() => setIsOpen(false)} className="p-2.5 hover:bg-white/10 rounded-2xl transition-all text-white/40 hover:text-white">
                                     <X size={20} />
                                 </button>
                             </div>
@@ -277,7 +277,7 @@ export function ChatWidget({
                                         <button
                                             key={s}
                                             onClick={() => sendMessage(s)}
-                                            className="text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-full bg-blue-500/10 hover:bg-blue-500/20 text-blue-200 border-none transition-all active:scale-95"
+                                            className="text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-all active:scale-95"
                                         >
                                             {s}
                                         </button>
@@ -287,10 +287,10 @@ export function ChatWidget({
 
                             {loading && (
                                 <div className="flex justify-start">
-                                    <div className="bg-blue-500/10 px-5 py-3 rounded-2xl flex gap-1.5 items-center">
-                                        <motion.span animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6 }} className="w-1.5 h-1.5 bg-blue-400 rounded-full" />
-                                        <motion.span animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.2 }} className="w-1.5 h-1.5 bg-blue-400 rounded-full" />
-                                        <motion.span animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.4 }} className="w-1.5 h-1.5 bg-blue-400 rounded-full" />
+                                    <div className="bg-primary/10 px-5 py-3 rounded-2xl flex gap-1.5 items-center">
+                                        <motion.span animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6 }} className="w-1.5 h-1.5 bg-primary rounded-full" />
+                                        <motion.span animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.2 }} className="w-1.5 h-1.5 bg-primary rounded-full" />
+                                        <motion.span animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.4 }} className="w-1.5 h-1.5 bg-primary rounded-full" />
                                     </div>
                                 </div>
                             )}
@@ -307,9 +307,10 @@ export function ChatWidget({
                                     onKeyDown={(e) => e.key === "Enter" && sendMessage()}
                                 />
                                 <button
+                                    aria-label="Send message"
                                     onClick={() => sendMessage()}
                                     disabled={!input.trim() || loading}
-                                    className="w-12 h-12 bg-blue-400 text-white rounded-[22px] hover:scale-105 active:scale-95 transition-all disabled:opacity-20 disabled:scale-100 flex items-center justify-center shadow-lg shadow-blue-500/20"
+                                    className="w-12 h-12 bg-gold-gradient text-white rounded-[22px] hover:scale-105 active:scale-95 transition-all disabled:opacity-20 disabled:scale-100 flex items-center justify-center shadow-luxury"
                                 >
                                     <Send size={18} />
                                 </button>
@@ -326,16 +327,17 @@ export function ChatWidget({
                     </motion.div>
                 ) : (
                     <motion.button
+                        aria-label="Open chat concierge"
                         initial={{ scale: 0.8, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
-                        whileHover={{ scale: 1.05 }}
+                        whileHover={{ scale: 1.08 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => setIsOpen(true)}
-                        className="w-16 h-16 bg-blue-500 text-white rounded-[24px] shadow-[0_20px_40px_-10px_rgba(0,0,0,0.5)] flex items-center justify-center group relative overflow-hidden"
+                        className="w-16 h-16 bg-gold-gradient text-white rounded-[24px] shadow-luxury flex items-center justify-center group relative overflow-hidden"
                     >
                         <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity" />
                         <MessageCircle size={28} className="relative z-10" />
-                        <div className="absolute top-3 right-3 w-3 h-3 bg-blue-400 border-2 border-white rounded-full z-20 shadow-lg" />
+                        <div className="absolute top-3 right-3 w-3 h-3 bg-white border-2 border-primary/40 rounded-full z-20 shadow-lg animate-pulse" />
                     </motion.button>
                 )}
             </AnimatePresence>

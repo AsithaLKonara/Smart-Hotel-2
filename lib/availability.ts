@@ -97,11 +97,11 @@ export async function getAvailableRooms(
       select: { roomId: true }
     })
 
-    const bookedRoomIds = new Set(conflictingBookings.map(b => b.roomId))
-    const availableRooms = allRooms.filter(room => !bookedRoomIds.has(room.id))
+    const bookedRoomIds = new Set(conflictingBookings.map((b: any) => b.roomId))
+    const availableRooms = allRooms.filter((room: any) => !bookedRoomIds.has(room.id))
 
     // Convert BigInt fields to Number for JSON serialization
-    return availableRooms.map(room => ({
+    return availableRooms.map((room: any) => ({
       ...room,
       capacity: Number(room.capacity),
       floor: Number(room.floor),
@@ -198,13 +198,13 @@ export async function getAvailabilityCalendar(
     })
 
     const bookingsByRoomId = new Map<string, typeof bookings>()
-    bookings.forEach(booking => {
+    bookings.forEach((booking: any) => {
       const roomBookings = bookingsByRoomId.get(booking.roomId) || []
       roomBookings.push(booking)
       bookingsByRoomId.set(booking.roomId, roomBookings)
     })
 
-    return rooms.map(room => ({
+    return rooms.map((room: any) => ({
       ...room,
       bookings: bookingsByRoomId.get(room.id) || [],
       isAvailable: !bookingsByRoomId.has(room.id)

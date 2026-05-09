@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
     console.log(`Menu API: Found ${menuItems.length} menu items`)
     
     // Convert BigInt fields to Number for JSON serialization
-    const serializedMenuItems = menuItems.map(item => ({
+    const serializedMenuItems = menuItems.map((item: any) => ({
       ...item,
       preparationTime: Number(item.preparationTime),
     }))

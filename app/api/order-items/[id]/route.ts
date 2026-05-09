@@ -38,7 +38,7 @@ export async function PUT(
       where: { orderId: item.orderId },
     })
 
-    const newTotal = orderItems.reduce((sum, item) => sum + item.subtotal, 0)
+    const newTotal = orderItems.reduce((sum: number, item: any) => sum + item.subtotal, 0)
 
     await prisma.foodOrder.update({
       where: { id: item.orderId },
@@ -92,7 +92,7 @@ export async function DELETE(
       where: { orderId: item.orderId },
     })
 
-    const newTotal = orderItems.reduce((sum, item) => sum + item.subtotal, 0)
+    const newTotal = orderItems.reduce((sum: number, item: any) => sum + item.subtotal, 0)
 
     await prisma.foodOrder.update({
       where: { id: item.orderId },

@@ -33,6 +33,12 @@ export interface ServerToClientEvents {
   newBookingAlert: (booking: any) => void
   occupancyUpdate: (data: { date: string; occupancy: number }) => void
   revenueUpdate: (data: { period: string; amount: number }) => void
+
+  // Operational Messaging & Presence
+  presenceUpdate: (users: any[]) => void
+  staffTyping: (data: { userId: string; channel: string; typing: boolean }) => void
+  opsMessageReceived: (message: any) => void
+  timelineEventTriggered: (event: any) => void
   
   // General events
   connection: () => void
@@ -53,6 +59,12 @@ export interface ClientToServerEvents {
   // Order tracking
   trackOrder: (orderId: string) => void
   stopTrackingOrder: (orderId: string) => void
+
+  // Operational Messaging & Presence triggers
+  updatePresence: (user: any) => void
+  setTypingState: (data: { userId: string; channel: string; typing: boolean }) => void
+  sendOpsMessage: (message: any) => void
+  triggerTimelineEvent: (event: any) => void
 }
 
 export interface InterServerEvents {
@@ -76,6 +88,9 @@ export const ioConfig = {
   },
   transports: ['websocket', 'polling'] as any
 }
+
+// Active online roster memory map
+const activeOnlineUsers = new Map<string, any>();
 
 // Initialize Socket.IO server
 export function initSocketIO(server: NetServer) {
@@ -129,10 +144,68 @@ export function initSocketIO(server: NetServer) {
       console.log(`Socket ${socket.id} stopped tracking order ${orderId}`)
     })
 
+    // Phase 3: Presence registration
+    socket.on('updatePresence', (user) => {
+      if (user && user.id) {
+        activeOnlineUsers.set(socket.id, {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          socketId: socket.id,
+          connectedAt: new Date().toISOString()
+        })
+        io.emit('presenceUpdate', Array.from(activeOnlineUsers.values()))
+      }
+    })
+
+    // Phase 3: Typing status
+    socket.on('setTypingState', (data) => {
+      socket.broadcast.emit('staffTyping', data)
+    })
+
+    // Phase 3: Collaborative operations chat
+    socket.on('sendOpsMessage', (message) => {
+      io.emit('opsMessageReceived', message)
+    })
+
+    // Phase 3: Global operational timeline trigger
+    socket.on('triggerTimelineEvent', (event) => {
+      io.emit('timelineEventTriggered', event)
+    })
+
     socket.on('disconnect', () => {
+      activeOnlineUsers.delete(socket.id)
+      io.emit('presenceUpdate', Array.from(activeOnlineUsers.values()))
       console.log(`Client disconnected: ${socket.id}`)
     })
   })
+
+  // SRE Socket Leak Monitor: Sweep orphaned presence entries every 60s to avoid RAM creep
+  if ((globalThis as any).socketSweeperInterval) {
+    clearInterval((globalThis as any).socketSweeperInterval)
+  }
+  
+  const sweepInterval = setInterval(() => {
+    try {
+      const activeSockets = io.sockets.sockets;
+      let mutated = false;
+      activeOnlineUsers.forEach((user, socketId) => {
+        if (!activeSockets.has(socketId)) {
+          activeOnlineUsers.delete(socketId);
+          mutated = true;
+        }
+      });
+      if (mutated) {
+        io.emit('presenceUpdate', Array.from(activeOnlineUsers.values()));
+      }
+    } catch (err) {
+      console.error('SRE Socket Sweeper Error:', err);
+    }
+  }, 60000);
+
+  // Preserve across HMR cycles
+  (globalThis as any).socketSweeperInterval = sweepInterval;
 
   return io
 }
@@ -199,6 +272,23 @@ export class SocketEvents {
 
   static emitRevenueUpdate(data: { period: string; amount: number }) {
     this.io.to('admin').emit('revenueUpdate', data)
+  }
+
+  // Phase 3 Event Emitters
+  static emitPresenceUpdate(users: any[]) {
+    this.io.emit('presenceUpdate', users)
+  }
+
+  static emitStaffTyping(data: { userId: string; channel: string; typing: boolean }) {
+    this.io.emit('staffTyping', data)
+  }
+
+  static emitOpsMessage(message: any) {
+    this.io.emit('opsMessageReceived', message)
+  }
+
+  static emitTimelineEvent(event: any) {
+    this.io.emit('timelineEventTriggered', event)
   }
 }
 

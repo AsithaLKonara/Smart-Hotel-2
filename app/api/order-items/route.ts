@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
       where: { orderId: validatedData.orderId },
     })
 
-    const newTotal = orderItems.reduce((sum, item) => sum + item.subtotal, 0)
+    const newTotal = orderItems.reduce((sum: number, item: any) => sum + item.subtotal, 0)
 
     await prisma.foodOrder.update({
       where: { id: validatedData.orderId },

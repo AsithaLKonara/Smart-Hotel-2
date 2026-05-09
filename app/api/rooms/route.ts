@@ -4,6 +4,8 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { isDatabaseConfigured, getDatabaseErrorMessage } from '@/lib/db-helpers'
 import { z } from 'zod'
+import { injectChaosDelay } from '@/qa/chaos/chaos-engine'
+
 // Note: RoomStatus enum doesn't exist in Prisma schema - Room.status is a String field
 type RoomStatus = 'AVAILABLE' | 'OCCUPIED' | 'MAINTENANCE' | 'CLEANING' | 'RESERVED'
 
@@ -20,6 +22,9 @@ const roomSchema = z.object({
 })
 
 export async function GET(request: NextRequest) {
+  // Inject Chaos DB Latency if active
+  await injectChaosDelay('DB_LATENCY')
+
   // Check database configuration first
   if (!isDatabaseConfigured()) {
     try {
@@ -115,10 +120,10 @@ export async function GET(request: NextRequest) {
           roomId: true
         }
       })
-      const bookedRoomIds = new Set(bookings.map(b => b.roomId))
-      const availableRooms = rooms.filter(room => !bookedRoomIds.has(room.id))
+      const bookedRoomIds = new Set(bookings.map((b: any) => b.roomId))
+      const availableRooms = rooms.filter((room: any) => !bookedRoomIds.has(room.id))
       // Convert BigInt fields to Number for JSON serialization
-      const serializedRooms = availableRooms.map(room => ({
+      const serializedRooms = availableRooms.map((room: any) => ({
         ...room,
         capacity: Number(room.capacity),
         floor: Number(room.floor),
@@ -137,7 +142,7 @@ export async function GET(request: NextRequest) {
     })
 
     // Convert BigInt fields to Number for JSON serialization
-    const serializedRooms = rooms.map(room => ({
+    const serializedRooms = rooms.map((room: any) => ({
       ...room,
       capacity: Number(room.capacity),
       floor: Number(room.floor),
@@ -150,26 +155,14 @@ export async function GET(request: NextRequest) {
     })
   } catch (error: any) {
     console.error('Error fetching rooms:', error)
-    
-    // Fallback to mock data on error instead of 503
-    try {
-      const { MOCK_ROOMS } = await import('@/lib/mock-rooms')
-      return NextResponse.json({
-        rooms: MOCK_ROOMS,
-        count: MOCK_ROOMS.length,
-        isMock: true,
-        message: 'Using fallback data: ' + getDatabaseErrorMessage(error)
-      })
-    } catch (fallbackError) {
-      return NextResponse.json(
-        {
-          error: 'Failed to fetch rooms',
-          message: getDatabaseErrorMessage(error),
-          rooms: []
-        },
-        { status: 503 }
-      )
-    }
+    return NextResponse.json(
+      {
+        error: 'Failed to fetch rooms',
+        message: getDatabaseErrorMessage(error),
+        rooms: []
+      },
+      { status: 503 }
+    )
   }
 }
 

@@ -7,12 +7,12 @@ export const runtime = 'nodejs'
 import { useState, useEffect, Suspense } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  Users, 
-  DollarSign, 
-  Calendar, 
+import {
+  TrendingUp,
+  TrendingDown,
+  Users,
+  DollarSign,
+  Calendar,
   Bed,
   Star,
   AlertCircle,
@@ -124,11 +124,11 @@ function AdminDashboardContent() {
         credentials: 'include',
       })
       clearTimeout(timeoutId)
-      
+
       if (controller.signal.aborted) {
         throw new Error('Request timeout - analytics computation took too long')
       }
-      
+
       const data = await response.json()
 
       if (response.ok) {
@@ -144,8 +144,8 @@ function AdminDashboardContent() {
             monthlyRevenue: data.summary?.monthlyRevenue ?? 0,
             yearlyRevenue: data.summary?.yearlyRevenue ?? 0,
             occupancyRate: data.summary?.occupancyRate ?? 0,
-            avgBookingValue: data.summary?.avgBookingValue ?? (data.summary?.monthlyRevenue && data.summary?.monthlyBookings 
-              ? Number((data.summary.monthlyRevenue / data.summary.monthlyBookings).toFixed(2)) 
+            avgBookingValue: data.summary?.avgBookingValue ?? (data.summary?.monthlyRevenue && data.summary?.monthlyBookings
+              ? Number((data.summary.monthlyRevenue / data.summary.monthlyBookings).toFixed(2))
               : 0),
             bookingGrowthRate: data.summary?.bookingGrowthRate ?? 0,
           },
@@ -230,7 +230,7 @@ function AdminDashboardContent() {
   // Early return if not authenticated or wrong role
   if (status === 'loading') {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-transparent flex items-center justify-center">
         <PremiumSpinner size="lg" text="Authenticating..." />
       </div>
     )
@@ -243,7 +243,7 @@ function AdminDashboardContent() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-transparent flex items-center justify-center">
         <PremiumSpinner size="lg" text="Loading Analytics..." />
       </div>
     )
@@ -251,10 +251,10 @@ function AdminDashboardContent() {
 
   if (!dashboardData) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-transparent flex items-center justify-center">
         <div className="text-center">
-          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <p className="text-gray-600">Failed to load dashboard data</p>
+          <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
+          <p className="text-white/60">Failed to load dashboard data</p>
           <Button onClick={fetchDashboardData} className="mt-4">
             Try Again
           </Button>
@@ -294,68 +294,68 @@ function AdminDashboardContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-transparent">
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-          <p className="text-gray-600 mt-2">Real-time insights and analytics</p>
+          <h1 className="text-3xl font-serif font-bold text-white">Admin Dashboard</h1>
+          <p className="text-white/50 mt-2 text-sm uppercase tracking-widest">Real-time insights and analytics</p>
         </div>
 
         {/* Key Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="p-6">
+          <Card className="p-6 bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Bookings</p>
-                <p className="text-2xl font-bold text-gray-900">{summary?.totalBookings ?? 0}</p>
+                <p className="text-sm font-medium text-white/50 uppercase tracking-widest">Total Bookings</p>
+                <p className="text-2xl font-bold text-white">{summary?.totalBookings ?? 0}</p>
                 <div className="flex items-center mt-2">
                   {getGrowthIcon(summary?.bookingGrowthRate ?? 0)}
-                  <span className={`text-sm ml-1 ${(summary?.bookingGrowthRate ?? 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  <span className={`text-sm ml-1 ${(summary?.bookingGrowthRate ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                     {Math.abs(summary?.bookingGrowthRate ?? 0).toFixed(1)}%
                   </span>
                 </div>
               </div>
-              <Calendar className="w-8 h-8 text-amber-600" />
+              <Calendar className="w-8 h-8 text-primary" />
             </div>
           </Card>
 
-          <Card className="p-6">
+          <Card className="p-6 bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-                <p className="text-2xl font-bold text-gray-900">{formatCurrency(summary?.totalRevenue ?? 0)}</p>
-                <p className="text-sm text-gray-500 mt-2">
+                <p className="text-sm font-medium text-white/50 uppercase tracking-widest">Total Revenue</p>
+                <p className="text-2xl font-bold text-white">{formatCurrency(summary?.totalRevenue ?? 0)}</p>
+                <p className="text-sm text-white/40 mt-2">
                   Monthly: {formatCurrency(summary?.monthlyRevenue ?? 0)}
                 </p>
               </div>
-              <DollarSign className="w-8 h-8 text-green-600" />
+              <DollarSign className="w-8 h-8 text-primary" />
             </div>
           </Card>
 
-          <Card className="p-6">
+          <Card className="p-6 bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Occupancy Rate</p>
-                <p className="text-2xl font-bold text-gray-900">{summary?.occupancyRate ?? 0}%</p>
-                <p className="text-sm text-gray-500 mt-2">
+                <p className="text-sm font-medium text-white/50 uppercase tracking-widest">Occupancy Rate</p>
+                <p className="text-2xl font-bold text-white">{summary?.occupancyRate ?? 0}%</p>
+                <p className="text-sm text-white/40 mt-2">
                   Avg Booking: {formatCurrency(summary?.avgBookingValue ?? 0)}
                 </p>
               </div>
-              <Bed className="w-8 h-8 text-blue-600" />
+              <Bed className="w-8 h-8 text-primary" />
             </div>
           </Card>
 
-          <Card className="p-6">
+          <Card className="p-6 bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Guests</p>
-                <p className="text-2xl font-bold text-gray-900">{guestStats?.totalGuests || 0}</p>
-                <p className="text-sm text-gray-500 mt-2">
+                <p className="text-sm font-medium text-white/50 uppercase tracking-widest">Total Guests</p>
+                <p className="text-2xl font-bold text-white">{guestStats?.totalGuests || 0}</p>
+                <p className="text-sm text-white/40 mt-2">
                   Staff: {guestStats?.totalStaff || 0}
                 </p>
               </div>
-              <Users className="w-8 h-8 text-purple-600" />
+              <Users className="w-8 h-8 text-primary" />
             </div>
           </Card>
         </div>
@@ -363,9 +363,9 @@ function AdminDashboardContent() {
         {/* Charts and Analytics */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {/* Occupancy Chart */}
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4 flex items-center">
-              <BarChart3 className="w-5 h-5 mr-2" />
+          <Card className="p-6 bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl">
+            <h3 className="text-lg font-semibold mb-4 flex items-center text-white">
+              <BarChart3 className="w-5 h-5 mr-2 text-primary" />
               Occupancy Forecast (30 Days)
             </h3>
             <div className="space-y-3">
@@ -373,31 +373,31 @@ function AdminDashboardContent() {
                 charts.occupancy.slice(0, 7).map((day, index) => (
                   <div key={day.date} className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                      <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
-                      <span className="text-sm text-gray-600">
+                      <div className="w-2 h-2 bg-primary rounded-full"></div>
+                      <span className="text-sm text-white/60">
                         {formatDate(day.date)}
                       </span>
                     </div>
                     <div className="flex items-center space-x-4">
-                      <span className="text-sm text-gray-600">
+                      <span className="text-sm text-white/60">
                         {day.occupied}/{day.occupied + day.available}
                       </span>
-                      <span className="text-sm font-medium">
+                      <span className="text-sm font-medium text-white">
                         {day.occupancyRate.toFixed(1)}%
                       </span>
                     </div>
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-gray-500 text-center py-4">No occupancy data available</p>
+                <p className="text-sm text-white/40 text-center py-4">No occupancy data available</p>
               )}
             </div>
           </Card>
 
           {/* Room Status */}
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4 flex items-center">
-              <PieChart className="w-5 h-5 mr-2" />
+          <Card className="p-6 bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl">
+            <h3 className="text-lg font-semibold mb-4 flex items-center text-white">
+              <PieChart className="w-5 h-5 mr-2 text-primary" />
               Room Status
             </h3>
             <div className="space-y-3">
@@ -405,20 +405,19 @@ function AdminDashboardContent() {
                 charts.roomStatus.map((status) => (
                   <div key={status.status} className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                      <div className={`w-3 h-3 rounded-full ${
-                        status.status === 'AVAILABLE' ? 'bg-green-500' :
-                        status.status === 'OCCUPIED' ? 'bg-red-500' :
-                        status.status === 'MAINTENANCE' ? 'bg-yellow-500' : 'bg-gray-500'
-                      }`}></div>
-                      <span className="text-sm text-gray-600 capitalize">
+                      <div className={`w-3 h-3 rounded-full ${status.status === 'AVAILABLE' ? 'bg-emerald-400' :
+                        status.status === 'OCCUPIED' ? 'bg-red-400' :
+                          status.status === 'MAINTENANCE' ? 'bg-yellow-400' : 'bg-white/20'
+                        }`}></div>
+                      <span className="text-sm text-white/60 capitalize">
                         {status.status.toLowerCase()}
                       </span>
                     </div>
-                    <span className="text-sm font-medium">{status.count}</span>
+                    <span className="text-sm font-medium text-white">{status.count}</span>
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-gray-500 text-center py-4">No room status data available</p>
+                <p className="text-sm text-white/40 text-center py-4">No room status data available</p>
               )}
             </div>
           </Card>
@@ -497,35 +496,110 @@ function AdminDashboardContent() {
           </Card>
         </div>
 
-        {/* Quick Actions */}
-        <Card className="p-6 mt-8">
-          <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Button 
-              onClick={() => router.push('/admin/bookings')}
-              className="h-16 flex flex-col items-center justify-center space-y-2"
-            >
-              <Calendar className="w-6 h-6" />
-              <span>Manage Bookings</span>
-            </Button>
-            <Button 
-              onClick={() => router.push('/admin/rooms')}
-              variant="outline"
-              className="h-16 flex flex-col items-center justify-center space-y-2"
-            >
-              <Bed className="w-6 h-6" />
-              <span>Room Management</span>
-            </Button>
-            <Button 
-              onClick={() => router.push('/admin/staff')}
-              variant="outline"
-              className="h-16 flex flex-col items-center justify-center space-y-2"
-            >
-              <Users className="w-6 h-6" />
-              <span>Staff Management</span>
-            </Button>
+        {/* SmartHotel OS Unified Operations Cockpit */}
+        <div className="mt-8 border-t border-gray-200 dark:border-gray-800 pt-8">
+          <div className="mb-6">
+            <div className="flex items-center gap-2 mb-1">
+              <Badge className="bg-amber-600/10 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5">
+                Unified Hospitality OS
+              </Badge>
+              <span className="flex h-1.5 w-1.5 relative">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+              </span>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">SmartHotel OS Command Deck</h2>
+            <p className="text-sm text-gray-500 mt-1">E2E Operational center controllers, real-time sync systems, and yield dashboards.</p>
           </div>
-        </Card>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+            <Card className="p-5 border border-gray-200 dark:border-gray-800 hover:border-amber-500 dark:hover:border-amber-500/40 hover:-translate-y-0.5 transition-all flex flex-col justify-between h-[180px] cursor-pointer" onClick={() => router.push('/admin/receptionist')}>
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-gray-400 font-extrabold uppercase tracking-wider">Front Desk</span>
+                  <Badge className="bg-emerald-500/10 text-emerald-600 text-[9px] uppercase tracking-wider font-extrabold px-1.5 py-0.5">LIVE DESK</Badge>
+                </div>
+                <h3 className="text-lg font-bold text-gray-950 dark:text-white mt-2">Receptionist Center</h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Arrivals/departures timeline, live occupancy room maps, VIP check-in alerts, and guest memo logs.</p>
+              </div>
+              <div className="text-right text-xs font-bold text-amber-600 flex items-center justify-end gap-1 mt-4">
+                Open Workspace &rarr;
+              </div>
+            </Card>
+
+            <Card className="p-5 border border-gray-200 dark:border-gray-800 hover:border-amber-500 dark:hover:border-amber-500/40 hover:-translate-y-0.5 transition-all flex flex-col justify-between h-[180px] cursor-pointer" onClick={() => router.push('/admin/manager')}>
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-gray-400 font-extrabold uppercase tracking-wider">Revenue & SLA</span>
+                  <Badge className="bg-purple-500/10 text-purple-600 text-[9px] uppercase tracking-wider font-extrabold px-1.5 py-0.5">FORECASTING</Badge>
+                </div>
+                <h3 className="text-lg font-bold text-gray-950 dark:text-white mt-2">Manager Intelligence</h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Real-time RevPAR metrics, ADR, SLA incident monitors, kitchen bottlenecks, and weekly staffing predictions.</p>
+              </div>
+              <div className="text-right text-xs font-bold text-amber-600 flex items-center justify-end gap-1 mt-4">
+                Open Workspace &rarr;
+              </div>
+            </Card>
+
+            <Card className="p-5 border border-gray-200 dark:border-gray-800 hover:border-amber-500 dark:hover:border-amber-500/40 hover:-translate-y-0.5 transition-all flex flex-col justify-between h-[180px] cursor-pointer" onClick={() => router.push('/kitchen/dashboard')}>
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-gray-400 font-extrabold uppercase tracking-wider">Culinary Queue</span>
+                  <Badge className="bg-amber-500/10 text-amber-600 text-[9px] uppercase tracking-wider font-extrabold px-1.5 py-0.5">KDS INTERACTIVE</Badge>
+                </div>
+                <h3 className="text-lg font-bold text-gray-950 dark:text-white mt-2">Kitchen Display (KDS)</h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Real-time room order tickers, color-coded preparation SLA timers, special requests, and allergy alerts.</p>
+              </div>
+              <div className="text-right text-xs font-bold text-amber-600 flex items-center justify-end gap-1 mt-4">
+                Open KDS Screen &rarr;
+              </div>
+            </Card>
+
+            <Card className="p-5 border border-gray-200 dark:border-gray-800 hover:border-amber-500 dark:hover:border-amber-500/40 hover:-translate-y-0.5 transition-all flex flex-col justify-between h-[180px] cursor-pointer" onClick={() => router.push('/admin/housekeeping')}>
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-gray-400 font-extrabold uppercase tracking-wider">Service Quality</span>
+                  <Badge className="bg-indigo-500/10 text-indigo-600 text-[9px] uppercase tracking-wider font-extrabold px-1.5 py-0.5">DISPATCH</Badge>
+                </div>
+                <h3 className="text-lg font-bold text-gray-950 dark:text-white mt-2">Housekeeping Hub</h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Mobile task lists, active clean sweep timers, supervisor quality rejections, and room release gates.</p>
+              </div>
+              <div className="text-right text-xs font-bold text-amber-600 flex items-center justify-end gap-1 mt-4">
+                Open Workspace &rarr;
+              </div>
+            </Card>
+
+            <Card className="p-5 border border-gray-200 dark:border-gray-800 hover:border-amber-500 dark:hover:border-amber-500/40 hover:-translate-y-0.5 transition-all flex flex-col justify-between h-[180px] cursor-pointer" onClick={() => router.push('/admin/ota')}>
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-gray-400 font-extrabold uppercase tracking-wider">Integrations</span>
+                  <Badge className="bg-blue-500/10 text-blue-600 text-[9px] uppercase tracking-wider font-extrabold px-1.5 py-0.5">SYNC ENGINE</Badge>
+                </div>
+                <h3 className="text-lg font-bold text-gray-950 dark:text-white mt-2">OTA Channel Manager</h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Simulated Booking.com/Airbnb synchronization, pricing markup schedules, and webhook log terminals.</p>
+              </div>
+              <div className="text-right text-xs font-bold text-amber-600 flex items-center justify-end gap-1 mt-4">
+                Open Channel Sync &rarr;
+              </div>
+            </Card>
+
+            <Card className="p-5 border border-gray-200 dark:border-gray-800 hover:border-amber-500 dark:hover:border-amber-500/40 hover:-translate-y-0.5 transition-all flex flex-col justify-between h-[180px] cursor-pointer" onClick={() => router.push('/admin/calendar')}>
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-gray-400 font-extrabold uppercase tracking-wider">Scheduler</span>
+                  <Badge className="bg-slate-500/10 text-slate-600 text-[9px] uppercase tracking-wider font-extrabold px-1.5 py-0.5">CALENDAR</Badge>
+                </div>
+                <h3 className="text-lg font-bold text-gray-950 dark:text-white mt-2">Matrix Scheduler</h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">View room occupancy grids month-by-month, track conflicts, and edit booking properties in calendar matrices.</p>
+              </div>
+              <div className="text-right text-xs font-bold text-amber-600 flex items-center justify-end gap-1 mt-4">
+                Open Calendar Matrix &rarr;
+              </div>
+            </Card>
+
+          </div>
+        </div>
       </div>
     </div>
   )

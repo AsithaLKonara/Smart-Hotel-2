@@ -24,45 +24,39 @@ export default function GalleryPage() {
   ]
 
   return (
-    <div className="bg-white text-midnight min-h-screen">
-      {/* Hero Section */}
-      <section className="relative h-[40vh] min-h-[300px] overflow-hidden bg-midnight">
-        <div className="absolute inset-0">
-          <Image 
-            src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&q=80&w=1920" 
-            alt="Hotel Gallery" 
-            fill 
-            className="object-cover opacity-40" 
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-midnight/20 via-midnight/60 to-midnight" />
-        </div>
+    <div className="bg-transparent text-white min-h-screen">
+      {/* Hero Section — Blur Glass */}
+      <section className="relative h-[40vh] min-h-[300px] overflow-hidden">
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-xl" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/70" />
         
         <div className="relative z-10 container mx-auto px-4 h-full flex flex-col justify-center items-center text-center">
           <div className="space-y-6 max-w-4xl">
-            <div className="flex items-center justify-center space-x-3 text-luxury uppercase tracking-[0.4em] text-xs font-bold">
-              <div className="w-12 h-px bg-luxury" />
+            <div className="flex items-center justify-center space-x-3 text-primary uppercase tracking-[0.4em] text-xs font-bold">
+              <div className="w-12 h-px bg-primary" />
               <span>Visual Journey</span>
-              <div className="w-12 h-px bg-luxury" />
+              <div className="w-12 h-px bg-primary" />
             </div>
             <h1 className="text-5xl md:text-7xl font-serif font-bold text-white leading-tight">
-              The <span className="text-luxury italic">Gallery</span>
+              The <span className="text-primary italic">Gallery</span>
             </h1>
+            <p className="text-white/50 font-light text-lg max-w-xl mx-auto">A curated visual narrative of unparalleled luxury and timeless elegance.</p>
           </div>
         </div>
       </section>
 
       {/* Filters */}
-      <section className="sticky top-20 z-40 bg-white/80 backdrop-blur-xl border-b border-gray-100 py-6">
+      <section className="sticky top-20 z-40 bg-black/50 backdrop-blur-xl border-b border-white/5 py-6">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-center gap-4 flex-wrap">
             {categories.map((category) => (
               <button
                 key={category.id}
                 onClick={() => setSelectedCategory(category.id)}
-                className={`px-8 py-2 text-[10px] uppercase tracking-[0.2em] font-bold transition-all border ${
+                className={`px-8 py-2 text-[10px] uppercase tracking-[0.2em] font-bold transition-all border rounded-lg ${
                   selectedCategory === category.id 
-                  ? 'bg-midnight text-white border-midnight' 
-                  : 'border-transparent text-gray-400 hover:text-luxury'
+                  ? 'bg-primary/20 text-primary border-primary/30' 
+                  : 'border-white/10 text-white/40 hover:text-primary hover:border-primary/30'
                 }`}
               >
                 {category.name}

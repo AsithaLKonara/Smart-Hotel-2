@@ -2,8 +2,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/db'
 import { sendPasswordResetConfirmation } from '@/lib/email'
 import bcrypt from 'bcryptjs'
+import { enhancedRateLimit, createEnhancedRateLimitResponse } from '@/lib/rate-limit-enhanced'
 
 export async function POST(request: NextRequest) {
+  // Apply rate limiting
+  const rateLimitResult = enhancedRateLimit(request, 'auth')
+  if (!rateLimitResult.allowed) {
+    return createEnhancedRateLimitResponse(rateLimitResult)
+  }
+
   try {
     const { token, email, newPassword } = await request.json()
 

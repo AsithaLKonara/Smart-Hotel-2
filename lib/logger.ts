@@ -5,6 +5,7 @@
  * and structured output for production monitoring.
  */
 
+import 'server-only'
 import winston from 'winston'
 import { captureException, captureMessage } from './monitoring'
 
@@ -39,17 +40,24 @@ const format = winston.format.combine(
 // Console format for development
 const consoleFormat = winston.format.combine(
   winston.format.colorize({ all: true }),
-  winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss:ms' }),
-  winston.format.printf(
-    (info) => `${info.timestamp} ${info.level}: ${info.message}${info.stack ? `\n${info.stack}` : ''}`
-  )
+  winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+  winston.format.printf((info) => {
+    const { timestamp, level, message, stack, ...meta } = info
+    // Clean up internal winston symbols
+    const cleanMeta = { ...meta }
+    delete cleanMeta[Symbol.for('level') as any]
+    delete cleanMeta[Symbol.for('message') as any]
+    delete cleanMeta[Symbol.for('splat') as any]
+    const metaStr = Object.keys(cleanMeta).length ? ` ${JSON.stringify(cleanMeta)}` : ''
+    return `${timestamp} ${level}: ${message}${metaStr}${stack ? `\n${stack}` : ''}`
+  })
 )
 
 // Determine log level based on environment
 const level = () => {
   const env = process.env.NODE_ENV || 'development'
   const isDevelopment = env === 'development'
-  return isDevelopment ? 'debug' : 'warn'
+  return isDevelopment ? 'debug' : 'info'
 }
 
 // Create transports
@@ -146,52 +154,49 @@ class Logger {
     return this
   }
 
-  private formatMessage(message: string, meta?: Record<string, unknown>): string {
-    const context = { ...this.context, ...meta }
-    return JSON.stringify({ message, ...context })
+  private getMergedContext(meta?: Record<string, unknown>): Record<string, unknown> {
+    return { ...this.context, ...meta }
   }
 
   error(message: string, error?: Error | unknown, meta?: Record<string, unknown>): void {
     const errorMessage = error instanceof Error ? error.message : String(error)
     const fullMessage = error ? `${message}: ${errorMessage}` : message
+    const mergedContext = this.getMergedContext(meta)
     
-    logger.error(this.formatMessage(fullMessage, meta), {
+    logger.error(fullMessage, {
       error: error instanceof Error ? error.stack : error,
-      ...meta,
+      ...mergedContext,
     })
 
     // Send to Sentry in production
     if (process.env.NODE_ENV === 'production' && error) {
       captureException(error, {
-        ...this.context,
-        ...meta,
+        ...mergedContext,
         logMessage: message,
       })
     }
   }
 
   warn(message: string, meta?: Record<string, unknown>): void {
-    logger.warn(this.formatMessage(message, meta), meta)
+    const mergedContext = this.getMergedContext(meta)
+    logger.warn(message, mergedContext)
     
     // Send warnings to Sentry in production
     if (process.env.NODE_ENV === 'production') {
-      captureMessage(message, 'warning', {
-        ...this.context,
-        ...meta,
-      })
+      captureMessage(message, 'warning', mergedContext)
     }
   }
 
   info(message: string, meta?: Record<string, unknown>): void {
-    logger.info(this.formatMessage(message, meta), meta)
+    logger.info(message, this.getMergedContext(meta))
   }
 
   http(message: string, meta?: Record<string, unknown>): void {
-    logger.http(this.formatMessage(message, meta), meta)
+    logger.http(message, this.getMergedContext(meta))
   }
 
   debug(message: string, meta?: Record<string, unknown>): void {
-    logger.debug(this.formatMessage(message, meta), meta)
+    logger.debug(message, this.getMergedContext(meta))
   }
 }
 

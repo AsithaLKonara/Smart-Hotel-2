@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { captureException } from '@/lib/monitoring'
+import * as Sentry from '@sentry/nextjs'
 
 interface GlobalErrorProps {
   error: Error & { digest?: string }
@@ -10,10 +10,12 @@ interface GlobalErrorProps {
 
 export default function GlobalError({ error, reset }: GlobalErrorProps) {
   useEffect(() => {
-    // Log critical error to monitoring service
-    captureException(error, {
-      globalError: true,
-      digest: error.digest,
+    // Log critical error to Sentry directly
+    Sentry.captureException(error, {
+      extra: {
+        globalError: true,
+        digest: error.digest,
+      },
     })
   }, [error])
 
@@ -70,4 +72,3 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
     </html>
   )
 }
-

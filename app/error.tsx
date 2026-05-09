@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { captureException } from '@/lib/monitoring'
+import * as Sentry from '@sentry/nextjs'
 
 interface ErrorProps {
   error: Error & { digest?: string }
@@ -10,10 +10,12 @@ interface ErrorProps {
 
 export default function Error({ error, reset }: ErrorProps) {
   useEffect(() => {
-    // Log error to monitoring service
-    captureException(error, {
-      errorBoundary: true,
-      digest: error.digest,
+    // Log error to Sentry directly
+    Sentry.captureException(error, {
+      extra: {
+        errorBoundary: true,
+        digest: error.digest,
+      },
     })
   }, [error])
 
@@ -66,4 +68,3 @@ export default function Error({ error, reset }: ErrorProps) {
     </div>
   )
 }
-

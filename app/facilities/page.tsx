@@ -58,30 +58,23 @@ const facilities = [
 
 export default function FacilitiesPage() {
   return (
-    <div className="bg-white text-midnight">
-      {/* Hero Section */}
-      <section className="relative h-[60vh] min-h-[500px] overflow-hidden bg-midnight">
-        <div className="absolute inset-0">
-          <Image 
-            src="https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?auto=format&fit=crop&q=80&w=1920" 
-            alt="Hotel Facilities" 
-            fill 
-            className="object-cover opacity-50 scale-105" 
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-midnight/20 via-midnight/60 to-midnight" />
-        </div>
+    <div className="bg-transparent text-white">
+      {/* Hero Section — Blur Glass */}
+      <section className="relative h-[60vh] min-h-[500px] overflow-hidden">
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-xl" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/70" />
         
         <div className="relative z-10 container mx-auto px-4 h-full flex flex-col justify-center items-center text-center">
           <div className="space-y-6 max-w-4xl">
-            <div className="flex items-center justify-center space-x-3 text-luxury uppercase tracking-[0.4em] text-xs font-bold">
-              <div className="w-12 h-px bg-luxury" />
+            <div className="flex items-center justify-center space-x-3 text-primary uppercase tracking-[0.4em] text-xs font-bold">
+              <div className="w-12 h-px bg-primary" />
               <span>World Class Amenities</span>
-              <div className="w-12 h-px bg-luxury" />
+              <div className="w-12 h-px bg-primary" />
             </div>
             <h1 className="text-6xl md:text-8xl font-serif font-bold text-white leading-tight">
-              Unrivaled <span className="text-luxury italic">Facilities</span>
+              Unrivaled <span className="text-primary italic">Facilities</span>
             </h1>
-            <p className="text-xl text-white/70 font-light max-w-2xl mx-auto leading-relaxed">
+            <p className="text-xl text-white/60 font-light max-w-2xl mx-auto leading-relaxed">
               Every detail of our facilities is designed to exceed the expectations of the world's most discerning travelers.
             </p>
           </div>
@@ -116,23 +109,23 @@ export default function FacilitiesPage() {
                         </div>
                         <span className="text-luxury uppercase tracking-widest text-xs font-bold">{facility.subtitle}</span>
                       </div>
-                      <h2 className="text-4xl lg:text-5xl font-serif font-bold text-midnight">{facility.name}</h2>
+                      <h2 className="text-4xl lg:text-5xl font-serif font-bold text-white">{facility.name}</h2>
                     </div>
 
-                    <p className="text-lg text-gray-600 leading-relaxed font-light">
+                    <p className="text-lg text-white/60 leading-relaxed font-light">
                       {facility.description}
                     </p>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {facility.features.map((feature, i) => (
                         <div key={i} className="flex items-center space-x-3">
-                          <Star className="w-3 h-3 fill-luxury text-luxury" />
-                          <span className="text-sm font-medium text-midnight/80">{feature}</span>
+                          <Star className="w-3 h-3 fill-primary text-primary" />
+                          <span className="text-sm font-medium text-white/80">{feature}</span>
                         </div>
                       ))}
                     </div>
 
-                    <Button variant="outline" className="border-midnight text-midnight rounded-none px-10 h-14 uppercase tracking-widest text-xs font-bold hover:bg-midnight hover:text-white transition-all group">
+                    <Button variant="outline" className="border-white/20 text-white rounded-xl px-10 h-14 uppercase tracking-widest text-xs font-bold hover:bg-white/10 transition-all group">
                       <span>Explore {facility.name}</span>
                       <ChevronRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                     </Button>
@@ -145,7 +138,7 @@ export default function FacilitiesPage() {
       </section>
 
       {/* Quick Services */}
-      <section className="py-24 bg-gray-50">
+      <section className="py-24 bg-black/25 backdrop-blur-sm border-t border-white/5">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
             {[
@@ -154,11 +147,11 @@ export default function FacilitiesPage() {
               { icon: UserCheck, title: 'Butler Service', desc: 'Bespoke 24/7 butler service for all suites and penthouses.' },
             ].map((service, i) => (
               <div key={i} className="text-center space-y-4">
-                <div className="w-20 h-20 bg-white shadow-xl flex items-center justify-center mx-auto text-luxury">
+                <div className="w-20 h-20 bg-white/5 border border-white/10 backdrop-blur-md flex items-center justify-center mx-auto text-primary rounded-2xl">
                   <service.icon className="w-8 h-8" />
                 </div>
-                <h3 className="text-xl font-serif font-bold text-midnight">{service.title}</h3>
-                <p className="text-gray-500 text-sm font-light leading-relaxed px-8">{service.desc}</p>
+                <h3 className="text-xl font-serif font-bold text-white">{service.title}</h3>
+                <p className="text-white/50 text-sm font-light leading-relaxed px-8">{service.desc}</p>
               </div>
             ))}
           </div>

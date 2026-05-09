@@ -15,9 +15,11 @@ describe('lib/auth', () => {
     const findFirstMock = jest.fn()
     logActionMock = jest.fn().mockResolvedValue(undefined)
     compareMock = jest.fn()
+    const connectWithRetryMock = jest.fn(async (fn) => await fn())
 
     jest.doMock(dbModulePath, () => ({
       __esModule: true,
+      connectWithRetry: connectWithRetryMock,
       prisma: {
         user: {
           findUnique: findUniqueMock,

@@ -5,13 +5,20 @@
  * Comprehensive test to identify database connection problems
  */
 
+const path = require('path')
+require('dotenv').config({ path: path.join(__dirname, '..', '.env.local') })
+
 const { PrismaClient } = require('@prisma/client')
 const { MongoClient } = require('mongodb')
 
 async function testMongoDirect() {
   console.log('🔌 Testing Direct MongoDB Connection...')
   
-  const connectionString = process.env.DATABASE_URL || "mongodb+srv://asviaai2025_db_user:1234@cluster0.1tpj8te.mongodb.net/smarthotel?retryWrites=true&w=majority"
+  const connectionString = process.env.DATABASE_URL
+  if (!connectionString) {
+    console.error('❌ DATABASE_URL is not defined in the environment!')
+    process.exit(1)
+  }
   
   console.log('📡 Connection String:', connectionString.replace(/\/\/.*@/, '//***:***@'))
   
@@ -106,15 +113,25 @@ async function testNetworkConnectivity() {
   const { promisify } = require('util')
   const execAsync = promisify(exec)
   
+  const connectionString = process.env.DATABASE_URL || ''
+  let host = 'smarthotel2.uffrecn.mongodb.net'
+  
   try {
+    if (connectionString) {
+      const match = connectionString.match(/@([^/\s?]+)/)
+      if (match && match[1]) {
+        host = match[1]
+      }
+    }
+    
     // Test DNS resolution
-    console.log('🔍 Testing DNS resolution...')
-    const dnsResult = await execAsync('nslookup cluster0.1tpj8te.mongodb.net')
+    console.log(`🔍 Testing DNS resolution for ${host}...`)
+    await execAsync(`nslookup ${host}`)
     console.log('✅ DNS resolution successful')
     
     // Test ping
-    console.log('🏓 Testing ping to MongoDB cluster...')
-    const pingResult = await execAsync('ping -c 3 cluster0.1tpj8te.mongodb.net')
+    console.log(`🏓 Testing ping to MongoDB cluster: ${host}...`)
+    await execAsync(`ping -c 3 ${host}`)
     console.log('✅ Ping successful')
     
   } catch (error) {

@@ -4,12 +4,13 @@ node_modules
 coverage/
 playwright-report/
 test-results/
-.env.local
 .env.local.*
 logs/
 *.log
 VERCEL_ENV_VALUES.txt
-.env
 test-auth.js
 test-mongo.js
 test-url.js
+backups/
+
+config.bat

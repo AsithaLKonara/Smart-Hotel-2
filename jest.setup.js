@@ -86,6 +86,16 @@ jest.mock('nodemailer', () => ({
   })),
 }))
 
+// Mock Sentry for test stability
+jest.mock('@sentry/nextjs', () => ({
+  init: jest.fn(),
+  captureException: jest.fn(() => 'mock-sentry-error-id'),
+  captureMessage: jest.fn(() => 'mock-sentry-message-id'),
+  addBreadcrumb: jest.fn(),
+  setUser: jest.fn(),
+}))
+
+
 // Mock environment variables for testing
 process.env.NODE_ENV = 'test'
 process.env.DATABASE_URL = 'mongodb://localhost:27017/smarthotel_test'

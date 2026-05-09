@@ -6,5 +6,53 @@
     "react/no-unescaped-entities": "off",
     "react-hooks/exhaustive-deps": "warn",
     "@next/next/no-img-element": "warn"
-  }
+  },
+  "overrides": [
+    {
+      "files": ["components/**/*", "hooks/**/*", "app/error.tsx", "app/global-error.tsx"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "paths": [
+              {
+                "name": "@/lib/db",
+                "message": "Do not import '@ /lib/db' inside client-side components/hooks. Use API routes or Server Actions instead."
+              },
+              {
+                "name": "@/lib/logger",
+                "message": "Do not import '@ /lib/logger' inside client-side components/hooks. Use standard console logging instead."
+              },
+              {
+                "name": "@/lib/monitoring",
+                "message": "Do not import '@ /lib/monitoring' inside client-side components/hooks. Import '@ sentry/nextjs' directly instead."
+              },
+              {
+                "name": "@/lib/email",
+                "message": "Do not import '@ /lib/email' inside client-side components/hooks. Email operations are strictly server-only."
+              },
+              {
+                "name": "@/lib/secrets",
+                "message": "Do not import '@ /lib/secrets' inside client-side components/hooks. Secrets are strictly server-only."
+              },
+              {
+                "name": "@/lib/chaos",
+                "message": "Do not import '@ /lib/chaos' inside client-side components/hooks. Chaos testing utilities are strictly server-only."
+              },
+              {
+                "name": "@/lib/performance",
+                "message": "Do not import '@ /lib/performance' inside client-side components/hooks. Performance traces are server-only."
+              }
+            ],
+            "patterns": [
+              {
+                "group": ["**/lib/server/*", "@/lib/server/*"],
+                "message": "Do not import server-only directory components inside client components."
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
 }

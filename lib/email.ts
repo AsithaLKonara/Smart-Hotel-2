@@ -1,7 +1,9 @@
+import 'server-only'
 import nodemailer from 'nodemailer'
 import prisma from '@/lib/db'
 
 type NodemailerModule = typeof nodemailer
+
 
 function resolveNodemailer(): NodemailerModule {
   const candidate = nodemailer as unknown as {

@@ -48,30 +48,23 @@ const venues = [
 
 export default function DiningPage() {
   return (
-    <div className="bg-white text-midnight">
-      {/* Hero Section */}
-      <section className="relative h-[60vh] min-h-[500px] overflow-hidden bg-midnight">
-        <div className="absolute inset-0">
-          <Image 
-            src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&q=80&w=1920" 
-            alt="Fine Dining" 
-            fill 
-            className="object-cover opacity-50" 
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-midnight/20 via-midnight/60 to-midnight" />
-        </div>
+    <div className="bg-transparent text-white">
+      {/* Hero Section — Blur Glass */}
+      <section className="relative h-[60vh] min-h-[500px] overflow-hidden">
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-xl" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/70" />
         
         <div className="relative z-10 container mx-auto px-4 h-full flex flex-col justify-center items-center text-center">
           <div className="space-y-6 max-w-4xl">
-            <div className="flex items-center justify-center space-x-3 text-luxury uppercase tracking-[0.4em] text-xs font-bold">
-              <div className="w-12 h-px bg-luxury" />
+            <div className="flex items-center justify-center space-x-3 text-primary uppercase tracking-[0.4em] text-xs font-bold">
+              <div className="w-12 h-px bg-primary" />
               <span>Epicurean Journeys</span>
-              <div className="w-12 h-px bg-luxury" />
+              <div className="w-12 h-px bg-primary" />
             </div>
             <h1 className="text-6xl md:text-8xl font-serif font-bold text-white leading-tight">
-              Culinary <span className="text-luxury italic">Excellence</span>
+              Culinary <span className="text-primary italic">Excellence</span>
             </h1>
-            <p className="text-xl text-white/70 font-light max-w-2xl mx-auto leading-relaxed">
+            <p className="text-xl text-white/60 font-light max-w-2xl mx-auto leading-relaxed">
               Discover a world of flavors across our award-winning restaurants and lounges, where every meal is a masterpiece.
             </p>
           </div>
@@ -104,7 +97,7 @@ export default function DiningPage() {
                     <h2 className="text-4xl lg:text-5xl font-serif font-bold text-midnight">{venue.name}</h2>
                   </div>
 
-                  <p className="text-lg text-gray-600 leading-relaxed font-light">
+                  <p className="text-lg text-white/60 leading-relaxed font-light">
                     {venue.description}
                   </p>
 
@@ -116,28 +109,28 @@ export default function DiningPage() {
                     ))}
                   </div>
 
-                  <div className="grid grid-cols-2 gap-8 py-6 border-y border-gray-100">
+                  <div className="grid grid-cols-2 gap-8 py-6 border-y border-white/10">
                     <div className="flex items-center space-x-3">
-                      <Clock className="w-5 h-5 text-luxury" />
+                      <Clock className="w-5 h-5 text-primary" />
                       <div>
-                        <p className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">Hours</p>
-                        <p className="text-sm font-medium text-midnight">{venue.hours}</p>
+                        <p className="text-[10px] uppercase tracking-widest text-white/40 font-bold">Hours</p>
+                        <p className="text-sm font-medium text-white">{venue.hours}</p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-3">
-                      <MapPin className="w-5 h-5 text-luxury" />
+                      <MapPin className="w-5 h-5 text-primary" />
                       <div>
-                        <p className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">Location</p>
-                        <p className="text-sm font-medium text-midnight">{venue.location}</p>
+                        <p className="text-[10px] uppercase tracking-widest text-white/40 font-bold">Location</p>
+                        <p className="text-sm font-medium text-white">{venue.location}</p>
                       </div>
                     </div>
                   </div>
 
                   <div className="flex space-x-4">
-                    <Button className="bg-midnight text-white rounded-none px-10 h-14 uppercase tracking-widest text-xs font-bold hover:bg-midnight/90 transition-all">
+                    <Button className="bg-gold-gradient text-white rounded-xl px-10 h-14 uppercase tracking-widest text-xs font-bold border-none shadow-luxury">
                       Book a Table
                     </Button>
-                    <Button variant="outline" className="border-midnight text-midnight rounded-none px-10 h-14 uppercase tracking-widest text-xs font-bold hover:bg-midnight hover:text-white transition-all">
+                    <Button variant="outline" className="border-white/20 text-white rounded-xl px-10 h-14 uppercase tracking-widest text-xs font-bold hover:bg-white/10 transition-all">
                       View Menu
                     </Button>
                   </div>
@@ -149,7 +142,7 @@ export default function DiningPage() {
       </section>
 
       {/* Signature Elements */}
-      <section className="py-24 bg-midnight text-white overflow-hidden">
+      <section className="py-24 bg-black/30 backdrop-blur-md border-t border-white/5 overflow-hidden">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
             {[
@@ -170,13 +163,13 @@ export default function DiningPage() {
       </section>
 
       {/* Room Service CTA */}
-      <section className="py-24 lg:py-32 bg-gray-50">
+      <section className="py-24 lg:py-32 bg-black/25 backdrop-blur-sm border-t border-white/5">
         <div className="container mx-auto px-4 text-center space-y-10">
           <div className="space-y-4">
-            <h4 className="text-luxury uppercase tracking-[0.3em] text-xs font-bold">In-Room Dining</h4>
-            <h2 className="text-4xl lg:text-6xl font-serif font-bold text-midnight">Gourmet at Your <span className="text-luxury italic">Doorstep</span></h2>
+            <h4 className="text-primary uppercase tracking-[0.3em] text-xs font-bold">In-Room Dining</h4>
+            <h2 className="text-4xl lg:text-6xl font-serif font-bold text-white">Gourmet at Your <span className="text-primary italic">Doorstep</span></h2>
           </div>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto font-light leading-relaxed">
+          <p className="text-lg text-white/50 max-w-2xl mx-auto font-light leading-relaxed">
             Experience the same culinary excellence from the comfort of your suite, available 24 hours a day.
           </p>
           <Link href="/order">

@@ -5,6 +5,9 @@
  * Run this after configuring MongoDB Atlas IP whitelist
  */
 
+const path = require('path')
+require('dotenv').config({ path: path.join(__dirname, '..', '.env.local') })
+
 const { PrismaClient } = require('@prisma/client')
 
 async function quickTest() {

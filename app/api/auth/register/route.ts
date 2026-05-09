@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs'
 import prisma from '@/lib/db'
 import { z } from 'zod'
 import { isDatabaseConfigured } from '@/lib/db-helpers'
+import { enhancedRateLimit, createEnhancedRateLimitResponse } from '@/lib/rate-limit-enhanced'
 
 const registerSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -12,6 +13,12 @@ const registerSchema = z.object({
 })
 
 export async function POST(request: NextRequest) {
+  // Apply rate limiting
+  const rateLimitResult = enhancedRateLimit(request, 'auth')
+  if (!rateLimitResult.allowed) {
+    return createEnhancedRateLimitResponse(rateLimitResult)
+  }
+
   if (!isDatabaseConfigured()) {
     return NextResponse.json(
       { 

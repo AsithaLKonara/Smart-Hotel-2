@@ -1,8 +1,8 @@
 "use client"
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { Phone, Mail, MapPin, Facebook, Twitter, Instagram, Youtube } from 'lucide-react'
-import { getHotelContactInfo } from '@/lib/settings'
 import { useEffect, useState } from 'react'
 
 interface SocialLink {
@@ -25,14 +25,12 @@ export default function HotelFooter() {
   useEffect(() => {
     async function loadData() {
       try {
-        // Load contact info
         const contactResponse = await fetch('/api/settings/contact')
         if (contactResponse.ok) {
           const contactData = await contactResponse.json()
           setContact(contactData)
         }
 
-        // Load social links
         const socialResponse = await fetch('/api/social-links')
         if (socialResponse.ok) {
           const socialData = await socialResponse.json()
@@ -44,7 +42,6 @@ export default function HotelFooter() {
           })))
         }
 
-        // Load footer links
         const footerResponse = await fetch('/api/footer-links')
         if (footerResponse.ok) {
           const footerData = await footerResponse.json()
@@ -75,28 +72,56 @@ export default function HotelFooter() {
   }
 
   if (!contact) {
-    return <footer className="bg-gray-900 text-white p-8 text-center">Loading...</footer>
+    return (
+      <footer className="relative overflow-hidden">
+        <div className="absolute inset-0">
+          <Image
+            src="https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?auto=format&fit=crop&q=80&w=1600"
+            alt="Hotel Background"
+            fill
+            className="object-cover opacity-15"
+            unoptimized
+          />
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
+        </div>
+        <div className="relative z-10 p-8 text-center text-white/40 text-sm uppercase tracking-widest font-bold">Loading...</div>
+      </footer>
+    )
   }
 
   return (
-    <footer className="bg-gray-900 text-white">
-      <div className="max-w-7xl mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {/* Hotel Info */}
-          <div>
-            <div className="flex items-center space-x-3 mb-6">
-              <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-500 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-xl">GP</span>
+    <footer className="relative overflow-hidden border-t border-white/5">
+      {/* Background Image + Blur */}
+      <div className="absolute inset-0 z-0">
+        <Image
+          src="https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?auto=format&fit=crop&q=80&w=1600"
+          alt="Luxury Hotel Lobby"
+          fill
+          className="object-cover opacity-20"
+          unoptimized
+        />
+        <div className="absolute inset-0 bg-black/75 backdrop-blur-md" />
+      </div>
+
+      {/* Content */}
+      <div className="relative z-10 max-w-7xl mx-auto px-6 pt-20 pb-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+
+          {/* Hotel Brand */}
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <div className="inline-flex items-center space-x-3">
+                <div className="w-10 h-10 bg-gold-gradient rounded-xl flex items-center justify-center shadow-luxury">
+                  <span className="text-white font-bold text-sm">GP</span>
+                </div>
+                <span className="text-xl font-serif font-bold text-white tracking-tight">SMART<span className="text-primary">HOTEL</span></span>
               </div>
-              <div>
-                <h3 className="text-xl font-bold">{contact.name}</h3>
-                <p className="text-sm text-gray-400">{contact.tagline}</p>
-              </div>
+              <p className="text-[10px] uppercase tracking-[0.3em] text-primary font-bold">{contact.tagline || 'Grand Palace'}</p>
             </div>
-            <p className="text-gray-400 mb-6">
-              {contact.description}
+            <p className="text-white/40 text-sm font-light leading-relaxed">
+              {contact.description || 'A sanctuary of refined luxury where every moment is crafted to exceed expectation.'}
             </p>
-            <div className="flex space-x-4">
+            <div className="flex space-x-3">
               {socialLinks.map((social, index) => {
                 const IconComponent = getSocialIcon(social.platform)
                 return (
@@ -105,15 +130,15 @@ export default function HotelFooter() {
                     href={social.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-gray-400 hover:text-white transition-colors"
+                    className="w-9 h-9 bg-white/5 hover:bg-primary/20 border border-white/10 hover:border-primary/30 rounded-xl flex items-center justify-center text-white/40 hover:text-primary transition-all duration-300"
                     aria-label={`Follow us on ${social.platform}`}
                   >
                     {social.icon ? (
-                      <span className="text-xl">{social.icon}</span>
+                      <span className="text-sm">{social.icon}</span>
                     ) : IconComponent ? (
-                      <IconComponent className="w-5 h-5" />
+                      <IconComponent className="w-4 h-4" />
                     ) : (
-                      <span>{social.platform[0]}</span>
+                      <span className="text-xs font-bold">{social.platform[0]}</span>
                     )}
                   </a>
                 )
@@ -122,76 +147,80 @@ export default function HotelFooter() {
           </div>
 
           {/* Quick Links */}
-          {quickLinks.length > 0 && (
-            <div>
-              <h4 className="text-lg font-semibold mb-6">Quick Links</h4>
-              <ul className="space-y-3">
-                {quickLinks.map((link, index) => (
-                  <li key={index}>
-                    <Link href={link.url} className="text-gray-400 hover:text-white transition-colors">
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+          <div className="space-y-6">
+            <h4 className="text-[10px] uppercase tracking-[0.3em] font-bold text-primary">Quick Links</h4>
+            <ul className="space-y-3">
+              {(quickLinks.length > 0 ? quickLinks : [
+                { label: 'Rooms & Suites', url: '/rooms' },
+                { label: 'Dining', url: '/dining' },
+                { label: 'Facilities', url: '/facilities' },
+                { label: 'Gallery', url: '/gallery' },
+              ]).map((link, index) => (
+                <li key={index}>
+                  <Link href={link.url} className="text-white/40 hover:text-primary text-sm font-light transition-colors duration-300 hover:tracking-wider">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
 
           {/* Services */}
-          {services.length > 0 && (
-            <div>
-              <h4 className="text-lg font-semibold mb-6">Services</h4>
-              <ul className="space-y-3">
-                {services.map((link, index) => (
-                  <li key={index} className="text-gray-400">
-                    {link.url ? (
-                      <Link href={link.url} className="hover:text-white transition-colors">
-                        {link.label}
-                      </Link>
-                    ) : (
-                      link.label
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+          <div className="space-y-6">
+            <h4 className="text-[10px] uppercase tracking-[0.3em] font-bold text-primary">Services</h4>
+            <ul className="space-y-3">
+              {(services.length > 0 ? services : [
+                { label: 'Concierge', url: '/contact' },
+                { label: 'Spa & Wellness', url: '/facilities' },
+                { label: 'Room Service', url: '/dining' },
+                { label: 'Valet Parking', url: '/facilities' },
+              ]).map((link, index) => (
+                <li key={index}>
+                  {link.url ? (
+                    <Link href={link.url} className="text-white/40 hover:text-primary text-sm font-light transition-colors duration-300 hover:tracking-wider">
+                      {link.label}
+                    </Link>
+                  ) : (
+                    <span className="text-white/40 text-sm font-light">{link.label}</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
 
           {/* Contact Info */}
-          <div>
-            <h4 className="text-lg font-semibold mb-6">Contact Info</h4>
+          <div className="space-y-6">
+            <h4 className="text-[10px] uppercase tracking-[0.3em] font-bold text-primary">Contact</h4>
             <div className="space-y-4">
-              <div className="flex items-start space-x-3">
-                <MapPin className="w-5 h-5 text-amber-500 mt-1" />
-                <div>
-                  <p className="text-gray-400">{contact.address}</p>
-                </div>
+              <div className="flex items-start space-x-3 group">
+                <MapPin className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                <p className="text-white/40 text-sm font-light leading-relaxed group-hover:text-white/60 transition-colors">{contact.address}</p>
               </div>
-              <div className="flex items-center space-x-3">
-                <Phone className="w-5 h-5 text-amber-500" />
-                <p className="text-gray-400">{contact.phone}</p>
+              <div className="flex items-center space-x-3 group">
+                <Phone className="w-4 h-4 text-primary flex-shrink-0" />
+                <p className="text-white/40 text-sm font-light group-hover:text-white/60 transition-colors">{contact.phone}</p>
               </div>
-              <div className="flex items-center space-x-3">
-                <Mail className="w-5 h-5 text-amber-500" />
-                <p className="text-gray-400">{contact.email}</p>
+              <div className="flex items-center space-x-3 group">
+                <Mail className="w-4 h-4 text-primary flex-shrink-0" />
+                <p className="text-white/40 text-sm font-light group-hover:text-white/60 transition-colors">{contact.email}</p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="border-t border-gray-800 mt-12 pt-8">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-400 text-sm">
+        {/* Divider */}
+        <div className="border-t border-white/5 pt-8">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-white/20 text-xs font-light tracking-wider">
               © {new Date().getFullYear()} {contact.name}. All rights reserved.
             </p>
-            <div className="flex space-x-6 mt-4 md:mt-0">
+            <div className="flex items-center space-x-6">
               {footerLinks.filter(link => link.category === 'Legal').map((link, index) => (
-                <Link key={index} href={link.url} className="text-gray-400 hover:text-white text-sm transition-colors">
+                <Link key={index} href={link.url} className="text-white/20 hover:text-primary text-xs font-light transition-colors tracking-wider">
                   {link.label}
                 </Link>
               ))}
-              <Link href="/contact" className="text-gray-400 hover:text-white text-sm transition-colors">
+              <Link href="/contact" className="text-white/20 hover:text-primary text-xs font-light transition-colors tracking-wider">
                 Contact Us
               </Link>
             </div>

@@ -1,0 +1,23 @@
+[
+  {
+    "id": "DB_LATENCY",
+    "name": "Database Transaction Latency",
+    "description": "Delays all database reads and writes by an intentional lag duration.",
+    "active": false,
+    "intensity": 3000
+  },
+  {
+    "id": "SOCKET_DROP",
+    "name": "Websocket Connection Drop",
+    "description": "Forces all active client-socket listeners to simulate offline/retry status.",
+    "active": false,
+    "intensity": 100
+  },
+  {
+    "id": "OTA_FAIL",
+    "name": "OTA Channel Webhook Outage",
+    "description": "Returns random 500 crashes on Booking.com / Airbnb pricing sync queries.",
+    "active": false,
+    "intensity": 80
+  }
+]

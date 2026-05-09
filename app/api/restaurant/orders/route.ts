@@ -82,7 +82,13 @@ export async function POST(request: NextRequest) {
 
     // Calculate total amount and validate items
     let totalAmount = 0
-    const orderItems = []
+    interface LocalOrderItem {
+      menuId: string
+      quantity: number
+      unitPrice: number
+      notes?: string
+    }
+    const orderItems: LocalOrderItem[] = []
 
     for (const item of items) {
       const menuItem = await prisma.foodMenu.findUnique({
@@ -105,9 +111,7 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Create order
-    // Note: FoodOrder model doesn't have items relation in schema
-    // Items would need to be stored separately if needed
+    // Create order with associated order items
     const order = await prisma.foodOrder.create({
       data: {
         roomNumber,
@@ -118,6 +122,21 @@ export async function POST(request: NextRequest) {
         deliveryTime: new Date(Date.now() + 30 * 60 * 1000), // Default 30 min delivery time
         createdAt: new Date(),
         updatedAt: new Date(),
+        items: {
+          create: items.map(item => {
+            const matchedItem = orderItems.find(oi => oi.menuId === item.menuId)
+            const unitPrice = matchedItem ? matchedItem.unitPrice : 0
+            return {
+              menuItemId: item.menuId,
+              quantity: item.quantity,
+              price: unitPrice,
+              subtotal: unitPrice * item.quantity,
+              notes: item.notes || null,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            }
+          })
+        }
       }
     })
 

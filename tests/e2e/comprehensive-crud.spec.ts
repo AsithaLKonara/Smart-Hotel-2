@@ -5,7 +5,7 @@ const PRODUCTION_URL = 'https://smarthotel-demo.vercel.app'
 
 // Test credentials (should be in environment or test database)
 const ADMIN_EMAIL = process.env.TEST_ADMIN_EMAIL || 'admin@smarthotel.com'
-const ADMIN_PASSWORD = process.env.TEST_ADMIN_PASSWORD || 'admin123'
+const ADMIN_PASSWORD = process.env.TEST_ADMIN_PASSWORD || 'SmartHotel@2025!Admin'
 
 async function loginAsAdmin(page: Page, baseUrl: string) {
   await page.goto(`${baseUrl}/auth/signin`)
@@ -219,7 +219,7 @@ test.describe('Comprehensive CRUD Operations - Admin Dashboard', () => {
           await page.goto(`${env.url}/admin/gallery`)
           await page.waitForTimeout(2000)
           
-          const uploadButton = page.locator('button:has-text("Upload"), input[type="file"]').first()
+          const uploadButton = page.locator('button:has-text("Add Image"), button:has-text("Upload"), input[type="file"]').first()
           const exists = await uploadButton.isVisible().catch(() => false)
           expect(exists).toBeTruthy()
         })

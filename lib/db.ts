@@ -1,6 +1,8 @@
+import 'server-only'
 import { PrismaClient, Prisma } from '@prisma/client'
 import { log } from './logger'
 import { trackDatabaseQuery } from './performance'
+
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
@@ -94,9 +96,56 @@ if (process.env.NODE_ENV !== 'production') {
   }
 }
 
-export const prisma = prismaLogger
+import { chaosState } from './chaos'
 
-// Connection retry wrapper for serverless environments
+// Create extended client with transparent query retry & chaos simulation
+const prismaExtended = prismaLogger.$extends({
+  query: {
+    $allOperations: async ({ model, operation, args, query }) => {
+      // 1. Simulate DB outage under SRE Chaos
+      if (chaosState?.dbOutage) {
+        const err = new Error('Prisma Client Connection Outage: Simulated database disconnection (SRE Chaos). Code: P1001')
+        ;(err as any).code = 'P1001'
+        throw err
+      }
+
+      let attempt = 1
+      const maxRetries = 3
+      const baseDelay = 1000
+
+      while (true) {
+        try {
+          return await query(args)
+        } catch (error: any) {
+          const isLastAttempt = attempt >= maxRetries
+          const isConnectionError = 
+            error?.message?.includes('connection') ||
+            error?.message?.includes('timeout') ||
+            error?.message?.includes('ECONNREFUSED') ||
+            error?.message?.includes('network') ||
+            error?.message?.includes('DNS') ||
+            error?.message?.includes('no record found') ||
+            error?.code === 'P1001' ||
+            error?.code === 'P1002' ||
+            error?.code === 'P1011' ||
+            error?.code === 'ENOTFOUND'
+
+          if (isConnectionError && !isLastAttempt && !chaosState?.dbOutage) {
+            console.warn(`[Prisma Retry] Attempt ${attempt} failed with connection error, retrying in ${baseDelay * attempt}ms...`, error.message)
+            await new Promise((resolve) => setTimeout(resolve, baseDelay * attempt))
+            attempt++
+            continue
+          }
+          throw error
+        }
+      }
+    }
+  }
+})
+
+export const prisma = prismaExtended as any
+
+// Connection retry wrapper for serverless environments (legacy compatibility)
 export async function connectWithRetry(
   operation: () => Promise<any>,
   retries = 3,
@@ -105,7 +154,7 @@ export async function connectWithRetry(
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       // Ensure connection is active
-      await prisma.$connect().catch(() => {
+      await prismaLogger.$connect().catch(() => {
         // Connection might already be established, continue
       })
       
@@ -118,13 +167,15 @@ export async function connectWithRetry(
         error?.message?.includes('timeout') ||
         error?.message?.includes('ECONNREFUSED') ||
         error?.message?.includes('network') ||
+        error?.message?.includes('DNS') ||
+        error?.message?.includes('no record found') ||
         error?.code === 'P1001' || // Prisma connection error
         error?.code === 'ENOTFOUND'
 
       if (isConnectionError && !isLastAttempt) {
         console.warn(`Database connection attempt ${attempt} failed, retrying...`, error.message)
         // Disconnect and wait before retry (allows MongoDB Atlas to wake up)
-        await prisma.$disconnect().catch(() => {})
+        await prismaLogger.$disconnect().catch(() => {})
         await new Promise(resolve => setTimeout(resolve, delay * attempt))
         continue
       }

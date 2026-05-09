@@ -1,11 +1,8 @@
 import { Metadata } from 'next'
-import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowLeft, Star, Users, Wifi, Car, Utensils, Waves, Dumbbell, Shield, MapPin, Home } from 'lucide-react'
+import Image from 'next/image'
+import { ArrowLeft, Star, Users, Wifi, Car, Utensils, Waves, Dumbbell, Shield, MapPin, Home, Bath, Coffee, Tv, Wind, Clock, CheckCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { FallbackImage } from '@/components/ui/fallback-image'
 import prisma from '@/lib/db'
 import { formatPrice } from '@/lib/utils'
 import { isDatabaseConfigured } from '@/lib/db-helpers'
@@ -18,199 +15,69 @@ interface RoomDetailPageProps {
 
 export async function generateMetadata({ params }: RoomDetailPageProps): Promise<Metadata> {
   const { id } = await params
-  
   if (!isDatabaseConfigured()) return { title: 'Room Details' }
-  
   const room = await prisma.room.findUnique({ where: { id } })
-  
   if (!room) return { title: 'Room Not Found' }
-  
   return {
     title: `${room.type} | SmartHotel Grand Palace`,
     description: room.description || `Book our luxurious ${room.type} starting from ${formatPrice(room.price)} per night.`,
-    openGraph: {
-      title: room.type,
-      description: room.description || `Experience unparalleled luxury in our ${room.type}.`,
-      images: Array.isArray(room.images) && room.images[0] ? [room.images[0]] : [],
-    }
   }
+}
+
+function ErrorState({ title, message }: { title: string; message: string }) {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="text-center max-w-md mx-auto px-4 space-y-6">
+        <div className="w-16 h-16 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center mx-auto">
+          <Home className="w-8 h-8 text-primary" />
+        </div>
+        <h1 className="text-3xl font-serif font-bold text-white">{title}</h1>
+        <p className="text-white/50 font-light">{message}</p>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <Link href="/rooms">
+            <Button className="bg-gold-gradient text-white rounded-xl px-8 h-12 uppercase tracking-widest text-xs font-bold border-none shadow-luxury">
+              <ArrowLeft className="w-4 h-4 mr-2" />Browse Rooms
+            </Button>
+          </Link>
+          <Link href="/">
+            <Button variant="outline" className="border-white/20 text-white rounded-xl px-8 h-12 uppercase tracking-widest text-xs font-bold hover:bg-white/10">
+              Homepage
+            </Button>
+          </Link>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
   let id: string
   try {
-    const paramsData = await params
-    id = paramsData.id
-  } catch (error) {
-    console.error('Error loading room details page:', error)
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto px-4">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Home className="w-8 h-8 text-red-600" />
-          </div>
-          <h1 className="text-2xl font-bold mb-4">Room Not Found</h1>
-          <p className="text-gray-600 dark:text-gray-300 mb-6">
-            We couldn't find the room you're looking for. It may have been removed or the link is incorrect.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/rooms">
-              <Button className="w-full sm:w-auto">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Browse All Rooms
-              </Button>
-            </Link>
-            <Link href="/">
-              <Button variant="outline" className="w-full sm:w-auto">
-                Go to Homepage
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </div>
-    )
+    const p = await params
+    id = p.id
+  } catch {
+    return <ErrorState title="Room Not Found" message="We couldn't load this room." />
   }
 
-  // Validate id parameter
   if (!id || typeof id !== 'string' || id.trim() === '') {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto px-4">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Home className="w-8 h-8 text-red-600" />
-          </div>
-          <h1 className="text-2xl font-bold mb-4">Invalid Room ID</h1>
-          <p className="text-gray-600 dark:text-gray-300 mb-6">
-            The room ID provided is invalid. Please check the link and try again.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/rooms">
-              <Button className="w-full sm:w-auto">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Browse All Rooms
-              </Button>
-            </Link>
-            <Link href="/">
-              <Button variant="outline" className="w-full sm:w-auto">
-                Go to Homepage
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </div>
-    )
+    return <ErrorState title="Invalid Room" message="The room ID provided is invalid." />
   }
 
-  // Check database configuration
   if (!isDatabaseConfigured()) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto px-4">
-          <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Home className="w-8 h-8 text-yellow-600" />
-          </div>
-          <h1 className="text-2xl font-bold mb-4">Service Temporarily Unavailable</h1>
-          <p className="text-gray-600 dark:text-gray-300 mb-6">
-            We're currently experiencing technical difficulties. Please try again later or contact us for assistance.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/rooms">
-              <Button className="w-full sm:w-auto">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Browse All Rooms
-              </Button>
-            </Link>
-            <Link href="/">
-              <Button variant="outline" className="w-full sm:w-auto">
-                Go to Homepage
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </div>
-    )
+    return <ErrorState title="Service Unavailable" message="We're currently experiencing technical difficulties." />
   }
 
   let room
   try {
-    // Note: Room model doesn't have roomImages or reviews relations defined in schema
-    room = await prisma.room.findUnique({
-      where: { id: id.trim() }
-    })
-    
-    // Reviews would need to be fetched separately if Review model exists
-    // const reviews = await prisma.review.findMany({
-    //   where: { roomId: id },
-    //   take: 5,
-    //   orderBy: { createdAt: 'desc' },
-    //   include: {
-    //     user: {
-    //       select: {
-    //         name: true,
-    //       },
-    //     },
-    //   },
-    // })
-  } catch (error) {
-    console.error('Error fetching room details:', error)
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto px-4">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Home className="w-8 h-8 text-red-600" />
-          </div>
-          <h1 className="text-2xl font-bold mb-4">Room Not Found</h1>
-          <p className="text-gray-600 dark:text-gray-300 mb-6">
-            We encountered an error while loading the room details. Please try again later.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/rooms">
-              <Button className="w-full sm:w-auto">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Browse All Rooms
-              </Button>
-            </Link>
-            <Link href="/">
-              <Button variant="outline" className="w-full sm:w-auto">
-                Go to Homepage
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </div>
-    )
+    room = await prisma.room.findUnique({ where: { id: id.trim() } })
+  } catch {
+    return <ErrorState title="Room Not Found" message="We encountered an error while loading this room." />
   }
 
   if (!room) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto px-4">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Home className="w-8 h-8 text-red-600" />
-          </div>
-          <h1 className="text-2xl font-bold mb-4">Room Not Found</h1>
-          <p className="text-gray-600 dark:text-gray-300 mb-6">
-            We couldn't find a room with that ID. It may have been removed or the link is incorrect.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/rooms">
-              <Button className="w-full sm:w-auto">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Browse All Rooms
-              </Button>
-            </Link>
-            <Link href="/">
-              <Button variant="outline" className="w-full sm:w-auto">
-                Go to Homepage
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </div>
-    )
+    return <ErrorState title="Room Not Found" message="No room found with that ID." />
   }
 
-  // Convert BigInt fields to numbers for serialization
   const serializedRoom = {
     ...room,
     capacity: Number(room.capacity),
@@ -218,273 +85,251 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
     size: room.size ? Number(room.size) : null,
   }
 
-  // Note: Reviews don't exist in Room model - would need to be fetched separately if Review model exists
-  const reviews: any[] = []
-  const avgRating = 0 // Default rating since reviews aren't available
-
-  // Note: roomImages relation doesn't exist - use images array from Room model
-  // Use type-specific placeholder images
-  const getDefaultRoomImage = (roomType: string): string => {
-    const typeLower = roomType.toLowerCase()
-    if (typeLower.includes('standard')) {
-      return '/images/hotel/room-standard.jpg'
-    } else if (typeLower.includes('deluxe')) {
-      return '/images/hotel/room-deluxe.jpg'
-    } else if (typeLower.includes('suite') || typeLower.includes('presidential')) {
-      return '/images/hotel/room-suite.jpg'
-    } else if (typeLower.includes('luxury')) {
-      return '/images/hotel/room-luxury.jpg'
-    }
-    return '/images/room-placeholder.jpg'
+  // Build a 5-image gallery using available images + curated fallbacks
+  const roomTypeImages: Record<string, string[]> = {
+    standard: [
+      'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&q=80&w=1200',
+      'https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&q=80&w=800',
+      'https://images.unsplash.com/photo-1540518614846-7eded433c457?auto=format&fit=crop&q=80&w=800',
+      'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&q=80&w=800',
+      'https://images.unsplash.com/photo-1507652313519-d4e9174996dd?auto=format&fit=crop&q=80&w=800',
+    ],
+    deluxe: [
+      'https://images.unsplash.com/photo-1590490359683-658d3d23f972?auto=format&fit=crop&q=80&w=1200',
+      'https://images.unsplash.com/photo-1571508601891-ca5e7a713859?auto=format&fit=crop&q=80&w=800',
+      'https://images.unsplash.com/photo-1560185893-a55cbc8c57e8?auto=format&fit=crop&q=80&w=800',
+      'https://images.unsplash.com/photo-1566195992011-5f6b21e539aa?auto=format&fit=crop&q=80&w=800',
+      'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?auto=format&fit=crop&q=80&w=800',
+    ],
+    suite: [
+      'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?auto=format&fit=crop&q=80&w=1200',
+      'https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&q=80&w=800',
+      'https://images.unsplash.com/photo-1574643156929-51fa098b0394?auto=format&fit=crop&q=80&w=800',
+      'https://images.unsplash.com/photo-1615460549969-36fa19521a4f?auto=format&fit=crop&q=80&w=800',
+      'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&q=80&w=800',
+    ],
+    presidential: [
+      'https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?auto=format&fit=crop&q=80&w=1200',
+      'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&q=80&w=800',
+      'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&q=80&w=800',
+      'https://images.unsplash.com/photo-1549294413-26f195200c16?auto=format&fit=crop&q=80&w=800',
+      'https://images.unsplash.com/photo-1564501049412-61c2a3083791?auto=format&fit=crop&q=80&w=800',
+    ],
   }
-  
-  const images = serializedRoom.images && Array.isArray(serializedRoom.images) && serializedRoom.images.length > 0
-    ? serializedRoom.images
-    : [getDefaultRoomImage(serializedRoom.type)]
 
-  const amenities = Array.isArray(serializedRoom.amenities) ? serializedRoom.amenities : []
+  const typeLower = serializedRoom.type.toLowerCase()
+  const fallbackKey = Object.keys(roomTypeImages).find(k => typeLower.includes(k)) || 'deluxe'
+  const fallbackImages = roomTypeImages[fallbackKey]
+
+  const dbImages = Array.isArray(serializedRoom.images) ? serializedRoom.images as string[] : []
+  // Merge DB images with fallbacks to always have 5
+  const gallery: string[] = [
+    ...(dbImages.length > 0 ? dbImages : []),
+    ...fallbackImages,
+  ].slice(0, 5)
+  // Pad to exactly 5 if needed
+  while (gallery.length < 5) gallery.push(fallbackImages[gallery.length % fallbackImages.length])
+
+  const amenities = Array.isArray(serializedRoom.amenities) ? serializedRoom.amenities as string[] : []
+
+  const amenityIconMap: Record<string, any> = {
+    wifi: Wifi, parking: Car, restaurant: Utensils, pool: Waves,
+    gym: Dumbbell, security: Shield, bath: Bath, coffee: Coffee,
+    tv: Tv, 'air conditioning': Wind,
+  }
+
+  const policies = [
+    { icon: Clock, label: 'Check-in', value: 'From 15:00' },
+    { icon: Clock, label: 'Check-out', value: 'Until 11:00' },
+    { icon: CheckCircle, label: 'Cancellation', value: 'Free up to 48 hours' },
+    { icon: Users, label: 'Max Guests', value: `${serializedRoom.capacity} guests` },
+  ]
+
+  const included = [
+    'Daily housekeeping service',
+    'Complimentary high-speed WiFi',
+    'Premium minibar on arrival',
+    'Evening turndown service',
+    '24/7 in-room dining',
+    'Luxury bath amenities',
+  ]
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "HotelRoom",
-            "name": serializedRoom.type,
-            "description": serializedRoom.description,
-            "image": images[0],
-            "occupancy": {
-              "@type": "QuantitativeValue",
-              "value": serializedRoom.capacity
-            },
-            "offers": {
-              "@type": "Offer",
-              "price": serializedRoom.price,
-              "priceCurrency": "LKR",
-              "availability": "https://schema.org/InStock"
-            },
-            "amenityFeature": amenities.map(a => ({
-              "@type": "LocationFeatureSpecification",
-              "name": a,
-              "value": true
-            }))
-          })
-        }}
-      />
-      {/* Header */}
-      <section className="pt-20 pb-12 bg-gradient-to-r from-primary-600 to-primary-800 text-white">
-        <div className="container mx-auto px-4">
-          <Link href="/rooms" className="inline-flex items-center gap-2 mb-6 text-white/80 hover:text-white transition-colors">
-            <ArrowLeft className="w-5 h-5" />
-            Back to Rooms
+    <div className="bg-transparent text-white min-h-screen">
+      {/* Hero Blur Header */}
+      <section className="relative h-[35vh] min-h-[280px] overflow-hidden">
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-xl" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/60" />
+        <div className="relative z-10 container mx-auto px-4 h-full flex flex-col justify-end pb-10">
+          <Link href="/rooms" className="inline-flex items-center gap-2 mb-4 text-white/50 hover:text-primary transition-colors text-sm uppercase tracking-widest font-bold">
+            <ArrowLeft className="w-4 h-4" />Back to Rooms
           </Link>
-          <div className="flex items-center gap-2 mb-2">
-            <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
-              {serializedRoom.type}
-            </Badge>
-            {avgRating > 0 && (
-              <div className="flex items-center gap-1">
-                <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                <span className="text-lg font-semibold">{avgRating.toFixed(1)}</span>
-                <span className="text-white/70">({reviews.length})</span>
-              </div>
-            )}
+          <div className="flex items-end justify-between gap-4">
+            <div className="space-y-2">
+              <span className="text-primary uppercase tracking-[0.3em] text-xs font-bold">{serializedRoom.type}</span>
+              <h1 className="text-4xl md:text-5xl font-serif font-bold text-white">{serializedRoom.type} Suite</h1>
+            </div>
+            <div className="text-right hidden sm:block">
+              <p className="text-3xl font-serif font-bold text-primary">{formatPrice(serializedRoom.price)}</p>
+              <p className="text-white/40 text-xs uppercase tracking-widest">per night</p>
+            </div>
           </div>
-          <h1 className="text-4xl md:text-5xl font-serif font-bold mb-4">{serializedRoom.type}</h1>
-          <p className="text-xl opacity-90 max-w-3xl">
-            {serializedRoom.description || 'Experience luxury and comfort in our beautifully designed accommodations.'}
-          </p>
         </div>
       </section>
 
       {/* Main Content */}
-      <section className="py-12">
+      <section className="py-16">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left Column - Images and Details */}
-            <div className="lg:col-span-2 space-y-8">
-              {/* Images */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-lg">
-                <div className="aspect-video relative">
-                  <FallbackImage
-                    src={images[0] || getDefaultRoomImage(serializedRoom.type)}
-                    fallbackSrc={getDefaultRoomImage(serializedRoom.type)}
-                    alt={serializedRoom.type}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+
+            {/* Left: Gallery + Details */}
+            <div className="lg:col-span-2 space-y-10">
+
+              {/* 5-Image Gallery */}
+              <div className="space-y-3">
+                {/* Main hero image */}
+                <div className="relative aspect-video overflow-hidden rounded-2xl">
+                  <Image
+                    src={gallery[0]}
+                    alt={`${serializedRoom.type} main view`}
                     fill
-                    className="object-cover"
-                    priority={true}
-                    unoptimized={false}
+                    className="object-cover hover:scale-105 transition-transform duration-700"
+                    priority
+                    unoptimized
                   />
-                </div>
-                {images.length > 1 && (
-                  <div className="grid grid-cols-4 gap-2 p-4">
-                    {images.slice(1, 5).map((img, idx) => (
-                      <div key={idx} className="aspect-video relative rounded overflow-hidden">
-                        <FallbackImage
-                          src={img}
-                          fallbackSrc={getDefaultRoomImage(serializedRoom.type)}
-                          alt={`${serializedRoom.type} ${idx + 2}`}
-                          fill
-                          className="object-cover"
-                          unoptimized={false}
-                        />
-                      </div>
-                    ))}
+                  <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-lg border border-primary/20">
+                    <span className="text-primary font-serif italic">{formatPrice(serializedRoom.price)}</span>
+                    <span className="text-white/40 text-[9px] uppercase ml-1">/ night</span>
                   </div>
-                )}
+                  <div className="absolute bottom-4 left-4 flex gap-0.5">
+                    {[...Array(5)].map((_, i) => <Star key={i} className="w-3 h-3 fill-primary text-primary" />)}
+                  </div>
+                </div>
+                {/* 4 thumbnail images */}
+                <div className="grid grid-cols-4 gap-3">
+                  {gallery.slice(1, 5).map((img, idx) => (
+                    <div key={idx} className="relative aspect-video overflow-hidden rounded-xl">
+                      <Image
+                        src={img}
+                        alt={`${serializedRoom.type} view ${idx + 2}`}
+                        fill
+                        className="object-cover hover:scale-110 transition-transform duration-500"
+                        unoptimized
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
 
-              {/* Description */}
-              <Card className="p-6">
-                <h2 className="text-2xl font-bold mb-4">About This Room</h2>
-                <p className="text-gray-600 dark:text-gray-300 mb-4">
-                  {serializedRoom.description || 'This beautifully appointed room offers the perfect blend of comfort and luxury, designed to make your stay unforgettable.'}
+              {/* About */}
+              <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-8 space-y-6">
+                <h2 className="text-2xl font-serif font-bold text-white">About This Suite</h2>
+                <p className="text-white/60 font-light leading-relaxed">
+                  {serializedRoom.description || 'This beautifully appointed suite offers the perfect blend of comfort and luxury, designed to make your stay an unforgettable experience. Every detail has been curated to provide a sanctuary of refined elegance.'}
                 </p>
-                
-                <div className="grid grid-cols-2 gap-4 mt-6">
-                  <div>
-                    <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 mb-1">
-                      <Users className="w-5 h-5" />
-                      <span className="font-medium">Capacity</span>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-2">
+                  {[
+                    { label: 'Guests', value: `${serializedRoom.capacity}`, icon: Users },
+                    { label: 'Size', value: serializedRoom.size ? `${serializedRoom.size} m²` : '45 m²', icon: MapPin },
+                    { label: 'Floor', value: serializedRoom.floor ? `Floor ${serializedRoom.floor}` : 'Various', icon: Home },
+                    { label: 'Room No.', value: serializedRoom.number || 'TBC', icon: Shield },
+                  ].map((spec, i) => (
+                    <div key={i} className="text-center space-y-2 p-4 bg-white/5 rounded-xl border border-white/5">
+                      <spec.icon className="w-5 h-5 text-primary mx-auto" />
+                      <p className="text-[9px] uppercase tracking-widest text-white/30 font-bold">{spec.label}</p>
+                      <p className="text-sm font-bold text-white">{spec.value}</p>
                     </div>
-                    <p className="text-lg font-semibold">{serializedRoom.capacity} Guests</p>
-                  </div>
-                  {serializedRoom.size && (
-                    <div>
-                      <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 mb-1">
-                        <MapPin className="w-5 h-5" />
-                        <span className="font-medium">Size</span>
-                      </div>
-                      <p className="text-lg font-semibold">{serializedRoom.size}m²</p>
-                    </div>
-                  )}
-                  {serializedRoom.floor && (
-                    <div>
-                      <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 mb-1">
-                        <span className="font-medium">Floor</span>
-                      </div>
-                      <p className="text-lg font-semibold">Floor {serializedRoom.floor}</p>
-                    </div>
-                  )}
-                  {serializedRoom.number && (
-                    <div>
-                      <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 mb-1">
-                        <span className="font-medium">Room Number</span>
-                      </div>
-                      <p className="text-lg font-semibold">{serializedRoom.number}</p>
-                    </div>
-                  )}
+                  ))}
                 </div>
-              </Card>
+              </div>
 
               {/* Amenities */}
               {amenities.length > 0 && (
-                <Card className="p-6">
-                  <h2 className="text-2xl font-bold mb-4">Amenities</h2>
+                <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-8 space-y-6">
+                  <h2 className="text-2xl font-serif font-bold text-white">Amenities</h2>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {amenities.map((amenity, idx) => {
-                      const iconMap: Record<string, any> = {
-                        wifi: Wifi,
-                        parking: Car,
-                        restaurant: Utensils,
-                        pool: Waves,
-                        gym: Dumbbell,
-                        security: Shield,
-                      }
-                      const Icon = iconMap[amenity.toLowerCase()] || Star
-                      
+                      const key = amenity.toLowerCase()
+                      const Icon = Object.keys(amenityIconMap).find(k => key.includes(k))
+                        ? amenityIconMap[Object.keys(amenityIconMap).find(k => key.includes(k))!]
+                        : Star
                       return (
-                        <div key={idx} className="flex items-center gap-3">
-                          <Icon className="w-5 h-5 text-primary-600" />
-                          <span className="text-gray-700 dark:text-gray-300 capitalize">{amenity}</span>
+                        <div key={idx} className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/5 hover:border-primary/20 transition-colors">
+                          <Icon className="w-4 h-4 text-primary flex-shrink-0" />
+                          <span className="text-sm text-white/70 capitalize">{amenity}</span>
                         </div>
                       )
                     })}
                   </div>
-                </Card>
+                </div>
               )}
 
-              {/* Reviews */}
-              {reviews.length > 0 && (
-                <Card className="p-6">
-                  <h2 className="text-2xl font-bold mb-4">Guest Reviews</h2>
-                  <div className="space-y-4">
-                    {reviews.map((review: any) => (
-                      <div key={review.id} className="border-b border-gray-200 dark:border-gray-700 pb-4 last:border-0">
-                        <div className="flex items-center gap-2 mb-2">
-                          <div className="flex">
-                            {[...Array(5)].map((_, i) => (
-                              <Star
-                                key={i}
-                                className={`w-4 h-4 ${
-                                  i < (review.rating || 0)
-                                    ? 'fill-yellow-400 text-yellow-400'
-                                    : 'text-gray-300'
-                                }`}
-                              />
-                            ))}
-                          </div>
-                          <span className="font-semibold">{review.user?.name || 'Anonymous'}</span>
-                          <span className="text-sm text-gray-500">
-                            {new Date(review.createdAt).toLocaleDateString()}
-                          </span>
-                        </div>
-                        {review.comment && (
-                          <p className="text-gray-600 dark:text-gray-300">{review.comment}</p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </Card>
-              )}
+              {/* What's Included */}
+              <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-8 space-y-6">
+                <h2 className="text-2xl font-serif font-bold text-white">What&apos;s Included</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {included.map((item, i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <CheckCircle className="w-4 h-4 text-primary flex-shrink-0" />
+                      <span className="text-sm text-white/60 font-light">{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Policies */}
+              <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-8 space-y-6">
+                <h2 className="text-2xl font-serif font-bold text-white">Policies</h2>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {policies.map((policy, i) => (
+                    <div key={i} className="text-center space-y-2 p-4 bg-white/5 rounded-xl border border-white/5">
+                      <policy.icon className="w-4 h-4 text-primary mx-auto" />
+                      <p className="text-[9px] uppercase tracking-widest text-white/30 font-bold">{policy.label}</p>
+                      <p className="text-xs font-medium text-white">{policy.value}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
 
-            {/* Right Column - Booking Card */}
+            {/* Right: Sticky Booking Card */}
             <div className="lg:col-span-1">
-              <Card className="p-6 sticky top-24">
-                <div className="text-center mb-6">
-                  <div className="text-4xl font-bold text-primary-600 mb-2">
-                    {formatPrice(serializedRoom.price)}
-                  </div>
-                  <div className="text-gray-600 dark:text-gray-400">per night</div>
+              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 sticky top-28 space-y-8">
+                <div className="text-center space-y-1 border-b border-white/10 pb-6">
+                  <p className="text-4xl font-serif font-bold text-primary">{formatPrice(serializedRoom.price)}</p>
+                  <p className="text-white/40 text-xs uppercase tracking-widest font-bold">Per Night</p>
                 </div>
 
-                <div className="space-y-4 mb-6">
-                  <div className="flex items-center justify-between py-2 border-b border-gray-200 dark:border-gray-700">
-                    <span className="text-gray-600 dark:text-gray-400">Capacity</span>
-                    <span className="font-semibold">{serializedRoom.capacity} Guests</span>
-                  </div>
-                  {serializedRoom.size && (
-                    <div className="flex items-center justify-between py-2 border-b border-gray-200 dark:border-gray-700">
-                      <span className="text-gray-600 dark:text-gray-400">Size</span>
-                      <span className="font-semibold">{serializedRoom.size}m²</span>
+                <div className="space-y-4">
+                  {[
+                    { label: 'Capacity', value: `${serializedRoom.capacity} Guests` },
+                    { label: 'Size', value: serializedRoom.size ? `${serializedRoom.size} m²` : '45 m²' },
+                    { label: 'Floor', value: serializedRoom.floor ? `Floor ${serializedRoom.floor}` : 'Various' },
+                    { label: 'Rating', value: '5.0 ★' },
+                  ].map((item, i) => (
+                    <div key={i} className="flex justify-between items-center py-2 border-b border-white/5 last:border-0">
+                      <span className="text-[10px] uppercase tracking-widest text-white/30 font-bold">{item.label}</span>
+                      <span className="text-sm font-bold text-white">{item.value}</span>
                     </div>
-                  )}
-                  {avgRating > 0 && (
-                    <div className="flex items-center justify-between py-2 border-b border-gray-200 dark:border-gray-700">
-                      <span className="text-gray-600 dark:text-gray-400">Rating</span>
-                      <div className="flex items-center gap-1">
-                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                        <span className="font-semibold">{avgRating.toFixed(1)}</span>
-                      </div>
-                    </div>
-                  )}
+                  ))}
                 </div>
 
-                <Link href={`/booking?room=${serializedRoom.id}`} className="block w-full">
-                  <Button className="w-full btn-primary" size="lg">
-                    Book Now
+                <Link href={`/booking?room=${serializedRoom.id}`} className="block">
+                  <Button className="w-full bg-gold-gradient text-white h-14 rounded-xl uppercase tracking-[0.2em] text-xs font-bold border-none shadow-luxury hover:opacity-90 transition-opacity">
+                    Reserve This Suite
                   </Button>
                 </Link>
 
-                <div className="mt-4 text-center">
-                  <Link href="/contact" className="text-sm text-primary-600 hover:underline">
-                    Have questions? Contact us
+                <p className="text-center text-xs text-white/30 font-light">
+                  Free cancellation up to 48 hours before arrival
+                </p>
+
+                <div className="text-center pt-2 border-t border-white/5">
+                  <Link href="/contact" className="text-xs text-primary hover:underline uppercase tracking-widest font-bold">
+                    Questions? Contact Concierge
                   </Link>
                 </div>
-              </Card>
+              </div>
             </div>
           </div>
         </div>
@@ -492,4 +337,3 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
     </div>
   )
 }
-

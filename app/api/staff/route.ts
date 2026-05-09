@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    const staff = staffMembers.map(member => ({
+    const staff = staffMembers.map((member: any) => ({
       id: member.id,
       employeeId: member.employeeId,
       name: member.name,

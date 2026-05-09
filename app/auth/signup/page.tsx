@@ -85,25 +85,25 @@ export default function SignUpPage() {
       </div>
 
       {/* Form Side */}
-      <div className="flex items-center justify-center p-8 lg:p-16 bg-white overflow-y-auto">
+      <div className="flex items-center justify-center p-8 lg:p-16 bg-black/40 backdrop-blur-2xl overflow-y-auto border-l border-white/5">
         <div className="w-full max-w-md space-y-10 my-12">
           <div className="space-y-4">
              <Link href="/" className="inline-block">
-               <span className="text-2xl font-serif font-bold tracking-tighter text-midnight">SMART<span className="text-luxury">HOTEL</span></span>
+               <span className="text-2xl font-serif font-bold tracking-tighter text-white">SMART<span className="text-primary">HOTEL</span></span>
              </Link>
-             <h1 className="text-3xl font-serif font-bold text-midnight">Begin Your Journey</h1>
-             <p className="text-gray-400 font-light">Join the SmartHotel inner circle today.</p>
+             <h1 className="text-3xl font-serif font-bold text-white">Begin Your Journey</h1>
+             <p className="text-white/40 font-light">Join the SmartHotel inner circle today.</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 gap-6">
               <div className="space-y-2">
-                <label className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Full Name</label>
+                <label className="text-[10px] uppercase tracking-widest font-bold text-white/40">Full Name</label>
                 <input 
                   type="text" 
                   name="name"
                   required
-                  className="w-full bg-gray-50 border-none px-6 py-4 text-sm focus:ring-1 focus:ring-luxury transition-all"
+                  className="w-full bg-white/5 border border-white/10 text-white placeholder:text-white/20 px-6 py-4 text-sm focus:ring-1 focus:ring-primary transition-all rounded-xl"
                   placeholder="Your illustrious name"
                   value={formData.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
@@ -111,12 +111,12 @@ export default function SignUpPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Email Address</label>
+                <label className="text-[10px] uppercase tracking-widest font-bold text-white/40">Email Address</label>
                 <input 
                   type="email" 
                   name="email"
                   required
-                  className="w-full bg-gray-50 border-none px-6 py-4 text-sm focus:ring-1 focus:ring-luxury transition-all"
+                  className="w-full bg-white/5 border border-white/10 text-white placeholder:text-white/20 px-6 py-4 text-sm focus:ring-1 focus:ring-primary transition-all rounded-xl"
                   placeholder="name@example.com"
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
@@ -124,10 +124,10 @@ export default function SignUpPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Phone Number</label>
+                <label className="text-[10px] uppercase tracking-widest font-bold text-white/40">Phone Number</label>
                 <input 
                   type="tel" 
-                  className="w-full bg-gray-50 border-none px-6 py-4 text-sm focus:ring-1 focus:ring-luxury transition-all"
+                  className="w-full bg-white/5 border border-white/10 text-white placeholder:text-white/20 px-6 py-4 text-sm focus:ring-1 focus:ring-primary transition-all rounded-xl"
                   placeholder="+1 (000) 000-0000"
                   value={formData.phone}
                   onChange={(e) => handleInputChange('phone', e.target.value)}
@@ -136,23 +136,23 @@ export default function SignUpPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Password</label>
+                  <label className="text-[10px] uppercase tracking-widest font-bold text-white/40">Password</label>
                   <input 
                     type="password" 
                     name="password"
                     required
-                    className="w-full bg-gray-50 border-none px-6 py-4 text-sm focus:ring-1 focus:ring-luxury transition-all"
+                    className="w-full bg-white/5 border border-white/10 text-white placeholder:text-white/20 px-6 py-4 text-sm focus:ring-1 focus:ring-primary transition-all rounded-xl"
                     placeholder="••••••••"
                     value={formData.password}
                     onChange={(e) => handleInputChange('password', e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Confirm</label>
+                  <label className="text-[10px] uppercase tracking-widest font-bold text-white/40">Confirm</label>
                   <input 
                     type="password" 
                     required
-                    className="w-full bg-gray-50 border-none px-6 py-4 text-sm focus:ring-1 focus:ring-luxury transition-all"
+                    className="w-full bg-white/5 border border-white/10 text-white placeholder:text-white/20 px-6 py-4 text-sm focus:ring-1 focus:ring-primary transition-all rounded-xl"
                     placeholder="••••••••"
                     value={formData.confirmPassword}
                     onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
@@ -164,18 +164,18 @@ export default function SignUpPage() {
             <Button 
               type="submit" 
               disabled={isLoading}
-              className="w-full bg-midnight text-white h-16 rounded-none uppercase tracking-[0.2em] text-xs font-bold hover:bg-midnight/90 group"
+              className="w-full bg-gold-gradient text-white h-16 rounded-xl uppercase tracking-[0.2em] text-xs font-bold hover:opacity-90 group border-none shadow-luxury"
             >
               {isLoading ? 'Creating Account...' : 'Join The Circle'}
               <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
             </Button>
           </form>
 
-          <div className="pt-8 border-t border-gray-100 flex flex-col items-center space-y-4">
-             <p className="text-sm text-gray-400 font-light">
-               Already a member? <Link href="/auth/signin" className="text-luxury font-bold italic">Sign in</Link>
+          <div className="pt-8 border-t border-white/10 flex flex-col items-center space-y-4">
+             <p className="text-sm text-white/40 font-light">
+               Already a member? <Link href="/auth/signin" className="text-primary font-bold italic">Sign in</Link>
              </p>
-             <div className="flex items-center space-x-2 text-[10px] text-gray-300 uppercase tracking-widest font-bold">
+             <div className="flex items-center space-x-2 text-[10px] text-white/20 uppercase tracking-widest font-bold">
                <ShieldCheck className="w-3 h-3" />
                <span>Privacy Guaranteed</span>
              </div>

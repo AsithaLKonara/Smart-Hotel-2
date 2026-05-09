@@ -8,6 +8,9 @@ import { sendBookingConfirmation, sendAdminBookingAlert } from '@/lib/email'
 import { getRequestSession } from '@/lib/session'
 import { isDatabaseConfigured, getDatabaseErrorMessage } from '@/lib/db-helpers'
 import { MOCK_ROOMS } from '@/lib/mock-rooms'
+import { chaosState } from '@/lib/chaos'
+import { acquireLock } from '@/lib/lock'
+import { checkIdempotency, saveIdempotency, clearIdempotency } from '@/lib/idempotency'
 
 // Initialize Stripe only if secret key is configured
 const stripe = process.env.STRIPE_SECRET_KEY && process.env.STRIPE_SECRET_KEY !== ''
@@ -135,7 +138,7 @@ export async function GET(request: NextRequest) {
       return null
     })
 
-    if (!bookings) {
+    if (!bookings || !Array.isArray(bookings)) {
       return NextResponse.json(
         { bookings: [] },
         { status: 200, headers: { 'X-Fallback': 'bookings-timeout' } }
@@ -144,7 +147,7 @@ export async function GET(request: NextRequest) {
 
     // Fetch related data separately if needed
     const bookingsWithRelations = await Promise.all(
-      bookings.map(async (booking) => {
+      bookings.map(async (booking: any) => {
         const [user, room] = await Promise.all([
           actorRole && actorRole !== 'GUEST'
             ? prisma.user.findUnique({ where: { id: booking.userId } }).catch(() => null)
@@ -202,6 +205,24 @@ export async function POST(request: NextRequest) {
     )
   }
 
+  const idempotencyKey = request.headers.get('idempotency-key')
+  if (idempotencyKey) {
+    try {
+      const state = await checkIdempotency(idempotencyKey)
+      if (state.state === 'cached' && state.response) {
+        return NextResponse.json(state.response.body, { status: state.response.status })
+      }
+      if (state.state === 'in_flight') {
+        return NextResponse.json(
+          { error: 'Conflict', message: 'A duplicate request is already being processed. Please wait.' },
+          { status: 409 }
+        )
+      }
+    } catch (idemErr) {
+      console.warn('Idempotency error, continuing...', idemErr)
+    }
+  }
+
   try {
     const body = await request.json()
     const validatedData = bookingSchema.parse(body)
@@ -221,115 +242,141 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (!room) {
+    // Acquire room lock to prevent concurrent overlapping booking checks and writes
+    const lockKey = `booking:room:${validatedData.roomId}`
+    let releaseLock: (() => Promise<void>) | null = null
+    try {
+      releaseLock = await acquireLock(lockKey)
+    } catch (lockError) {
       return NextResponse.json(
-        { error: 'Room not found' },
-        { status: 404 }
+        { error: 'Server busy', message: 'This room is currently in the process of being booked. Please try again in a few seconds.' },
+        { status: 429 }
       )
     }
 
-    if (room.status && room.status !== 'AVAILABLE') {
-      return NextResponse.json(
-        { error: 'Room not available' },
-        { status: 400 }
-      )
-    }
+    // Perform checking, guest creation, and booking creation atomically within a transaction
+    let transactionResult
+    try {
+      transactionResult = await prisma.$transaction(async (tx: any) => {
+        // 1. Double check room availability inside transaction
+        const roomInTx = await tx.room.findUnique({
+          where: { id: validatedData.roomId }
+        })
 
-    // Check for booking conflicts
-    const conflictingBooking = await prisma.booking.findFirst({
-      where: {
-        roomId: validatedData.roomId,
-        status: {
-          in: ['PENDING', 'CONFIRMED', 'CHECKED_IN']
-        },
-        OR: [
-          {
-            checkIn: {
-              lt: new Date(validatedData.checkOut)
+        if (!roomInTx) {
+          throw new Error('ROOM_NOT_FOUND')
+        }
+
+        if (roomInTx.status && roomInTx.status !== 'AVAILABLE') {
+          throw new Error('ROOM_NOT_AVAILABLE')
+        }
+
+        // 2. Check for overlapping booking conflicts atomically
+        const conflictingBooking = await tx.booking.findFirst({
+          where: {
+            roomId: validatedData.roomId,
+            status: {
+              in: ['PENDING', 'CONFIRMED', 'CHECKED_IN']
             },
-            checkOut: {
-              gt: new Date(validatedData.checkIn)
-            }
+            OR: [
+              {
+                checkIn: {
+                  lt: new Date(validatedData.checkOut)
+                },
+                checkOut: {
+                  gt: new Date(validatedData.checkIn)
+                }
+              }
+            ]
           }
-        ]
-      }
-    })
+        })
 
-    if (conflictingBooking) {
-      return NextResponse.json(
-        { error: 'Room not available' },
-        { status: 409 }
-      )
-    }
+        if (conflictingBooking) {
+          throw new Error('ROOM_DOUBLE_BOOKED')
+        }
 
-    // Handle guest checkout - allow booking without authentication
-    let userId: string
-    let guestInfo: any = {}
+        // 3. Resolve user inside transaction
+        let txUserId: string
+        if (session?.user?.id) {
+          txUserId = session.user.id
+        } else if (validatedData.guestEmail && validatedData.guestName) {
+          let user = await tx.user.findFirst({
+            where: { email: validatedData.guestEmail },
+          })
 
-    if (session?.user?.id) {
-      // Authenticated user
-      userId = session.user.id
-    } else if (validatedData.guestEmail && validatedData.guestName) {
-      // Guest checkout - check if user exists with this email
-      let user = await prisma.user.findFirst({
-        where: { email: validatedData.guestEmail },
-      })
+          if (!user) {
+            user = await tx.user.create({
+              data: {
+                name: validatedData.guestName || 'Guest',
+                email: validatedData.guestEmail,
+                password: '',
+                phone: validatedData.guestPhone || '',
+                role: 'GUEST',
+                createdAt: new Date(),
+                updatedAt: new Date(),
+              },
+            })
+          }
+          txUserId = user.id
+        } else {
+          throw new Error('AUTH_REQUIRED')
+        }
 
-      if (!user) {
-        // Create guest user
-        user = await prisma.user.create({
+        // Calculate total amount
+        const checkIn = new Date(validatedData.checkIn)
+        const checkOut = new Date(validatedData.checkOut)
+        const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24))
+        const totalAmount = roomInTx.price * nights
+
+        // Generate confirmation code
+        const confirmationCode = `GP${Date.now().toString().slice(-6)}${Math.floor(Math.random() * 1000)}`
+
+        // 4. Create the booking atomically
+        const booking = await tx.booking.create({
           data: {
-            name: validatedData.guestName || 'Guest',
-            email: validatedData.guestEmail,
-            password: '', // Will be set when they create account
-            phone: validatedData.guestPhone || '',
-            role: 'GUEST',
+            roomId: validatedData.roomId,
+            userId: txUserId,
+            checkIn,
+            checkOut,
+            guests: BigInt(validatedData.guests), // Convert to BigInt as per schema
+            totalAmount,
+            specialRequests: validatedData.specialRequests || null,
+            status: 'PENDING',
+            paymentStatus: 'PENDING',
+            paymentMethod: validatedData.paymentMethod === 'pay_now' ? 'CARD' : 'CASH',
+            confirmationCode,
             createdAt: new Date(),
             updatedAt: new Date(),
-          },
+          }
         })
-      }
 
-      userId = user.id
-      guestInfo = {
-        guestName: validatedData.guestName,
-        guestEmail: validatedData.guestEmail,
-        guestPhone: validatedData.guestPhone,
+        return { booking, userId: txUserId, totalAmount, nights, room: roomInTx, confirmationCode }
+      })
+    } catch (txErr: any) {
+      if (releaseLock) await releaseLock()
+      if (txErr instanceof Error) {
+        if (txErr.message === 'ROOM_NOT_FOUND') {
+          return NextResponse.json({ error: 'Room not found' }, { status: 404 })
+        }
+        if (txErr.message === 'ROOM_NOT_AVAILABLE' || txErr.message === 'ROOM_DOUBLE_BOOKED') {
+          return NextResponse.json({ error: 'Room not available' }, { status: 409 })
+        }
+        if (txErr.message === 'AUTH_REQUIRED') {
+          return NextResponse.json(
+            { error: 'Authentication required or guest email must be provided' },
+            { status: 401 }
+          )
+        }
       }
-    } else {
-      return NextResponse.json(
-        { error: 'Authentication required or guest email must be provided' },
-        { status: 401 }
-      )
+      throw txErr
     }
 
-    // Calculate total amount
+    if (releaseLock) await releaseLock()
+
+    const { booking, userId, totalAmount, nights, room: roomInTx, confirmationCode } = transactionResult
+    room = roomInTx
     const checkIn = new Date(validatedData.checkIn)
     const checkOut = new Date(validatedData.checkOut)
-    const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24))
-    const totalAmount = room.price * nights
-
-    // Generate confirmation code
-    const confirmationCode = `GP${Date.now().toString().slice(-6)}${Math.floor(Math.random() * 1000)}`
-
-    // Create booking
-    const booking = await prisma.booking.create({
-      data: {
-        roomId: validatedData.roomId,
-        userId,
-        checkIn,
-        checkOut,
-        guests: BigInt(validatedData.guests), // Convert to BigInt as per schema
-        totalAmount,
-        specialRequests: validatedData.specialRequests || null,
-        status: 'PENDING',
-        paymentStatus: validatedData.paymentMethod === 'pay_now' ? 'PENDING' : 'PENDING',
-        paymentMethod: validatedData.paymentMethod === 'pay_now' ? 'CARD' : 'CASH',
-        confirmationCode,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }
-    })
     
     // Fetch related data separately
     const [bookingUser, bookingRoom] = await Promise.all([
@@ -382,6 +429,11 @@ export async function POST(request: NextRequest) {
         if (!stripe) {
           console.warn('Stripe secret key not configured, skipping payment intent creation')
         } else {
+          // Simulate Stripe API failure under SRE Chaos
+          if (chaosState?.stripeFailure) {
+            throw new Error('Stripe API Outage: Simulated credit card processing failure (SRE Chaos). Code: card_declined')
+          }
+
           paymentIntent = await stripe.paymentIntents.create({
             amount: Math.round((totalAmount + tax) * 100), // Convert to cents
             currency: 'lkr',
@@ -465,7 +517,7 @@ export async function POST(request: NextRequest) {
                   )
                 }
 
-                return NextResponse.json({
+                const successBody = {
                   booking: {
                     ...bookingWithRelations,
                     invoice,
@@ -474,9 +526,19 @@ export async function POST(request: NextRequest) {
                       clientSecret: paymentIntent.client_secret,
                     } : null,
                   }
-                }, { status: 201 })
+                }
+
+                if (idempotencyKey) {
+                  await saveIdempotency(idempotencyKey, { status: 201, body: successBody })
+                }
+
+                return NextResponse.json(successBody, { status: 201 })
 
   } catch (error: any) {
+    if (idempotencyKey) {
+      await clearIdempotency(idempotencyKey).catch(() => {})
+    }
+
     // Handle validation errors
     if (error instanceof z.ZodError) {
       return NextResponse.json(

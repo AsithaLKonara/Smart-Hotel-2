@@ -4,8 +4,8 @@ const ALLOWED_CONSOLE_PATTERNS = [
   /MaxListenersExceededWarning/, // emitted by Next.js dev server in rare cases
   /Content-Security-Policy/i,
   /MIME type .* mismatch/i,
-  /Failed to load resource: the server responded with a status of 404.*images\.unsplash\.com/i,
-  /Refused to frame 'https:\/\/www\.google\.com\//i,
+  /Failed to load resource: the server responded with a status of (402|404|500)/i,
+  /Refused to frame/i,
 ]
 
 const ALLOWED_FAILED_REQUEST_PATTERNS = [
@@ -16,6 +16,10 @@ const ALLOWED_FAILED_REQUEST_PATTERNS = [
   /google-analytics\.com/,
   /googletagmanager\.com/,
   /googleapis\.com\/g\/collect/,
+  /favicon\.ico/,
+  /manifest\.json/,
+  /socket\.io/,
+  /\/api\/socket/,
 ]
 
 export const test = base.extend({

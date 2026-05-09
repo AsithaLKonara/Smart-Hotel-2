@@ -1,0 +1,184 @@
+import { PrismaClient } from '@prisma/client'
+import dotenv from 'dotenv'
+import path from 'path'
+
+// Load environment configurations atomically before initializing Prisma client
+dotenv.config({ path: path.resolve(process.cwd(), '.env.local') })
+dotenv.config({ path: path.resolve(process.cwd(), '.env') })
+
+const prisma = new PrismaClient()
+const BASE_URL = process.env.TEST_URL || 'http://localhost:3000'
+const CONCURRENCY_LEVEL = 20
+
+async function main() {
+  console.log('⚡ Starting SmartHotel SRE Concurrency & Consistency Load Test...\n')
+
+  // 1. Ensure a clean test room is available in the database
+  let room = await prisma.room.findFirst({
+    where: { number: '999' },
+  })
+
+  if (!room) {
+    console.log('🔧 Test room 999 not found. Creating a clean test room...')
+    room = await prisma.room.create({
+      data: {
+        number: '999',
+        type: 'Deluxe',
+        price: 150.0,
+        capacity: 2,
+        floor: 3,
+        size: 350,
+        status: 'AVAILABLE',
+        description: 'Temporary SRE Concurrency Load Test Room',
+        amenities: ['Wi-Fi', 'AC', 'TV'],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    })
+  } else {
+    // Reset room status to AVAILABLE
+    await prisma.room.update({
+      where: { id: room.id },
+      data: { status: 'AVAILABLE' },
+    })
+  }
+
+  const roomId = room.id
+  console.log(`📍 Using Test Room ID: ${roomId} (Room Number: ${room.number})`)
+
+  // 2. Clean up any existing bookings for this room to start fresh
+  const deleteResult = await prisma.booking.deleteMany({
+    where: { roomId },
+  })
+  console.log(`🧹 Deleted ${deleteResult.count} pre-existing bookings for Room 999.\n`)
+
+  // 3. Prepare concurrent booking payloads (overlapping dates)
+  const checkInDate = '2026-08-10'
+  const checkOutDate = '2026-08-15'
+  
+  const payloads = Array.from({ length: CONCURRENCY_LEVEL }).map((_, index) => ({
+    roomId,
+    checkIn: checkInDate,
+    checkOut: checkOutDate,
+    guests: 2,
+    paymentMethod: 'pay_later',
+    guestName: `SRE Concurrent Tester ${index + 1}`,
+    guestEmail: `concurrent-tester-${index + 1}@smarthotel.com`,
+    guestPhone: '555-0199',
+  }))
+
+  console.log(`🚀 Dispatching ${CONCURRENCY_LEVEL} overlapping booking requests concurrently...`)
+
+  const start = Date.now()
+  
+  // Trigger all requests in parallel
+  const responses = await Promise.all(
+    payloads.map(async (payload, idx) => {
+      try {
+        const res = await fetch(`${BASE_URL}/api/bookings`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Request-ID': `loadtest-idx-${idx + 1}-${Date.now()}`,
+          },
+          body: JSON.stringify(payload),
+        })
+        const status = res.status
+        const body = await res.json().catch(() => ({}))
+        return { success: true, status, body }
+      } catch (err: any) {
+        return { success: false, error: err.message, status: 0, body: {} }
+      }
+    })
+  )
+
+  const duration = Date.now() - start
+  console.log(`⏱️ All requests completed in ${duration}ms.\n`)
+
+  // 4. Audit responses
+  let successCount = 0
+  let conflictCount = 0
+  let errorCount = 0
+  let unhandledCount = 0
+
+  const statusMap: Record<number, number> = {}
+
+  responses.forEach((res, idx) => {
+    if (!res.success) {
+      errorCount++
+      console.error(`❌ Request ${idx + 1}: Connection Failed (${res.error})`)
+      return
+    }
+
+    const status = res.status
+    statusMap[status] = (statusMap[status] || 0) + 1
+
+    if (status === 201) {
+      successCount++
+      console.log(`✅ Request ${idx + 1}: Booking Created! (201 Created) | Confirmation: ${res.body.booking?.confirmationCode}`)
+    } else if (status === 409) {
+      conflictCount++
+    } else {
+      unhandledCount++
+      console.warn(`⚠️ Request ${idx + 1}: Unexpected Response (${status}) | Body:`, JSON.stringify(res.body))
+    }
+  })
+
+  // 5. Output gorgeous SRE load report
+  console.log('\n==================================================')
+  console.log('📋 SRE CONCURRENCY & TRANSACTION ISOLATION REPORT')
+  console.log('==================================================')
+  console.log(`Total Requests Sent : ${CONCURRENCY_LEVEL}`)
+  console.log(`Concurrency Window  : ${duration}ms`)
+  console.log(`Average Latency     : ${Math.round(duration / CONCURRENCY_LEVEL)}ms/req`)
+  console.log(`\nStatus Distribution:`)
+  Object.entries(statusMap).forEach(([status, count]) => {
+    console.log(`  - HTTP ${status}: ${count} requests`)
+  })
+  if (errorCount > 0) {
+    console.log(`  - Connection Failures: ${errorCount}`)
+  }
+
+  console.log('\n🔍 Consistency Validation Check:')
+  const cleanSuccess = successCount === 1
+  const cleanConflicts = conflictCount === CONCURRENCY_LEVEL - 1
+
+  if (cleanSuccess) {
+    console.log('  [PASS] Exactly ONE booking was successfully created. Zero double-bookings detected!')
+  } else {
+    console.error(`  [FAIL] Expected exactly 1 successful booking, but found ${successCount}! Potential double-booking vulnerability!`)
+  }
+
+  if (cleanConflicts) {
+    console.log(`  [PASS] Exactly ${conflictCount} overlapping requests were rejected with 409 Conflict.`)
+  } else {
+    console.warn(`  [WARN] Expected ${CONCURRENCY_LEVEL - 1} rejections with 409, but found ${conflictCount}.`)
+  }
+
+  // 6. Cleanup testing data
+  console.log('\n🧹 Cleaning up SRE test room database data...')
+  await prisma.booking.deleteMany({
+    where: { roomId },
+  })
+  console.log('  - Booking test data cleaned up successfully.')
+
+  console.log('==================================================')
+  if (cleanSuccess && cleanConflicts && errorCount === 0 && unhandledCount === 0) {
+    console.log('🎉 SRE CONCURRENCY VERIFICATION PASSED SUCCESSFULLY!')
+    console.log('==================================================\n')
+    process.exit(0)
+  } else {
+    console.error('❌ SRE CONCURRENCY VERIFICATION FAILED!')
+    console.log('==================================================\n')
+    process.exit(1)
+  }
+}
+
+main()
+  .catch((e) => {
+    console.error('Fatal execution error in load test:', e)
+    process.exit(1)
+  })
+  .finally(async () => {
+    await prisma.$disconnect()
+  })

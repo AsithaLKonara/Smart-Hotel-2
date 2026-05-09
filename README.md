@@ -1,285 +1,171 @@
-# 🍴 SmartHotel Restaurant Ordering System
-
-## 🚀 **What's Been Implemented**
-
-Your SmartHotel system now includes a **complete QR-based restaurant ordering system** that integrates seamlessly with your existing hotel management platform.
-
-## ✨ **Core Features Implemented**
-
-### **1. Database Schema Extension**
-- ✅ **FoodMenu Model**: Complete menu item management with categories, pricing, and availability
-- ✅ **FoodOrder Model**: Order tracking with room numbers, guest IDs, and status management
-- ✅ **OrderItem Model**: Individual item details with quantities and special requests
-- ✅ **Enums**: Food categories (Breakfast, Lunch, Dinner, etc.) and order statuses
-
-### **2. API Endpoints**
-- ✅ **`/api/restaurant/menu`**: CRUD operations for menu items
-- ✅ **`/api/restaurant/orders`**: Order creation, retrieval, and status updates
-- ✅ **`/api/restaurant/menu/[id]`**: Individual menu item operations
-
-### **3. Guest Ordering Portal**
-- ✅ **`/order`**: Mobile-friendly ordering interface accessible via QR codes
-- ✅ **Cart Management**: Add/remove items, quantity controls, special requests
-- ✅ **Category Filtering**: Browse by meal type (Breakfast, Lunch, Dinner, etc.)
-- ✅ **Search Functionality**: Find menu items quickly
-- ✅ **Responsive Design**: Works perfectly on all devices
-
-### **4. Admin Management System**
-- ✅ **Menu Management** (`/admin/menu`): Add, edit, delete menu items
-- ✅ **Orders Dashboard** (`/admin/orders`): Real-time order tracking and status updates
-- ✅ **Role-Based Access**: Managers and admins can manage restaurant operations
-
-### **5. QR Code System**
-- ✅ **URL Generation**: Create room-specific ordering links
-- ✅ **Security**: JWT-based token validation (ready for production)
-- ✅ **Testing Tools**: QR generator page for development and testing
-
-## 📦 Environment & Data Setup
-
-- Copy `.env.example` to `.env.local` and update values (MongoDB Atlas, Stripe test keys, Mailtrap credentials).
-- Use a scoped MongoDB connection string that includes the database name, e.g. `mongodb+srv://user:pass@cluster.mongodb.net/smarthotel?retryWrites=true&w=majority&appName=Cluster0`.
-- Generate the Prisma client and seed the comprehensive dataset:
-  ```bash
-  npx prisma generate
-  npm run db:seed:demo
-  ```
-- Need a fresh dataset? Re-run `npm run db:seed:demo` — the script clears and rebuilds all hotel, booking, menu, and analytics records.
-
-## 🧪 Testing & QA
-
-- Unit tests (hotel data, email templates): `npx jest tests/unit --runInBand`
-- Integration tests (rooms + bookings APIs): `npx jest tests/integration/rooms.api.test.ts --runInBand`
-- Lint/type checks: `npm run lint`, `npm run type-check`
-- Contact pipeline smoke test:
-  ```bash
-  SMTP_HOST=... SMTP_PORT=... SMTP_USER=... SMTP_PASS=... \
-  npx tsx -e "import { POST } from './app/api/contact/route'; /* payload */"
-  ```
-- Dev server with external database: `DATABASE_URL=... npm run dev`
-
-## 🛠️ Operations Runbook (Snapshot)
-
-- **Seeding**: `npm run db:seed:demo` — rebuilds SmartHotel fixture data end-to-end.
-- **Analytics sanity check**: `npx tsx -e "import { computeAnalytics } from './lib/analytics/core'; computeAnalytics('month').then(console.log)"`
-- **Dashboard metrics**: `npx tsx -e "import { computeDashboardAnalytics } from './lib/analytics/dashboard'; computeDashboardAnalytics().then(console.log)"`
-- **Email smoke test**:
-  ```bash
-  SMTP_HOST=... SMTP_PORT=... SMTP_USER=... SMTP_PASS=... \
-  npx tsx scripts/email-smoke.ts
-  ```
-  (Create a helper script or reuse the sample snippet in `QUICK_START.md`.)
-- **Contact form**: POST to `/api/contact` or use the `/contact` page and confirm the entry is stored in `EmailLog` + `ContactMessage` collections.
-- **Reset caches**: When hotel branding changes, call `await getHotelData({ forceRefresh: true })` inside a maintenance task or bounce the server.
-- **Log levels**: Set `PRISMA_LOG_QUERIES=true` during debugging to emit Prisma query diagnostics (see `lib/db.ts`).
-
-## 🛠 **How to Get Started**
-
-### **Step 1: Update Database**
-```bash
-# Generate Prisma client with new models
-npm run db:generate
-
-# Push schema changes to database
-npm run db:push
-
-# Seed with sample restaurant data
-npm run db:seed-restaurant
-```
-
-### **Step 2: Test the System**
-1. **Start your development server**: `npm run dev`
-2. **Access admin panel**: Go to `/admin` and log in as manager/admin
-3. **Navigate to Restaurant Menu**: Click "Restaurant Menu" in the sidebar
-4. **Generate test URL**: Go to `/admin/qr-generator` to create ordering links
-5. **Test ordering**: Use the generated URL to test the guest ordering portal
-
-### **Step 3: Customize Menu**
-- Add your own menu items through the admin interface
-- Set prices, categories, and preparation times
-- Upload images (ready for Cloudinary integration)
-- Toggle item availability
-
-## 🔗 **System Flow**
-
-```
-1. Guest checks into hotel room
-2. Staff generates QR code with room-specific ordering URL
-3. Guest scans QR code → accesses ordering portal
-4. Guest browses menu, adds items to cart, places order
-5. Order appears in admin dashboard
-6. Kitchen staff updates order status (Preparing → Ready → Delivered)
-7. Guest tracks order in real-time
-8. Food charges can be added to room bill
-```
-
-## 📱 **Guest Experience**
-
-### **Ordering Portal Features**
-- **Room-Specific Access**: Each URL is tied to a specific room
-- **Intuitive Interface**: Easy-to-use mobile-first design
-- **Real-Time Updates**: Live order status tracking
-- **Special Requests**: Add notes for dietary requirements
-- **Secure Access**: Only accessible through valid room URLs
-
-### **Menu Categories**
-- 🍳 **Breakfast**: Continental, American, Pancakes
-- 🥗 **Lunch**: Salads, Sandwiches, Pasta
-- 🍽️ **Dinner**: Seafood, Steaks, Vegetarian options
-- 🥤 **Beverages**: Juices, Coffee, Tea
-- 🍰 **Desserts**: Cakes, Cheesecakes
-- 🍟 **Snacks**: Fries, Appetizers
-- 🥘 **Main Course**: Chicken, Shrimp dishes
-- 🥔 **Sides**: Potatoes, Vegetables
-
-## 👨‍💼 **Admin Features**
-
-### **Menu Management**
-- **Add New Items**: Name, description, price, category, prep time
-- **Edit Existing**: Update prices, descriptions, availability
-- **Category Management**: Organize items by meal type
-- **Availability Toggle**: Mark items as in/out of stock
-- **Bulk Operations**: Manage multiple items efficiently
-
-### **Order Management**
-- **Real-Time Dashboard**: See all active orders
-- **Status Updates**: Move orders through workflow
-- **Room Information**: Track which room placed each order
-- **Order Details**: View items, quantities, special requests
-- **Statistics**: Order counts by status
-
-### **Workflow Management**
-```
-PENDING → CONFIRMED → PREPARING → READY → DELIVERED
-   ↓           ↓           ↓         ↓        ↓
-  New       Kitchen      Food      Ready    Order
- Order     Confirms    Prep      for Pick  Complete
-```
-
-## 🔐 **Security Features**
-
-- **Room Validation**: Orders are tied to specific room numbers
-- **Guest Authentication**: JWT tokens for secure access
-- **Role-Based Access**: Only authorized staff can manage orders
-- **Input Validation**: All data is validated and sanitized
-- **Audit Trail**: Order history is maintained for billing
-
-## 🚀 **Next Steps & Enhancements**
-
-### **Phase 2: Advanced Features**
-- [ ] **Real-Time Notifications**: WebSocket updates for order status
-- [ ] **Payment Integration**: Stripe/PayHere for instant payments
-- [ ] **Kitchen Display System**: Dedicated kitchen interface
-- [ ] **Inventory Management**: Automatic stock tracking
-- [ ] **Analytics Dashboard**: Sales reports and insights
-
-### **Phase 3: Production Features**
-- [ ] **QR Code Generation**: Actual QR code images for printing
-- [ ] **Email Notifications**: Order confirmations and updates
-- [ ] **SMS Integration**: WhatsApp/SMS for order status
-- [ ] **Multi-Language Support**: International guest support
-- [ ] **Mobile App**: Native mobile ordering experience
-
-## 🧪 **Testing the System**
-
-### **Quick Test Flow**
-1. **Generate Test URL**: Use `/admin/qr-generator`
-2. **Set Room**: Enter room number (e.g., "101")
-3. **Set Guest**: Enter guest ID (e.g., "guest123")
-4. **Generate URL**: Click "Generate Ordering URL"
-5. **Test Ordering**: Open the generated URL in a new tab
-6. **Place Order**: Add items to cart and place order
-7. **Check Admin**: Go to `/admin/orders` to see the order
-8. **Update Status**: Change order status through admin interface
-
-### **Sample Test Data**
-The system comes pre-loaded with 25+ sample menu items across all categories, so you can test immediately without setting up your own menu.
-
-## 🔧 **Technical Details**
-
-### **Database Models**
-```prisma
-FoodMenu: Menu items with categories, prices, availability
-FoodOrder: Orders with room numbers, guest IDs, status
-OrderItem: Individual items in orders with quantities, notes
-```
-
-### **API Endpoints**
-```typescript
-GET    /api/restaurant/menu          # Get all menu items
-POST   /api/restaurant/menu          # Create menu item
-PUT    /api/restaurant/menu/[id]     # Update menu item
-DELETE /api/restaurant/menu/[id]     # Delete menu item
-PATCH  /api/restaurant/menu/[id]     # Partial update
-
-GET    /api/restaurant/orders        # Get all orders
-POST   /api/restaurant/orders        # Create new order
-PATCH  /api/restaurant/orders        # Update order status
-```
-
-### **File Structure**
-```
-app/
-├── order/                    # Guest ordering portal
-├── admin/
-│   ├── menu/               # Menu management
-│   ├── orders/             # Orders dashboard
-│   └── qr-generator/       # QR code generator
-├── api/restaurant/         # Restaurant API endpoints
-└── components/             # UI components
-
-types/
-└── restaurant.ts           # TypeScript interfaces
-
-lib/
-└── qr.ts                  # QR code utilities
-
-prisma/
-├── schema.prisma          # Database schema
-└── seed-restaurant.ts     # Sample data
-```
-
-## 🎯 **Business Benefits**
-
-### **For Hotels**
-- **Increased Revenue**: Additional food service revenue
-- **Guest Satisfaction**: Convenient in-room dining
-- **Operational Efficiency**: Streamlined ordering process
-- **Data Insights**: Track popular items and guest preferences
-
-### **For Guests**
-- **Convenience**: Order food without leaving room
-- **Transparency**: Real-time order tracking
-- **Flexibility**: Browse full menu anytime
-- **Special Requests**: Customize orders easily
-
-## 🆘 **Support & Troubleshooting**
-
-### **Common Issues**
-1. **Menu not loading**: Check if database is seeded
-2. **Orders not appearing**: Verify API endpoints are working
-3. **Permission errors**: Ensure user has correct role
-4. **Database errors**: Run `npm run db:generate` and `npm run db:push`
-
-### **Getting Help**
-- Check the console for error messages
-- Verify all API endpoints are accessible
-- Ensure database schema is up to date
-- Test with sample data first
-
-## 🎉 **Congratulations!**
-
-You now have a **fully functional restaurant ordering system** integrated with your SmartHotel platform! 
-
-The system is production-ready and includes:
-- ✅ Complete ordering workflow
-- ✅ Admin management interface
-- ✅ Mobile-responsive design
-- ✅ Security and validation
-- ✅ Sample data for testing
-- ✅ Comprehensive documentation
-
-**Next**: Test the system, customize the menu, and start taking food orders from your hotel guests!
+# SmartHotel OS — Enterprise Hospitality Platform
+The Complete Hotel Management Solution with Autonomous Operations, Satellite-Edge Resilience, and Commercial Launch Stabilization.
 
 ---
 
-**Built with ❤️ for SmartHotel - The Complete Hotel Management Solution**
+## 🚀 Overview
+SmartHotel OS is a production-stabilized, high-end hospitality platform engineered to scale seamlessly from boutique guest houses to multi-property resorts. The platform incorporates automated guest check-ins, AI housekeeping schedules, multi-currency VAT/GST ledgers, satellite-edge resilience runtimes, SRE threat analysis, and digital twin simulation engines.
+
+---
+
+## 🧱 Table of Contents
+- [Features](#-features)
+- [Enterprise & Autonomous Ecosystem](#-enterprise--autonomous-ecosystem)
+- [Production Stabilization & Launch SRE](#-production-stabilization--launch-sre)
+- [Tech Stack](#-tech-stack)
+- [Project Structure](#-project-structure)
+- [Installation & Quickstart](#-installation--quickstart)
+- [SRE Verification & Operational Commands](#-sre-verification--operational-commands)
+- [Testing & Quality Gates](#-testing--quality-gates)
+- [License](#-license)
+
+---
+
+## ✨ Features
+
+### 🏨 Hotel Management & Gating
+- **Onboarding Wizard**: A simple, 10-minute automated portal to import rooms, configure property location, invite staff, and pre-seed luxury demo datasets.
+- **Booking Engine**: Sophisticated check-in and checkout flows with double-booking prevention filters.
+- **SaaS Pricing & Billing**: Starter ($29/mo), Professional ($89/mo), and Enterprise Lite ($249/mo) plans with middleware gating.
+
+### 🍴 Interactive Guest Super App
+- **Contactless QR Dining**: Guest room-specific menu selections, kitchen prepare-track dashboards, and billing.
+- **Ambient Room Comforts**: Multilingual climate control, lightning adjustment panels, and simulated NFC digital key-card locks.
+
+### 📊 OLAP Business Intelligence & BI
+- **Executive Dashboards**: Tracking key operational indicators like occupancy ratios, RevPAR metrics, and payment commissions.
+- **Unified Timeline Aggregator**: Sequential messaging hub collating guest communications (SMS, emails, WhatsApp) in real-time.
+
+---
+
+## 🛰️ Enterprise & Autonomous Ecosystem
+
+```mermaid
+graph TD
+    A["Onboarding / Setup Wizard"] --> B["Policy Engine (Autonomous Dispatch)"]
+    B --> C["Threat Detection (Impossible Travel)"]
+    C --> D["Satellite-Edge Property Runtime"]
+    D --> E["SRE World Command Center"]
+```
+
+*   **Autonomous Policy Engine**: Triggers automatic housekeeper allocations on guest checkout and issues loyalty offsets for delayed bookings.
+*   **Security Threat Auditing**: Identifies anomalous access patterns, evaluates risk scores, and blocks compromised credential tokens.
+*   **Satellite-Edge Resiliency**: Reroutes properties to local cached runtimes during satellite connectivity loss, replaying synchronized queues sequentially post-recovery.
+*   **Global Command Center**: Provides SRE teams with real-time multi-region health maps, median latencies, and interactive failover triggers.
+
+---
+
+## 🛡️ Production Stabilization & Launch SRE
+SmartHotel OS has completed its feature deployment cycle and is in a strict **Production Lockdown**. We prioritize simplicity, maintainability, performance, and SRE safety:
+1.  **Strict Environment Valdiators**: Fast-failures triggered on missing Stripe, NextAuth, or clustered DB credentials.
+2.  **Automated Daily Backups**: Integrated JSON compression dumps with 30-day retention policies.
+3.  **Secure Header Directives**: Custom Content Security Policies (CSP) and secure HTTP-Only cookie directives.
+
+---
+
+## 🛠 Tech Stack
+
+- **Frontend**: [Next.js 14](https://nextjs.org/) (App Router), [React 18](https://reactjs.org/), [Tailwind CSS](https://tailwindcss.com/), [Framer Motion](https://www.framer.com/motion/).
+- **Backend/ORM**: Next.js API Routes, [Prisma ORM](https://www.prisma.io/).
+- **Database/Cache**: [MongoDB](https://www.mongodb.com/) (Clustered Replica Sets), [Upstash Redis](https://upstash.com/).
+- **Security & Logging**: [Sentry](https://sentry.io/), Custom Session Intrusion Auditors.
+- **Integrations**: [Stripe](https://stripe.com/) (Billing), [Nodemailer](https://nodemailer.com/) (Mailing pipelines).
+- **Testing**: [Jest](https://jestjs.io/), [Playwright](https://playwright.dev/), [k6](https://k6.io/).
+
+---
+
+## 📂 Project Structure
+
+```text
+app/                  # Next.js App Router (UI & API)
+├── admin/            # SRE Command Center, Marketplace, Governance
+├── onboarding/       # Operator Onboarding Setup Wizard
+├── mobile/           # Guest Mobile Super App simulation page
+├── api/              # Standard and Custom REST API endpoints
+components/           # Reusable UI elements (Error boundaries, layouts)
+docs/                 # Deployment guides, incident runbooks, security lists
+lib/                  # Autonomous policies, edge satellites, threat filters
+scripts/              # Automated database health and SRE verification runners
+tests/                # Unit, integration, and E2E test suites
+```
+
+---
+
+## ⚙️ Installation & Quickstart
+
+### Prerequisites
+*   Node.js (v18+)
+*   MongoDB Atlas Account (Atlas Replica Set recommended)
+*   Stripe Account
+
+### Steps
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/AsithaLKonara/Smart-Hotel-2.git
+    cd Smart-Hotel-2
+    ```
+
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    ```
+
+3.  **Set up Environment Secrets:**
+    ```bash
+    cp .env.example .env.local
+    # Open .env.local and update Database and Stripe configurations
+    ```
+
+4.  **Execute Database Push:**
+    ```bash
+    npx prisma generate
+    npm run db:push
+    ```
+
+5.  **Launch Local Server:**
+    ```bash
+    npm run dev
+    ```
+    Visit `http://localhost:3000` to interact with SmartHotel OS.
+
+---
+
+## 📡 SRE Verification & Operational Commands
+
+Our core operation check suite audits database connections, replica sets, and backup integrity:
+
+### Run Standalone Database Health Check
+```bash
+node scripts/db-health-check.js
+```
+
+### Run Disaster Recovery Backup Auditor
+```bash
+node scripts/backup-verify.js
+```
+
+### Run Unified Startup Check
+```bash
+node scripts/validate-env.js --production
+```
+
+---
+
+## 🧪 Testing & Quality Gates
+Every code merge is automatically subjected to rigorous quality gate sweeps before deployment promotion:
+
+```bash
+# Run Linting, Type-Check, and Jest Unit testing suites
+npm run lint && npm run type-check && npm run test
+```
+*   **Unit Tests**: `npm run test:unit`
+*   **Integration Tests**: `npm run test:integration`
+*   **E2E Tests**: `npm run test:e2e`
+
+---
+
+## 📄 License
+This project is licensed under the MIT License. See the `LICENSE` file for details.
+
+---
+Built with ❤️ for **SmartHotel OS** — Modernizing global hospitality operations.

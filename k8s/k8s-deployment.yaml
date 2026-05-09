@@ -1,0 +1,138 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: smarthotel-production
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: smarthotel-config
+  namespace: smarthotel-production
+data:
+  NODE_ENV: "production"
+  PORT: "3000"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: smarthotel-postgres
+  namespace: smarthotel-production
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:15-alpine
+        env:
+        - name: POSTGRES_DB
+          value: smarthotel_prod
+        - name: POSTGRES_USER
+          value: postgres
+        - name: POSTGRES_PASSWORD
+          value: postgrespassword
+        ports:
+        - containerPort: 5432
+        resources:
+          limits:
+            cpu: "1"
+            memory: 1Gi
+          requests:
+            cpu: 250m
+            memory: 512Mi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+  namespace: smarthotel-production
+spec:
+  ports:
+  - port: 5432
+  selector:
+    app: postgres
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: smarthotel-app
+  namespace: smarthotel-production
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: smarthotel
+  template:
+    metadata:
+      labels:
+        app: smarthotel
+    spec:
+      containers:
+      - name: app
+        image: smarthotel-app:latest
+        ports:
+        - containerPort: 3000
+        envFrom:
+        - configMapRef:
+            name: smarthotel-config
+        env:
+        - name: DATABASE_URL_POSTGRES
+          value: "postgresql://postgres:postgrespassword@postgres-service:5432/smarthotel_prod"
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 100m
+            memory: 256Mi
+        readinessProbe:
+          httpGet:
+            path: /api/health/ready
+            port: 3000
+          initialDelaySeconds: 15
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /api/health/live
+            port: 3000
+          initialDelaySeconds: 20
+          periodSeconds: 10
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: smarthotel-service
+  namespace: smarthotel-production
+spec:
+  ports:
+  - port: 80
+    targetPort: 3000
+  selector:
+    app: smarthotel
+  type: ClusterIP
+
+---
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: smarthotel-hpa
+  namespace: smarthotel-production
+spec:
+  maxReplicas: 10
+  minReplicas: 3
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: smarthotel-app
+  targetCPUUtilizationPercentage: 75

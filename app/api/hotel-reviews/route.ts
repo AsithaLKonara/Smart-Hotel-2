@@ -50,16 +50,16 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    const avgOverall = allReviews.reduce((sum, r) => sum + r.overallRating, 0) / allReviews.length
+    const avgOverall = allReviews.reduce((sum: number, r: any) => sum + r.overallRating, 0) / allReviews.length
     const avgService = allReviews
-      .filter(r => r.serviceRating)
-      .reduce((sum, r) => sum + (r.serviceRating || 0), 0) / allReviews.filter(r => r.serviceRating).length || 0
+      .filter((r: any) => r.serviceRating)
+      .reduce((sum: number, r: any) => sum + (r.serviceRating || 0), 0) / allReviews.filter((r: any) => r.serviceRating).length || 0
     const avgCleanliness = allReviews
-      .filter(r => r.cleanlinessRating)
-      .reduce((sum, r) => sum + (r.cleanlinessRating || 0), 0) / allReviews.filter(r => r.cleanlinessRating).length || 0
+      .filter((r: any) => r.cleanlinessRating)
+      .reduce((sum: number, r: any) => sum + (r.cleanlinessRating || 0), 0) / allReviews.filter((r: any) => r.cleanlinessRating).length || 0
     const avgValue = allReviews
-      .filter(r => r.valueRating)
-      .reduce((sum, r) => sum + (r.valueRating || 0), 0) / allReviews.filter(r => r.valueRating).length || 0
+      .filter((r: any) => r.valueRating)
+      .reduce((sum: number, r: any) => sum + (r.valueRating || 0), 0) / allReviews.filter((r: any) => r.valueRating).length || 0
 
     return NextResponse.json({
       reviews,

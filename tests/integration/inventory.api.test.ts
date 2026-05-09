@@ -28,6 +28,12 @@ jest.mock('next-auth', () => ({
   getServerSession: (options: any) => mockGetServerSessionFn(options),
 }))
 
+const mockGetRequestSessionFn = jest.fn((request) => Promise.resolve(null))
+
+jest.mock('@/lib/session', () => ({
+  getRequestSession: (request: any) => mockGetRequestSessionFn(request),
+}))
+
 jest.mock('@/lib/audit', () => ({
   logAction: jest.fn().mockResolvedValue(undefined),
   AUDIT_ACTIONS: {
@@ -39,14 +45,25 @@ jest.mock('@/lib/audit', () => ({
 
 import prisma from '@/lib/db'
 import { getServerSession } from 'next-auth'
+import { getRequestSession } from '@/lib/session'
 
 const mockPrisma = prisma as any
 const mockGetServerSession = mockGetServerSessionFn as jest.MockedFunction<typeof mockGetServerSessionFn>
+const mockGetRequestSession = mockGetRequestSessionFn as jest.MockedFunction<typeof getRequestSession>
 const mockPrismaInventory = mockPrisma.inventory
 
 describe('Inventory API Integration Tests', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    mockGetServerSession.mockReset()
+    mockGetRequestSession.mockReset()
+
+    // Default to authorized MANAGER for both session providers
+    const mockManagerSession = {
+      user: { id: 'manager-123', role: 'MANAGER' },
+    }
+    mockGetServerSession.mockResolvedValue(mockManagerSession as any)
+    mockGetRequestSession.mockResolvedValue(mockManagerSession as any)
   })
 
   afterAll(() => {
@@ -166,9 +183,11 @@ describe('Inventory API Integration Tests', () => {
     })
 
     it('should return 401 for non-manager user', async () => {
-      mockGetServerSession.mockResolvedValue({
+      const mockGuestSession = {
         user: { id: 'guest-123', role: 'GUEST' },
-      } as any)
+      }
+      mockGetServerSession.mockResolvedValue(mockGuestSession as any)
+      mockGetRequestSession.mockResolvedValue(mockGuestSession as any)
 
       const req = new NextRequest('http://localhost:3000/api/inventory', {
         method: 'POST',

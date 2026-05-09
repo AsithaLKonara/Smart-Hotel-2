@@ -147,10 +147,10 @@ export async function GET(request: NextRequest) {
       }
     })) ?? []
 
-    const bookedRoomIds = new Set(conflictingBookings.map(b => b.roomId))
+    const bookedRoomIds = new Set(conflictingBookings.map((b: any) => b.roomId))
 
     // Filter available rooms
-    const availableRooms = allRooms.filter(room => !bookedRoomIds.has(room.id))
+    const availableRooms = allRooms.filter((room: any) => !bookedRoomIds.has(room.id))
 
     // Calculate pricing for each room
     // Note: Room model doesn't have roomImages or reviews relations defined in schema

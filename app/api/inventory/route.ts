@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
     })
 
     // Convert BigInt values to numbers for JSON serialization
-    const serializedInventory = inventory.map(item => ({
+    const serializedInventory = inventory.map((item: any) => ({
       ...item,
       quantity: Number(item.quantity),
       minQuantity: Number(item.minQuantity),

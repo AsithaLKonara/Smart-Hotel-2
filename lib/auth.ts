@@ -154,6 +154,23 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async jwt({ token, user, account }) {
+      // Set iat if not present (isolated unit test support)
+      if (!token.iat) {
+        token.iat = Math.floor(Date.now() / 1000)
+      }
+
+      // Check if token has expired (older than 8 hours)
+      const maxAgeSeconds = 8 * 60 * 60
+      const currentTimestamp = Math.floor(Date.now() / 1000)
+      if (token.iat && (currentTimestamp - (token.iat as number)) > maxAgeSeconds) {
+        return {
+          id: '',
+          role: 'GUEST',
+          hotelId: null,
+          iat: 0,
+        }
+      }
+
       if (user) {
         token.id = user.id
         token.role = user.role

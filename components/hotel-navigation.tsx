@@ -37,7 +37,7 @@ export default function HotelNavigation() {
   ])
   const { data: session } = useSession()
   const pathname = usePathname()
-  
+
   // Hide navigation on dashboard/admin routes
   const isDashboardRoute = pathname?.startsWith('/dashboard') || pathname?.startsWith('/admin') || pathname?.startsWith('/kitchen')
 
@@ -96,15 +96,14 @@ export default function HotelNavigation() {
     loadData()
     return () => { isMounted = false }
   }, [])
-  
+
   if (isDashboardRoute) return null
 
   return (
-    <header 
-      role="banner" 
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        scrolled ? 'bg-midnight/95 backdrop-blur-lg shadow-2xl py-2' : 'bg-transparent py-4'
-      }`}
+    <header
+      role="banner"
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled ? 'bg-black/60 backdrop-blur-xl border-b border-white/5 shadow-2xl py-2' : 'bg-transparent py-4'
+        }`}
     >
       {/* Top Bar - Hidden on scroll for cleaner look */}
       {!scrolled && (
@@ -150,9 +149,8 @@ export default function HotelNavigation() {
               <Link
                 key={item.name}
                 href={item.href}
-                className={`text-sm font-medium tracking-wide transition-all duration-300 hover:text-luxury ${
-                  pathname === item.href ? 'text-luxury' : 'text-white'
-                }`}
+                className={`text-sm font-medium tracking-wide transition-all duration-300 hover:text-luxury ${pathname === item.href ? 'text-luxury' : 'text-white'
+                  }`}
               >
                 {item.name}
               </Link>
@@ -183,7 +181,7 @@ export default function HotelNavigation() {
                 Sign In
               </Link>
             )}
-            
+
             <Link href="/booking">
               <Button className="bg-gold-gradient hover:opacity-90 text-white px-8 rounded-none border-none font-serif tracking-widest uppercase text-xs h-12 transition-all hover:scale-105 active:scale-95 shadow-luxury">
                 Book Your Stay
@@ -196,6 +194,7 @@ export default function HotelNavigation() {
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className="lg:hidden p-2 rounded-md text-white hover:text-luxury transition-colors"
             aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
+            data-testid="mobile-menu-toggle"
           >
             {isMenuOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
           </button>
@@ -203,7 +202,10 @@ export default function HotelNavigation() {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="lg:hidden fixed inset-0 top-20 bg-midnight/98 backdrop-blur-2xl p-8 z-50 animate-fade-in">
+          <div
+            data-testid="mobile-menu"
+            className="lg:hidden fixed inset-0 top-20 bg-midnight/98 backdrop-blur-2xl p-8 z-50 animate-fade-in"
+          >
             <div className="flex flex-col space-y-8 text-center">
               {navigation.map((item) => (
                 <Link
@@ -215,9 +217,9 @@ export default function HotelNavigation() {
                   {item.name}
                 </Link>
               ))}
-              
+
               <div className="h-px bg-white/10 w-24 mx-auto" />
-              
+
               {session?.user ? (
                 <>
                   <Link
@@ -244,7 +246,7 @@ export default function HotelNavigation() {
                   Sign In
                 </Link>
               )}
-              
+
               <Link href="/booking" onClick={() => setIsMenuOpen(false)}>
                 <Button className="w-full bg-gold-gradient text-white py-8 text-lg font-serif">
                   Book Now

@@ -18,4 +18,9 @@
 ## Component Design
 - **Hydration Safety**: Use `isMounted` patterns to gate client-only rendering.
 - **Type Safety**: Prefer strict TypeScript types. Avoid `any` unless absolutely necessary (e.g., complex 3rd party props).
-- **Premium UI**: Use HSL colors, smooth transitions, and glassmorphism as per the project design system.
+- **Premium UI**: Use HSL colors, smooth transitions, and glassmorphic elements in accordance with the project's brand design system.
+
+## Terminal Execution & Resource Optimization
+- **Always run synchronously**: When running commands, avoid running them asynchronously in the background. Use large `WaitMsBeforeAsync` limits to execute commands directly on the terminal tab, preventing background process leaks and resource exhaustion.
+- **Do not run background processes**: Kill unnecessary terminals immediately, keeping only localhost:3000 active for dev servers.
+

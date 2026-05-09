@@ -70,17 +70,17 @@ function FAQSection() {
     <section className="py-24">
       <div className="max-w-3xl mx-auto px-4">
         <div className="text-center mb-16 space-y-4">
-          <h4 className="text-luxury uppercase tracking-[0.3em] text-xs font-bold">Common Inquiries</h4>
-          <h2 className="text-4xl font-serif font-bold text-midnight">Frequently Asked <span className="text-luxury italic">Questions</span></h2>
+          <h4 className="text-primary uppercase tracking-[0.3em] text-xs font-bold">Common Inquiries</h4>
+          <h2 className="text-4xl font-serif font-bold text-white">Frequently Asked <span className="text-primary italic">Questions</span></h2>
         </div>
         <div className="space-y-4">
           {faqs.map((faq, index) => (
-            <div key={index} className="border-b border-gray-100">
+            <div key={index} className="border-b border-white/10">
               <button 
                 onClick={() => setOpenIndex(openIndex === index ? null : index)}
                 className="w-full flex items-center justify-between py-6 text-left group"
               >
-                <span className="text-lg font-serif font-bold text-midnight group-hover:text-luxury transition-colors">{faq.question}</span>
+                <span className="text-lg font-serif font-bold text-white group-hover:text-primary transition-colors">{faq.question}</span>
                 {openIndex === index ? <Minus className="w-4 h-4 text-luxury" /> : <Plus className="w-4 h-4 text-gray-300" />}
               </button>
               <AnimatePresence>
@@ -91,7 +91,7 @@ function FAQSection() {
                     exit={{ height: 0, opacity: 0 }}
                     className="overflow-hidden"
                   >
-                    <p className="pb-6 text-gray-500 font-light leading-relaxed">{faq.answer}</p>
+                    <p className="pb-6 text-white/50 font-light leading-relaxed">{faq.answer}</p>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -139,24 +139,23 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="bg-white text-midnight min-h-screen">
-      {/* Hero Section */}
-      <section className="relative h-[50vh] min-h-[400px] overflow-hidden bg-midnight">
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-b from-midnight/20 via-midnight/60 to-midnight z-10" />
-          <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&q=80&w=1920')] bg-cover bg-center opacity-30 grayscale" />
-        </div>
+    <div className="bg-transparent text-white min-h-screen">
+      {/* Hero Section — Blur Glass */}
+      <section className="relative h-[50vh] min-h-[400px] overflow-hidden">
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-xl" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/70" />
         
         <div className="relative z-20 container mx-auto px-4 h-full flex flex-col justify-center items-center text-center">
           <div className="space-y-6 max-w-4xl">
-            <div className="flex items-center justify-center space-x-3 text-luxury uppercase tracking-[0.4em] text-xs font-bold">
-              <div className="w-12 h-px bg-luxury" />
+            <div className="flex items-center justify-center space-x-3 text-primary uppercase tracking-[0.4em] text-xs font-bold">
+              <div className="w-12 h-px bg-primary" />
               <span>Contact Concierge</span>
-              <div className="w-12 h-px bg-luxury" />
+              <div className="w-12 h-px bg-primary" />
             </div>
             <h1 className="text-6xl md:text-8xl font-serif font-bold text-white leading-tight">
-              Bespoke <span className="text-luxury italic">Assistance</span>
+              Bespoke <span className="text-primary italic">Assistance</span>
             </h1>
+            <p className="text-white/50 font-light text-lg max-w-xl mx-auto">Our dedicated team is available around the clock to craft your perfect experience.</p>
           </div>
         </div>
       </section>
@@ -167,27 +166,29 @@ export default function ContactPage() {
             {/* Contact Form */}
             <div className="lg:col-span-7 space-y-12">
               <div className="space-y-4">
-                <h2 className="text-4xl font-serif font-bold text-midnight">Send a <span className="text-luxury italic">Message</span></h2>
-                <p className="text-gray-500 font-light max-w-lg">Our dedicated team is ready to assist you with any inquiries or special requests you may have.</p>
+                <h2 className="text-4xl font-serif font-bold text-white">Send a <span className="text-primary italic">Message</span></h2>
+                <p className="text-white/50 font-light max-w-lg">Our dedicated team is ready to assist you with any inquiries or special requests you may have.</p>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-2">
-                    <label className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Full Name</label>
+                    <label htmlFor="contactName" className="text-[10px] uppercase tracking-widest font-bold text-white/40">Full Name</label>
                     <input 
+                      id="contactName"
                       type="text" 
-                      className="w-full bg-gray-50 border-none px-6 py-4 focus:ring-1 focus:ring-luxury transition-all text-sm rounded-none"
+                      className="w-full bg-white/5 border border-white/10 text-white placeholder:text-white/20 px-6 py-4 focus:ring-1 focus:ring-primary transition-all text-sm rounded-xl"
                       value={formData.name}
                       onChange={(e) => setFormData({...formData, name: e.target.value})}
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Email Address</label>
+                    <label htmlFor="contactEmail" className="text-[10px] uppercase tracking-widest font-bold text-white/40">Email Address</label>
                     <input 
+                      id="contactEmail"
                       type="email" 
-                      className="w-full bg-gray-50 border-none px-6 py-4 focus:ring-1 focus:ring-luxury transition-all text-sm rounded-none"
+                      className="w-full bg-white/5 border border-white/10 text-white placeholder:text-white/20 px-6 py-4 focus:ring-1 focus:ring-primary transition-all text-sm rounded-xl"
                       value={formData.email}
                       onChange={(e) => setFormData({...formData, email: e.target.value})}
                       required
@@ -195,20 +196,22 @@ export default function ContactPage() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Subject</label>
+                  <label htmlFor="contactSubject" className="text-[10px] uppercase tracking-widest font-bold text-white/40">Subject</label>
                   <input 
+                    id="contactSubject"
                     type="text" 
-                    className="w-full bg-gray-50 border-none px-6 py-4 focus:ring-1 focus:ring-luxury transition-all text-sm rounded-none"
+                    className="w-full bg-white/5 border border-white/10 text-white placeholder:text-white/20 px-6 py-4 focus:ring-1 focus:ring-primary transition-all text-sm rounded-xl"
                     value={formData.subject}
                     onChange={(e) => setFormData({...formData, subject: e.target.value})}
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Message</label>
+                  <label htmlFor="contactMessage" className="text-[10px] uppercase tracking-widest font-bold text-white/40">Message</label>
                   <textarea 
+                    id="contactMessage"
                     rows={6}
-                    className="w-full bg-gray-50 border-none px-6 py-4 focus:ring-1 focus:ring-luxury transition-all text-sm rounded-none resize-none"
+                    className="w-full bg-white/5 border border-white/10 text-white placeholder:text-white/20 px-6 py-4 focus:ring-1 focus:ring-primary transition-all text-sm rounded-xl resize-none"
                     value={formData.message}
                     onChange={(e) => setFormData({...formData, message: e.target.value})}
                     required
@@ -236,19 +239,19 @@ export default function ContactPage() {
                   { icon: Mail, title: 'Email Inquiries', value: contactInfo?.email || 'concierge@smarthotel.com' },
                   { icon: Clock, title: 'Guest Services', value: `Check-in: ${contactInfo?.checkIn || '15:00'} | Check-out: ${contactInfo?.checkOut || '11:00'}` },
                 ].map((item, i) => (
-                  <div key={i} className="flex items-start gap-6 p-8 bg-gray-50 hover:bg-white hover:shadow-2xl transition-all duration-500 group">
-                    <div className="w-12 h-12 bg-white flex items-center justify-center text-luxury group-hover:bg-midnight group-hover:text-white transition-colors flex-shrink-0">
+                  <div key={i} className="flex items-start gap-6 p-6 bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/30 transition-all duration-500 group rounded-2xl">
+                    <div className="w-12 h-12 bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors flex-shrink-0 rounded-xl">
                       <item.icon className="w-5 h-5" />
                     </div>
                     <div className="space-y-2">
-                      <h3 className="text-[10px] uppercase tracking-[0.3em] font-bold text-gray-400">{item.title}</h3>
-                      <p className="text-midnight font-serif font-bold">{item.value}</p>
+                      <h3 className="text-[10px] uppercase tracking-[0.3em] font-bold text-white/40">{item.title}</h3>
+                      <p className="text-white font-serif font-bold">{item.value}</p>
                     </div>
                   </div>
                 ))}
               </div>
 
-              <div className="relative aspect-video shadow-2xl overflow-hidden">
+              <div className="relative aspect-video shadow-2xl overflow-hidden rounded-2xl border border-white/10">
                 <GoogleMapFallback 
                   lat={contactInfo?.coordinates.lat || 40.7589}
                   lng={contactInfo?.coordinates.lng || -73.9851}

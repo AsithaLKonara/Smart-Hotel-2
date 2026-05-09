@@ -67,7 +67,7 @@ async function runTool(intent: any, userMessage: string): Promise<string> {
             case "amenities": {
                 const facilities = await getAmenities();
                 return "Our sanctuary features world-class facilities designed for your comfort:\n\n" + 
-                    facilities.map(a => `✨ **${a.name}**: ${a.description}`).join("\n");
+                    facilities.map((a: any) => `✨ **${a.name}**: ${a.description}`).join("\n");
             }
             default:
                 return "";

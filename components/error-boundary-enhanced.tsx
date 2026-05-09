@@ -1,21 +1,22 @@
 'use client'
 
 import React, { Component, ErrorInfo, ReactNode } from 'react'
-import { captureException } from '@/lib/monitoring'
+import * as Sentry from '@sentry/nextjs'
 import { AlertTriangle, RefreshCw, Home, Bug } from 'lucide-react'
 import { Button } from './ui/button'
 import { Card } from './ui/card'
+import { safeExtractError } from './error-boundary'
 
 interface Props {
   children: ReactNode
   fallback?: ReactNode
-  onError?: (error: Error, errorInfo: ErrorInfo) => void
+  onError?: (error: unknown, errorInfo: ErrorInfo) => void
   showDetails?: boolean
 }
 
 interface State {
   hasError: boolean
-  error: Error | null
+  error: unknown | null
   errorInfo: ErrorInfo | null
   errorId: string | null
 }
@@ -31,33 +32,43 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
     }
   }
 
-  static getDerivedStateFromError(error: Error): Partial<State> {
+  static getDerivedStateFromError(error: unknown): Partial<State> {
     return {
       hasError: true,
       error,
     }
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    // Log error to monitoring service
-    const errorId = captureException(error, {
-      errorBoundary: true,
-      errorInfo,
-      componentStack: errorInfo.componentStack,
+  componentDidCatch(error: unknown, errorInfo: ErrorInfo) {
+    const { message, stack } = safeExtractError(error)
+    const normalizedError = error instanceof Error ? error : new Error(message)
+    if (stack && !normalizedError.stack) {
+      normalizedError.stack = stack
+    }
+
+    // Log directly to Sentry client SDK
+    const errorId = Sentry.captureException(normalizedError, {
+      extra: {
+        errorBoundary: true,
+        errorInfo,
+        componentStack: errorInfo.componentStack,
+      },
     })
 
     this.setState({
       errorInfo,
-      errorId,
+      errorId: errorId || 'sentry-client-error-id',
     })
 
     // Call custom error handler if provided
     this.props.onError?.(error, errorInfo)
 
-    // Log to console in development
-    if (process.env.NODE_ENV === 'development') {
-      console.error('ErrorBoundary caught an error:', error, errorInfo)
-    }
+    // Log to console
+    console.error('EnhancedErrorBoundary caught an error:', {
+      message,
+      stack: stack || normalizedError.stack,
+      componentStack: errorInfo.componentStack,
+    })
   }
 
   handleReset = () => {
@@ -82,6 +93,7 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
 
       const { error, errorInfo, errorId } = this.state
       const showDetails = this.props.showDetails ?? process.env.NODE_ENV === 'development'
+      const { message, stack } = safeExtractError(error)
 
       return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 via-white to-red-50 px-4">
@@ -94,7 +106,7 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
                 Something went wrong
               </h1>
               <p className="text-gray-600 dark:text-gray-400">
-                We encountered an unexpected error. Our team has been notified.
+                We encountered an unexpected error. Our operations team has been notified.
               </p>
               {errorId && (
                 <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">
@@ -103,7 +115,7 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
               )}
             </div>
 
-            {showDetails && error && (
+            {showDetails && (
               <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
                 <div className="flex items-center gap-2 mb-2">
                   <Bug className="w-4 h-4 text-gray-600 dark:text-gray-400" />
@@ -112,25 +124,25 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
                   </h3>
                 </div>
                 <div className="text-sm text-gray-700 dark:text-gray-300 font-mono">
-                  <p className="mb-2">
-                    <strong>Message:</strong> {error.message}
+                  <p className="mb-2 whitespace-pre-wrap">
+                    <strong>Message:</strong> {message}
                   </p>
-                  {error.stack && (
+                  {stack && (
                     <details className="mt-2">
-                      <summary className="cursor-pointer text-amber-600 dark:text-amber-500 hover:underline">
+                      <summary className="cursor-pointer text-amber-600 dark:text-amber-500 hover:underline select-none">
                         Stack Trace
                       </summary>
-                      <pre className="mt-2 text-xs overflow-auto max-h-40 p-2 bg-gray-100 dark:bg-gray-900 rounded">
-                        {error.stack}
+                      <pre className="mt-2 text-xs overflow-auto max-h-40 p-2 bg-gray-100 dark:bg-gray-900 rounded whitespace-pre-wrap">
+                        {stack}
                       </pre>
                     </details>
                   )}
                   {errorInfo?.componentStack && (
                     <details className="mt-2">
-                      <summary className="cursor-pointer text-amber-600 dark:text-amber-500 hover:underline">
+                      <summary className="cursor-pointer text-amber-600 dark:text-amber-500 hover:underline select-none">
                         Component Stack
                       </summary>
-                      <pre className="mt-2 text-xs overflow-auto max-h-40 p-2 bg-gray-100 dark:bg-gray-900 rounded">
+                      <pre className="mt-2 text-xs overflow-auto max-h-40 p-2 bg-gray-100 dark:bg-gray-900 rounded whitespace-pre-wrap">
                         {errorInfo.componentStack}
                       </pre>
                     </details>
@@ -142,9 +154,9 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Button
                 onClick={this.handleReset}
-                className="bg-amber-600 hover:bg-amber-700"
+                className="bg-amber-600 hover:bg-amber-700 text-white"
               >
-                <RefreshCw className="mr-2 h-4 w-4" />
+                <RefreshCw className="mr-2 h-4 w-4 animate-spin-hover" />
                 Try Again
               </Button>
               <Button
@@ -177,4 +189,3 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
     return this.props.children
   }
 }
-

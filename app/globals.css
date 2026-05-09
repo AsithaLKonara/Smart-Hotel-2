@@ -72,15 +72,27 @@
 }
 
 @layer base {
+  html {
+    background-color: #0b0f17;
+  }
   * {
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-inter), 'Inter', system-ui, sans-serif;
     font-feature-settings: "rlig" 1, "calt" 1;
+    letter-spacing: 0.01em;
+    font-size: 16px;
+    line-height: 1.65;
   }
   h1, h2, h3, h4, h5, h6 {
-    @apply font-serif;
+    font-family: var(--font-inter), 'Inter', system-ui, sans-serif;
+    letter-spacing: -0.01em;
+    font-feature-settings: "kern" 1, "liga" 1;
+  }
+  p, span, a, button, input, textarea, select, label {
+    font-family: var(--font-inter), 'Inter', system-ui, sans-serif;
   }
 }
 

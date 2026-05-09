@@ -3,6 +3,7 @@ import { jest } from '@jest/globals'
 const PrismaClientMock = jest.fn()
 const prismaInstance = {
   $on: jest.fn(),
+  $extends: jest.fn().mockImplementation(() => prismaInstance),
 } as any
 const eventHandlers: Record<string, Function> = {}
 
@@ -71,6 +72,11 @@ describe('lib/db', () => {
       log: [
         { level: 'error', emit: 'event' },
       ],
+      datasources: {
+        db: {
+          url: "mongodb://localhost:27017/smarthotel_test?retryWrites=true&w=majority&connectTimeoutMS=30000&socketTimeoutMS=45000&serverSelectionTimeoutMS=30000&heartbeatFrequencyMS=10000",
+        },
+      },
     })
     expect(prismaInstance.$on).not.toHaveBeenCalled()
   })
@@ -83,6 +89,11 @@ describe('lib/db', () => {
         { level: 'warn', emit: 'event' },
         { level: 'error', emit: 'event' },
       ],
+      datasources: {
+        db: {
+          url: "mongodb://localhost:27017/smarthotel_test?retryWrites=true&w=majority&connectTimeoutMS=30000&socketTimeoutMS=45000&serverSelectionTimeoutMS=30000&heartbeatFrequencyMS=10000",
+        },
+      },
     })
 
     expect(prismaInstance.$on).toHaveBeenCalledWith('error', expect.any(Function))

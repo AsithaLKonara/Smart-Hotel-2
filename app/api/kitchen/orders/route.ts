@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
 
   if (
     !allowAnonymous &&
-    (!session || !['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'].includes(session.user.role))
+    (!session || !['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN', 'KITCHEN_STAFF'].includes(session.user.role))
   ) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
 
     // Get user information separately for each order
     const ordersWithUsers = await Promise.all(
-      orders.map(async (order) => {
+      orders.map(async (order: any) => {
         const user = await prisma.user.findUnique({
           where: { id: order.guestId },
           select: {
@@ -103,7 +103,7 @@ export async function GET(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   const session = await getRequestSession(request)
 
-  if (!session || !['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'].includes(session.user.role)) {
+  if (!session || !['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN', 'KITCHEN_STAFF'].includes(session.user.role)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -229,7 +229,7 @@ export async function PUT(request: NextRequest) {
         // Note: Notification model doesn't exist in schema
         // Notifications would need to be implemented via a separate service or added to schema
         await Promise.all(
-          deliveryStaff.map(staff => {
+          deliveryStaff.map((staff: any) => {
             // await prisma.notification.create({
             //   data: {
             //     userId: staff.id,

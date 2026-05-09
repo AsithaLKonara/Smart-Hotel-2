@@ -1,36 +1,5 @@
-/**
- * Monitoring and Error Tracking Utilities
- * 
- * Provides centralized error tracking and monitoring functions
- */
-
-// Sentry is optional - use any to avoid TypeScript errors when not installed
-let Sentry: any = null
-
-// Lazy load Sentry to avoid issues in test environments
-// Only attempt to load if SENTRY_DSN is configured
-if (process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN) {
-  try {
-    if (typeof window === 'undefined') {
-      // Server-side - use static require string to avoid webpack warnings
-      try {
-        Sentry = require('@sentry/nextjs')
-      } catch (e) {
-        // Module not found or failed to load
-        Sentry = null
-      }
-    } else {
-      // Client-side - Sentry is loaded via sentry.client.config.ts
-      // Check if Sentry is available globally
-      if (typeof (globalThis as any).Sentry !== 'undefined') {
-        Sentry = (globalThis as any).Sentry
-      }
-    }
-  } catch (error) {
-    // Sentry not available, will use console fallback
-    Sentry = null
-  }
-}
+import 'server-only'
+import * as Sentry from '@sentry/nextjs'
 
 export interface ErrorContext {
   userId?: string
@@ -51,26 +20,24 @@ export function captureException(
     return 'test-error-id'
   }
 
-  // Try to use Sentry if available
+  // Use Sentry
   try {
-    if (Sentry && typeof Sentry.captureException === 'function') {
-      const errorId = Sentry.captureException(error, {
-        tags: {
-          environment: process.env.NODE_ENV || 'unknown',
-          ...(context?.userRole && { userRole: context.userRole }),
-        },
-        user: context?.userId
-          ? {
-              id: context.userId,
-            }
-          : undefined,
-        extra: {
-          ...context,
-          timestamp: new Date().toISOString(),
-        },
-      })
-      return errorId || 'sentry-error-id'
-    }
+    const errorId = Sentry.captureException(error, {
+      tags: {
+        environment: process.env.NODE_ENV || 'unknown',
+        ...(context?.userRole && { userRole: context.userRole }),
+      },
+      user: context?.userId
+        ? {
+            id: context.userId,
+          }
+        : undefined,
+      extra: {
+        ...context,
+        timestamp: new Date().toISOString(),
+      },
+    })
+    return errorId || 'sentry-error-id'
   } catch (err) {
     // Sentry failed, fall back to console
   }
@@ -92,27 +59,25 @@ export function captureMessage(
     return 'test-message-id'
   }
 
-  // Try to use Sentry if available
+  // Use Sentry
   try {
-    if (Sentry && typeof Sentry.captureMessage === 'function') {
-      const messageId = Sentry.captureMessage(message, {
-        level: level as any,
-        tags: {
-          environment: process.env.NODE_ENV || 'unknown',
-          ...(context?.userRole && { userRole: context.userRole }),
-        },
-        user: context?.userId
-          ? {
-              id: context.userId,
-            }
-          : undefined,
-        extra: {
-          ...context,
-          timestamp: new Date().toISOString(),
-        },
-      })
-      return messageId || 'sentry-message-id'
-    }
+    const messageId = Sentry.captureMessage(message, {
+      level: level as any,
+      tags: {
+        environment: process.env.NODE_ENV || 'unknown',
+        ...(context?.userRole && { userRole: context.userRole }),
+      },
+      user: context?.userId
+        ? {
+            id: context.userId,
+          }
+        : undefined,
+      extra: {
+        ...context,
+        timestamp: new Date().toISOString(),
+      },
+    })
+    return messageId || 'sentry-message-id'
   } catch (err) {
     // Sentry failed, fall back to console
   }
@@ -135,15 +100,13 @@ export function addBreadcrumb(
   }
 
   try {
-    if (Sentry && typeof Sentry.addBreadcrumb === 'function') {
-      Sentry.addBreadcrumb({
-        message,
-        category: category || 'default',
-        level: level as any,
-        data,
-        timestamp: Date.now() / 1000,
-      })
-    }
+    Sentry.addBreadcrumb({
+      message,
+      category: category || 'default',
+      level: level as any,
+      data,
+      timestamp: Date.now() / 1000,
+    })
   } catch (err) {
     // Sentry not available
   }
@@ -158,17 +121,13 @@ export function setUser(user: { id: string; email?: string; role?: string }): vo
   }
 
   try {
-    if (Sentry && typeof Sentry.setUser === 'function') {
-      Sentry.setUser({
-        id: user.id,
-        email: user.email,
-        username: user.email,
-      })
+    Sentry.setUser({
+      id: user.id,
+      email: user.email,
+      username: user.email,
+    })
 
-      if (typeof Sentry.setTag === 'function') {
-        Sentry.setTag('userRole', user.role || 'unknown')
-      }
-    }
+    Sentry.setTag('userRole', user.role || 'unknown')
   } catch (err) {
     // Sentry not available
   }
@@ -183,9 +142,7 @@ export function clearUser(): void {
   }
 
   try {
-    if (Sentry && typeof Sentry.setUser === 'function') {
-      Sentry.setUser(null)
-    }
+    Sentry.setUser(null)
   } catch (err) {
     // Sentry not available
   }

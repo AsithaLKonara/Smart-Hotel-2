@@ -47,15 +47,15 @@ export async function searchKnowledge(query: string): Promise<string[]> {
         });
 
         const matches = knowledgeEntries
-            .map((item) => ({
+            .map((item: any) => ({
                 content: item.content,
                 similarity: cosineSimilarity(queryEmbedding, item.embedding as number[]),
             }))
-            .filter((match) => match.similarity > 0.6) // Higher threshold for quality
-            .sort((a, b) => b.similarity - a.similarity)
+            .filter((match: any) => match.similarity > 0.6) // Higher threshold for quality
+            .sort((a: any, b: any) => b.similarity - a.similarity)
             .slice(0, 5);
 
-        return matches.map((m) => m.content);
+        return matches.map((m: any) => m.content);
     } catch (err) {
         console.error("searchKnowledge failed:", err);
         return [];

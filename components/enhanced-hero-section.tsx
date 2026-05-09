@@ -8,19 +8,19 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 const slides = [
   {
-    image: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&q=80&w=1920',
+    image: '/images/hotel/hotel-hero-1.jpg',
     title: 'The Art of Luxury',
     subtitle: 'A Sanctuary of Sophistication',
     description: 'Experience unparalleled elegance in our meticulously designed suites, where every detail tells a story of refined luxury.',
   },
   {
-    image: 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&q=80&w=1920',
+    image: '/images/hotel/hotel-hero-2.jpg',
     title: 'Exquisite Dining',
     subtitle: 'A Culinary Odyssey',
     description: 'Indulge in a world-class gastronomic journey crafted by Michelin-starred chefs, celebrating the finest seasonal ingredients.',
   },
   {
-    image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=1920',
+    image: '/images/hotel/hotel-hero-3.jpg',
     title: 'Serene Wellness',
     subtitle: 'Rejuvenate Your Senses',
     description: 'Discover total tranquility in our world-class spa, offering bespoke treatments designed to restore balance and harmony.',
@@ -52,28 +52,32 @@ export default function EnhancedHeroSection() {
   }
 
   return (
-    <section className="relative h-screen min-h-[700px] w-full overflow-hidden bg-midnight">
-      {/* Background Slides */}
+    <section className="relative h-screen min-h-[700px] w-full overflow-hidden bg-transparent">
+      {/* Background Image Slideshow with Smooth Crossfade and Scale Animation */}
       <AnimatePresence mode="wait">
         <motion.div
           key={currentSlide}
-          initial={{ opacity: 0, scale: 1.1 }}
+          initial={{ opacity: 0, scale: 1.06 }}
           animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 1.5, ease: "easeOut" }}
-          className="absolute inset-0"
+          exit={{ opacity: 0, scale: 0.96 }}
+          transition={{ duration: 1.2, ease: "easeInOut" }}
+          className="absolute inset-0 -z-10 overflow-hidden"
         >
-          <div 
-            className="absolute inset-0 bg-cover bg-center transition-transform duration-[10000ms] scale-110"
-            style={{ backgroundImage: `url(${slides[currentSlide].image})` }}
+          <img
+            src={slides[currentSlide].image}
+            alt={slides[currentSlide].title}
+            className="w-full h-full object-cover origin-center"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-midnight/60 via-midnight/40 to-midnight/80" />
+          {/* Multi-layered premium gradient overlays and vignette */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-black/15 to-black/55" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-black/25" />
+          <div className="absolute inset-0 backdrop-blur-[1px]" />
         </motion.div>
       </AnimatePresence>
 
       <div className="relative z-10 h-full container mx-auto px-4 flex flex-col justify-center">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          
+
           {/* Hero Content */}
           <div className="lg:col-span-8 space-y-8 pt-20">
             <motion.div
@@ -130,48 +134,52 @@ export default function EnhancedHeroSection() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 1.2 }}
-            className="lg:col-span-4 bg-midnight/40 backdrop-blur-2xl border border-white/10 p-8 shadow-2xl"
+            className="lg:col-span-4 bg-black/50 backdrop-blur-3xl border border-white/10 p-8 shadow-luxury rounded-2xl relative overflow-hidden"
           >
+            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
             <h3 className="text-xl font-serif font-bold text-white mb-6 text-center uppercase tracking-widest">Reserve Your Suite</h3>
-            
+
             <div className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-[10px] uppercase tracking-widest text-white/50 font-bold">Check-In</label>
+                  <label htmlFor="heroCheckIn" className="text-[10px] uppercase tracking-widest text-primary font-bold">Check-In</label>
                   <input
+                    id="heroCheckIn"
                     type="date"
                     value={bookingDates.checkIn}
                     onChange={(e) => setBookingDates(prev => ({ ...prev, checkIn: e.target.value }))}
-                    className="w-full bg-white/5 border border-white/10 text-white p-3 text-sm focus:outline-none focus:border-luxury transition-colors"
+                    className="w-full bg-white/5 border border-white/10 text-white p-3 text-sm rounded-lg focus:outline-none focus:border-primary transition-colors"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] uppercase tracking-widest text-white/50 font-bold">Check-Out</label>
+                  <label htmlFor="heroCheckOut" className="text-[10px] uppercase tracking-widest text-primary font-bold">Check-Out</label>
                   <input
+                    id="heroCheckOut"
                     type="date"
                     value={bookingDates.checkOut}
                     onChange={(e) => setBookingDates(prev => ({ ...prev, checkOut: e.target.value }))}
-                    className="w-full bg-white/5 border border-white/10 text-white p-3 text-sm focus:outline-none focus:border-luxury transition-colors"
+                    className="w-full bg-white/5 border border-white/10 text-white p-3 text-sm rounded-lg focus:outline-none focus:border-primary transition-colors"
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] uppercase tracking-widest text-white/50 font-bold">Guests</label>
+                <label htmlFor="heroGuests" className="text-[10px] uppercase tracking-widest text-primary font-bold">Guests</label>
                 <select
+                  id="heroGuests"
                   value={bookingDates.guests}
                   onChange={(e) => setBookingDates(prev => ({ ...prev, guests: parseInt(e.target.value) }))}
-                  className="w-full bg-white/5 border border-white/10 text-white p-3 text-sm focus:outline-none focus:border-luxury appearance-none"
+                  className="w-full bg-white/5 border border-white/10 text-white p-3 text-sm rounded-lg focus:outline-none focus:border-primary appearance-none"
                 >
                   {[1, 2, 3, 4].map(n => (
-                    <option key={n} value={n} className="bg-midnight">{n} {n === 1 ? 'Guest' : 'Guests'}</option>
+                    <option key={n} value={n} className="bg-neutral-900 text-white">{n} {n === 1 ? 'Guest' : 'Guests'}</option>
                   ))}
                 </select>
               </div>
 
               <Button
                 onClick={handleBookingSearch}
-                className="w-full bg-luxury hover:bg-luxury/90 text-white h-14 rounded-none font-bold uppercase tracking-widest text-xs border-none"
+                className="w-full bg-gold-gradient hover:opacity-90 text-white h-14 rounded-lg font-bold uppercase tracking-widest text-xs border-none shadow-luxury transition-all"
                 disabled={!bookingDates.checkIn || !bookingDates.checkOut}
               >
                 Search Availability
@@ -179,7 +187,7 @@ export default function EnhancedHeroSection() {
 
               <div className="flex items-center justify-between text-[10px] uppercase tracking-tighter text-white/40 pt-4 border-t border-white/5">
                 <div className="flex items-center gap-1">
-                  <Star className="w-2 h-2 fill-luxury text-luxury" />
+                  <Star className="w-2.5 h-2.5 fill-primary text-primary" />
                   <span>Best Price Guarantee</span>
                 </div>
                 <span>Free Cancellation</span>
@@ -194,10 +202,10 @@ export default function EnhancedHeroSection() {
         {slides.map((_, i) => (
           <button
             key={i}
+            aria-label={`Go to slide ${i + 1}`}
             onClick={() => setCurrentSlide(i)}
-            className={`h-1 transition-all duration-500 ${
-              i === currentSlide ? 'w-12 bg-luxury' : 'w-6 bg-white/20'
-            }`}
+            className={`h-1 transition-all duration-500 ${i === currentSlide ? 'w-12 bg-luxury' : 'w-6 bg-white/20'
+              }`}
           />
         ))}
       </div>

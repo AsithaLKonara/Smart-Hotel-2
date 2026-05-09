@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next"
-import { Inter, Playfair_Display } from "next/font/google"
+import { Inter } from "next/font/google"
 import "./globals.css"
 import { Toaster } from "@/components/ui/toaster"
 import ErrorBoundary from "@/components/error-boundary"
@@ -10,37 +10,12 @@ import { ChatWrapper } from "@/components/live-chat/chat-wrapper"
 import { Providers } from "@/components/providers"
 import { WebVitalsTracker } from "@/components/web-vitals-tracker"
 import HotelSchema from "@/components/seo/hotel-schema"
-
-// Initialize Sentry on the server (optional)
-// Only initialize if SENTRY_DSN is set and package is available
-if (process.env.NODE_ENV === 'production' && process.env.SENTRY_DSN) {
-  try {
-    // Use static require string to avoid webpack bundling issues
-    try {
-      const Sentry = require('@sentry/nextjs')
-      Sentry.init({
-        dsn: process.env.SENTRY_DSN,
-        tracesSampleRate: 0.1,
-        environment: process.env.NODE_ENV,
-      })
-    } catch (e) {
-      // Sentry not found or failed to load
-    }
-  } catch (error) {
-    // Sentry not installed or configuration error - continue without it
-    // This is expected if Sentry is not installed
-  }
-}
+import GlobalCinematicBackground from "@/components/global-cinematic-background"
 
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
-  display: "swap",
-})
-
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  variable: "--font-playfair",
+  weight: ["300", "400", "500", "600", "700", "800"],
   display: "swap",
 })
 
@@ -138,14 +113,14 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
+    <html lang="en" className={`dark ${inter.variable}`}>
       <head>
         {/* Preconnect to external domains for performance */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://api.stripe.com" />
         <link rel="dns-prefetch" href="https://js.stripe.com" />
-        
+
         {/* Google Analytics */}
         {process.env.NEXT_PUBLIC_GA_ID && (
           <>
@@ -168,16 +143,17 @@ export default function RootLayout({
           </>
         )}
       </head>
-      <body className="min-h-screen bg-background font-sans antialiased">
+      <body className="min-h-screen bg-transparent text-foreground font-sans antialiased">
         <ErrorBoundary>
           <Providers>
             <HotelSchema />
-            <div className="flex min-h-screen flex-col">
-            <HotelNavigation />
-              <main id="main-content" role="main" className="flex-1">
-            {children}
+            <GlobalCinematicBackground />
+            <div className="flex min-h-screen flex-col relative z-10 bg-transparent">
+              <HotelNavigation />
+              <main id="main-content" role="main" className="flex-1 bg-transparent">
+                {children}
               </main>
-            <ConditionalFooter />
+              <ConditionalFooter />
             </div>
             <Toaster />
             <ClientScripts />

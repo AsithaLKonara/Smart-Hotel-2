@@ -163,11 +163,18 @@ export function getClientIdentifier(req: NextRequest): string {
   return `${ip}:${userAgentHash}`
 }
 
+export function getTenantIdentifier(req: NextRequest): string {
+  const tenantId = req.headers.get('x-tenant-id') || req.headers.get('x-property-id') || 'global'
+  const clientIp = getClientIdentifier(req)
+  return `tenant:${tenantId}:${clientIp}`
+}
+
 export function enhancedRateLimit(
   req: NextRequest,
   type: 'auth' | 'booking' | 'api' | 'payment' = 'api'
 ): RateLimitResult {
-  const identifier = getClientIdentifier(req)
+  const identifier = getTenantIdentifier(req)
+  const tenantTier = req.headers.get('x-tenant-tier') || 'standard'
   let limiter: EnhancedRateLimiter
 
   switch (type) {
@@ -184,7 +191,19 @@ export function enhancedRateLimit(
       limiter = apiLimiter
   }
 
-  return limiter.isAllowed(identifier)
+  const result = limiter.isAllowed(identifier)
+
+  // Adaptive Throttling: Bypass standard rates for enterprise subscription tokens
+  if (!result.allowed && !result.blocked && tenantTier === 'enterprise') {
+    return {
+      allowed: true,
+      remaining: 5,
+      resetTime: result.resetTime,
+      blocked: false
+    }
+  }
+
+  return result
 }
 
 export function createEnhancedRateLimitResponse(

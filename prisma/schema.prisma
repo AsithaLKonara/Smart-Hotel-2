@@ -471,3 +471,17 @@ model EmbeddingCache {
   embedding Float[]
   createdAt DateTime @default(now()) @db.Date
 }
+
+model AuditLog {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String?  @db.ObjectId
+  actor     String
+  action    String
+  details   String
+  ip        String?
+  createdAt DateTime @default(now()) @db.Date
+
+  @@index([createdAt])
+  @@index([userId])
+  @@index([action])
+}
