@@ -28,6 +28,7 @@ import { Badge } from '@/components/ui/badge'
 import toast from 'react-hot-toast'
 import { canAccessAdminDashboard, getUserRole } from '@/lib/rbac-helpers'
 import { PremiumSpinner } from '@/components/ui/premium-spinner'
+import { BookingCalendar } from '@/components/admin/booking-calendar'
 
 interface DashboardData {
   summary: {
@@ -93,6 +94,7 @@ function AdminDashboardContent() {
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [selectedPeriod, setSelectedPeriod] = useState('today')
+  const [activeTab, setActiveTab] = useState('analytics')
 
   useEffect(() => {
     // Only redirect if we're sure the user is unauthenticated or has wrong role
@@ -360,10 +362,32 @@ function AdminDashboardContent() {
           </Card>
         </div>
 
-        {/* Charts and Analytics */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {/* Occupancy Chart */}
-          <Card className="p-6 bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl">
+        {/* PMS Interactive Tabs */}
+        <div className="flex border-b border-white/10 mb-8 mt-4 overflow-x-auto">
+          <button
+            onClick={() => setActiveTab('analytics')}
+            className={`py-3 px-6 text-sm font-bold tracking-wider uppercase border-b-2 whitespace-nowrap transition-all duration-300 ${activeTab === 'analytics' ? 'border-primary text-primary font-serif' : 'border-transparent text-white/40 hover:text-white/80'}`}
+          >
+            Analytics & Cockpit
+          </button>
+          <button
+            onClick={() => setActiveTab('calendar')}
+            className={`py-3 px-6 text-sm font-bold tracking-wider uppercase border-b-2 whitespace-nowrap transition-all duration-300 ${activeTab === 'calendar' ? 'border-primary text-primary font-serif' : 'border-transparent text-white/40 hover:text-white/80'}`}
+          >
+            PMS Booking Calendar
+          </button>
+        </div>
+
+        {activeTab === 'calendar' ? (
+          <div className="bg-transparent mb-8">
+            <BookingCalendar onMutationSuccess={fetchDashboardData} />
+          </div>
+        ) : (
+          <>
+            {/* Charts and Analytics */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+              {/* Occupancy Chart */}
+              <Card className="p-6 bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl">
             <h3 className="text-lg font-semibold mb-4 flex items-center text-white">
               <BarChart3 className="w-5 h-5 mr-2 text-primary" />
               Occupancy Forecast (30 Days)
@@ -426,81 +450,81 @@ function AdminDashboardContent() {
         {/* Recent Activity and Top Rooms */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Recent Bookings */}
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4 flex items-center">
-              <Activity className="w-5 h-5 mr-2" />
+          <Card className="p-6 bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl">
+            <h3 className="text-lg font-semibold mb-4 flex items-center text-white">
+              <Activity className="w-5 h-5 mr-2 text-primary" />
               Recent Bookings
             </h3>
             <div className="space-y-4">
               {recentActivity?.bookings && recentActivity.bookings.length > 0 ? (
                 recentActivity.bookings.slice(0, 5).map((booking) => (
-                  <div key={booking.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div key={booking.id} className="flex items-center justify-between p-3 bg-white/5 border border-white/5 hover:border-white/10 rounded-xl transition-all">
                     <div>
-                      <p className="font-medium text-gray-900">{booking.guestName}</p>
-                      <p className="text-sm text-gray-600">
+                      <p className="font-medium text-white">{booking.guestName}</p>
+                      <p className="text-sm text-white/60">
                         Room {booking.roomNumber} • {booking.roomType}
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-white/40 font-mono mt-1">
                         {formatDate(booking.checkIn)} - {formatDate(booking.checkOut)}
                       </p>
                     </div>
                     <div className="text-right">
-                      <Badge className={getStatusColor(booking.status)}>
+                      <Badge className={`${getStatusColor(booking.status)} text-[10px] uppercase font-bold tracking-wider px-2 py-0.5`}>
                         {booking.status.replace('_', ' ')}
                       </Badge>
-                      <p className="text-sm font-medium text-gray-900 mt-1">
+                      <p className="text-sm font-medium text-white font-mono mt-1.5">
                         {formatCurrency(booking.totalAmount)}
                       </p>
                     </div>
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-gray-500 text-center py-4">No recent bookings</p>
+                <p className="text-sm text-white/40 text-center py-4">No recent bookings</p>
               )}
             </div>
           </Card>
 
           {/* Top Performing Rooms */}
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4 flex items-center">
-              <Star className="w-5 h-5 mr-2" />
+          <Card className="p-6 bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl">
+            <h3 className="text-lg font-semibold mb-4 flex items-center text-white">
+              <Star className="w-5 h-5 mr-2 text-primary" />
               Top Performing Rooms
             </h3>
             <div className="space-y-4">
               {recentActivity?.topRooms && recentActivity.topRooms.length > 0 ? (
                 recentActivity.topRooms.map((room) => (
-                  <div key={room.rank} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div key={room.rank} className="flex items-center justify-between p-3 bg-white/5 border border-white/5 hover:border-white/10 rounded-xl transition-all">
                     <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center font-bold">
+                      <div className="w-8 h-8 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full flex items-center justify-center font-bold">
                         {room.rank}
                       </div>
                       <div>
-                        <p className="font-medium text-gray-900">Room {room.roomNumber}</p>
-                        <p className="text-sm text-gray-600">{room.roomType}</p>
+                        <p className="font-medium text-white">Room {room.roomNumber}</p>
+                        <p className="text-sm text-white/60">{room.roomType}</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-medium text-gray-900">
+                      <p className="text-sm font-medium text-white font-mono">
                         {room.bookingCount} bookings
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-white/40 font-mono mt-0.5">
                         {formatCurrency(room.revenue)}
                       </p>
                     </div>
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-gray-500 text-center py-4">No top rooms data available</p>
+                <p className="text-sm text-white/40 text-center py-4">No top rooms data available</p>
               )}
             </div>
           </Card>
         </div>
 
         {/* SmartHotel OS Unified Operations Cockpit */}
-        <div className="mt-8 border-t border-gray-200 dark:border-gray-800 pt-8">
+        <div className="mt-8 border-t border-white/10 pt-8">
           <div className="mb-6">
             <div className="flex items-center gap-2 mb-1">
-              <Badge className="bg-amber-600/10 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5">
+              <Badge className="bg-amber-500/10 text-amber-400 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5">
                 Unified Hospitality OS
               </Badge>
               <span className="flex h-1.5 w-1.5 relative">
@@ -508,98 +532,100 @@ function AdminDashboardContent() {
                 <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
               </span>
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">SmartHotel OS Command Deck</h2>
-            <p className="text-sm text-gray-500 mt-1">E2E Operational center controllers, real-time sync systems, and yield dashboards.</p>
+            <h2 className="text-2xl font-bold text-white font-serif">SmartHotel OS Command Deck</h2>
+            <p className="text-sm text-white/50 mt-1">E2E Operational center controllers, real-time sync systems, and yield dashboards.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-            <Card className="p-5 border border-gray-200 dark:border-gray-800 hover:border-amber-500 dark:hover:border-amber-500/40 hover:-translate-y-0.5 transition-all flex flex-col justify-between h-[180px] cursor-pointer" onClick={() => router.push('/admin/receptionist')}>
+            <Card className="p-5 bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/50 hover:bg-white/10 hover:-translate-y-0.5 transition-all flex flex-col justify-between h-[180px] cursor-pointer rounded-2xl group shadow-lg" onClick={() => router.push('/admin/receptionist')}>
               <div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-400 font-extrabold uppercase tracking-wider">Front Desk</span>
-                  <Badge className="bg-emerald-500/10 text-emerald-600 text-[9px] uppercase tracking-wider font-extrabold px-1.5 py-0.5">LIVE DESK</Badge>
+                  <span className="text-xs text-white/40 font-extrabold uppercase tracking-wider">Front Desk</span>
+                  <Badge className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[9px] uppercase tracking-wider font-extrabold px-1.5 py-0.5">LIVE DESK</Badge>
                 </div>
-                <h3 className="text-lg font-bold text-gray-950 dark:text-white mt-2">Receptionist Center</h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Arrivals/departures timeline, live occupancy room maps, VIP check-in alerts, and guest memo logs.</p>
+                <h3 className="text-lg font-bold text-white mt-2 group-hover:text-primary transition-colors">Receptionist Center</h3>
+                <p className="text-xs text-white/50 mt-1 line-clamp-3">Arrivals/departures timeline, live occupancy room maps, VIP check-in alerts, and guest memo logs.</p>
               </div>
-              <div className="text-right text-xs font-bold text-amber-600 flex items-center justify-end gap-1 mt-4">
+              <div className="text-right text-xs font-bold text-primary flex items-center justify-end gap-1 mt-4 group-hover:translate-x-1 transition-transform">
                 Open Workspace &rarr;
               </div>
             </Card>
 
-            <Card className="p-5 border border-gray-200 dark:border-gray-800 hover:border-amber-500 dark:hover:border-amber-500/40 hover:-translate-y-0.5 transition-all flex flex-col justify-between h-[180px] cursor-pointer" onClick={() => router.push('/admin/manager')}>
+            <Card className="p-5 bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/50 hover:bg-white/10 hover:-translate-y-0.5 transition-all flex flex-col justify-between h-[180px] cursor-pointer rounded-2xl group shadow-lg" onClick={() => router.push('/admin/manager')}>
               <div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-400 font-extrabold uppercase tracking-wider">Revenue & SLA</span>
-                  <Badge className="bg-purple-500/10 text-purple-600 text-[9px] uppercase tracking-wider font-extrabold px-1.5 py-0.5">FORECASTING</Badge>
+                  <span className="text-xs text-white/40 font-extrabold uppercase tracking-wider">Revenue & SLA</span>
+                  <Badge className="bg-purple-500/10 text-purple-400 border border-purple-500/20 text-[9px] uppercase tracking-wider font-extrabold px-1.5 py-0.5">FORECASTING</Badge>
                 </div>
-                <h3 className="text-lg font-bold text-gray-950 dark:text-white mt-2">Manager Intelligence</h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Real-time RevPAR metrics, ADR, SLA incident monitors, kitchen bottlenecks, and weekly staffing predictions.</p>
+                <h3 className="text-lg font-bold text-white mt-2 group-hover:text-primary transition-colors">Manager Intelligence</h3>
+                <p className="text-xs text-white/50 mt-1 line-clamp-3">Real-time RevPAR metrics, ADR, SLA incident monitors, kitchen bottlenecks, and weekly staffing predictions.</p>
               </div>
-              <div className="text-right text-xs font-bold text-amber-600 flex items-center justify-end gap-1 mt-4">
+              <div className="text-right text-xs font-bold text-primary flex items-center justify-end gap-1 mt-4 group-hover:translate-x-1 transition-transform">
                 Open Workspace &rarr;
               </div>
             </Card>
 
-            <Card className="p-5 border border-gray-200 dark:border-gray-800 hover:border-amber-500 dark:hover:border-amber-500/40 hover:-translate-y-0.5 transition-all flex flex-col justify-between h-[180px] cursor-pointer" onClick={() => router.push('/kitchen/dashboard')}>
+            <Card className="p-5 bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/50 hover:bg-white/10 hover:-translate-y-0.5 transition-all flex flex-col justify-between h-[180px] cursor-pointer rounded-2xl group shadow-lg" onClick={() => router.push('/kitchen/dashboard')}>
               <div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-400 font-extrabold uppercase tracking-wider">Culinary Queue</span>
-                  <Badge className="bg-amber-500/10 text-amber-600 text-[9px] uppercase tracking-wider font-extrabold px-1.5 py-0.5">KDS INTERACTIVE</Badge>
+                  <span className="text-xs text-white/40 font-extrabold uppercase tracking-wider">Culinary Queue</span>
+                  <Badge className="bg-amber-500/10 text-amber-400 border border-amber-500/20 text-[9px] uppercase tracking-wider font-extrabold px-1.5 py-0.5">KDS INTERACTIVE</Badge>
                 </div>
-                <h3 className="text-lg font-bold text-gray-950 dark:text-white mt-2">Kitchen Display (KDS)</h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Real-time room order tickers, color-coded preparation SLA timers, special requests, and allergy alerts.</p>
+                <h3 className="text-lg font-bold text-white mt-2 group-hover:text-primary transition-colors">Kitchen Display (KDS)</h3>
+                <p className="text-xs text-white/50 mt-1 line-clamp-3">Real-time room order tickers, color-coded preparation SLA timers, special requests, and allergy alerts.</p>
               </div>
-              <div className="text-right text-xs font-bold text-amber-600 flex items-center justify-end gap-1 mt-4">
+              <div className="text-right text-xs font-bold text-primary flex items-center justify-end gap-1 mt-4 group-hover:translate-x-1 transition-transform">
                 Open KDS Screen &rarr;
               </div>
             </Card>
 
-            <Card className="p-5 border border-gray-200 dark:border-gray-800 hover:border-amber-500 dark:hover:border-amber-500/40 hover:-translate-y-0.5 transition-all flex flex-col justify-between h-[180px] cursor-pointer" onClick={() => router.push('/admin/housekeeping')}>
+            <Card className="p-5 bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/50 hover:bg-white/10 hover:-translate-y-0.5 transition-all flex flex-col justify-between h-[180px] cursor-pointer rounded-2xl group shadow-lg" onClick={() => router.push('/admin/housekeeping')}>
               <div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-400 font-extrabold uppercase tracking-wider">Service Quality</span>
-                  <Badge className="bg-indigo-500/10 text-indigo-600 text-[9px] uppercase tracking-wider font-extrabold px-1.5 py-0.5">DISPATCH</Badge>
+                  <span className="text-xs text-white/40 font-extrabold uppercase tracking-wider">Service Quality</span>
+                  <Badge className="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 text-[9px] uppercase tracking-wider font-extrabold px-1.5 py-0.5">DISPATCH</Badge>
                 </div>
-                <h3 className="text-lg font-bold text-gray-950 dark:text-white mt-2">Housekeeping Hub</h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Mobile task lists, active clean sweep timers, supervisor quality rejections, and room release gates.</p>
+                <h3 className="text-lg font-bold text-white mt-2 group-hover:text-primary transition-colors">Housekeeping Hub</h3>
+                <p className="text-xs text-white/50 mt-1 line-clamp-3">Mobile task lists, active clean sweep timers, supervisor quality rejections, and room release gates.</p>
               </div>
-              <div className="text-right text-xs font-bold text-amber-600 flex items-center justify-end gap-1 mt-4">
+              <div className="text-right text-xs font-bold text-primary flex items-center justify-end gap-1 mt-4 group-hover:translate-x-1 transition-transform">
                 Open Workspace &rarr;
               </div>
             </Card>
 
-            <Card className="p-5 border border-gray-200 dark:border-gray-800 hover:border-amber-500 dark:hover:border-amber-500/40 hover:-translate-y-0.5 transition-all flex flex-col justify-between h-[180px] cursor-pointer" onClick={() => router.push('/admin/ota')}>
+            <Card className="p-5 bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/50 hover:bg-white/10 hover:-translate-y-0.5 transition-all flex flex-col justify-between h-[180px] cursor-pointer rounded-2xl group shadow-lg" onClick={() => router.push('/admin/ota')}>
               <div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-400 font-extrabold uppercase tracking-wider">Integrations</span>
-                  <Badge className="bg-blue-500/10 text-blue-600 text-[9px] uppercase tracking-wider font-extrabold px-1.5 py-0.5">SYNC ENGINE</Badge>
+                  <span className="text-xs text-white/40 font-extrabold uppercase tracking-wider">Integrations</span>
+                  <Badge className="bg-blue-500/10 text-blue-400 border border-blue-500/20 text-[9px] uppercase tracking-wider font-extrabold px-1.5 py-0.5">SYNC ENGINE</Badge>
                 </div>
-                <h3 className="text-lg font-bold text-gray-950 dark:text-white mt-2">OTA Channel Manager</h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Simulated Booking.com/Airbnb synchronization, pricing markup schedules, and webhook log terminals.</p>
+                <h3 className="text-lg font-bold text-white mt-2 group-hover:text-primary transition-colors">OTA Channel Manager</h3>
+                <p className="text-xs text-white/50 mt-1 line-clamp-3">Simulated Booking.com/Airbnb synchronization, pricing markup schedules, and webhook log terminals.</p>
               </div>
-              <div className="text-right text-xs font-bold text-amber-600 flex items-center justify-end gap-1 mt-4">
+              <div className="text-right text-xs font-bold text-primary flex items-center justify-end gap-1 mt-4 group-hover:translate-x-1 transition-transform">
                 Open Channel Sync &rarr;
               </div>
             </Card>
 
-            <Card className="p-5 border border-gray-200 dark:border-gray-800 hover:border-amber-500 dark:hover:border-amber-500/40 hover:-translate-y-0.5 transition-all flex flex-col justify-between h-[180px] cursor-pointer" onClick={() => router.push('/admin/calendar')}>
+            <Card className="p-5 bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/50 hover:bg-white/10 hover:-translate-y-0.5 transition-all flex flex-col justify-between h-[180px] cursor-pointer rounded-2xl group shadow-lg" onClick={() => router.push('/admin/calendar')}>
               <div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-400 font-extrabold uppercase tracking-wider">Scheduler</span>
-                  <Badge className="bg-slate-500/10 text-slate-600 text-[9px] uppercase tracking-wider font-extrabold px-1.5 py-0.5">CALENDAR</Badge>
+                  <span className="text-xs text-white/40 font-extrabold uppercase tracking-wider">Scheduler</span>
+                  <Badge className="bg-slate-500/10 text-slate-400 border border-slate-500/20 text-[9px] uppercase tracking-wider font-extrabold px-1.5 py-0.5">CALENDAR</Badge>
                 </div>
-                <h3 className="text-lg font-bold text-gray-950 dark:text-white mt-2">Matrix Scheduler</h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">View room occupancy grids month-by-month, track conflicts, and edit booking properties in calendar matrices.</p>
+                <h3 className="text-lg font-bold text-white mt-2 group-hover:text-primary transition-colors">Matrix Scheduler</h3>
+                <p className="text-xs text-white/50 mt-1 line-clamp-3">View room occupancy grids month-by-month, track conflicts, and edit booking properties in calendar matrices.</p>
               </div>
-              <div className="text-right text-xs font-bold text-amber-600 flex items-center justify-end gap-1 mt-4">
+              <div className="text-right text-xs font-bold text-primary flex items-center justify-end gap-1 mt-4 group-hover:translate-x-1 transition-transform">
                 Open Calendar Matrix &rarr;
               </div>
             </Card>
 
           </div>
         </div>
+      </>
+    )}
       </div>
     </div>
   )
@@ -607,11 +633,8 @@ function AdminDashboardContent() {
 
 function AdminDashboardLoading() {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto mb-4"></div>
-        <p className="text-gray-600">Loading dashboard...</p>
-      </div>
+    <div className="min-h-screen bg-transparent flex items-center justify-center">
+      <PremiumSpinner size="lg" text="Decompressing system matrices..." />
     </div>
   )
 }

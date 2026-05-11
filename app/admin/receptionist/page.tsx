@@ -31,6 +31,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import toast from 'react-hot-toast'
 import { PremiumSpinner } from '@/components/ui/premium-spinner'
+import { BookingCalendar } from '@/components/admin/booking-calendar'
 
 // Extended High-Density Mock Operational Datastore
 const MOCK_OPERATIONAL_ROOMS = [
@@ -70,6 +71,7 @@ export default function ReceptionistOperationsCenter() {
   const [selectedRoom, setSelectedRoom] = useState<any | null>(null)
   const [guestNotes, setGuestNotes] = useState("")
   const [isVip, setIsVip] = useState(false)
+  const [activeTab, setActiveTab] = useState('grid')
 
   useEffect(() => {
     if (status === 'loading') return
@@ -209,22 +211,22 @@ export default function ReceptionistOperationsCenter() {
         <div className="lg:col-span-4 space-y-6">
           
           {/* Arrivals Queue */}
-          <Card className="bg-white/[0.02] border border-purple-900/30 backdrop-blur-md rounded-none shadow-xl">
-            <CardHeader className="border-b border-purple-950/50 pb-4">
+          <Card className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl shadow-luxury">
+            <CardHeader className="border-b border-white/5 pb-4">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg font-serif text-white flex items-center gap-2">
                   <Clock className="w-4 h-4 text-emerald-400" /> Arrivals Timeline
                 </CardTitle>
-                <Badge className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">{arrivals.length} Today</Badge>
+                <Badge className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-bold">{arrivals.length} Today</Badge>
               </div>
-              <CardDescription className="text-slate-400 text-xs">Awaiting arrival check-in verification</CardDescription>
+              <CardDescription className="text-white/40 text-xs">Awaiting arrival check-in verification</CardDescription>
             </CardHeader>
             <CardContent className="pt-4 space-y-4 max-h-[350px] overflow-y-auto">
               {arrivals.length === 0 ? (
-                <div className="text-center py-6 text-slate-500 text-sm">No pending arrivals today</div>
+                <div className="text-center py-6 text-white/30 text-sm font-semibold">No pending arrivals today</div>
               ) : (
                 arrivals.map(arr => (
-                  <div key={arr.id} className="p-4 bg-white/[0.01] border border-slate-800 hover:border-purple-900/30 transition-all flex flex-col gap-2 relative">
+                  <div key={arr.id} className="p-4 bg-white/5 border border-white/5 hover:border-white/10 hover:scale-[1.01] transition-all flex flex-col gap-2 relative rounded-xl shadow-sm">
                     {arr.vip && (
                       <span className="absolute top-3 right-3 bg-amber-500/10 text-amber-400 border border-amber-500/20 text-[9px] uppercase tracking-widest font-extrabold px-1.5 py-0.5 rounded flex items-center gap-1">
                         <Sparkles className="w-2.5 h-2.5" /> VIP
@@ -232,28 +234,28 @@ export default function ReceptionistOperationsCenter() {
                     )}
                     <div className="flex items-start justify-between pr-14">
                       <div>
-                        <h4 className="font-bold text-slate-200 text-sm">{arr.guestName}</h4>
-                        <p className="text-slate-400 text-xs">Room {arr.roomNumber} ({arr.roomType})</p>
+                        <h4 className="font-bold text-white text-sm">{arr.guestName}</h4>
+                        <p className="text-white/60 text-xs">Room {arr.roomNumber} ({arr.roomType})</p>
                       </div>
                     </div>
                     
-                    <div className="flex items-center gap-2 text-[11px] text-slate-400 mt-1">
+                    <div className="flex items-center gap-2 text-[11px] text-white/50 mt-1">
                       <Clock className="w-3.5 h-3.5 text-purple-400" /> 
-                      <span>Check-In: <strong className="text-slate-300">{arr.checkIn}</strong></span>
-                      {arr.isLate && <Badge className="bg-rose-500/10 text-rose-400 border border-rose-500/20 text-[10px]">LATE</Badge>}
+                      <span>Check-In: <strong className="text-white/80">{arr.checkIn}</strong></span>
+                      {arr.isLate && <Badge className="bg-rose-500/10 text-rose-400 border border-rose-500/20 text-[10px] font-bold">LATE</Badge>}
                     </div>
 
                     {arr.notes && (
-                      <p className="text-[11px] text-purple-300/80 bg-purple-950/20 p-2 border border-purple-950 border-l-2 border-l-purple-500 italic mt-1 rounded-sm">
+                      <p className="text-[11px] text-purple-300/80 bg-purple-950/20 p-2 border border-purple-950 border-l-2 border-l-purple-500 italic mt-1 rounded-lg">
                         "{arr.notes}"
                       </p>
                     )}
 
-                    <div className="flex items-center justify-between border-t border-slate-800/60 pt-2 mt-2 gap-3">
-                      <span className="text-xs text-slate-400 flex items-center gap-1">
+                    <div className="flex items-center justify-between border-t border-white/5 pt-2 mt-2 gap-3">
+                      <span className="text-xs text-white/50 flex items-center gap-1 font-mono">
                         <DollarSign className="w-3.5 h-3.5 text-emerald-400" /> {arr.payment}
                       </span>
-                      <Button onClick={() => handleCheckIn(arr.roomNumber)} size="sm" className="bg-emerald-600 hover:bg-emerald-500 text-white h-7 text-xs rounded-sm px-3 border-0">
+                      <Button onClick={() => handleCheckIn(arr.roomNumber)} size="sm" className="bg-emerald-600 hover:bg-emerald-500 text-white h-7 text-xs rounded-xl px-4 font-bold border-0">
                         Check-In 🔑
                       </Button>
                     </div>
@@ -264,22 +266,22 @@ export default function ReceptionistOperationsCenter() {
           </Card>
 
           {/* Departures Queue */}
-          <Card className="bg-white/[0.02] border border-purple-900/30 backdrop-blur-md rounded-none shadow-xl">
-            <CardHeader className="border-b border-purple-950/50 pb-4">
+          <Card className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl shadow-luxury">
+            <CardHeader className="border-b border-white/5 pb-4">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg font-serif text-white flex items-center gap-2">
                   <DoorOpen className="w-4 h-4 text-purple-400" /> Departures Timeline
                 </CardTitle>
-                <Badge className="bg-purple-500/10 text-purple-400 border border-purple-500/20">{departures.length} Pending</Badge>
+                <Badge className="bg-purple-500/10 text-purple-400 border border-purple-500/20 text-xs font-bold">{departures.length} Pending</Badge>
               </div>
-              <CardDescription className="text-slate-400 text-xs">Awaiting bill settlement & key return</CardDescription>
+              <CardDescription className="text-white/40 text-xs">Awaiting bill settlement & key return</CardDescription>
             </CardHeader>
             <CardContent className="pt-4 space-y-4 max-h-[350px] overflow-y-auto">
               {departures.length === 0 ? (
-                <div className="text-center py-6 text-slate-500 text-sm">No pending check-outs</div>
+                <div className="text-center py-6 text-white/30 text-sm font-semibold">No pending check-outs</div>
               ) : (
                 departures.map(dep => (
-                  <div key={dep.id} className="p-4 bg-white/[0.01] border border-slate-800 hover:border-purple-900/30 transition-all flex flex-col gap-2 relative">
+                  <div key={dep.id} className="p-4 bg-white/5 border border-white/5 hover:border-white/10 hover:scale-[1.01] transition-all flex flex-col gap-2 relative rounded-xl shadow-sm">
                     {dep.vip && (
                       <span className="absolute top-3 right-3 bg-amber-500/10 text-amber-400 border border-amber-500/20 text-[9px] uppercase tracking-widest font-extrabold px-1.5 py-0.5 rounded flex items-center gap-1">
                         <Sparkles className="w-2.5 h-2.5" /> VIP
@@ -287,21 +289,21 @@ export default function ReceptionistOperationsCenter() {
                     )}
                     <div className="flex items-start justify-between">
                       <div>
-                        <h4 className="font-bold text-slate-200 text-sm">{dep.guestName}</h4>
-                        <p className="text-slate-400 text-xs">Room {dep.roomNumber} ({dep.roomType})</p>
+                        <h4 className="font-bold text-white text-sm">{dep.guestName}</h4>
+                        <p className="text-white/60 text-xs">Room {dep.roomNumber} ({dep.roomType})</p>
                       </div>
                     </div>
                     
-                    <div className="flex items-center gap-2 text-[11px] text-slate-400 mt-1">
+                    <div className="flex items-center gap-2 text-[11px] text-white/50 mt-1">
                       <Clock className="w-3.5 h-3.5 text-purple-400" /> 
-                      <span>Check-Out: <strong className="text-slate-300">{dep.checkOut}</strong></span>
+                      <span>Check-Out: <strong className="text-white/80">{dep.checkOut}</strong></span>
                     </div>
 
-                    <div className="flex items-center justify-between border-t border-slate-800/60 pt-2 mt-2 gap-3">
-                      <span className="text-xs text-slate-400 flex items-center gap-1">
+                    <div className="flex items-center justify-between border-t border-white/5 pt-2 mt-2 gap-3">
+                      <span className="text-xs text-white/50 flex items-center gap-1 font-mono">
                         <DollarSign className="w-3.5 h-3.5 text-amber-400" /> {dep.payment}
                       </span>
-                      <Button onClick={() => handleCheckOut(dep.roomNumber)} size="sm" className="bg-purple-600 hover:bg-purple-500 text-white h-7 text-xs rounded-sm px-3 border-0">
+                      <Button onClick={() => handleCheckOut(dep.roomNumber)} size="sm" className="bg-purple-600 hover:bg-purple-500 text-white h-7 text-xs rounded-xl px-4 font-bold border-0">
                         Check-Out 🧹
                       </Button>
                     </div>
@@ -312,131 +314,157 @@ export default function ReceptionistOperationsCenter() {
           </Card>
         </div>
 
-        {/* Center/Right: Occupancy Status Map Room Cards */}
+        {/* Center/Right: Occupancy Status Map Room Cards or Calendar */}
         <div className="lg:col-span-8 space-y-6">
           
-          <Card className="bg-white/[0.02] border border-purple-900/30 backdrop-blur-md rounded-none shadow-xl">
-            <CardHeader className="border-b border-purple-950/50">
+          <Card className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl shadow-luxury overflow-hidden">
+            <CardHeader className="border-b border-white/5 pb-4">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
-                  <CardTitle className="text-xl font-serif text-white">Live Room Matrix Map</CardTitle>
-                  <CardDescription className="text-slate-400 text-xs">Grid display of real-time room occupancies, maintenance cycles, and VIP reserves.</CardDescription>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="relative">
-                    <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                    <input 
-                      type="text" 
-                      placeholder="Search room, floor..." 
-                      value={searchQuery}
-                      onChange={e => setSearchQuery(e.target.value)}
-                      className="bg-slate-950/60 border border-purple-900/40 text-xs text-slate-100 rounded-none pl-9 pr-4 py-2 w-[180px] focus:outline-none focus:ring-1 focus:ring-purple-500"
-                    />
+                  <div className="flex border-b border-white/5 pb-2">
+                    <button
+                      onClick={() => setActiveTab('grid')}
+                      className={`text-lg font-serif font-bold text-white mr-6 pb-2 border-b-2 transition-all duration-300 ${activeTab === 'grid' ? 'border-primary text-primary' : 'border-transparent text-white/40 hover:text-white/70'}`}
+                    >
+                      Room Grid Map
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('calendar')}
+                      className={`text-lg font-serif font-bold text-white pb-2 border-b-2 transition-all duration-300 ${activeTab === 'calendar' ? 'border-primary text-primary' : 'border-transparent text-white/40 hover:text-white/70'}`}
+                    >
+                      Booking Calendar
+                    </button>
                   </div>
-                  <div className="flex items-center gap-1.5 bg-slate-950/50 p-1 border border-purple-900/40">
-                    {["ALL", "AVAILABLE", "OCCUPIED", "CLEANING", "MAINTENANCE"].map(st => (
-                      <button 
-                        key={st}
-                        onClick={() => setStatusFilter(st)}
-                        className={`text-[9px] uppercase tracking-wider font-bold px-2 py-1 rounded-xs transition-colors ${statusFilter === st ? 'bg-purple-600 text-white' : 'text-slate-400 hover:text-slate-200'}`}
-                      >
-                        {st === "ALL" ? "All" : st.toLowerCase()}
-                      </button>
-                    ))}
-                  </div>
+                  <CardDescription className="text-white/40 text-xs mt-1.5">
+                    {activeTab === 'grid' 
+                      ? "Grid display of real-time room occupancies, maintenance cycles, and VIP reserves." 
+                      : "Monthly view of all reservations and active/upcoming hotel check-ins."}
+                  </CardDescription>
                 </div>
+
+                {activeTab === 'grid' && (
+                  <div className="flex flex-col sm:flex-row items-center gap-3">
+                    <div className="relative w-full sm:w-auto">
+                      <Search className="w-4 h-4 text-white/40 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input 
+                        type="text" 
+                        placeholder="Search room, floor..." 
+                        value={searchQuery}
+                        onChange={e => setSearchQuery(e.target.value)}
+                        className="bg-white/5 border border-white/10 text-xs text-white rounded-xl pl-9 pr-4 py-2.5 w-full sm:w-[180px] focus:outline-none focus:ring-1 focus:ring-purple-500 placeholder-white/30"
+                      />
+                    </div>
+                    <div className="flex items-center gap-1 bg-slate-950/40 p-1 border border-white/5 rounded-xl overflow-x-auto w-full sm:w-auto">
+                      {["ALL", "AVAILABLE", "OCCUPIED", "CLEANING", "MAINTENANCE"].map(st => (
+                        <button 
+                          key={st}
+                          onClick={() => setStatusFilter(st)}
+                          className={`text-[9px] uppercase tracking-wider font-extrabold px-2 py-1.5 rounded-lg transition-all whitespace-nowrap ${statusFilter === st ? 'bg-primary text-white' : 'text-white/40 hover:text-white'}`}
+                        >
+                          {st === "ALL" ? "All" : st.toLowerCase()}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </CardHeader>
             <CardContent className="pt-6">
               
-              {/* Room Grid cards */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                {filteredRooms.length === 0 ? (
-                  <div className="col-span-full text-center py-12 text-slate-500 text-sm">No matching room configurations found</div>
-                ) : (
-                  filteredRooms.map(room => {
-                    const isOccupied = room.status === "OCCUPIED"
-                    const isCleaning = room.status === "CLEANING"
-                    const isMaintenance = room.status === "MAINTENANCE"
-                    const isReserved = room.status === "RESERVED"
-                    const isCheckoutPending = room.status === "CHECKOUT_PENDING"
+              {activeTab === 'grid' ? (
+                <>
+                  {/* Room Grid cards */}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    {filteredRooms.length === 0 ? (
+                      <div className="col-span-full text-center py-12 text-white/30 text-sm font-semibold">No matching room configurations found</div>
+                    ) : (
+                      filteredRooms.map(room => {
+                        const isOccupied = room.status === "OCCUPIED"
+                        const isCleaning = room.status === "CLEANING"
+                        const isMaintenance = room.status === "MAINTENANCE"
+                        const isReserved = room.status === "RESERVED"
+                        const isCheckoutPending = room.status === "CHECKOUT_PENDING"
 
-                    const statusBg = isOccupied ? 'bg-rose-950/40 border-rose-500/30' :
-                                     isCleaning ? 'bg-amber-950/40 border-amber-500/30' :
-                                     isMaintenance ? 'bg-slate-900/60 border-slate-700/40' :
-                                     isReserved ? 'bg-blue-950/40 border-blue-500/30' :
-                                     isCheckoutPending ? 'bg-purple-950/40 border-purple-500/30' :
-                                     'bg-emerald-950/20 border-emerald-500/30'
+                        const statusBg = isOccupied ? 'bg-rose-950/40 border-rose-500/30' :
+                                         isCleaning ? 'bg-amber-950/40 border-amber-500/30' :
+                                         isMaintenance ? 'bg-slate-900/60 border-slate-700/40' :
+                                         isReserved ? 'bg-blue-950/40 border-blue-500/30' :
+                                         isCheckoutPending ? 'bg-purple-950/40 border-purple-500/30' :
+                                         'bg-emerald-950/20 border-emerald-500/30'
 
-                    const textBadge = isOccupied ? 'text-rose-400 border-rose-500/20 bg-rose-500/10' :
-                                      isCleaning ? 'text-amber-400 border-amber-500/20 bg-amber-500/10' :
-                                      isMaintenance ? 'text-slate-400 border-slate-700/20 bg-slate-700/10' :
-                                      isReserved ? 'text-blue-400 border-blue-500/20 bg-blue-500/10' :
-                                      isCheckoutPending ? 'text-purple-400 border-purple-500/20 bg-purple-500/10' :
-                                      'text-emerald-400 border-emerald-500/20 bg-emerald-500/10'
+                        const textBadge = isOccupied ? 'text-rose-400 border-rose-500/20 bg-rose-500/10' :
+                                          isCleaning ? 'text-amber-400 border-amber-500/20 bg-amber-500/10' :
+                                          isMaintenance ? 'text-slate-400 border-slate-700/20 bg-slate-700/10' :
+                                          isReserved ? 'text-blue-400 border-blue-500/20 bg-blue-500/10' :
+                                          isCheckoutPending ? 'text-purple-400 border-purple-500/20 bg-purple-500/10' :
+                                          'text-emerald-400 border-emerald-500/20 bg-emerald-500/10'
 
-                    return (
-                      <div 
-                        key={room.id}
-                        onClick={() => selectRoomCard(room)}
-                        className={`p-4 border backdrop-blur-sm cursor-pointer hover:-translate-y-0.5 transition-all flex flex-col justify-between h-[150px] relative ${statusBg} ${selectedRoom?.number === room.number ? 'ring-2 ring-purple-500 scale-98 border-transparent' : ''}`}
-                      >
-                        {room.vip && (
-                          <span className="absolute top-2 right-2 text-amber-400">
-                            <Sparkles className="w-4 h-4 fill-amber-500/20" />
-                          </span>
-                        )}
-                        <div>
-                          <p className="text-[10px] text-slate-400 uppercase tracking-widest font-extrabold">Floor {room.floor}</p>
-                          <h3 className="text-2xl font-serif font-extrabold text-white mt-1">Room {room.number}</h3>
-                          <p className="text-slate-400 text-[10px] mt-0.5">{room.type}</p>
-                        </div>
+                        return (
+                          <div 
+                            key={room.id}
+                            onClick={() => selectRoomCard(room)}
+                            className={`p-4 border backdrop-blur-md cursor-pointer hover:-translate-y-0.5 transition-all flex flex-col justify-between h-[150px] relative rounded-2xl group shadow-md ${statusBg} ${selectedRoom?.number === room.number ? 'ring-2 ring-primary scale-[0.98] border-transparent shadow-lg' : ''}`}
+                          >
+                            {room.vip && (
+                              <span className="absolute top-2 right-2 text-amber-400">
+                                <Sparkles className="w-4 h-4 fill-amber-500/20 animate-pulse" />
+                              </span>
+                            )}
+                            <div>
+                              <p className="text-[10px] text-white/40 uppercase tracking-widest font-extrabold">Floor {room.floor}</p>
+                              <h3 className="text-2xl font-serif font-extrabold text-white mt-1">Room {room.number}</h3>
+                              <p className="text-white/60 text-[10px] mt-0.5">{room.type}</p>
+                            </div>
 
-                        <div className="flex items-center justify-between border-t border-slate-800/50 pt-2.5 mt-2">
-                          <Badge className={`text-[9px] uppercase tracking-wider font-extrabold px-1.5 py-0.5 ${textBadge}`}>
-                            {room.status.replace('_', ' ')}
-                          </Badge>
-                          <span className="text-[11px] text-slate-400">
-                            LKR {room.price / 1000}K
-                          </span>
-                        </div>
-                      </div>
-                    )
-                  })
-                )}
-              </div>
-
-              {/* Status Legends */}
-              <div className="flex flex-wrap items-center gap-6 mt-8 p-4 bg-slate-950/40 border border-purple-900/10 rounded-sm">
-                <span className="text-xs text-slate-400 font-bold uppercase tracking-widest mr-2">Legend:</span>
-                {[
-                  { name: "Available", color: "bg-emerald-500" },
-                  { name: "Occupied", color: "bg-rose-500" },
-                  { name: "Cleaning", color: "bg-amber-500" },
-                  { name: "Reserved", color: "bg-blue-400" },
-                  { name: "Checkout Pending", color: "bg-purple-400" },
-                  { name: "Maintenance", color: "bg-slate-500" }
-                ].map(lg => (
-                  <div key={lg.name} className="flex items-center gap-2">
-                    <span className={`w-3 h-3 rounded-full ${lg.color}`} />
-                    <span className="text-xs text-slate-300">{lg.name}</span>
+                            <div className="flex items-center justify-between border-t border-white/5 pt-2.5 mt-2">
+                              <Badge className={`text-[9px] uppercase tracking-wider font-extrabold px-1.5 py-0.5 ${textBadge}`}>
+                                {room.status.replace('_', ' ')}
+                              </Badge>
+                              <span className="text-[11px] text-white/50 font-mono">
+                                LKR {room.price / 1000}K
+                              </span>
+                            </div>
+                          </div>
+                        )
+                      })
+                    )}
                   </div>
-                ))}
-              </div>
+
+                  {/* Status Legends */}
+                  <div className="flex flex-wrap items-center gap-6 mt-8 p-4 bg-white/5 border border-white/5 rounded-2xl">
+                    <span className="text-xs text-white/40 font-bold uppercase tracking-widest mr-2">Legend:</span>
+                    {[
+                      { name: "Available", color: "bg-emerald-500" },
+                      { name: "Occupied", color: "bg-rose-500" },
+                      { name: "Cleaning", color: "bg-amber-500" },
+                      { name: "Reserved", color: "bg-blue-400" },
+                      { name: "Checkout Pending", color: "bg-purple-400" },
+                      { name: "Maintenance", color: "bg-slate-500" }
+                    ].map(lg => (
+                      <div key={lg.name} className="flex items-center gap-2">
+                        <span className={`w-2.5 h-2.5 rounded-full ${lg.color}`} />
+                        <span className="text-xs text-white/80">{lg.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <BookingCalendar onMutationSuccess={loadData} />
+              )}
 
             </CardContent>
           </Card>
 
           {/* Quick Actions Action Drawer / Sheet Panel when Room is selected */}
           {selectedRoom && (
-            <Card className="bg-gradient-to-r from-purple-950/20 to-indigo-950/20 border border-purple-500/30 backdrop-blur-xl rounded-none shadow-2xl animate-fade-in">
-              <CardHeader className="border-b border-purple-900/30">
+            <Card className="bg-gradient-to-r from-purple-950/15 to-indigo-950/15 border border-white/10 backdrop-blur-xl rounded-2xl shadow-luxury animate-fade-in overflow-hidden relative">
+              <CardHeader className="border-b border-white/5 bg-slate-950/20">
                 <div className="flex items-center justify-between">
                   <div>
                     <Badge className="bg-amber-500/10 text-amber-400 border border-amber-500/20 text-[9px] uppercase tracking-wider font-extrabold px-2 py-0.5">ROOM CONTROLS DESK</Badge>
                     <CardTitle className="text-2xl font-serif text-white mt-1.5">Action Desk: Room {selectedRoom.number}</CardTitle>
                   </div>
-                  <Button variant="ghost" onClick={() => setSelectedRoom(null)} className="text-slate-400 hover:text-white hover:bg-white/5">
+                  <Button variant="ghost" onClick={() => setSelectedRoom(null)} className="text-slate-400 hover:text-white hover:bg-white/5 rounded-xl">
                     Close Desk
                   </Button>
                 </div>
@@ -445,7 +473,7 @@ export default function ReceptionistOperationsCenter() {
                 
                 {/* Status Transitions */}
                 <div className="space-y-4">
-                  <h4 className="text-xs uppercase tracking-widest font-extrabold text-slate-400 flex items-center gap-1.5">
+                  <h4 className="text-xs uppercase tracking-widest font-extrabold text-white/40 flex items-center gap-1.5">
                     <SlidersHorizontal className="w-3.5 h-3.5 text-purple-400" /> Transition Room Status
                   </h4>
                   <div className="grid grid-cols-2 gap-2.5">
@@ -458,7 +486,7 @@ export default function ReceptionistOperationsCenter() {
                       <Button 
                         key={stBtn.status}
                         onClick={() => handleStatusTransition(selectedRoom.number, stBtn.status)}
-                        className={`text-xs h-9 rounded-none border-0 ${stBtn.class}`}
+                        className={`text-xs h-9 rounded-xl font-bold border-0 ${stBtn.class}`}
                       >
                         {stBtn.name}
                       </Button>
@@ -466,14 +494,14 @@ export default function ReceptionistOperationsCenter() {
                   </div>
 
                   {/* Immediate workflow dispatch buttons */}
-                  <div className="border-t border-purple-900/10 pt-4 space-y-2">
+                  <div className="border-t border-white/5 pt-4 space-y-2">
                     {selectedRoom.status === "AVAILABLE" && (
-                      <Button onClick={() => handleCheckIn(selectedRoom.number)} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-none border-0 h-10">
+                      <Button onClick={() => handleCheckIn(selectedRoom.number)} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl border-0 h-10">
                         Check-In Guest 🔑
                       </Button>
                     )}
                     {(selectedRoom.status === "OCCUPIED" || selectedRoom.status === "CHECKOUT_PENDING") && (
-                      <Button onClick={() => handleCheckOut(selectedRoom.number)} className="w-full bg-purple-600 hover:bg-purple-500 text-white font-semibold rounded-none border-0 h-10">
+                      <Button onClick={() => handleCheckOut(selectedRoom.number)} className="w-full bg-purple-600 hover:bg-purple-500 text-white font-semibold rounded-xl border-0 h-10">
                         Check-Out & Settlement 🧹
                       </Button>
                     )}
@@ -481,13 +509,13 @@ export default function ReceptionistOperationsCenter() {
                 </div>
 
                 {/* Metadata & guest note editors */}
-                <div className="space-y-4 border-t md:border-t-0 md:border-l border-purple-900/20 md:pl-6">
-                  <h4 className="text-xs uppercase tracking-widest font-extrabold text-slate-400 flex items-center gap-1.5">
+                <div className="space-y-4 border-t md:border-t-0 md:border-l border-white/5 md:pl-6">
+                  <h4 className="text-xs uppercase tracking-widest font-extrabold text-white/40 flex items-center gap-1.5">
                     <ClipboardList className="w-3.5 h-3.5 text-purple-400" /> Front Desk Relations Memo
                   </h4>
                   
                   <div className="space-y-3">
-                    <div className="flex items-center gap-3 bg-slate-950/40 p-3 border border-purple-900/10">
+                    <div className="flex items-center gap-3 bg-white/5 p-3.5 border border-white/5 rounded-xl">
                       <input 
                         type="checkbox" 
                         id="vip_checkbox"
@@ -495,22 +523,22 @@ export default function ReceptionistOperationsCenter() {
                         onChange={e => setIsVip(e.target.checked)}
                         className="w-4 h-4 accent-amber-500 rounded focus:ring-0 focus:outline-none"
                       />
-                      <label htmlFor="vip_checkbox" className="text-xs text-slate-200 font-bold uppercase tracking-widest cursor-pointer flex items-center gap-1.5">
+                      <label htmlFor="vip_checkbox" className="text-xs text-white/80 font-bold uppercase tracking-widest cursor-pointer flex items-center gap-1.5">
                         <Sparkles className="w-3.5 h-3.5 text-amber-400" /> Flag Guest as VIP Status
                       </label>
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-[10px] uppercase tracking-widest font-extrabold text-slate-400">Special Notes & Housekeeping Demands</label>
+                      <label className="text-[10px] uppercase tracking-widest font-extrabold text-white/40">Special Notes & Housekeeping Demands</label>
                       <textarea 
                         value={guestNotes}
                         onChange={e => setGuestNotes(e.target.value)}
                         placeholder="e.g. Needs daily room cleanup strictly at 10 AM, fruits basket in lounge, allergy alert to peanut oil..."
-                        className="w-full h-24 bg-slate-950/60 border border-purple-900/30 text-xs text-slate-200 p-3 focus:outline-none focus:ring-1 focus:ring-purple-500 rounded-none placeholder-slate-600"
+                        className="w-full h-24 bg-white/5 border border-white/10 text-xs text-white p-3 focus:outline-none focus:ring-1 focus:ring-purple-500 rounded-xl placeholder-white/20"
                       />
                     </div>
 
-                    <Button onClick={updateRoomMetadata} className="w-full bg-gradient-to-r from-purple-800 to-indigo-800 hover:from-purple-700 hover:to-indigo-700 text-white font-bold text-xs h-9 rounded-none border-0">
+                    <Button onClick={updateRoomMetadata} className="w-full bg-gradient-to-r from-purple-800 to-indigo-800 hover:from-purple-700 hover:to-indigo-700 text-white font-bold text-xs h-9 rounded-xl border-0">
                       Save Front-Desk Updates
                     </Button>
                   </div>

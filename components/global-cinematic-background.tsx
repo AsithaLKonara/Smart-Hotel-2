@@ -41,6 +41,12 @@ export default function GlobalCinematicBackground() {
   const pathname = usePathname()
   const bgImage = getBackgroundImageForPath(pathname)
 
+  const isDashboard = pathname ? (
+    pathname.toLowerCase().includes('/admin') ||
+    pathname.toLowerCase().includes('/dashboard') ||
+    pathname.toLowerCase().includes('/kitchen')
+  ) : false
+
   const imageRef = useRef<HTMLImageElement>(null)
   const overlayRef = useRef<HTMLDivElement>(null)
 
@@ -57,8 +63,9 @@ export default function GlobalCinematicBackground() {
 
       // Scene Vignette — warm amber/gold radial gradient darkening on scroll
       if (overlayRef.current) {
-        const baseOpacity = 0.4
-        const darkOpacity = baseOpacity + progress * (0.88 - baseOpacity)  // 0.4 → 0.88
+        const baseOpacity = isDashboard ? 0.65 : 0.4
+        const maxOpacity = isDashboard ? 0.92 : 0.88
+        const darkOpacity = baseOpacity + progress * (maxOpacity - baseOpacity)  // 0.65 → 0.92 or 0.4 → 0.88
         const blurAmount  = progress * 12         // 0px → 12px
 
         overlayRef.current.style.background = `radial-gradient(
@@ -75,7 +82,7 @@ export default function GlobalCinematicBackground() {
     handleScroll() // align on mount
 
     return () => window.removeEventListener('scroll', handleScroll)
-  }, [pathname]) // Re-run effect when pathname/image changes to bind elements
+  }, [pathname, isDashboard]) // Re-run effect when pathname/image changes to bind elements
 
   return (
     <div className="fixed inset-0 -z-50 overflow-hidden pointer-events-none select-none">
@@ -99,7 +106,9 @@ export default function GlobalCinematicBackground() {
         ref={overlayRef}
         className="absolute inset-0"
         style={{
-          background: 'radial-gradient(ellipse at center, rgba(20, 14, 6, 0.25) 0%, rgba(8, 5, 2, 0.5) 100%)',
+          background: isDashboard
+            ? 'radial-gradient(ellipse at center, rgba(10, 7, 3, 0.5) 0%, rgba(4, 2, 1, 0.75) 100%)'
+            : 'radial-gradient(ellipse at center, rgba(20, 14, 6, 0.25) 0%, rgba(8, 5, 2, 0.5) 100%)',
           willChange: 'background, backdrop-filter',
           transition: 'all 0.4s ease-out',
         }}

@@ -23,6 +23,8 @@ model Booking {
   updatedAt       DateTime     @db.Date
   userId          String       @db.ObjectId
   confirmationCode String?     @unique
+  source          BookingSource @default(WEBSITE)
+  otaReference    String?
   payments        Payment[]
   reviews         RoomReview[]
   
@@ -484,4 +486,44 @@ model AuditLog {
   @@index([createdAt])
   @@index([userId])
   @@index([action])
+}
+
+enum BookingSource {
+  WALK_IN
+  WEBSITE
+  BOOKING_COM
+  AGODA
+}
+
+// 1. Track the external connection settings
+model ChannelConfig {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  hotelId       String   @unique
+  provider      String   // "CHANNEX" or "BEDS24"
+  apiKey        String
+  propertyId    String   // The ID assigned by the middleware
+  isEnabled     Boolean  @default(true)
+  updatedAt     DateTime @updatedAt @db.Date
+}
+
+// 2. Map your local RoomTypes to OTA RoomTypes
+model RoomMapping {
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  localRoomTypeId   String   @db.ObjectId // Reference to Room.id (as category/type)
+  otaRoomTypeId     String   // The ID from Channex/Beds24
+  otaRatePlanId     String?  // Optional: If you want to sync specific prices
+  priceMarkupPercentage Float @default(15.0) // Automatically adds % to pushed prices
+  syncEnabled       Boolean  @default(true)
+  createdAt         DateTime @default(now()) @db.Date
+  updatedAt         DateTime @updatedAt @db.Date
+}
+
+// 3. Log every sync attempt for debugging
+model SyncLog {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  direction   String   // "PUSH" (to OTA) or "PULL" (from OTA)
+  status      String   // "SUCCESS" or "FAILED"
+  payload     Json?
+  errorMessage String?
+  createdAt   DateTime @default(now()) @db.Date
 }
