@@ -3,7 +3,7 @@
 // Force dynamic rendering
 export const dynamic = 'force-dynamic'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, Suspense, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { 
@@ -132,9 +132,9 @@ function KitchenDashboardContent() {
     
     const interval = setInterval(fetchKitchenData, 10000)
     return () => clearInterval(interval)
-  }, [session, status, router])
+  }, [session, status, router, fetchKitchenData])
 
-  const fetchKitchenData = async () => {
+  const fetchKitchenData = useCallback(async () => {
     try {
       const response = await fetch('/api/kitchen/orders?today=true', {
         cache: 'no-store',
@@ -173,7 +173,7 @@ function KitchenDashboardContent() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [router])
 
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
     setUpdatingOrder(orderId)

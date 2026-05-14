@@ -151,4 +151,92 @@ export class AnalyticsEngine {
       count: s._count.id
     }))
   }
+
+  // ==========================================
+  // Granular Operational Metrics
+  // ==========================================
+
+  static async getADR(startDate: Date, endDate: Date): Promise<number> {
+    const data = await prisma.booking.aggregate({
+      where: {
+        status: { in: ['CONFIRMED', 'CHECKED_IN', 'CHECKED_OUT'] },
+        checkIn: { gte: startDate, lte: endDate }
+      },
+      _sum: { totalAmount: true },
+      _count: { id: true }
+    })
+    return data._count.id === 0 ? 0 : (data._sum.totalAmount || 0) / data._count.id
+  }
+
+  static async getRevPAR(startDate: Date, endDate: Date): Promise<number> {
+    const totalRooms = await prisma.room.count()
+    if (totalRooms === 0) return 0
+    
+    const revenue = await prisma.payment.aggregate({
+      where: {
+        status: 'PAID',
+        createdAt: { gte: startDate, lte: endDate }
+      },
+      _sum: { amount: true }
+    })
+
+    const days = Math.max(1, Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)))
+    return (revenue._sum.amount || 0) / (totalRooms * days)
+  }
+
+  static async getOccupancyRate(startDate: Date, endDate: Date): Promise<number> {
+    const totalRooms = await prisma.room.count()
+    if (totalRooms === 0) return 0
+
+    const occupiedDays = await prisma.booking.findMany({
+      where: {
+        status: { in: ['CONFIRMED', 'CHECKED_IN'] },
+        OR: [
+          { checkIn: { gte: startDate, lte: endDate } },
+          { checkOut: { gte: startDate, lte: endDate } }
+        ]
+      },
+      select: { checkIn: true, checkOut: true }
+    })
+
+    // Simple heuristic: count bookings as "occupied" if they overlap the range
+    // For a precise rate, we'd need a day-by-day map
+    return Math.min(100, (occupiedDays.length / totalRooms) * 100)
+  }
+
+  static async getHousekeepingSLA(): Promise<number> {
+    // Percentage of rooms that are CLEAN or AVAILABLE vs total
+    const total = await prisma.room.count()
+    if (total === 0) return 100
+    
+    const ready = await prisma.room.count({
+      where: { status: { in: ['AVAILABLE', 'CLEANING'] } } // 'CLEANING' is in-progress but part of SLA flow
+    })
+
+    return (ready / total) * 100
+  }
+
+  static async getRevenuePacing(days: number): Promise<number> {
+    // Revenue growth vs previous period
+    const now = new Date()
+    const currentStart = new Date(now.getTime() - (days * 24 * 60 * 60 * 1000))
+    const prevStart = new Date(currentStart.getTime() - (days * 24 * 60 * 60 * 1000))
+
+    const [current, prev] = await Promise.all([
+      prisma.payment.aggregate({
+        where: { status: 'PAID', createdAt: { gte: currentStart } },
+        _sum: { amount: true }
+      }),
+      prisma.payment.aggregate({
+        where: { status: 'PAID', createdAt: { gte: prevStart, lte: currentStart } },
+        _sum: { amount: true }
+      })
+    ])
+
+    const currSum = current._sum.amount || 0
+    const prevSum = prev._sum.amount || 0
+
+    if (prevSum === 0) return currSum > 0 ? 100 : 0
+    return ((currSum - prevSum) / prevSum) * 100
+  }
 }

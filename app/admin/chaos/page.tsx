@@ -2,7 +2,7 @@
 
 export const dynamic = "force-dynamic"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { canAccessAdminDashboard } from '@/lib/rbac-helpers'
@@ -39,26 +39,7 @@ export default function SreChaosConsole() {
   const [simulatedLatency, setSimulatedLatency] = useState(0)
   const [simulatedLoad, setSimulatedLoad] = useState(24)
 
-  useEffect(() => {
-    if (status === 'loading') return
-    
-    if (!canAccessAdminDashboard(session)) {
-      toast.error('Access Denied: SRE credentials required.')
-      router.push('/auth/signin')
-      return
-    }
-
-    loadChaosState()
-    
-    // Periodically update simulated load metrics
-    const interval = setInterval(() => {
-      setSimulatedLoad(Math.floor(20 + Math.random() * 15))
-    }, 4000)
-
-    return () => clearInterval(interval)
-  }, [session, status, router])
-
-  const loadChaosState = async () => {
+  const loadChaosState = useCallback(async () => {
     try {
       setLoading(true)
       const res = await fetch('/api/chaos').then(r => r.json()).catch(() => null)
@@ -78,7 +59,26 @@ export default function SreChaosConsole() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [router])
+
+  useEffect(() => {
+    if (status === 'loading') return
+    
+    if (!canAccessAdminDashboard(session)) {
+      toast.error('Access Denied: SRE credentials required.')
+      router.push('/auth/signin')
+      return
+    }
+
+    loadChaosState()
+    
+    // Periodically update simulated load metrics
+    const interval = setInterval(() => {
+      setSimulatedLoad(Math.floor(20 + Math.random() * 15))
+    }, 4000)
+
+    return () => clearInterval(interval)
+  }, [session, status, router, loadChaosState])
 
   const addChaosLog = (msg: string) => {
     const stamp = new Date().toLocaleTimeString()
