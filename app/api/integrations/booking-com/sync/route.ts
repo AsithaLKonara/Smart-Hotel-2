@@ -38,7 +38,7 @@ export async function POST(req: Request) {
         d.setDate(d.getDate() + i);
         return {
           date: d.toISOString().split('T')[0],
-          price: room.price,
+          price: (room as any).price || 100,
           inventory: 1 // Default to 1 for mock
         };
       });

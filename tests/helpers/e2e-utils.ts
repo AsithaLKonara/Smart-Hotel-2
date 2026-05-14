@@ -51,7 +51,7 @@ export const dbAssert = {
   
   async paymentCaptured(bookingId: string) {
     const payment = await prisma.payment.findFirst({
-      where: { bookingId, status: 'PAID' }
+      where: { bookingId, status: 'completed' }
     })
     expect(payment).not.toBeNull()
     return payment

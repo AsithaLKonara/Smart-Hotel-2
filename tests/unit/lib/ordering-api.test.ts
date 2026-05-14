@@ -15,7 +15,7 @@ const roomOrder = {
         name: 'Pancakes Deluxe',
         description: 'Stack of pancakes',
         price: 12,
-        category: 'BREAKFAST',
+        category: 'BREAKFAST' as any,
         available: true,
       },
       quantity: 2,
@@ -29,8 +29,8 @@ const roomOrder = {
 }
 
 describe('lib/ordering-api', () => {
-  let fetchMock: jest.Mock
-  let consoleErrorSpy: jest.SpyInstance
+  let fetchMock: any
+  let consoleErrorSpy: any
 
   beforeEach(() => {
     jest.resetModules()
@@ -104,7 +104,7 @@ describe('lib/ordering-api', () => {
 
     const { createFoodOrder } = await import('@/lib/ordering-api')
 
-    const response = await createFoodOrder(roomOrder)
+    const response = await createFoodOrder(roomOrder as any)
     expect(fetchMock).toHaveBeenCalledWith('/api/restaurant/orders', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -121,7 +121,7 @@ describe('lib/ordering-api', () => {
 
     const { createFoodOrder } = await import('@/lib/ordering-api')
 
-    await expect(createFoodOrder(roomOrder)).rejects.toThrow('Kitchen unavailable')
+    await expect(createFoodOrder(roomOrder as any)).rejects.toThrow('Kitchen unavailable')
     expect(consoleErrorSpy).toHaveBeenCalledWith('Error creating order:', expect.any(Error))
   })
 

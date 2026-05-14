@@ -70,6 +70,8 @@ export async function pushAvailabilityToOTA(update: OtaAvailabilityUpdate) {
       data: {
         direction: 'PUSH',
         status: response.ok ? 'SUCCESS' : 'FAILED',
+        entityType: 'AVAILABILITY',
+        entityId: roomTypeId,
         payload: payload as any,
         errorMessage: response.ok ? null : JSON.stringify(result),
       }
@@ -88,6 +90,8 @@ export async function pushAvailabilityToOTA(update: OtaAvailabilityUpdate) {
       data: {
         direction: 'PUSH',
         status: 'FAILED',
+        entityType: 'AVAILABILITY',
+        entityId: roomTypeId,
         payload: { roomTypeId, date, availability } as any,
         errorMessage: error.message,
       }

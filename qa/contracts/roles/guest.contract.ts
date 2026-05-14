@@ -87,7 +87,7 @@ test.describe('👤 Guest Contract - Data Ownership & Isolation', () => {
     }
 
     const emilyBooking = await prisma.booking.findFirst({
-      where: { userId: emily.id }
+      where: { primaryGuestId: emily.id }
     })
 
     if (!emilyBooking) {

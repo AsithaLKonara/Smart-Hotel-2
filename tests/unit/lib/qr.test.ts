@@ -40,7 +40,7 @@ describe('lib/qr', () => {
   })
 
   it('builds ordering URL using defaults and overrides', () => {
-    process.env.NODE_ENV = 'development'
+    ;(process.env as any).NODE_ENV = 'development'
     process.env.NEXTAUTH_URL = 'http://localhost:4000'
 
     const token = 'token-123'

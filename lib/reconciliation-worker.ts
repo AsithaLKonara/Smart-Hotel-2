@@ -52,7 +52,7 @@ export class ReconciliationWorker {
    */
   static async checkInventoryDrift() {
     const roomTypes = await prisma.room.groupBy({
-      by: ['type'],
+      by: ['roomTypeId'],
       where: { status: 'AVAILABLE' },
       _count: { id: true }
     })
@@ -72,18 +72,18 @@ export class ReconciliationWorker {
       const lastSyncedCount = (lastSync?.payload as any)?.availability
 
       if (lastSyncedCount !== undefined && lastSyncedCount !== localCount) {
-        console.warn(`[DRIFT_DETECTED] RoomType ${rt.type}: Local=${localCount}, OTA=${lastSyncedCount}. Triggering self-healing push.`)
+        console.warn(`[DRIFT_DETECTED] RoomType ${rt.roomTypeId}: Local=${localCount}, OTA=${lastSyncedCount}. Triggering self-healing push.`)
         
         await pushAvailabilityToOTA({
-          roomTypeId: rt.type, // Grouping by type for OTA sync
+          roomTypeId: rt.roomTypeId, // Grouping by type for OTA sync
           date: new Date().toISOString().split('T')[0],
           availability: localCount
         })
 
         await RealtimeEvents.emitOpsMessage({
           type: 'INVENTORY_DRIFT_HEALED',
-          severity: 'WARNING',
-          message: `Self-healing sync triggered for ${rt.type}. Drift corrected from ${lastSyncedCount} to ${localCount}.`
+          severity: 'MEDIUM',
+          message: `Self-healing sync triggered for ${rt.roomTypeId}. Drift corrected from ${lastSyncedCount} to ${localCount}.`
         })
       }
     }
@@ -114,7 +114,6 @@ export class ReconciliationWorker {
           where: { id: event.id },
           data: { 
             attempts: event.attempts + 1, 
-            lastError: err.message,
             status: event.attempts > 5 ? 'FAILED' : 'PENDING'
           }
         })

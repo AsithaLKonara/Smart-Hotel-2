@@ -16,11 +16,14 @@ interface RoomDetailPageProps {
 export async function generateMetadata({ params }: RoomDetailPageProps): Promise<Metadata> {
   const { id } = await params
   if (!isDatabaseConfigured()) return { title: 'Room Details' }
-  const room = await prisma.room.findUnique({ where: { id } })
+  const room = await prisma.room.findUnique({ 
+    where: { id },
+    include: { roomType: true }
+  })
   if (!room) return { title: 'Room Not Found' }
   return {
-    title: `${room.type} | SmartHotel Grand Palace`,
-    description: room.description || `Book our luxurious ${room.type} starting from ${formatPrice(room.price)} per night.`,
+    title: `${room.roomType.name} | SmartHotel Grand Palace`,
+    description: room.roomType.description || `Book our luxurious ${room.roomType.name} starting from ${formatPrice(room.roomType.baseRate)} per night.`,
   }
 }
 
@@ -69,7 +72,10 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
 
   let room
   try {
-    room = await prisma.room.findUnique({ where: { id: id.trim() } })
+    room = await prisma.room.findUnique({ 
+      where: { id: id.trim() },
+      include: { roomType: true }
+    })
   } catch {
     return <ErrorState title="Room Not Found" message="We encountered an error while loading this room." />
   }
@@ -83,6 +89,11 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
     capacity: Number(room.capacity),
     floor: room.floor ? Number(room.floor) : null,
     size: room.size ? Number(room.size) : null,
+    type: room.roomType.name,
+    price: room.roomType.baseRate,
+    description: room.roomType.description,
+    amenities: room.roomType.amenities,
+    images: room.roomType.images,
   }
 
   // Build a 5-image gallery using available images + curated fallbacks

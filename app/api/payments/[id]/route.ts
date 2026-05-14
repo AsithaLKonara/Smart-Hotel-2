@@ -96,7 +96,7 @@ export async function PATCH(
     if (validatedData.status === 'completed' && payment.bookingId) {
       await prisma.booking.update({
         where: { id: payment.bookingId },
-        data: { paymentStatus: 'paid' },
+        data: { paymentStatus: 'completed' },
       })
     }
 

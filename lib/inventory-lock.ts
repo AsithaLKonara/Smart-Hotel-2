@@ -99,7 +99,7 @@ export class InventoryLockEngine {
     eventBus.emit({
       id: `hold-acquired-${holdId}`,
       type: 'inventory.lock_acquired',
-      severity: 'WARNING',
+      severity: 'MEDIUM',
       title: `HA Lock Acquisition`,
       message: `Lock for Room ${roomNumber} secured via ${hold.provider}.`,
       metadata: hold,

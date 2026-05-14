@@ -223,7 +223,7 @@ export async function computeAnalytics(range: AnalyticsRange, referenceDate = ne
 
       return {
         roomNumber: room.number,
-        type: room.type,
+        type: (room as any).type || room.roomTypeId,
         bookings: roomBookings.length,
         revenue: Number(roomRevenue.toFixed(2)),
         occupancyRate,

@@ -58,10 +58,7 @@ export async function PUT(
 
     const amenity = await prisma.amenity.update({
       where: { id },
-      data: {
-        ...data,
-        updatedAt: new Date(),
-      }
+      data
     })
 
     return NextResponse.json({ item: amenity })

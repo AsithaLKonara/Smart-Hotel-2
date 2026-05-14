@@ -31,7 +31,7 @@ export class FinancialReconciler {
       },
       include: {
         payments: {
-          where: { status: 'PAID' }
+          where: { status: 'completed' }
         }
       }
     })
@@ -42,7 +42,7 @@ export class FinancialReconciler {
 
     for (const booking of bookings) {
       const bookingTotal = booking.totalAmount
-      const paymentTotal = booking.payments.reduce((sum, p) => sum + p.amount, 0)
+      const paymentTotal = (booking as any).payments.reduce((sum: number, p: any) => sum + p.amount, 0)
       
       totalBookingValue += bookingTotal
       totalPaymentValue += paymentTotal
@@ -91,14 +91,17 @@ export class FinancialReconciler {
       // Log audit results to AuditLog
       await prisma.auditLog.create({
         data: {
+          userId: 'SYSTEM',
           actor: 'SYSTEM_RECONCILER',
           action: 'FINANCIAL_RECONCILIATION_RUN',
           resource: 'FINANCIALS',
+          resourceId: report.timestamp,
           details: { 
             variance: report.variance, 
-            bookingCount: bookings.length,
+            bookingValue: report.totalBookings,
             discrepancyCount: report.discrepancies.length 
-          }
+          },
+          createdAt: new Date()
         }
       })
     } catch (err) {

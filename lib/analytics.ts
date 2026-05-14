@@ -30,7 +30,7 @@ export class AnalyticsEngine {
     // 1. Total Revenue (Aggregated from Payments)
     const currentRevenue = await prisma.payment.aggregate({
       where: { 
-        status: 'PAID',
+        status: 'completed',
         createdAt: { gte: currentMonthStart, lte: currentMonthEnd }
       },
       _sum: { amount: true }
@@ -38,14 +38,14 @@ export class AnalyticsEngine {
 
     const lastRevenue = await prisma.payment.aggregate({
       where: { 
-        status: 'PAID',
+        status: 'completed',
         createdAt: { gte: lastMonthStart, lte: lastMonthEnd }
       },
       _sum: { amount: true }
     })
 
-    const revSum = currentRevenue._sum.amount || 0
-    const lastRevSum = lastRevenue._sum.amount || 0
+    const revSum = currentRevenue?._sum?.amount || 0
+    const lastRevSum = lastRevenue?._sum?.amount || 0
     const revenueTrend = lastRevSum === 0 ? 0 : ((revSum - lastRevSum) / lastRevSum) * 100
 
     // 2. Occupancy (Active Bookings / Total Rooms)
@@ -86,7 +86,7 @@ export class AnalyticsEngine {
       
       const res = await prisma.payment.aggregate({
         where: { 
-          status: 'PAID',
+          status: 'completed',
           createdAt: { gte: start, lte: end }
         },
         _sum: { amount: true }
@@ -94,7 +94,7 @@ export class AnalyticsEngine {
 
       revenueByMonth.push({
         name: format(targetMonth, 'MMM'),
-        total: res._sum.amount || 0
+        total: res?._sum?.amount || 0
       })
     }
 
@@ -174,14 +174,14 @@ export class AnalyticsEngine {
     
     const revenue = await prisma.payment.aggregate({
       where: {
-        status: 'PAID',
+        status: 'completed',
         createdAt: { gte: startDate, lte: endDate }
       },
       _sum: { amount: true }
     })
 
     const days = Math.max(1, Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)))
-    return (revenue._sum.amount || 0) / (totalRooms * days)
+    return (revenue?._sum?.amount || 0) / (totalRooms * days)
   }
 
   static async getOccupancyRate(startDate: Date, endDate: Date): Promise<number> {
@@ -224,17 +224,17 @@ export class AnalyticsEngine {
 
     const [current, prev] = await Promise.all([
       prisma.payment.aggregate({
-        where: { status: 'PAID', createdAt: { gte: currentStart } },
+        where: { status: 'completed', createdAt: { gte: currentStart } },
         _sum: { amount: true }
       }),
       prisma.payment.aggregate({
-        where: { status: 'PAID', createdAt: { gte: prevStart, lte: currentStart } },
+        where: { status: 'completed', createdAt: { gte: prevStart, lte: currentStart } },
         _sum: { amount: true }
       })
     ])
 
-    const currSum = current._sum.amount || 0
-    const prevSum = prev._sum.amount || 0
+    const currSum = current?._sum?.amount || 0
+    const prevSum = prev?._sum?.amount || 0
 
     if (prevSum === 0) return currSum > 0 ? 100 : 0
     return ((currSum - prevSum) / prevSum) * 100

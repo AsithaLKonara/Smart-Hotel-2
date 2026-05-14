@@ -31,14 +31,14 @@ export class PrivacyToolkit {
     }
 
     const bookings = await prisma.booking.findMany({
-      where: { userId }
+      where: { primaryGuestId: userId }
     });
 
     return {
       userId: user.id,
-      name: user.name,
+      name: user.name || 'Unknown',
       email: user.email,
-      phone: user.phone,
+      phone: user.phone || 'N/A',
       role: user.role,
       createdAt: user.createdAt.toISOString(),
       preferences: user.guestPreferences || null,
@@ -55,7 +55,7 @@ export class PrivacyToolkit {
         amount: p.amount,
         status: p.status,
         paymentProvider: p.paymentProvider,
-        transactionDate: p.transactionDate.toISOString(),
+        transactionDate: p.createdAt.toISOString(),
       })),
     };
   }
@@ -99,9 +99,9 @@ export class PrivacyToolkit {
 
       // 3. Scrub special requests on their bookings
       await tx.booking.updateMany({
-        where: { userId },
+        where: { primaryGuestId: userId },
         data: {
-          specialRequests: 'Scrubbed under GDPR Right to be Forgotten'
+          otaReference: 'GDPR_SCRUBBED'
         }
       });
 
@@ -111,7 +111,11 @@ export class PrivacyToolkit {
           userId,
           actor: 'COMPLIANCE_PRIVACY_SYSTEM',
           action: 'GDPR_USER_ERASURE',
-          details: `User erasure executed. PII scrubbed. Analytics hash: ${hash}`,
+          resource: 'User',
+          resourceId: userId,
+          details: {
+            message: `User erasure executed. PII scrubbed. Analytics hash: ${hash}`
+          },
           createdAt: new Date()
         }
       });

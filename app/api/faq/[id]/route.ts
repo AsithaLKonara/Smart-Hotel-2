@@ -23,7 +23,7 @@ export async function GET(
 
   try {
     const { id } = await params
-    const faq = await prisma.fAQ.findUnique({ where: { id } })
+    const faq = await (prisma as any).fAQ.findUnique({ where: { id } })
     
     if (!faq) {
       return NextResponse.json({ error: 'FAQ not found' }, { status: 404 })
@@ -55,7 +55,7 @@ export async function PUT(
     const body = await request.json()
     const data = updateSchema.parse(body)
 
-    const faq = await prisma.fAQ.update({
+    const faq = await (prisma as any).fAQ.update({
       where: { id },
       data: {
         ...data,
@@ -89,7 +89,7 @@ export async function DELETE(
 
   try {
     const { id } = await params
-    await prisma.fAQ.delete({ where: { id } })
+    await (prisma as any).fAQ.delete({ where: { id } })
     return NextResponse.json({ message: 'FAQ deleted successfully' })
   } catch (error) {
     console.error('Error deleting FAQ:', error)

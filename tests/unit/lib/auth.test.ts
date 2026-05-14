@@ -5,17 +5,17 @@ const dbModulePath = require.resolve(`${projectRoot}/lib/db.ts`)
 const auditModulePath = require.resolve(`${projectRoot}/lib/audit.ts`)
 
 describe('lib/auth', () => {
-  let findUniqueMock: jest.Mock
-  let logActionMock: jest.Mock
-  let compareMock: jest.Mock
+  let findUniqueMock: any
+  let logActionMock: any
+  let compareMock: any
 
   beforeEach(() => {
     jest.resetModules()
     findUniqueMock = jest.fn()
     const findFirstMock = jest.fn()
-    logActionMock = jest.fn().mockResolvedValue(undefined)
+    logActionMock = (jest.fn() as any).mockResolvedValue(undefined)
     compareMock = jest.fn()
-    const connectWithRetryMock = jest.fn(async (fn) => await fn())
+    const connectWithRetryMock = jest.fn(async (fn: any) => await fn())
 
     jest.doMock(dbModulePath, () => ({
       __esModule: true,
@@ -219,7 +219,7 @@ describe('lib/auth', () => {
 
   it('sets token fields in jwt callback and expires stale tokens', async () => {
     const { authOptions } = await import('@/lib/auth')
-    const { jwt } = authOptions.callbacks
+    const { jwt } = authOptions.callbacks as any
 
     const token = await jwt({
       token: {},
@@ -252,7 +252,7 @@ describe('lib/auth', () => {
 
   it('hydrates session user fields from token', async () => {
     const { authOptions } = await import('@/lib/auth')
-    const { session } = authOptions.callbacks
+    const { session } = authOptions.callbacks as any
 
     const sessionData = await session({
       session: { user: {} as any },

@@ -23,7 +23,7 @@ export async function GET(
 
   try {
     const { id } = await params
-    const link = await prisma.footerLink.findUnique({ where: { id } })
+    const link = await (prisma as any).footerLink.findUnique({ where: { id } })
     
     if (!link) {
       return NextResponse.json({ error: 'Link not found' }, { status: 404 })
@@ -55,7 +55,7 @@ export async function PUT(
     const body = await request.json()
     const data = updateSchema.parse(body)
 
-    const link = await prisma.footerLink.update({
+    const link = await (prisma as any).footerLink.update({
       where: { id },
       data: {
         ...data,
@@ -89,7 +89,7 @@ export async function DELETE(
 
   try {
     const { id } = await params
-    await prisma.footerLink.delete({ where: { id } })
+    await (prisma as any).footerLink.delete({ where: { id } })
     return NextResponse.json({ message: 'Link deleted successfully' })
   } catch (error) {
     console.error('Error deleting footer link:', error)

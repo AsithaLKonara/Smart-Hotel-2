@@ -41,8 +41,8 @@ export async function GET(
     let staff, user
     if (task) {
       [staff, user] = await Promise.all([
-        prisma.staff.findFirst({ where: { id: task.assignedTo } }).catch(() => null),
-        prisma.user.findUnique({ where: { id: task.createdBy } }).catch(() => null)
+        task.assignedTo ? prisma.staff.findUnique({ where: { id: task.assignedTo } }).catch(() => null) : null,
+        task.createdBy ? prisma.user.findUnique({ where: { id: task.createdBy } }).catch(() => null) : null
       ])
     }
 
@@ -132,8 +132,8 @@ export async function PUT(
     
     // Fetch related data separately (relations don't exist in schema)
     const [updatedStaff, updatedUser] = await Promise.all([
-      prisma.staff.findFirst({ where: { id: updatedTask.assignedTo } }).catch(() => null),
-      prisma.user.findUnique({ where: { id: updatedTask.createdBy } }).catch(() => null)
+      updatedTask.assignedTo ? prisma.staff.findUnique({ where: { id: updatedTask.assignedTo } }).catch(() => null) : null,
+      updatedTask.createdBy ? prisma.user.findUnique({ where: { id: updatedTask.createdBy } }).catch(() => null) : null
     ])
 
     // Log the action
@@ -235,8 +235,8 @@ export async function PATCH(
     
     // Fetch related data separately (relations don't exist in schema)
     const [updatedStaff, updatedUser] = await Promise.all([
-      prisma.staff.findFirst({ where: { id: updatedTask.assignedTo } }).catch(() => null),
-      prisma.user.findUnique({ where: { id: updatedTask.createdBy } }).catch(() => null)
+      updatedTask.assignedTo ? prisma.staff.findUnique({ where: { id: updatedTask.assignedTo } }).catch(() => null) : null,
+      updatedTask.createdBy ? prisma.user.findUnique({ where: { id: updatedTask.createdBy } }).catch(() => null) : null
     ])
 
     // Log the action

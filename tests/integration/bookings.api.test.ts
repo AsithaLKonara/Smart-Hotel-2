@@ -96,9 +96,9 @@ function attachBookingIncludes(record: StoreRecord, include?: Record<string, any
       include.room === true ? clone(room) : pick(room, include.room.select)
   }
   if (include.user) {
-    const user = bookingStores.user.get(record.userId)
+    const user = bookingStores.user.get(record.primaryGuestId)
     enriched.user =
-      include.user === true ? clone(user) : pick(user, include.user.select)
+      include.user === true ? clone(user) : pick(user as any, include.user.select)
   }
   if (include.invoice) {
     const invoice = [...bookingStores.invoice.values()].find(
@@ -188,7 +188,7 @@ jest.mock('@/lib/db', () => {
         const id = where.id
         const existing = bookingStores.room.get(id)
         const record = existing ? { ...existing, ...update } : { ...create, id }
-        const normalized = ensureRoomStatus({ status: 'AVAILABLE', ...record })
+        const normalized = ensureRoomStatus({ status: 'AVAILABLE', ...record }) as any
         bookingStores.room.set(id, normalized)
         return clone(normalized)
       },

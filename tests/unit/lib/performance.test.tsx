@@ -10,7 +10,7 @@ const mockLazy = jest.fn(() => 'lazy-component')
 jest.mock('react', () => {
   const actual = jest.requireActual('react')
   return {
-    ...actual,
+    ...(actual as any),
     lazy: mockLazy,
   }
 })
@@ -110,7 +110,7 @@ describe('lib/performance', () => {
   })
 
   it('fetches bundle analysis data and handles failures', async () => {
-    const fetchMock = jest.fn()
+    const fetchMock: any = jest.fn()
     Object.defineProperty(global, 'fetch', {
       configurable: true,
       writable: true,
@@ -136,11 +136,11 @@ describe('lib/performance', () => {
       loadEventStart: 100,
     } as PerformanceNavigationTiming
 
-    const paintEntries = [{ name: 'first-contentful-paint', startTime: 75 }] as PerformanceEntry[]
+    const paintEntries = [{ name: 'first-contentful-paint', startTime: 75 }] as any[]
     const resourceEntries = [
       { transferSize: 200 },
       { transferSize: 300 },
-    ] as PerformanceEntry[]
+    ] as any[]
 
     Object.defineProperty(global, 'performance', {
       configurable: true,
@@ -262,21 +262,20 @@ describe('lib/performance', () => {
   it('logs performance metrics in production mode', async () => {
     jest.resetModules()
     const originalEnv = process.env.NODE_ENV
-    process.env.NODE_ENV = 'production'
+    ;(process.env as any).NODE_ENV = 'production'
     jest.spyOn(console, 'log').mockImplementation(() => {})
 
     const { performanceMonitoring } = await import('@/lib/lazy-components')
     performanceMonitoring.reportMetrics({ FCP: 123 })
     expect(console.log).toHaveBeenCalledWith('Performance metrics:', { FCP: 123 })
 
-    process.env.NODE_ENV = originalEnv
+    ;(process.env as any).NODE_ENV = originalEnv
   })
 
   it('returns memory usage when browser supports it', async () => {
     jest.resetModules()
     const originalPerformance = global.performance
-    // @ts-expect-error override for test
-    global.performance = {
+    ;(global as any).performance = {
       memory: {
         usedJSHeapSize: 1,
         totalJSHeapSize: 2,

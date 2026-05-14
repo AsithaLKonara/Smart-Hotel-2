@@ -17,7 +17,7 @@ jest.mock('@/lib/db', () => ({
 
 import { prisma } from '@/lib/db'
 
-const mockPrisma = prisma as jest.Mocked<typeof prisma>
+const mockPrisma = prisma as any
 
 describe('Health Check API Integration', () => {
   beforeEach(() => {

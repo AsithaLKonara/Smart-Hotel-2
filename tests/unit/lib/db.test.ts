@@ -64,7 +64,7 @@ describe('lib/db', () => {
   })
 
   it('configures production log definitions with only error level', () => {
-    process.env.NODE_ENV = 'production'
+    (process.env as any).NODE_ENV = 'production'
 
     importDbModule()
 

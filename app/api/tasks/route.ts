@@ -56,8 +56,8 @@ export async function GET(request: NextRequest) {
     const tasksWithRelations = await Promise.all(
       tasks.map(async (task) => {
         const [staff, user] = await Promise.all([
-          prisma.staff.findFirst({ where: { id: task.assignedTo } }).catch(() => null),
-          prisma.user.findUnique({ where: { id: task.createdBy } }).catch(() => null)
+          task.assignedTo ? prisma.staff.findUnique({ where: { id: task.assignedTo } }).catch(() => null) : null,
+          task.createdBy ? prisma.user.findUnique({ where: { id: task.createdBy } }).catch(() => null) : null
         ])
         
         return {
@@ -105,21 +105,19 @@ export async function POST(request: NextRequest) {
       data: {
         title: validatedData.title,
         description: validatedData.description || '',
-        type: validatedData.type,
-        priority: validatedData.priority,
-        assignedTo: validatedData.assignedTo || session.user.id, // Use session user ID as fallback
-        dueDate: validatedData.dueDate ? new Date(validatedData.dueDate) : new Date(),
+        type: validatedData.type as any,
+        priority: validatedData.priority as any,
+        assignedTo: validatedData.assignedTo || null, 
+        dueDate: validatedData.dueDate ? new Date(validatedData.dueDate) : null,
         createdBy: session.user.id,
         status: 'PENDING',
-        createdAt: new Date(),
-        updatedAt: new Date(),
       }
     })
     
     // Fetch related data separately
     const [staff, user] = await Promise.all([
-      prisma.staff.findFirst({ where: { id: task.assignedTo } }).catch(() => null),
-      prisma.user.findUnique({ where: { id: task.createdBy } }).catch(() => null)
+      task.assignedTo ? prisma.staff.findUnique({ where: { id: task.assignedTo } }).catch(() => null) : null,
+      task.createdBy ? prisma.user.findUnique({ where: { id: task.createdBy } }).catch(() => null) : null
     ])
     
     const taskWithRelations = {

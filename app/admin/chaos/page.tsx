@@ -59,7 +59,7 @@ export default function SreChaosConsole() {
     } finally {
       setLoading(false)
     }
-  }, [router])
+  }, [])
 
   useEffect(() => {
     if (status === 'loading') return

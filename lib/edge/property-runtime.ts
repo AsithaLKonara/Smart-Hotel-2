@@ -52,7 +52,7 @@ export class EdgePropertyRuntime {
       await prisma.booking.create({
         data: {
           roomId: reservation.roomId,
-          userId: reservation.userId,
+          primaryGuestId: reservation.userId,
           checkIn: new Date(reservation.checkIn),
           checkOut: new Date(reservation.checkOut),
           totalAmount: 350,
@@ -122,7 +122,7 @@ export class EdgePropertyRuntime {
           await tx.booking.create({
             data: {
               roomId: res.roomId,
-              userId: res.userId,
+              primaryGuestId: res.userId,
               checkIn: new Date(res.checkIn),
               checkOut: new Date(res.checkOut),
               totalAmount: 350,
@@ -137,7 +137,11 @@ export class EdgePropertyRuntime {
               userId: res.userId,
               actor: 'SATELLITE_RECONCILER',
               action: 'OFFLINE_SYNC_SUCCESS',
-              details: `Successfully synchronized offline edge booking [${res.id}]. Local Seq: ${res.syncSequence}`,
+              resource: 'Booking',
+              resourceId: res.id,
+              details: {
+                message: `Successfully synchronized offline edge booking [${res.id}]. Local Seq: ${res.syncSequence}`
+              },
               createdAt: new Date()
             }
           });

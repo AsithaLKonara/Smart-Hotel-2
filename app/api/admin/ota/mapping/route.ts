@@ -9,16 +9,9 @@ import { log } from '@/lib/logger';
 export async function GET() {
   try {
     const mappings = await prisma.roomMapping.findMany();
-    const rooms = await prisma.room.findMany({
-      select: { id: true, type: true, number: true }
+    const roomTypes = await prisma.roomType.findMany({
+      select: { id: true, name: true }
     });
-
-    // Group by type to get unique "Room Types"
-    const roomTypes = Array.from(new Set(rooms.map((r: any) => r.type)))
-      .map(type => {
-        const room = rooms.find((r: any) => r.type === type);
-        return { id: room?.id, name: type };
-      });
 
     return NextResponse.json({ mappings, roomTypes });
   } catch (error: any) {

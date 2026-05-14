@@ -103,7 +103,7 @@ describe('Zero-Trust Security & Resilient Operations Suite', () => {
 
     // Mock React's useState hooks to enable standard headless testing in Node contexts
     const mockSetState = jest.fn()
-    const spy = jest.spyOn(React, 'useState').mockImplementation((init: any) => [init, mockSetState])
+    const spy = jest.spyOn(React, 'useState' as any).mockImplementation((init: any) => [init, mockSetState])
 
     try {
       // Instantiate Mobile check-list component

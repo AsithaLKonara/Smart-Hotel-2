@@ -1,6 +1,6 @@
 import NextAuth from 'next-auth'
 // Note: UserRole enum doesn't exist in Prisma schema - define locally
-type UserRole = 'GUEST' | 'STAFF' | 'MANAGER' | 'SUPER_ADMIN' | 'RECEPTIONIST' | 'KITCHEN_STAFF' | 'HOUSEKEEPING'
+type UserRole = 'SUPER_ADMIN' | 'MANAGER' | 'RECEPTIONIST' | 'HOUSEKEEPING' | 'MAINTENANCE' | 'KITCHEN' | 'GUEST'
 
 declare module 'next-auth' {
   interface Session {

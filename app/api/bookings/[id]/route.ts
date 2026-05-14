@@ -8,7 +8,7 @@ import { sendBookingStatusUpdate } from '@/lib/email'
 
 const bookingUpdateSchema = z.object({
   status: z.enum(['PENDING', 'CONFIRMED', 'CHECKED_IN', 'CHECKED_OUT', 'CANCELLED']).optional(),
-  paymentStatus: z.enum(['PENDING', 'PAID', 'FAILED', 'REFUNDED']).optional(),
+  paymentStatus: z.enum(['pending', 'completed', 'failed', 'refunded', 'unpaid', 'partial']).optional(),
   paymentMethod: z.string().optional(),
   specialRequests: z.string().optional(),
 })
@@ -38,7 +38,7 @@ export async function GET(
     let user, room
     if (booking) {
       [user, room] = await Promise.all([
-        prisma.user.findUnique({ where: { id: booking.userId } }).catch(() => null),
+        prisma.user.findUnique({ where: { id: booking.primaryGuestId } }).catch(() => null),
         prisma.room.findUnique({ where: { id: booking.roomId } }).catch(() => null)
       ])
     }
@@ -51,7 +51,7 @@ export async function GET(
     }
 
     // Check if user has permission to view this booking
-    if (session.user.role === 'GUEST' && booking.userId !== session.user.id) {
+    if (session.user.role === 'GUEST' && booking.primaryGuestId !== session.user.id) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 403 }
@@ -71,10 +71,10 @@ export async function GET(
       room: room ? {
         id: room.id,
         number: room.number,
-        type: room.type,
-        price: room.price,
-        description: room.description,
-        amenities: room.amenities,
+        type: (room as any).type,
+        price: (room as any).price,
+        description: (room as any).description,
+        amenities: (room as any).amenities,
         capacity: Number(room.capacity),
         floor: Number(room.floor),
         size: Number(room.size),
@@ -115,7 +115,7 @@ export async function PATCH(
     let user, room
     if (booking) {
       [user, room] = await Promise.all([
-        prisma.user.findUnique({ where: { id: booking.userId } }).catch(() => null),
+        prisma.user.findUnique({ where: { id: booking.primaryGuestId } }).catch(() => null),
         prisma.room.findUnique({ where: { id: booking.roomId } }).catch(() => null)
       ])
     }
@@ -177,7 +177,7 @@ export async function PATCH(
     
     // Fetch updated related data
     const [updatedUser, updatedRoom] = await Promise.all([
-      prisma.user.findUnique({ where: { id: updatedBooking.userId } }).catch(() => null),
+      prisma.user.findUnique({ where: { id: updatedBooking.primaryGuestId } }).catch(() => null),
       prisma.room.findUnique({ where: { id: updatedBooking.roomId } }).catch(() => null)
     ])
     
@@ -194,8 +194,8 @@ export async function PATCH(
       room: updatedRoom ? {
         id: updatedRoom.id,
         number: updatedRoom.number,
-        type: updatedRoom.type,
-        price: updatedRoom.price,
+        type: (updatedRoom as any).type,
+        price: (updatedRoom as any).price,
         capacity: Number(updatedRoom.capacity),
         floor: Number(updatedRoom.floor),
         size: Number(updatedRoom.size),

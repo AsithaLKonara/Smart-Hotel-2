@@ -107,11 +107,12 @@ export async function POST(request: NextRequest) {
             primaryGuestId: guestId,
             checkIn,
             checkOut,
-            guests: BigInt(validated.guests),
+            guests: validated.guests,
             totalAmount,
             status: 'CONFIRMED', 
-            paymentStatus: validated.paymentMethod === 'pay_now' ? 'PENDING' : 'UNPAID',
-            paymentMethod: validated.paymentMethod === 'pay_now' ? 'CARD' : 'CASH',
+            paymentStatus: validated.paymentMethod === 'pay_now' ? 'pending' : 'unpaid',
+            paymentMethod: validated.paymentMethod === 'pay_now' ? 'card' : 'cash',
+            paymentProvider: validated.paymentMethod === 'pay_now' ? 'STRIPE' : 'OFFLINE',
             confirmationCode,
             createdAt: new Date(),
             updatedAt: new Date(),
@@ -130,7 +131,7 @@ export async function POST(request: NextRequest) {
       })
 
       // 4. COMMIT INVENTORY HOLD (Advances distributed version)
-      await InventoryLockEngine.commitHold(hold.id)
+      await InventoryLockEngine.commitHold(hold)
 
       // 5. REAL-TIME EVENTS (Pusher)
       await RealtimeEvents.emitBookingCreated(result)
@@ -161,12 +162,12 @@ export async function POST(request: NextRequest) {
         await prisma.payment.create({
           data: {
             bookingId: result.id,
-            userId: result.userId,
+            userId: result.primaryGuestId,
             amount: result.totalAmount,
-            paymentMethod: 'CARD',
+            paymentMethod: 'card',
             paymentProvider: 'STRIPE',
             providerId: intent.id,
-            status: 'PENDING'
+            status: 'pending'
           }
         })
       }
@@ -186,13 +187,13 @@ export async function POST(request: NextRequest) {
         confirmationCode: result.confirmationCode
       })
 
-      const responseBody = { booking: { ...result, guests: Number(result.guests), clientSecret } }
+      const responseBody = { booking: { ...result, clientSecret } }
       if (idempotencyKey) await saveIdempotency(idempotencyKey, { status: 201, body: responseBody })
       
       return NextResponse.json(responseBody, { status: 201 })
 
     } catch (txErr) {
-      await InventoryLockEngine.rollbackHold(hold.id)
+      await InventoryLockEngine.rollbackHold(hold)
       throw txErr
     }
 
@@ -208,7 +209,7 @@ export async function GET(request: NextRequest) {
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { searchParams } = new URL(request.url)
-  const status = searchParams.get('status')
+  const status = searchParams.get('status') as any
   
   const bookings = await prisma.booking.findMany({
     where: {
@@ -220,6 +221,6 @@ export async function GET(request: NextRequest) {
   })
 
   return NextResponse.json({
-    bookings: bookings.map(b => ({ ...b, guests: Number(b.guests) }))
+    bookings
   })
 }

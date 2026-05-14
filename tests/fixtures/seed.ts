@@ -35,38 +35,58 @@ export const testHotels = {
   },
 }
 
+export const testRoomTypes = {
+  deluxe: {
+    id: 'test-rt-1',
+    name: 'DELUXE',
+    description: 'Luxury suite with premium views',
+    baseRate: 150.00,
+    capacity: 2,
+    amenities: ['WiFi', 'TV', 'Mini Bar'],
+    images: ['/images/hotel/room-deluxe.jpg']
+  },
+  standard: {
+    id: 'test-rt-2',
+    name: 'STANDARD',
+    description: 'Comfortable room for two',
+    baseRate: 100.00,
+    capacity: 2,
+    amenities: ['WiFi', 'TV'],
+    images: ['/images/hotel/room-standard.jpg']
+  }
+}
+
 export const testRooms = {
   deluxe: {
     id: 'test-room-1',
     number: '101',
-    type: 'DELUXE',
-    price: 150.00,
+    roomTypeId: testRoomTypes.deluxe.id,
+    floor: 1,
     capacity: 2,
-    amenities: ['WiFi', 'TV', 'Mini Bar'],
-    hotelId: testHotels.main.id,
+    size: 35
   },
   standard: {
     id: 'test-room-2',
     number: '102',
-    type: 'STANDARD',
-    price: 100.00,
+    roomTypeId: testRoomTypes.standard.id,
+    floor: 1,
     capacity: 2,
-    amenities: ['WiFi', 'TV'],
-    hotelId: testHotels.main.id,
+    size: 25
   },
 }
 
 export const testBookings = {
   confirmed: {
     id: 'test-booking-1',
-    userId: testUsers.guest.id,
+    primaryGuestId: testUsers.guest.id,
     roomId: testRooms.deluxe.id,
     checkIn: new Date('2025-10-01'),
     checkOut: new Date('2025-10-03'),
     guests: 2,
     status: 'CONFIRMED' as const,
     totalAmount: 300.00,
-    paymentStatus: 'PAID' as const,
+    paymentStatus: 'completed' as const,
+    confirmationCode: 'TEST-CONF-1'
   },
 }
 
@@ -77,7 +97,8 @@ export const testMenuItems = {
     description: 'Classic tomato and mozzarella',
     price: 15.99,
     category: 'MAIN_COURSE' as const,
-    isAvailable: true,
+    available: true,
+    preparationTime: 15,
   },
   burger: {
     id: 'test-menu-2',
@@ -85,7 +106,8 @@ export const testMenuItems = {
     description: 'Beef patty with cheese',
     price: 12.99,
     category: 'MAIN_COURSE' as const,
-    isAvailable: true,
+    available: true,
+    preparationTime: 10,
   },
 }
 
@@ -97,6 +119,15 @@ export async function seedTestData() {
       where: { id: user.id },
       update: { ...user, password: hashedPassword },
       create: { ...user, password: hashedPassword },
+    })
+  }
+
+  // Create test room types
+  for (const rt of Object.values(testRoomTypes)) {
+    await prisma.roomType.upsert({
+      where: { id: rt.id },
+      update: rt,
+      create: rt,
     })
   }
 
@@ -129,6 +160,9 @@ export async function cleanupTestData() {
     where: { id: { startsWith: 'test-' } },
   })
   await prisma.room.deleteMany({
+    where: { id: { startsWith: 'test-' } },
+  })
+  await prisma.roomType.deleteMany({
     where: { id: { startsWith: 'test-' } },
   })
   await prisma.user.deleteMany({

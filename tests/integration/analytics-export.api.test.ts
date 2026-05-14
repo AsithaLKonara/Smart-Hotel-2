@@ -46,13 +46,13 @@ jest.mock('pdfkit', () => {
     const buffers: Buffer[] = []
     const handlers: Record<string, Function[]> = {}
     
-  const mockDoc = {
-    font: jest.fn().mockReturnThis(),
-    fontSize: jest.fn().mockReturnThis(),
-    text: jest.fn().mockReturnThis(),
-    moveDown: jest.fn().mockReturnThis(),
+    const mockDoc: any = {
+      font: jest.fn().mockReturnThis(),
+      fontSize: jest.fn().mockReturnThis(),
+      text: jest.fn().mockReturnThis(),
+      moveDown: jest.fn().mockReturnThis(),
       list: jest.fn().mockReturnThis(),
-      on: jest.fn((event: string, handler: Function) => {
+      on: jest.fn((event: string, handler: any) => {
         if (!handlers[event]) {
           handlers[event] = []
         }

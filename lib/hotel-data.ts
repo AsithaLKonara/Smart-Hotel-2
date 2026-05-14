@@ -50,7 +50,8 @@ async function loadHotelData(): Promise<HotelData> {
     getHotelContactInfo(),
     getHotelSettings(),
     prisma.room.findMany({
-      orderBy: { price: 'desc' },
+      include: { roomType: true },
+      orderBy: { updatedAt: 'desc' },
       take: 6,
     }),
     prisma.foodMenu.findMany(),
@@ -106,11 +107,11 @@ async function loadHotelData(): Promise<HotelData> {
 
   const mappedRooms = rooms.map(room => ({
     id: room.id,
-    type: room.type,
-    description: room.description,
-    price: room.price,
-    amenities: room.amenities || [],
-    images: room.images?.length ? room.images : ['/images/hotel/room-deluxe.jpg'],
+    type: room.roomType.name,
+    description: room.roomType.description,
+    price: room.roomType.baseRate,
+    amenities: room.roomType.amenities || [],
+    images: room.roomType.images?.length ? room.roomType.images : ['/images/hotel/room-deluxe.jpg'],
   }))
 
   const staffProfiles = staff.map((member, index) => ({

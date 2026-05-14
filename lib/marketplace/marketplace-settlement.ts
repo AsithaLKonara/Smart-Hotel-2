@@ -36,7 +36,15 @@ export class MarketplaceSettlementEngine {
         userId: vendorId,
         actor: 'MARKETPLACE_SETTLEMENT_CORE',
         action: 'MARKETPLACE_REVENUE_SPLIT',
-        details: `Split Transaction ${id}: Total=$${totalCharged}. Platform Commission=$${platformSplit}. Vendor share=$${vendorSplit}. Tax=$${taxDeducted}.`,
+        resource: 'Transaction',
+        resourceId: id,
+        details: {
+          totalCharged,
+          platformSplit,
+          vendorSplit,
+          taxDeducted,
+          message: `Split Transaction ${id}: Total=$${totalCharged}. Platform Commission=$${platformSplit}. Vendor share=$${vendorSplit}. Tax=$${taxDeducted}.`
+        },
         createdAt: new Date()
       }
     });

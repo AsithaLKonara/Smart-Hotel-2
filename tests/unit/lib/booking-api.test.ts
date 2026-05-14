@@ -35,7 +35,7 @@ describe('lib/booking-api', () => {
   })
 
   it('searchRooms builds query params and returns room list', async () => {
-    const fetchMock = global.fetch as jest.Mock
+    const fetchMock = global.fetch as any
     const rooms = [{ id: 'room-1' }, { id: 'room-2' }]
     fetchMock.mockResolvedValue({ ok: true, json: () => Promise.resolve(rooms) })
 
@@ -62,7 +62,7 @@ describe('lib/booking-api', () => {
   })
 
   it('searchRooms throws when network response is not ok', async () => {
-    const fetchMock = global.fetch as jest.Mock
+    const fetchMock = global.fetch as any
     fetchMock.mockResolvedValue({ ok: false })
 
     await expect(
@@ -77,7 +77,7 @@ describe('lib/booking-api', () => {
   })
 
   it('getRoomDetails fetches room data', async () => {
-    const fetchMock = global.fetch as jest.Mock
+    const fetchMock = global.fetch as any
     const room = { id: 'room-10' }
     fetchMock.mockResolvedValue({ ok: true, json: () => Promise.resolve(room) })
 
@@ -87,7 +87,7 @@ describe('lib/booking-api', () => {
   })
 
   it('createBooking posts booking data and returns response', async () => {
-    const fetchMock = global.fetch as jest.Mock
+    const fetchMock = global.fetch as any
     const response = { success: true, booking: { id: 'booking-1' } }
     fetchMock.mockResolvedValue({ ok: true, json: () => Promise.resolve(response) })
 
@@ -123,7 +123,7 @@ describe('lib/booking-api', () => {
   })
 
   it('createBooking surfaces API error messages', async () => {
-    const fetchMock = global.fetch as jest.Mock
+    const fetchMock = global.fetch as any
     fetchMock.mockResolvedValue({
       ok: false,
       json: () => Promise.resolve({ error: 'Sold out' }),
@@ -155,7 +155,7 @@ describe('lib/booking-api', () => {
   })
 
   it('getBookingDetails retrieves booking by id', async () => {
-    const fetchMock = global.fetch as jest.Mock
+    const fetchMock = global.fetch as any
     const booking = { id: 'booking-9' }
     fetchMock.mockResolvedValue({ ok: true, json: () => Promise.resolve(booking) })
 
@@ -165,7 +165,7 @@ describe('lib/booking-api', () => {
   })
 
   it('updateBooking sends partial updates', async () => {
-    const fetchMock = global.fetch as jest.Mock
+    const fetchMock = global.fetch as any
     const response = { success: true }
     fetchMock.mockResolvedValue({ ok: true, json: () => Promise.resolve(response) })
 
@@ -180,7 +180,7 @@ describe('lib/booking-api', () => {
   })
 
   it('cancelBooking issues DELETE request', async () => {
-    const fetchMock = global.fetch as jest.Mock
+    const fetchMock = global.fetch as any
     const response = { success: true }
     fetchMock.mockResolvedValue({ ok: true, json: () => Promise.resolve(response) })
 
@@ -190,7 +190,7 @@ describe('lib/booking-api', () => {
   })
 
   it('getUserBookings fetches booking list', async () => {
-    const fetchMock = global.fetch as jest.Mock
+    const fetchMock = global.fetch as any
     const bookings = [{ id: 'booking-1' }, { id: 'booking-2' }]
     fetchMock.mockResolvedValue({ ok: true, json: () => Promise.resolve(bookings) })
 

@@ -6,7 +6,7 @@ jest.mock('next-auth', () => {
   const actual = jest.requireActual('next-auth')
   return {
     __esModule: true,
-    ...actual,
+    ...(actual as any),
     getServerSession: jest.fn(),
   }
 })

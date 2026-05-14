@@ -44,7 +44,7 @@ test.describe('📥 Security Audit - Mutation & Database State Integrity', () =>
 
     // 1. Audit Database State BEFORE Mutation
     const initialBookingsCount = await prisma.booking.count({
-      where: { userId: guestUser.id }
+      where: { primaryGuestId: guestUser.id }
     })
 
     const checkInDate = new Date()
@@ -74,7 +74,7 @@ test.describe('📥 Security Audit - Mutation & Database State Integrity', () =>
 
     // 3. Audit Database State AFTER Mutation
     const finalBookingsCount = await prisma.booking.count({
-      where: { userId: guestUser.id }
+      where: { primaryGuestId: guestUser.id }
     })
 
     // Verify bookings count increased by exactly 1
@@ -88,7 +88,7 @@ test.describe('📥 Security Audit - Mutation & Database State Integrity', () =>
     // Assert absolute database-to-API state alignment
     expect(dbBooking).not.toBeNull()
     expect(dbBooking!.roomId).toBe(targetRoom.id)
-    expect(dbBooking!.userId).toBe(guestUser.id)
+    expect(dbBooking!.primaryGuestId).toBe(guestUser.id)
     expect(dbBooking!.status).toBe('PENDING')
     expect(dbBooking!.paymentMethod).toBe('CASH') // pay_later resolves to CASH in schema
     expect(Number(dbBooking!.guests)).toBe(2) // Handle BigInt conversions precisely

@@ -6,10 +6,10 @@ describe('lib/availability', () => {
   const checkIn = new Date('2025-02-01T15:00:00.000Z')
   const checkOut = new Date('2025-02-05T11:00:00.000Z')
 
-  let bookingFindManySpy: jest.SpyInstance
-  let bookingCountSpy: jest.SpyInstance
-  let roomFindManySpy: jest.SpyInstance
-  let roomCountSpy: jest.SpyInstance
+  let bookingFindManySpy: any
+  let bookingCountSpy: any
+  let roomFindManySpy: any
+  let roomCountSpy: any
 
   beforeEach(() => {
     bookingFindManySpy = jest.spyOn(prisma.booking, 'findMany').mockResolvedValue([])

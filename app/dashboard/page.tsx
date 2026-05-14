@@ -43,13 +43,14 @@ export default function DashboardOrchestrator() {
     }
 
     // Role-based redirection for staff members to their operation centers
-    if (session?.user?.role === 'ADMIN') {
+    const role = session?.user?.role
+    if (role === 'SUPER_ADMIN' || role === 'MANAGER') {
       router.push('/admin/dashboard')
-    } else if (session?.user?.role === 'RECEPTIONIST') {
+    } else if (role === 'RECEPTIONIST') {
       router.push('/admin/receptionist')
-    } else if (session?.user?.role === 'HOUSEKEEPING') {
+    } else if (role === 'HOUSEKEEPING') {
       router.push('/admin/housekeeping')
-    } else if (session?.user?.role === 'KITCHEN') {
+    } else if (role === 'KITCHEN') {
       router.push('/admin/kitchen')
     }
   }, [status, session, router])

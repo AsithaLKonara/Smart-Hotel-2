@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
     if (category) where.category = category
     if (activeOnly) where.active = true
 
-    const faqs = await prisma.fAQ.findMany({
+    const faqs = await (prisma as any).fAQ.findMany({
       where,
       orderBy: [{ order: 'asc' }, { createdAt: 'desc' }]
     })
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const data = faqSchema.parse(body)
 
-    const faq = await prisma.fAQ.create({
+    const faq = await (prisma as any).fAQ.create({
       data: {
         question: data.question,
         answer: data.answer,

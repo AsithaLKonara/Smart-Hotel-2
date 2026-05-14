@@ -71,7 +71,7 @@ describe('usePushNotifications', () => {
 
   it('exposes notify helper that delegates to showNotification', async () => {
     const { result } = renderHook(() => usePushNotifications())
-    const payload = { title: 'Hello world' }
+    const payload = { title: 'Hello world', body: 'Test body' }
 
     await act(async () => {
       await result.current.notify(payload)

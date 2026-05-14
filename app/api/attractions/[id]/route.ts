@@ -24,7 +24,7 @@ export async function GET(
 
   try {
     const { id } = await params
-    const attraction = await prisma.nearbyAttraction.findUnique({ where: { id } })
+    const attraction = await (prisma as any).nearbyAttraction.findUnique({ where: { id } })
     
     if (!attraction) {
       return NextResponse.json({ error: 'Attraction not found' }, { status: 404 })
@@ -56,7 +56,7 @@ export async function PUT(
     const body = await request.json()
     const data = updateSchema.parse(body)
 
-    const attraction = await prisma.nearbyAttraction.update({
+    const attraction = await (prisma as any).nearbyAttraction.update({
       where: { id },
       data: {
         ...data,
@@ -90,7 +90,7 @@ export async function DELETE(
 
   try {
     const { id } = await params
-    await prisma.nearbyAttraction.delete({ where: { id } })
+    await (prisma as any).nearbyAttraction.delete({ where: { id } })
     return NextResponse.json({ message: 'Attraction deleted successfully' })
   } catch (error) {
     console.error('Error deleting attraction:', error)

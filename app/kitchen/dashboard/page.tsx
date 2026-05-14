@@ -119,21 +119,6 @@ function KitchenDashboardContent() {
   const [updatingOrder, setUpdatingOrder] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
 
-  useEffect(() => {
-    if (status === 'loading') return
-    
-    if (!canAccessKitchenFeatures(session)) {
-      toast.error('Access Denied: Kitchen personnel authorization required')
-      router.push('/')
-      return
-    }
-
-    fetchKitchenData()
-    
-    const interval = setInterval(fetchKitchenData, 10000)
-    return () => clearInterval(interval)
-  }, [session, status, router, fetchKitchenData])
-
   const fetchKitchenData = useCallback(async () => {
     try {
       const response = await fetch('/api/kitchen/orders?today=true', {
@@ -174,6 +159,21 @@ function KitchenDashboardContent() {
       setIsLoading(false)
     }
   }, [router])
+
+  useEffect(() => {
+    if (status === 'loading') return
+    
+    if (!canAccessKitchenFeatures(session)) {
+      toast.error('Access Denied: Kitchen personnel authorization required')
+      router.push('/')
+      return
+    }
+
+    fetchKitchenData()
+    
+    const interval = setInterval(fetchKitchenData, 10000)
+    return () => clearInterval(interval)
+  }, [session, status, router, fetchKitchenData])
 
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
     setUpdatingOrder(orderId)

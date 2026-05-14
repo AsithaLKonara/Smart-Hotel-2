@@ -98,7 +98,10 @@ export async function POST(request: NextRequest) {
     }
 
     const review = await prisma.hotelReview.create({
-      data: validatedData,
+      data: {
+        ...validatedData,
+        rating: validatedData.overallRating, // Map for legacy/base compatibility
+      },
       include: {
         user: {
           select: {

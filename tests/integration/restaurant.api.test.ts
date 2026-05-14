@@ -33,7 +33,7 @@ jest.mock('@/lib/session', () => ({
 import { prisma } from '@/lib/db'
 import { getRequestSession } from '@/lib/session'
 
-const mockPrisma = prisma as jest.Mocked<typeof prisma>
+const mockPrisma = prisma as any
 const mockGetRequestSession = getRequestSession as jest.MockedFunction<typeof getRequestSession>
 
 describe('Restaurant API Integration', () => {

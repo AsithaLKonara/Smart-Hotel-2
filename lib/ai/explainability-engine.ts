@@ -86,7 +86,11 @@ export class ExplainabilityEngine {
         userId: overrideActor,
         actor: 'HUMAN_OPERATOR',
         action: 'AI_RECOMMENDATION_OVERRIDE',
-        details: `Override executed on decision [${recommendationId}]. Action: ${overrideAction}. Justification: "${justification}"`,
+        resource: 'AI_ENGINE',
+        resourceId: recommendationId,
+        details: {
+          message: `Override executed on decision [${recommendationId}]. Action: ${overrideAction}. Justification: "${justification}"`
+        },
         createdAt: new Date()
       }
     });

@@ -15,9 +15,14 @@ export async function searchRooms(type?: string) {
     try {
         const rooms = await prisma.room.findMany({
             where: {
-                status: "available",
-                ...(type ? { type: { contains: type, mode: 'insensitive' as any } } : {}),
+                status: "AVAILABLE",
+                ...(type ? { 
+                    roomType: { 
+                        name: { contains: type, mode: 'insensitive' as any } 
+                    } 
+                } : {}),
             },
+            include: { roomType: true },
             take: 3,
         });
         return rooms;
@@ -34,15 +39,9 @@ export async function checkBooking(confirmationCode: string) {
         const booking = await prisma.booking.findUnique({
             where: { confirmationCode },
             include: { 
-                // room: true // In MongoDB, relations must be handled carefully if not defined
+                room: { include: { roomType: true } }
             },
         });
-        
-        // Manual lookup if relation isn't explicit in schema
-        if (booking && booking.roomId) {
-            const room = await prisma.room.findUnique({ where: { id: booking.roomId } });
-            return { ...booking, room };
-        }
         
         return booking;
     } catch (error) {

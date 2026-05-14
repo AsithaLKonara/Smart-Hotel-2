@@ -70,17 +70,17 @@ export async function processOtaReservation(payload: OtaReservationPayload) {
 
       if (!mapping) throw new Error(`No mapping found for OTA Room Type ID: ${ota_room_type_id}`);
 
-      const targetRoomType = await tx.room.findFirst({
+      const targetRoomType = await tx.roomType.findUnique({
         where: { id: mapping.localRoomTypeId }
       });
       
       if (!targetRoomType) throw new Error(`Local room type not found for mapping: ${mapping.localRoomTypeId}`);
 
       // Find available physical room (Helper uses tx to ensure consistency in complex flows)
-      const availableRoom = await findAvailablePhysicalRoom(targetRoomType.type, new Date(check_in), new Date(check_out), tx);
+      const availableRoom = await findAvailablePhysicalRoom(targetRoomType.id, new Date(check_in), new Date(check_out), tx);
 
       if (!availableRoom) {
-        log.error('No physical rooms available for OTA booking', { ota_reservation_code, type: targetRoomType.type });
+        log.error('No physical rooms available for OTA booking', { ota_reservation_code, type: targetRoomType.name });
         throw new Error('OVERBOOKING_DETECTED');
       }
 
@@ -91,12 +91,12 @@ export async function processOtaReservation(payload: OtaReservationPayload) {
           createdAt: new Date(),
           guests: 2,
           paymentMethod: 'OTA_COLLECT',
-          paymentStatus: 'CONFIRMED',
+          paymentStatus: 'completed',
           roomId: availableRoom.id,
           status: 'CONFIRMED',
           totalAmount: total_price,
           updatedAt: new Date(),
-          userId: 'SYSTEM',
+          primaryGuestId: 'SYSTEM',
           source: BookingSource.BOOKING_COM,
           otaReference: ota_reservation_code,
           confirmationCode: `OTA-${ota_reservation_code.slice(-6)}`
@@ -108,6 +108,8 @@ export async function processOtaReservation(payload: OtaReservationPayload) {
         data: {
           direction: 'PULL',
           status: 'SUCCESS',
+          entityType: 'RESERVATION',
+          entityId: ota_reservation_code,
           payload: payload as any,
         }
       });
@@ -122,6 +124,8 @@ export async function processOtaReservation(payload: OtaReservationPayload) {
       data: {
         direction: 'PULL',
         status: 'FAILED',
+        entityType: 'RESERVATION',
+        entityId: ota_reservation_code,
         payload: payload as any,
         errorMessage: error.message,
       }
@@ -134,9 +138,9 @@ export async function processOtaReservation(payload: OtaReservationPayload) {
 /**
  * Finds an available physical room of a specific type for the given dates
  */
-async function findAvailablePhysicalRoom(type: string, start: Date, end: Date, tx: any = prisma) {
+async function findAvailablePhysicalRoom(roomTypeId: string, start: Date, end: Date, tx: any = prisma) {
   const rooms = await tx.room.findMany({
-    where: { type: type, status: 'available' }
+    where: { roomTypeId, status: 'AVAILABLE' }
   });
 
   for (const room of rooms) {

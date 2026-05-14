@@ -22,7 +22,8 @@ export class PredictiveMaintenanceEngine {
       // 1. Ingest historical maintenance events to calculate frequency factors
       const pastIssues = await prisma.auditLog.findMany({
         where: {
-          details: { contains: `room:${room.id}` },
+          resource: 'Room',
+          resourceId: room.id,
           action: { contains: 'MAINTENANCE' }
         }
       });
@@ -31,7 +32,7 @@ export class PredictiveMaintenanceEngine {
 
       // 2. Mock asset coefficients (HVAC run hours, appliance lifespans) based on room variables
       // Rooms with odd indices simulate older plumbing / HVAC configurations to simulate diagnostic variance
-      const isLegacyUnit = parseInt(room.roomNumber) % 2 !== 0;
+      const isLegacyUnit = parseInt(room.number) % 2 !== 0;
       
       let hvacRiskScore = 15; // Baseline low risk
       let plumbingRiskScore = 10;
@@ -63,7 +64,7 @@ export class PredictiveMaintenanceEngine {
 
       profiles.push({
         roomId: room.id,
-        roomNumber: room.roomNumber,
+        roomNumber: room.number,
         hvacRiskScore,
         plumbingRiskScore,
         overallFailureRisk,

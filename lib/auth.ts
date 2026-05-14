@@ -7,7 +7,7 @@ import prisma, { connectWithRetry } from './db'
 import { logAction, AUDIT_ACTIONS } from './audit'
 import { isDatabaseConfigured } from './db-helpers'
 // Note: UserRole enum doesn't exist in Prisma schema - define locally
-type UserRole = 'GUEST' | 'STAFF' | 'MANAGER' | 'SUPER_ADMIN' | 'RECEPTIONIST'
+type UserRole = 'SUPER_ADMIN' | 'MANAGER' | 'RECEPTIONIST' | 'HOUSEKEEPING' | 'MAINTENANCE' | 'KITCHEN' | 'GUEST'
 
 export const authOptions: NextAuthOptions = {
   ...(isDatabaseConfigured() ? { adapter: PrismaAdapter(prisma) } : {}),
@@ -83,10 +83,10 @@ export const authOptions: NextAuthOptions = {
             // Log failed login attempt (non-blocking)
             logAction(
               req as any,
-              undefined,
+              'GUEST',
               AUDIT_ACTIONS.USER_LOGIN,
               'User',
-              undefined,
+              'unknown',
               { email: credentials.email, reason: 'User not found' }
             ).catch(err => console.error('Failed to log action:', err))
             return null

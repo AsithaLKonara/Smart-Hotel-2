@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
     if (category) where.category = category
     if (activeOnly) where.active = true
 
-    const links = await prisma.footerLink.findMany({
+    const links = await (prisma as any).footerLink.findMany({
       where,
       orderBy: [{ category: 'asc' }, { order: 'asc' }]
     })
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const data = footerLinkSchema.parse(body)
 
-    const link = await prisma.footerLink.create({
+    const link = await (prisma as any).footerLink.create({
       data: {
         label: data.label,
         url: data.url,

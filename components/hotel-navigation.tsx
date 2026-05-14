@@ -46,7 +46,7 @@ export default function HotelNavigation() {
     const role = session.user.role
     if (role === 'SUPER_ADMIN' || role === 'MANAGER') return '/admin/dashboard'
     if (role === 'RECEPTIONIST') return '/admin/bookings'
-    if (role === 'KITCHEN_STAFF') return '/kitchen/dashboard'
+    if (role === 'KITCHEN') return '/kitchen/dashboard'
     if (role === 'HOUSEKEEPING') return '/admin/tasks'
     return '/dashboard'
   }

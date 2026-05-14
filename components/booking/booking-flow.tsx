@@ -20,7 +20,7 @@ interface Room {
   price: number
   capacity: number
   amenities: string[]
-  images: string[]
+  images: any[]
   description: string | null
   floor: number | null
   status: string
@@ -195,14 +195,14 @@ function BookingStep2({
           checkIn: filters.checkIn || new Date(),
           checkOut: filters.checkOut || new Date(Date.now() + 24 * 60 * 60 * 1000)
         })
-        // Convert BigInt fields to numbers for frontend compatibility
-        const roomsWithNumbers = availableRooms.map(room => ({
+        // Convert BigInt fields to numbers and ensure type safety
+        const roomsWithNumbers = availableRooms.map((room: any) => ({
           ...room,
-          capacity: Number(room.capacity),
-          floor: Number(room.floor),
-          size: Number(room.size),
+          capacity: Number(room.capacity || room.roomType?.capacity || 0),
+          floor: room.floor !== null ? Number(room.floor) : null,
+          size: room.size !== null ? Number(room.size) : null,
         }))
-        setRooms(roomsWithNumbers)
+        setRooms(roomsWithNumbers as any)
       } catch (error) {
         console.error('Error fetching rooms:', error)
         // Show empty state instead of mock data - let user know there was an error

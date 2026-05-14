@@ -33,23 +33,17 @@ export async function PATCH(
     const body = await request.json()
     const validatedData = roomUpdateSchema.parse(body)
 
-    // Handle BigInt conversion for Prisma/MongoDB
-    const updateData: any = { ...validatedData }
-    if (typeof validatedData.capacity === 'number') updateData.capacity = BigInt(validatedData.capacity)
-    if (typeof validatedData.floor === 'number') updateData.floor = BigInt(validatedData.floor)
-    if (typeof validatedData.size === 'number') updateData.size = BigInt(validatedData.size)
-
+    // Handle relational updates for images if provided (if we were in PUT, but this is PATCH)
+    // Actually, let's keep it simple for PATCH
     const room = await prisma.room.update({
       where: { id: id },
-      data: updateData
+      data: {
+        ...validatedData,
+        status: validatedData.status as any,
+      }
     })
 
-    return NextResponse.json({
-      ...room,
-      capacity: Number(room.capacity),
-      floor: Number(room.floor),
-      size: Number(room.size)
-    })
+    return NextResponse.json(room)
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: 'Validation error', details: error.errors }, { status: 400 })

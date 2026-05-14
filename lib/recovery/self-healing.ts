@@ -21,7 +21,7 @@ export class SelfHealingRuntime {
 
     // 1. Audit MongoDB & transactional capabilities
     try {
-      await prisma.$queryRaw`{ ping: 1 }`.catch(() => {});
+      await prisma.$runCommandRaw({ ping: 1 }).catch(() => {});
       mongodbOk = true;
 
       // Check if replica-sets are available by examining transactions capability
@@ -85,8 +85,7 @@ export class SelfHealingRuntime {
       const staleLocks = await prisma.auditLog.findMany({
         where: {
           action: 'ACQUIRE_LOCK',
-          createdAt: { lte: staleThreshold },
-          details: { contains: 'stale' }
+          createdAt: { lte: staleThreshold }
         }
       });
       locksCleared = staleLocks.length;
@@ -94,7 +93,7 @@ export class SelfHealingRuntime {
       // 2. Scan and re-fire failed event logs or payments inside transactional outboxes
       const failedLogs = await prisma.auditLog.findMany({
         where: {
-          action: { contains: 'FAIL' },
+          action: { startsWith: 'FAIL' },
           createdAt: { gte: staleThreshold }
         }
       });

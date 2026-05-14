@@ -19,7 +19,7 @@ export class PolicyEngine {
         const roomId = ctx.roomId;
         await prisma.room.update({
           where: { id: roomId },
-          data: { status: 'CLEANING_REQUIRED', updatedAt: new Date() }
+          data: { status: 'DIRTY', updatedAt: new Date() }
         });
 
         eventBus.emit({
@@ -27,7 +27,7 @@ export class PolicyEngine {
           type: 'autonomous.housekeeping_dispatched',
           severity: 'INFO',
           title: 'Housekeeping Scheduled Autonomously',
-          message: `Room [${roomId}] checked out. Housekeeping status updated to CLEANING_REQUIRED.`,
+          message: `Room [${roomId}] checked out. Housekeeping status updated to DIRTY.`,
           metadata: { roomId, triggerEvent: ctx.event },
           timestamp: new Date().toISOString()
         });
@@ -49,9 +49,9 @@ export class PolicyEngine {
             payments: {
               create: {
                 amount: refundAmount,
-                status: 'REFUNDED',
+                status: 'refunded',
                 paymentProvider: 'INTERNAL_LOYALTY_WALLET',
-                transactionDate: new Date(),
+                createdAt: new Date(),
               }
             }
           }
@@ -63,7 +63,11 @@ export class PolicyEngine {
             userId,
             actor: 'AUTONOMOUS_POLICY_SYSTEM',
             action: 'AUTOMATED_SLA_COMPENSATION',
-            details: `Issued autonomous loyalty wallet compensation of $${refundAmount}.00 for booking ${bookingId} due to ${delayMinutes}m delay.`,
+            resource: 'Booking',
+            resourceId: bookingId,
+            details: {
+              message: `Issued autonomous loyalty wallet compensation of $${refundAmount}.00 for booking ${bookingId} due to ${delayMinutes}m delay.`
+            },
             createdAt: new Date()
           }
         });
@@ -93,7 +97,11 @@ export class PolicyEngine {
             userId: 'SYSTEM',
             actor: 'PREDICTIVE_MAINTENANCE_AI',
             action: 'DISPATCH_PREVENTATIVE_TICKET',
-            details: `Dispatched urgent preventatitve team to room:${roomId} due to ${systemType} failure risk score of ${riskScore}%.`,
+            resource: 'Room',
+            resourceId: roomId,
+            details: {
+              message: `Dispatched urgent preventatitve team to room:${roomId} due to ${systemType} failure risk score of ${riskScore}%.`
+            },
             createdAt: new Date()
           }
         });

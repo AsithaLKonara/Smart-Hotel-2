@@ -144,7 +144,7 @@ export async function GET(request: NextRequest) {
         // Fetch related data separately (since relations aren't defined)
         const [room, user] = await Promise.all([
           prisma.room.findFirst({ where: { id: booking.roomId } }).catch(() => null),
-          prisma.user.findFirst({ where: { id: booking.userId } }).catch(() => null),
+          prisma.user.findFirst({ where: { id: booking.primaryGuestId } }).catch(() => null),
         ])
 
         results.push({

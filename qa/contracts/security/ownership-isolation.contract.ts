@@ -41,7 +41,7 @@ test.describe('🧬 Security Audit - Ownership & Cross-User Isolation', () => {
 
     // 3. Ensure Guest A has at least one valid booking
     bookingA = await prisma.booking.findFirst({
-      where: { userId: guestA.id }
+      where: { primaryGuestId: guestA.id }
     })
     if (!bookingA) {
       // Find any room
@@ -54,13 +54,13 @@ test.describe('🧬 Security Audit - Ownership & Cross-User Isolation', () => {
       bookingA = await prisma.booking.create({
         data: {
           roomId: room.id,
-          userId: guestA.id,
+          primaryGuestId: guestA.id,
           checkIn: new Date(),
           checkOut: new Date(Date.now() + 24 * 60 * 60 * 1000),
           guests: 2,
-          totalAmount: room.price,
+          totalAmount: 350,
           status: 'PENDING',
-          paymentStatus: 'PENDING',
+          paymentStatus: 'pending',
           paymentMethod: 'CASH',
           confirmationCode: 'ISOLATION123',
           createdAt: new Date(),
@@ -74,7 +74,7 @@ test.describe('🧬 Security Audit - Ownership & Cross-User Isolation', () => {
     // Teardown: Clean up Guest B and disconnect Prisma client
     if (guestB) {
       await prisma.booking.deleteMany({
-        where: { userId: guestB.id }
+        where: { primaryGuestId: guestB.id }
       }).catch(() => {})
       await prisma.user.delete({
         where: { id: guestB.id }

@@ -15,7 +15,7 @@ export async function generateEmbedding(text: string): Promise<number[]> {
         });
 
         const embedding = response.data[0].embedding as number[];
-        await setCachedEmbedding(text, embedding);
+        await setCachedEmbedding(text, embedding, "nomic-embed-text-v1_5");
         return embedding;
     } catch (error) {
         console.error("Groq embedding generation error:", error);

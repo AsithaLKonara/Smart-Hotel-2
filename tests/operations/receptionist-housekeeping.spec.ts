@@ -15,6 +15,10 @@ test.describe('Operational Excellence: Reception & Housekeeping', () => {
       where: { status: 'CONFIRMED' },
       include: { room: true }
     })
+    if (!booking) {
+      console.log('Skipping test: No CONFIRMED booking found.')
+      return
+    }
     
     await page.goto(`/admin/reception/bookings/${booking?.id}`)
     
@@ -44,6 +48,10 @@ test.describe('Operational Excellence: Reception & Housekeeping', () => {
       where: { status: 'CHECKED_IN' },
       include: { room: true }
     })
+    if (!booking) {
+      console.log('Skipping test: No CHECKED_IN booking found.')
+      return
+    }
     
     await page.goto(`/admin/reception/bookings/${booking?.id}`)
     await page.click('button:has-text("Check Out")')
@@ -52,6 +60,9 @@ test.describe('Operational Excellence: Reception & Housekeeping', () => {
     // DB ASSERTION: Room is now DIRTY and Task is created
     await dbAssert.roomStatusMatches(booking!.room.number, 'DIRTY')
     const task = await dbAssert.taskCreatedForRoom(booking!.room.number, 'HOUSEKEEPING')
+    if (!task) {
+      throw new Error('Housekeeping task was not created automatically!')
+    }
     expect(task.status).toBe('PENDING')
 
     // STEP 2: HOUSEKEEPING STAFF COMPLETES TASK

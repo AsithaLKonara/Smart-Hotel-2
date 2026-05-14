@@ -34,15 +34,15 @@ export async function POST(request: NextRequest) {
         await prisma.$transaction([
           prisma.booking.update({
             where: { id: bookingId },
-            data: { paymentStatus: 'PAID', updatedAt: new Date() }
+            data: { paymentStatus: 'completed', updatedAt: new Date() }
           }),
           prisma.payment.update({
             where: { providerId: intent.id },
-            data: { status: 'COMPLETED', capturedAt: new Date() }
+            data: { status: 'completed', capturedAt: new Date() }
           })
         ])
         
-        await RealtimeEvents.emitBookingUpdated({ id: bookingId, paymentStatus: 'PAID' })
+        await RealtimeEvents.emitBookingUpdated({ id: bookingId, paymentStatus: 'completed' })
         break
       }
 
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
         
         await prisma.payment.update({
           where: { providerId: intent.id },
-          data: { status: 'FAILED' }
+          data: { status: 'failed' }
         })
         break
       }
@@ -67,23 +67,29 @@ export async function POST(request: NextRequest) {
         })
 
         if (payment && payment.bookingId) {
-          await prisma.$transaction([
+          const updates: any[] = [
             prisma.booking.update({
               where: { id: payment.bookingId },
-              data: { paymentStatus: 'REFUNDED', status: 'CANCELLED' }
+              data: { paymentStatus: 'refunded', status: 'CANCELLED' }
             }),
             prisma.payment.update({
               where: { providerId: intentId },
-              data: { status: 'REFUNDED', refundedAt: new Date() }
-            }),
-            // Release the room
-            prisma.room.update({
-              where: { id: payment.booking.roomId },
-              data: { status: 'AVAILABLE' }
+              data: { status: 'refunded', refundedAt: new Date() }
             })
-          ])
+          ]
+
+          if (payment.booking) {
+            updates.push(
+              prisma.room.update({
+                where: { id: payment.booking.roomId },
+                data: { status: 'AVAILABLE' }
+              })
+            )
+          }
+
+          await prisma.$transaction(updates)
           
-          await RealtimeEvents.emitBookingUpdated({ id: payment.bookingId, status: 'CANCELLED', paymentStatus: 'REFUNDED' })
+          await RealtimeEvents.emitBookingUpdated({ id: payment.bookingId, status: 'CANCELLED', paymentStatus: 'refunded' })
         }
         break
       }

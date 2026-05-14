@@ -47,7 +47,15 @@ export class ThreatDetectionEngine {
         userId,
         actor: 'SECURITY_GUARD_AI',
         action: impossibleTravelDetected ? 'THREAT_BLOCKED' : 'SESSION_CHECKED',
-        details: `AnomalyScore: ${anomalyScore}%. Location: ${currentLocation} (${currentIp}). Actions: ${actionTaken}. Msg: ${reason}`,
+        resource: 'User',
+        resourceId: userId,
+        details: {
+          anomalyScore,
+          currentLocation,
+          currentIp,
+          actionTaken,
+          reason
+        },
         createdAt: new Date()
       }
     });

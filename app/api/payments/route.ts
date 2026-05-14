@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
         },
       },
       orderBy: {
-        transactionDate: 'desc',
+        createdAt: 'desc',
       },
     })
 
@@ -88,7 +88,11 @@ export async function POST(request: NextRequest) {
     const validatedData = paymentSchema.parse(body)
 
     const payment = await prisma.payment.create({
-      data: validatedData,
+      data: {
+        ...validatedData,
+        paymentMethod: validatedData.paymentMethod as any,
+        status: validatedData.status as any,
+      },
       include: {
         user: {
           select: {
@@ -104,7 +108,7 @@ export async function POST(request: NextRequest) {
     if (validatedData.bookingId && validatedData.status === 'completed') {
       await prisma.booking.update({
         where: { id: validatedData.bookingId },
-        data: { paymentStatus: 'paid' },
+        data: { paymentStatus: 'completed' },
       })
     }
 

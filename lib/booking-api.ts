@@ -56,10 +56,11 @@ export async function searchRooms(filters: BookingFilters): Promise<Room[]> {
       throw new Error('Failed to search rooms')
     }
 
-    return await response.json()
+    const data = await response.json()
+    return data.rooms || []
   } catch (error) {
     console.error('Error searching rooms:', error)
-    throw error
+    return []
   }
 }
 
@@ -243,7 +244,7 @@ export function formatBookingConfirmation(booking: Booking, room: Room, guestInf
   return {
     id: booking.id,
     room: {
-      type: room.type,
+      type: (room as any).type || room.roomTypeId,
       number: room.number,
       floor: room.floor
     },

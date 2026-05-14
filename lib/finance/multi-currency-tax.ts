@@ -98,7 +98,17 @@ export class MultiCurrencyTaxEngine {
         userId,
         actor: 'GLOBAL_FX_LEDGER_ENGINE',
         action: 'FX_CURRENCY_BALANCED',
-        details: `FX Conversion ${transactionId}: In=${sourceAmount} ${sourceCurrency}. Out=${convertedAmount} ${targetCurrency}. Rate=${finalRate.toFixed(4)}. Variance=${fxVarianceGainLoss}`,
+        resource: 'Payment',
+        resourceId: transactionId,
+        details: {
+          transactionId,
+          sourceAmount,
+          sourceCurrency,
+          convertedAmount,
+          targetCurrency,
+          exchangeRate: finalRate.toFixed(4),
+          fxVarianceGainLoss
+        },
         createdAt: new Date()
       }
     });

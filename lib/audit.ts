@@ -11,7 +11,15 @@ export const AUDIT_ACTIONS = {
   USER_LOGIN: 'USER_LOGIN',
   SECURITY_VIOLATION: 'SECURITY_VIOLATION',
   CHECK_IN: 'CHECK_IN',
-  CHECK_OUT: 'CHECK_OUT'
+  CHECK_OUT: 'CHECK_OUT',
+  GALLERY_CREATE: 'GALLERY_CREATE',
+  GALLERY_DELETE: 'GALLERY_DELETE',
+  INVENTORY_CREATE: 'INVENTORY_CREATE',
+  INVENTORY_UPDATE: 'INVENTORY_UPDATE',
+  STAFF_CREATE: 'STAFF_CREATE',
+  TASK_DELETE: 'TASK_DELETE',
+  INVENTORY_DELETE: 'INVENTORY_DELETE',
+  GALLERY_UPDATE: 'GALLERY_UPDATE'
 }
 
 /**
@@ -32,6 +40,7 @@ export async function logAction(
     // Normalize audit entry for the Enterprise Schema
     const log = await prisma.auditLog.create({
       data: {
+        userId: actor,
         actor,
         action,
         resource,

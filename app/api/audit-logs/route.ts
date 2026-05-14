@@ -96,11 +96,15 @@ export async function POST(request: NextRequest) {
     const actor = session.user?.email || session.user?.name || 'Anonymous Staff'
     const userId = (session.user as any)?.id || null
 
-    const newLogData = {
+    const newLogData: any = {
       actor,
       action,
-      details: typeof details === 'string' ? details : JSON.stringify(details),
-      ip,
+      resource: body.resource || 'System',
+      resourceId: body.resourceId || 'global',
+      details: {
+        ...(typeof details === 'object' ? details : { message: details }),
+        ip
+      },
       userId: userId && userId.length === 24 ? userId : null // MongoDB ObjectId 24-hex safety check
     }
 

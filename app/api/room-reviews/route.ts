@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
           select: {
             id: true,
             number: true,
-            type: true,
+            roomTypeId: true,
           },
         },
       },
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
         where: { id: validatedData.bookingId },
       })
 
-      if (!booking || booking.userId !== validatedData.userId) {
+      if (!booking || booking.primaryGuestId !== validatedData.userId) {
         return NextResponse.json({ error: 'Invalid booking' }, { status: 403 })
       }
     }
@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
           select: {
             id: true,
             number: true,
-            type: true,
+            roomTypeId: true,
           },
         },
       },

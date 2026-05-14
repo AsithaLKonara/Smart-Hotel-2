@@ -53,14 +53,8 @@ export async function GET(request: NextRequest) {
 
     console.log(`Menu API: Found ${menuItems.length} menu items`)
     
-    // Convert BigInt fields to Number for JSON serialization
-    const serializedMenuItems = menuItems.map((item: any) => ({
-      ...item,
-      preparationTime: Number(item.preparationTime),
-    }))
-    
     // Always return an array, even if empty
-    return NextResponse.json(serializedMenuItems || [], { status: 200 })
+    return NextResponse.json(menuItems || [], { status: 200 })
   } catch (error: any) {
     console.error('Error fetching menu:', error)
     const message = getDatabaseErrorMessage(error)
@@ -100,7 +94,7 @@ export async function POST(request: NextRequest) {
         description,
         price: parseFloat(price),
         category,
-        preparationTime: preparationTime ? BigInt(parseInt(preparationTime)) : BigInt(30), // Default 30 minutes
+        preparationTime: preparationTime ? parseInt(preparationTime) : 30, // Default 30 minutes
         available: true,
         createdAt: new Date(),
         updatedAt: new Date(),

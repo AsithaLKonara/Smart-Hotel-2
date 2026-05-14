@@ -34,7 +34,7 @@ describe('lib/push-notifications', () => {
       },
     })
 
-    global.fetch = jest.fn()
+    ;(global as any).fetch = jest.fn()
   })
 
   afterEach(() => {
@@ -44,7 +44,7 @@ describe('lib/push-notifications', () => {
 
   function installNotification({
     permission = 'default',
-    requestPermission = jest.fn().mockResolvedValue('default'),
+    requestPermission = (jest.fn() as any).mockResolvedValue('default'),
   }: {
     permission?: NotificationPermission
     requestPermission?: jest.Mock
@@ -59,7 +59,7 @@ describe('lib/push-notifications', () => {
       instances.push(this)
     }) as unknown as jest.MockedClass<typeof Notification>
 
-    MockNotification.permission = permission
+    ;(MockNotification as any).permission = permission
     MockNotification.requestPermission = requestPermission as any
 
     Object.defineProperty(window, 'Notification', {
@@ -89,12 +89,12 @@ describe('lib/push-notifications', () => {
     await expect(requestNotificationPermission()).resolves.toBe(true)
     expect(MockNotification.requestPermission).not.toHaveBeenCalled()
 
-    MockNotification.permission = 'default'
-    MockNotification.requestPermission.mockResolvedValueOnce('granted')
+    ;(MockNotification as any).permission = 'default'
+    ;(MockNotification.requestPermission as any).mockResolvedValueOnce('granted')
     await expect(requestNotificationPermission()).resolves.toBe(true)
     expect(MockNotification.requestPermission).toHaveBeenCalled()
 
-    MockNotification.permission = 'denied'
+    ;(MockNotification as any).permission = 'denied'
     await expect(requestNotificationPermission()).resolves.toBe(false)
   })
 
@@ -148,14 +148,15 @@ describe('lib/push-notifications', () => {
   it('subscribeToPushNotifications returns subscription and posts to server', async () => {
     installNotification({ permission: 'granted' })
     const subscription = { endpoint: 'https://push.example.com' }
-    const subscribeMock = jest.fn().mockResolvedValue(subscription)
+    const subscribeMock = jest.fn() as any
+    subscribeMock.mockResolvedValue(subscription)
     ;(navigator as any).serviceWorker = {
       ready: Promise.resolve({
-        pushManager: { subscribe: subscribeMock },
+        pushManager: { subscribe: subscribeMock as any },
       }),
     }
     ;(window as any).PushManager = function () {} // truthy check
-    ;(global.fetch as jest.Mock).mockResolvedValue({ ok: true })
+    ;(global.fetch as any).mockResolvedValue({ ok: true })
     process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY = 'BMs_test-key'
     Object.defineProperty(window, 'atob', {
       configurable: true,
@@ -194,7 +195,7 @@ describe('lib/push-notifications', () => {
     ;(navigator as any).serviceWorker = {
       ready: Promise.resolve({
         pushManager: {
-          subscribe: jest.fn().mockRejectedValue(new Error('push failed')),
+          subscribe: (jest.fn() as any).mockRejectedValue(new Error('push failed')),
         },
       }),
     }

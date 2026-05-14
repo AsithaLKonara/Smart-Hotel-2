@@ -32,7 +32,13 @@ export class UnifiedMessageTimeline {
         userId: message.correlationId, // Correlate user ID
         actor: 'MESSAGE_ROUTER',
         action: `COMMUNICATION_${message.channel}`,
-        details: `[${message.direction}] Channel: ${message.channel}. Text: "${message.text.substring(0, 50)}..."`,
+        resource: 'User',
+        resourceId: message.correlationId,
+        details: {
+          direction: message.direction,
+          channel: message.channel,
+          text: message.text.substring(0, 50) + "..."
+        },
         createdAt: new Date()
       }
     });

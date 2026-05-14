@@ -63,8 +63,8 @@ export async function getAvailableRooms(
     // Get all rooms
     const allRooms = await prisma.room.findMany({
       where: {
-        status: { in: ['AVAILABLE', 'RESERVED'] },
-        ...(capacity ? { capacity: { gte: BigInt(capacity) } } : {})
+        status: { in: ['AVAILABLE'] },
+        ...(capacity ? { capacity: { gte: Number(capacity) } } : {})
       },
       // Note: Room model doesn't have bookings relation defined in schema
     })

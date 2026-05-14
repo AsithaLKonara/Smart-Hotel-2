@@ -90,7 +90,7 @@ test.describe('Comprehensive E2E Test Suite - All Features', () => {
         for (const endpoint of apiEndpoints) {
           test(`✅ ${endpoint.name} API responds`, async ({ request }) => {
             const method = endpoint.method || 'GET'
-            const response = await request[method.toLowerCase()](`${env.url}${endpoint.path}`)
+            const response = await (request as any)[method.toLowerCase()](`${env.url}${endpoint.path}`)
             // Should return valid status (not 500)
             expect(response.status()).toBeLessThan(500)
           })

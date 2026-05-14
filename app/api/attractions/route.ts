@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
     if (category) where.category = category
     if (activeOnly) where.active = true
 
-    const attractions = await prisma.nearbyAttraction.findMany({
+    const attractions = await (prisma as any).nearbyAttraction.findMany({
       where,
       orderBy: [{ displayOrder: 'asc' }, { createdAt: 'desc' }]
     })
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const data = attractionSchema.parse(body)
 
-    const attraction = await prisma.nearbyAttraction.create({
+    const attraction = await (prisma as any).nearbyAttraction.create({
       data: {
         name: data.name,
         distance: data.distance,

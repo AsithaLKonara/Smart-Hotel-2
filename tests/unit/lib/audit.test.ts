@@ -1,7 +1,7 @@
 import { jest } from '@jest/globals'
 
 // Define the mock before importing any modules that use it
-const mockCreate = jest.fn().mockResolvedValue({ id: 'log-1' })
+const mockCreate = (jest.fn() as any).mockResolvedValue({ id: 'log-1' })
 
 jest.mock('@/lib/db', () => ({
   prisma: {
@@ -38,6 +38,7 @@ describe('lib/audit', () => {
 
     expect(mockCreate).toHaveBeenCalledWith({
       data: {
+        userId: 'admin-user',
         actor: 'admin-user',
         action: 'TASK_CREATE',
         resource: 'Task',
@@ -61,6 +62,7 @@ describe('lib/audit', () => {
 
     expect(mockCreate).toHaveBeenCalledWith({
       data: {
+        userId: 'SYSTEM',
         actor: 'SYSTEM',
         action: 'BOOKING_AUTO_CANCEL',
         resource: 'Booking',

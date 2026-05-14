@@ -4,13 +4,13 @@ const projectRoot = process.cwd()
 const dbModulePath = require.resolve(`${projectRoot}/lib/db.ts`)
 const nodemailerModulePath = require.resolve('nodemailer')
 
-const emailLogCreateMock = jest.fn()
+const emailLogCreateMock: any = jest.fn()
 
 describe('lib/email', () => {
-  const sendMailMock = jest.fn()
-  const verifyMock = jest.fn()
-  const createTransportMock = jest.fn(() => ({ sendMail: sendMailMock, verify: verifyMock }))
-  const createMockEvent = (overrides: Partial<any> = {}) => ({
+  const sendMailMock: any = jest.fn()
+  const verifyMock: any = jest.fn()
+  const createTransportMock: any = jest.fn(() => ({ sendMail: sendMailMock, verify: verifyMock }))
+  const createMockEvent = (overrides: Partial<any> = {}): any => ({
     guestName: 'Jamie Guest',
     guestEmail: 'jamie@example.com',
     roomNumber: '301',

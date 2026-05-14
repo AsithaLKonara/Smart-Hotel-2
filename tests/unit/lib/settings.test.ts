@@ -1,8 +1,8 @@
 import { jest } from '@jest/globals'
 
 describe('lib/settings', () => {
-  let settingFindMany: jest.Mock
-  let staffFindMany: jest.Mock
+  let settingFindMany: any
+  let staffFindMany: any
 
   beforeEach(() => {
     jest.resetModules()

@@ -1,9 +1,9 @@
 import { jest } from '@jest/globals'
 
 describe('lib/analytics/core', () => {
-  let roomFindMany: jest.Mock
-  let bookingFindMany: jest.Mock
-  let invoiceFindMany: jest.Mock
+  let roomFindMany: any
+  let bookingFindMany: any
+  let invoiceFindMany: any
 
   beforeEach(() => {
     jest.resetModules()

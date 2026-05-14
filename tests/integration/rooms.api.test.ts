@@ -73,7 +73,7 @@ jest.mock('@/lib/email', () => ({
 
 import { prisma } from '@/lib/db'
 
-const mockPrisma = prisma as jest.Mocked<typeof prisma>
+const mockPrisma = prisma as any
 
 describe('Rooms API Integration', () => {
   beforeEach(() => {
@@ -575,7 +575,7 @@ describe('Bookings API Integration', () => {
       // API doesn't use include, fetches relations separately
       expect(mockPrisma.booking.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: { userId: 'user-123' },
+          where: { primaryGuestId: 'user-123' },
           orderBy: { createdAt: 'desc' },
           take: 100,
         })

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import bcrypt from 'bcryptjs'
 import { logAction, AUDIT_ACTIONS } from '@/lib/audit'
 import { getRequestSession } from '@/lib/session'
 import { prisma } from '@/lib/db'
@@ -62,10 +63,26 @@ export async function POST(request: NextRequest) {
 
     const staff = await prisma.staff.create({
       data: {
-        ...validated,
+        employeeId: validated.employeeId,
+        name: validated.name,
+        email: validated.email,
+        phone: validated.phone,
+        position: validated.position,
+        department: validated.department,
+        salary: validated.salary,
         hireDate: new Date(validated.hireDate),
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        isActive: validated.isActive,
+        user: {
+          connectOrCreate: {
+            where: { email: validated.email },
+            create: {
+              email: validated.email,
+              name: validated.name,
+              password: await bcrypt.hash('SmartHotel@Staff2025', 12),
+              role: validated.department.toUpperCase() as any || 'RECEPTIONIST'
+            }
+          }
+        }
       }
     })
 

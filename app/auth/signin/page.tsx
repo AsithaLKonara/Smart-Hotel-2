@@ -55,7 +55,7 @@ export default function SignInPage() {
           targetUrl = '/admin/dashboard'
         } else if (role === 'RECEPTIONIST') {
           targetUrl = '/admin/bookings'
-        } else if (role === 'KITCHEN_STAFF') {
+        } else if (role === 'KITCHEN') {
           targetUrl = '/kitchen/dashboard'
         } else if (role === 'HOUSEKEEPING') {
           targetUrl = '/admin/tasks'
