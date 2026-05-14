@@ -1,16 +1,42 @@
-node_modules
-.vercel
-.next/
-coverage/
-playwright-report/
-test-results/
-.env.local.*
-logs/
-*.log
-VERCEL_ENV_VALUES.txt
-test-auth.js
-test-mongo.js
-test-url.js
-backups/
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
 
-config.bat
+# testing
+/coverage
+/playwright-report
+/test-results
+
+# production
+/build
+/.next/
+/out
+
+# misc
+.DS_Store
+*.pem
+**/.DS_Store
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# local env files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# vercel
+.vercel
+
+# project specific
+/artifacts/
+/logs/
+/backups/
+*.txt
+!README.md
+!CLAUDE.md
