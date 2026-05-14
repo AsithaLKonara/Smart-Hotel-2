@@ -1,191 +1,80 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { Prisma } from '@prisma/client'
 import { z } from 'zod'
 import { logAction, AUDIT_ACTIONS } from '@/lib/audit'
 import { getRequestSession } from '@/lib/session'
 import { prisma } from '@/lib/db'
-import { isDatabaseConfigured } from '@/lib/db-helpers'
 
 const staffSchema = z.object({
-  employeeId: z.string().min(1, 'Employee ID is required'),
-  name: z.string().min(1, 'Name is required'),
-  email: z.string().email('Invalid email address'),
-  phone: z.string().min(1, 'Phone is required'),
-  position: z.string().min(1, 'Position is required'),
-  department: z.string().min(1, 'Department is required'),
+  employeeId: z.string().min(1),
+  name: z.string().min(1),
+  email: z.string().email(),
+  phone: z.string().min(1),
+  position: z.string().min(1),
+  department: z.string().min(1),
   hireDate: z.string().datetime(),
-  salary: z.number().positive('Salary must be positive'),
+  salary: z.number().positive(),
   isActive: z.boolean().default(true),
 })
 
 export async function GET(request: NextRequest) {
-  if (!isDatabaseConfigured()) {
-    return NextResponse.json([])
-  }
-  
   try {
     const session = await getRequestSession(request)
     const { searchParams } = new URL(request.url)
     const department = searchParams.get('department')
-    const role = searchParams.get('role')
     const isActive = searchParams.get('isActive')
 
-    const allowAnonymous = Boolean(department || role)
-    const allowedRoles = ['SUPER_ADMIN', 'MANAGER']
+    // Basic protection - allow department filters for operational hubs
+    if (!session && !department) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    if (
-      !allowAnonymous &&
-      (!session || !allowedRoles.includes(session.user.role))
-    ) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
-
-    const whereClause: Prisma.StaffWhereInput = {}
-
-    if (department) {
-      whereClause.department = {
-        equals: department,
-        mode: 'insensitive'
-      }
-    }
-
-    if (role) {
-      const normalizedRole = role.replace(/_/g, ' ').replace(/\s+/g, ' ').trim()
-      whereClause.position = {
-        equals: normalizedRole,
-        mode: 'insensitive'
-      }
-    }
-
-    if (isActive !== null) {
-      whereClause.isActive = isActive === 'true'
-    }
-
-    const staffMembers = await prisma.staff.findMany({
-      where: whereClause,
-      orderBy: {
-        name: 'asc'
-      }
+    const staff = await prisma.staff.findMany({
+      where: {
+        ...(department ? { department: { equals: department, mode: 'insensitive' } } : {}),
+        ...(isActive ? { isActive: isActive === 'true' } : {})
+      },
+      include: {
+        _count: {
+          select: { tasks: { where: { status: { in: ['PENDING', 'IN_PROGRESS'] } } } }
+        }
+      },
+      orderBy: { name: 'asc' }
     })
 
-    const staff = staffMembers.map((member: any) => ({
-      id: member.id,
-      employeeId: member.employeeId,
-      name: member.name,
-      email: member.email,
-      phone: member.phone,
-      position: member.position,
-      department: member.department,
-      hireDate: member.hireDate.toISOString(),
-      salary: member.salary,
-      isActive: member.isActive,
-      // Note: Staff model doesn't have hotelId field in schema
-    }))
-
-    return NextResponse.json(staff)
+    return NextResponse.json(staff.map(s => ({
+      ...s,
+      taskCount: s._count.tasks,
+      workloadPercentage: Math.min(100, (s._count.tasks / 5) * 100) // Scale: 5 tasks = 100% load
+    })))
   } catch (error) {
-    console.error('Error fetching staff:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch staff' },
-      { status: 500 }
-    )
+    console.error('[STAFF_API_ERROR]', error)
+    return NextResponse.json({ error: 'Failed to fetch staff' }, { status: 500 })
   }
 }
 
 export async function POST(request: NextRequest) {
-  if (!isDatabaseConfigured()) {
-    return NextResponse.json(
-      { error: 'Database not configured', message: 'Staff creation is disabled in preview mode.' },
-      { status: 503 }
-    )
+  const session = await getRequestSession(request)
+  if (!session || !['SUPER_ADMIN', 'MANAGER'].includes(session.user.role)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   try {
-    const session = await getRequestSession(request)
-    
-    if (!session || !['SUPER_ADMIN', 'MANAGER'].includes(session.user.role)) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
-
     const body = await request.json()
-    const validatedData = staffSchema.parse(body)
-
-    // Check if employee ID already exists
-    // Note: employeeId is not a unique field, use findFirst instead
-    const existingEmployee = await prisma.staff.findFirst({
-      where: { employeeId: validatedData.employeeId }
-    })
-
-    if (existingEmployee) {
-      return NextResponse.json(
-        { error: 'Employee ID already exists' },
-        { status: 400 }
-      )
-    }
-
-    // Check if email already exists
-    // Note: email is not a unique field, use findFirst instead
-    const existingEmail = await prisma.staff.findFirst({
-      where: { email: validatedData.email }
-    })
-
-    if (existingEmail) {
-      return NextResponse.json(
-        { error: 'Email already exists' },
-        { status: 400 }
-      )
-    }
+    const validated = staffSchema.parse(body)
 
     const staff = await prisma.staff.create({
       data: {
-        employeeId: validatedData.employeeId,
-        name: validatedData.name,
-        email: validatedData.email,
-        phone: validatedData.phone,
-        position: validatedData.position,
-        department: validatedData.department,
-        hireDate: new Date(validatedData.hireDate),
-        salary: validatedData.salary,
-        isActive: validatedData.isActive ?? true,
+        ...validated,
+        hireDate: new Date(validated.hireDate),
         createdAt: new Date(),
         updatedAt: new Date(),
       }
     })
 
-    // Log the action
-    await logAction(
-      request,
-      session.user.id,
-      AUDIT_ACTIONS.STAFF_CREATE,
-      'Staff',
-      staff.id,
-      {
-        employeeId: validatedData.employeeId,
-        name: validatedData.name,
-        position: validatedData.position,
-        department: validatedData.department,
-      }
-    )
-
+    await logAction(request, session.user.id, AUDIT_ACTIONS.STAFF_CREATE, 'Staff', staff.id, { name: staff.name })
     return NextResponse.json(staff, { status: 201 })
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
-        { status: 400 }
-      )
+  } catch (error: any) {
+    if (error.code === 'P2002') {
+      return NextResponse.json({ error: 'Conflict: Employee ID or Email already exists' }, { status: 409 })
     }
-
-    console.error('Error creating staff:', error)
-    return NextResponse.json(
-      { error: 'Failed to create staff' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: error.message || 'Failed to create staff' }, { status: 400 })
   }
-} 
+}

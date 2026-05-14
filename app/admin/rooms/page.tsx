@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { canAccessManagerFeatures } from '@/lib/rbac-helpers'
-import { Plus, Edit, Trash2, Search, Filter, Bed, Users, DollarSign, Loader2, Save, X } from 'lucide-react'
+import { Plus, Edit, Trash2, Search, Filter, Bed, Users, DollarSign, Loader2, Save, X, Image as ImageIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -13,6 +13,7 @@ import { Breadcrumbs } from '@/components/ui/breadcrumbs'
 import toast from 'react-hot-toast'
 import { PremiumSpinner } from '@/components/ui/premium-spinner'
 import { formatPrice } from '@/lib/utils'
+import { ImageUpload } from '@/components/admin/image-upload'
 
 interface Room {
   id: string
@@ -47,7 +48,8 @@ export default function AdminRoomsPage() {
     amenities: '',
     floor: '',
     size: '',
-    status: 'AVAILABLE'
+    status: 'AVAILABLE',
+    images: [] as string[]
   })
 
   useEffect(() => {
@@ -108,7 +110,7 @@ export default function AdminRoomsPage() {
         capacity: parseInt(formData.capacity),
         description: formData.description || undefined,
         amenities: amenitiesArray,
-        images: [],
+        images: formData.images,
         status: formData.status,
         floor: formData.floor ? parseInt(formData.floor) : undefined,
         size: formData.size ? parseInt(formData.size) : undefined
@@ -147,7 +149,8 @@ export default function AdminRoomsPage() {
       amenities: room.amenities.join(', '),
       floor: room.floor?.toString() || '',
       size: room.size?.toString() || '',
-      status: room.status
+      status: room.status,
+      images: room.images || []
     })
     setShowModal(true)
   }
@@ -180,7 +183,8 @@ export default function AdminRoomsPage() {
       amenities: '',
       floor: '',
       size: '',
-      status: 'AVAILABLE'
+      status: 'AVAILABLE',
+      images: []
     })
   }
 
@@ -354,6 +358,20 @@ export default function AdminRoomsPage() {
         {filteredRooms.map((room) => (
           <Card key={room.id} className="hover:shadow-lg transition-shadow">
             <CardHeader className="pb-3">
+              <div className="aspect-video w-full overflow-hidden rounded-md bg-gray-100 mb-3">
+                {room.images && room.images.length > 0 ? (
+                  <img 
+                    src={room.images[0]} 
+                    alt={`Room ${room.number}`}
+                    className="w-full h-full object-cover transition-transform hover:scale-105"
+                  />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center text-gray-400">
+                    <ImageIcon className="w-8 h-8 mb-1" />
+                    <span className="text-xs">No image</span>
+                  </div>
+                )}
+              </div>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">Room {room.number}</CardTitle>
                 <Badge className={getStatusColor(room.status)}>
@@ -567,6 +585,16 @@ export default function AdminRoomsPage() {
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
                     rows={3}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-3">
+                    Room Images
+                  </label>
+                  <ImageUpload 
+                    value={formData.images}
+                    onChange={(urls) => setFormData({ ...formData, images: urls })}
                   />
                 </div>
 

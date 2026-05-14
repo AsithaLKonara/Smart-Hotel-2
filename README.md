@@ -1,171 +1,177 @@
-# SmartHotel OS — Enterprise Hospitality Platform
-The Complete Hotel Management Solution with Autonomous Operations, Satellite-Edge Resilience, and Commercial Launch Stabilization.
+# SmartHotel OS — Next-Gen Hospitality Operating System
+
+**The definitive, production-ready Hotel Management System (HMS) with Autonomous Operations, AI-Driven Guest Intelligence, and Satellite-Edge Resilience.**
+
+![SmartHotel Banner](https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=1200)
 
 ---
 
-## 🚀 Overview
-SmartHotel OS is a production-stabilized, high-end hospitality platform engineered to scale seamlessly from boutique guest houses to multi-property resorts. The platform incorporates automated guest check-ins, AI housekeeping schedules, multi-currency VAT/GST ledgers, satellite-edge resilience runtimes, SRE threat analysis, and digital twin simulation engines.
+## 💎 Project Philosophy: UI/UX & Aesthetics
+SmartHotel OS is designed with a **"Digital First, Luxury Always"** philosophy. The interface is engineered to evoke the feeling of a premium concierge service.
+
+### 🎨 Visual Language
+*   **Design System**: Custom-built using **Tailwind CSS** with a focus on high-contrast readability and "glassmorphism" effects.
+*   **Theming**: Dynamic **Dark/Light Mode** support via `next-themes`, defaulting to a sleek, professional dark aesthetic (`#0e0918`).
+*   **Typography**: Optimized for clarity using **Inter** and **Outfit** (Google Fonts), providing a modern, geometric feel.
+*   **Micro-interactions**: 
+    *   **GSAP & Framer Motion**: Powering smooth page transitions, stagger animations for list items, and organic hover states.
+    *   **Three.js**: Integrated for 3D room walkthroughs and interactive property maps.
+*   **Responsive Engine**: Mobile-first architecture ensuring the Guest Super App feels native on iOS and Android.
 
 ---
 
-## 🧱 Table of Contents
-- [Features](#-features)
-- [Enterprise & Autonomous Ecosystem](#-enterprise--autonomous-ecosystem)
-- [Production Stabilization & Launch SRE](#-production-stabilization--launch-sre)
-- [Tech Stack](#-tech-stack)
-- [Project Structure](#-project-structure)
-- [Installation & Quickstart](#-installation--quickstart)
-- [SRE Verification & Operational Commands](#-sre-verification--operational-commands)
-- [Testing & Quality Gates](#-testing--quality-gates)
-- [License](#-license)
+## 🛠 Tech Stack (The "Engine Room")
+
+### Core Frameworks
+*   **Frontend**: [Next.js 14](https://nextjs.org/) (App Router, Server Components)
+*   **Backend**: Next.js API Routes (Edge-ready)
+*   **Runtime**: Node.js 18+
+
+### Database & State
+*   **Primary DB**: [MongoDB](https://www.mongodb.com/) (Document-based for high-velocity booking data)
+*   **ORM**: [Prisma](https://www.prisma.io/) (Type-safe database access)
+*   **Caching/Rate Limiting**: [Upstash Redis](https://upstash.com/) (Global low-latency data)
+*   **State Management**: TanStack React Query (Server-state synchronization)
+
+### Security & DevOps
+*   **Auth**: [NextAuth.js](https://next-auth.js.org/) (JWT, RBAC, Google/Email Providers)
+*   **Monitoring**: [Sentry](https://sentry.io/) (Real-time error tracking and performance profiling)
+*   **Security**: Snyk (Vulnerability scanning), CSP (Content Security Policy) headers.
+*   **Testing**: Jest (Unit), Playwright (E2E), Lighthouse (Performance).
 
 ---
 
-## ✨ Features
+## 👥 Roles & Access Control (RBAC)
 
-### 🏨 Hotel Management & Gating
-- **Onboarding Wizard**: A simple, 10-minute automated portal to import rooms, configure property location, invite staff, and pre-seed luxury demo datasets.
-- **Booking Engine**: Sophisticated check-in and checkout flows with double-booking prevention filters.
-- **SaaS Pricing & Billing**: Starter ($29/mo), Professional ($89/mo), and Enterprise Lite ($249/mo) plans with middleware gating.
-
-### 🍴 Interactive Guest Super App
-- **Contactless QR Dining**: Guest room-specific menu selections, kitchen prepare-track dashboards, and billing.
-- **Ambient Room Comforts**: Multilingual climate control, lightning adjustment panels, and simulated NFC digital key-card locks.
-
-### 📊 OLAP Business Intelligence & BI
-- **Executive Dashboards**: Tracking key operational indicators like occupancy ratios, RevPAR metrics, and payment commissions.
-- **Unified Timeline Aggregator**: Sequential messaging hub collating guest communications (SMS, emails, WhatsApp) in real-time.
+| Role | Access Level | Responsibilities |
+| :--- | :--- | :--- |
+| **System Admin** | Full | Global settings, Property onboarding, Staff management, Financial audits. |
+| **Receptionist** | Operational | Booking management, Check-in/out, Room assignments, Guest records. |
+| **Kitchen Staff** | Task-based | Order queue management, Menu availability, Preparation tracking. |
+| **Housekeeping** | Task-based | Room cleaning status, Maintenance reports, Inventory supply requests. |
+| **Guest** | Self-Service | Self-check-in, Room control, QR dining, Loyalty tracking, Bill settlement. |
 
 ---
 
-## 🛰️ Enterprise & Autonomous Ecosystem
+## ✨ Feature Modules
+
+### 🏨 Core HMS
+*   **Smart Booking Engine**: Multi-step flow with real-time availability, dynamic pricing, and double-booking protection.
+*   **Room Management**: Visual floor plans, automated status updates (Clean, Dirty, Maintenance), and rich media galleries.
+*   **Onboarding Wizard**: A 10-minute automated setup for property owners to configure rooms, taxes, and staff.
+
+### 🍴 Guest Super App
+*   **QR Dining**: Instant access to digital menus with real-time ordering and "Charge to Room" capabilities.
+*   **Mobile Concierge**: Request towels, spa bookings, or local transport directly from a mobile browser.
+*   **NFC Digital Keys**: Simulated NFC technology for mobile-based room entry.
+
+### 🤖 AI & Autonomous Operations
+*   **AI Dispatch Engine**: Automatically assigns housekeeping tasks based on check-out events and occupancy priority.
+*   **Cognitive Chatbot**: Powered by **Groq & Upstash Redis Embeddings** for 24/7 guest support and hotel knowledge retrieval.
+*   **Predictive Analytics**: Forecasting occupancy rates and RevPAR (Revenue Per Available Room).
+
+### 📈 Business Intelligence
+*   **Executive Dashboard**: Real-time charts (Recharts) for revenue, occupancy, and guest satisfaction.
+*   **Audit Logs**: Complete traceability for every action taken by staff or guests.
+*   **Financial Reports**: Exportable Excel/PDF ledgers for VAT/GST compliance.
+
+---
+
+## 🔗 External Integrations
+
+### 🌍 Distribution & OTA
+*   **OTA Sync**: Bidirectional connection with **Booking.com** and **Agoda** via middleware providers (**Channex / Beds24**). 
+*   **Channel Manager**: Automatic inventory pushes and reservation pulls with price markup logic.
+
+### 💳 Payments & Finance
+*   **Stripe**: Secure payment intent processing, card vaulting, and automated webhook-based order fulfillment.
+
+### ☁️ Infrastructure Services
+*   **Cloudinary**: Automated image optimization and storage for room and gallery assets.
+*   **Mailtrap/Nodemailer**: Transactional emails for booking confirmations and password resets.
+*   **Google Maps API**: Property location visualization and nearby attraction routing.
+
+---
+
+## 🗄️ Database Schema Overview
 
 ```mermaid
-graph TD
-    A["Onboarding / Setup Wizard"] --> B["Policy Engine (Autonomous Dispatch)"]
-    B --> C["Threat Detection (Impossible Travel)"]
-    C --> D["Satellite-Edge Property Runtime"]
-    D --> E["SRE World Command Center"]
+erDiagram
+    USER ||--o{ BOOKING : places
+    USER ||--o{ NOTIFICATION : receives
+    ROOM ||--o{ BOOKING : reserved_in
+    BOOKING ||--o{ PAYMENT : has
+    BOOKING ||--o{ ROOM_REVIEW : generates
+    FOOD_ORDER ||--o{ ORDER_ITEM : contains
+    FOOD_ORDER ||--o{ PAYMENT : has
+    USER ||--o{ LOYALTY_POINT : earns
+    ROOM ||--o{ MAINTENANCE_REQUEST : needs
 ```
 
-*   **Autonomous Policy Engine**: Triggers automatic housekeeper allocations on guest checkout and issues loyalty offsets for delayed bookings.
-*   **Security Threat Auditing**: Identifies anomalous access patterns, evaluates risk scores, and blocks compromised credential tokens.
-*   **Satellite-Edge Resiliency**: Reroutes properties to local cached runtimes during satellite connectivity loss, replaying synchronized queues sequentially post-recovery.
-*   **Global Command Center**: Provides SRE teams with real-time multi-region health maps, median latencies, and interactive failover triggers.
+### Key Models:
+*   **Booking**: Tracks check-in/out, status (Confirmed, Cancelled), and total amount.
+*   **Room**: Defines type, price, amenities, and floor.
+*   **Inventory**: Manages hotel supplies (linens, toiletries) with minimum quantity alerts.
+*   **Task**: Operational assignments for staff (Cleaning, Maintenance).
+*   **Loyalty**: Points-based system with Bronze, Silver, Gold, and Platinum tiers.
 
 ---
 
-## 🛡️ Production Stabilization & Launch SRE
-SmartHotel OS has completed its feature deployment cycle and is in a strict **Production Lockdown**. We prioritize simplicity, maintainability, performance, and SRE safety:
-1.  **Strict Environment Valdiators**: Fast-failures triggered on missing Stripe, NextAuth, or clustered DB credentials.
-2.  **Automated Daily Backups**: Integrated JSON compression dumps with 30-day retention policies.
-3.  **Secure Header Directives**: Custom Content Security Policies (CSP) and secure HTTP-Only cookie directives.
+## 🔐 Security & Resilience
+
+1.  **Production Lockdown**: Strict environment validation at startup; the system fails fast if critical keys (Stripe, MongoDB) are missing.
+2.  **SRE Governance**: Integrated audit logs for all administrative actions to prevent internal fraud.
+3.  **Satellite-Edge Resilience**: Local caching strategies allow the property to operate during internet outages, synchronizing data once connectivity returns.
+4.  **Privacy**: GDPR/CCPA ready with robust data isolation and encryption at rest.
 
 ---
 
-## 🛠 Tech Stack
+## 🔑 Required Credentials
 
-- **Frontend**: [Next.js 14](https://nextjs.org/) (App Router), [React 18](https://reactjs.org/), [Tailwind CSS](https://tailwindcss.com/), [Framer Motion](https://www.framer.com/motion/).
-- **Backend/ORM**: Next.js API Routes, [Prisma ORM](https://www.prisma.io/).
-- **Database/Cache**: [MongoDB](https://www.mongodb.com/) (Clustered Replica Sets), [Upstash Redis](https://upstash.com/).
-- **Security & Logging**: [Sentry](https://sentry.io/), Custom Session Intrusion Auditors.
-- **Integrations**: [Stripe](https://stripe.com/) (Billing), [Nodemailer](https://nodemailer.com/) (Mailing pipelines).
-- **Testing**: [Jest](https://jestjs.io/), [Playwright](https://playwright.dev/), [k6](https://k6.io/).
+To run SmartHotel OS, you must configure the following in `.env.local`:
 
----
-
-## 📂 Project Structure
-
-```text
-app/                  # Next.js App Router (UI & API)
-├── admin/            # SRE Command Center, Marketplace, Governance
-├── onboarding/       # Operator Onboarding Setup Wizard
-├── mobile/           # Guest Mobile Super App simulation page
-├── api/              # Standard and Custom REST API endpoints
-components/           # Reusable UI elements (Error boundaries, layouts)
-docs/                 # Deployment guides, incident runbooks, security lists
-lib/                  # Autonomous policies, edge satellites, threat filters
-scripts/              # Automated database health and SRE verification runners
-tests/                # Unit, integration, and E2E test suites
-```
+| Category | Key | Source |
+| :--- | :--- | :--- |
+| **Database** | `DATABASE_URL` | MongoDB Atlas Connection String |
+| **Auth** | `NEXTAUTH_SECRET` | Run `openssl rand -base64 32` |
+| **Payments** | `STRIPE_SECRET_KEY` | Stripe Dashboard (Test Mode) |
+| **Payments** | `STRIPE_WEBHOOK_SECRET` | Stripe CLI (`stripe listen`) |
+| **Media** | `CLOUDINARY_CLOUD_NAME` | Cloudinary Dashboard |
+| **Email** | `SMTP_PASS` | Mailtrap.io SMTP settings |
+| **AI** | `GROQ_API_KEY` | Groq Console (for Chatbot) |
+| **Redis** | `UPSTASH_REDIS_URL` | Upstash Console |
+| **Auth** | `GOOGLE_CLIENT_ID` | Google Cloud Console (OAuth) |
+| **Maps** | `GOOGLE_MAPS_API_KEY` | Google Maps Platform |
+| **Push** | `VAPID_PUBLIC_KEY` | Generate with `web-push` |
+| **Realtime**| `SOCKET_IO_URL` | Application URL (for live chat) |
 
 ---
 
-## ⚙️ Installation & Quickstart
+## 🚀 Status & Roadmap
+*   **Status**: `v1.0.0-Stable` (Production Ready)
+*   **Current Focus**: Hardening OTA sync resilience and expanding AI-driven revenue management.
+*   **Upcoming**: Native iOS/Android apps, Multi-property "Global HQ" dashboard.
 
-### Prerequisites
-*   Node.js (v18+)
-*   MongoDB Atlas Account (Atlas Replica Set recommended)
-*   Stripe Account
+---
 
-### Steps
-1.  **Clone the repository:**
+## ⚙️ Installation
+
+1.  **Clone & Install**:
     ```bash
     git clone https://github.com/AsithaLKonara/Smart-Hotel-2.git
-    cd Smart-Hotel-2
-    ```
-
-2.  **Install dependencies:**
-    ```bash
     npm install
     ```
-
-3.  **Set up Environment Secrets:**
-    ```bash
-    cp .env.example .env.local
-    # Open .env.local and update Database and Stripe configurations
-    ```
-
-4.  **Execute Database Push:**
+2.  **Database Setup**:
     ```bash
     npx prisma generate
     npm run db:push
+    npm run db:seed # Seed luxury demo data
     ```
-
-5.  **Launch Local Server:**
+3.  **Run Dev**:
     ```bash
     npm run dev
     ```
-    Visit `http://localhost:3000` to interact with SmartHotel OS.
 
 ---
 
-## 📡 SRE Verification & Operational Commands
-
-Our core operation check suite audits database connections, replica sets, and backup integrity:
-
-### Run Standalone Database Health Check
-```bash
-node scripts/db-health-check.js
-```
-
-### Run Disaster Recovery Backup Auditor
-```bash
-node scripts/backup-verify.js
-```
-
-### Run Unified Startup Check
-```bash
-node scripts/validate-env.js --production
-```
-
----
-
-## 🧪 Testing & Quality Gates
-Every code merge is automatically subjected to rigorous quality gate sweeps before deployment promotion:
-
-```bash
-# Run Linting, Type-Check, and Jest Unit testing suites
-npm run lint && npm run type-check && npm run test
-```
-*   **Unit Tests**: `npm run test:unit`
-*   **Integration Tests**: `npm run test:integration`
-*   **E2E Tests**: `npm run test:e2e`
-
----
-
-## 📄 License
-This project is licensed under the MIT License. See the `LICENSE` file for details.
-
----
-Built with ❤️ for **SmartHotel OS** — Modernizing global hospitality operations.
+Built with ❤️ by the **SmartHotel OS Team**. Modernizing hospitality, one room at a time.

@@ -32,6 +32,12 @@ import { Badge } from '@/components/ui/badge'
 import toast from 'react-hot-toast'
 import { PremiumSpinner } from '@/components/ui/premium-spinner'
 import { BookingCalendar } from '@/components/admin/booking-calendar'
+import { DashboardHeader } from '@/components/dashboard/dashboard-header'
+import { KpiCard } from '@/components/ui/kpi-card'
+import { ArrivalsDeparturesGrid } from '@/components/dashboard/arrivals-departures-grid'
+import { RoomStatusGrid } from '@/components/dashboard/room-status-grid'
+import { RoomActionDesk } from '@/components/dashboard/room-action-desk'
+import { AnimatePresence, motion } from 'framer-motion'
 
 // Extended High-Density Mock Operational Datastore
 const MOCK_OPERATIONAL_ROOMS = [
@@ -57,15 +63,13 @@ const MOCK_DEPARTURES = [
   { id: "d2", guestName: "Jane Doe", roomNumber: "103", roomType: "Standard Single", checkOut: "Today, 12:00", vip: false, payment: "Unpaid ($150 extras)", isPending: false }
 ]
 
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+
 export default function ReceptionistOperationsCenter() {
-  const { data: session, status } = useSession()
+  const { data: session, status: authStatus } = useSession()
   const router = useRouter()
+  const queryClient = useQueryClient()
   
-  // Real-Time States
-  const [rooms, setRooms] = useState<any[]>(MOCK_OPERATIONAL_ROOMS)
-  const [arrivals, setArrivals] = useState<any[]>(MOCK_ARRIVALS)
-  const [departures, setDepartures] = useState<any[]>(MOCK_DEPARTURES)
-  const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("ALL")
   const [selectedRoom, setSelectedRoom] = useState<any | null>(null)
@@ -73,86 +77,171 @@ export default function ReceptionistOperationsCenter() {
   const [isVip, setIsVip] = useState(false)
   const [activeTab, setActiveTab] = useState('grid')
 
+  // 1. Fetch Rooms Data
+  const { data: roomsData, isLoading: roomsLoading } = useQuery({
+    queryKey: ['rooms'],
+    queryFn: async () => {
+      const res = await fetch('/api/rooms')
+      if (!res.ok) throw new Error('Failed to fetch rooms')
+      return res.json()
+    }
+  })
+
+  // 2. Fetch Bookings Data (Arrivals/Departures)
+  const { data: bookingsData, isLoading: bookingsLoading } = useQuery({
+    queryKey: ['bookings'],
+    queryFn: async () => {
+      const res = await fetch('/api/bookings')
+      if (!res.ok) throw new Error('Failed to fetch bookings')
+      return res.json()
+    }
+  })
+
   useEffect(() => {
-    if (status === 'loading') return
+    if (authStatus === 'loading') return
     
     if (!canAccessReceptionistFeatures(session)) {
       toast.error('Access Denied: Receptionist authorization required')
       router.push('/auth/signin')
       return
     }
+  }, [session, authStatus, router])
 
-    loadData()
-  }, [session, status, router])
+  const rooms = roomsData?.rooms || []
+  const allBookings = bookingsData?.bookings || []
 
-  const loadData = async () => {
-    try {
-      setLoading(true)
-      const [roomsResp, bookingsResp] = await Promise.all([
-        fetch('/api/rooms').then(r => r.json()).catch(() => ({ rooms: [] })),
-        fetch('/api/bookings').then(r => r.json()).catch(() => ({ bookings: [] }))
-      ])
+  // Derive Arrivals and Departures from allBookings
+  const today = new Date().toISOString().split('T')[0]
+  
+  const arrivals = allBookings
+    .filter((b: any) => b.status === 'CONFIRMED' && b.checkIn.startsWith(today))
+    .map((b: any) => ({
+      id: b.id,
+      guestName: b.user?.name || 'Guest',
+      roomNumber: b.room?.number || 'N/A',
+      roomType: b.room?.type || 'Standard',
+      time: 'Today',
+      vip: b.specialRequests?.toLowerCase().includes('vip') || false,
+      payment: b.paymentStatus,
+      notes: b.specialRequests
+    }))
 
-      // Smart Merge DB values with rich mock properties to guarantee premium staff visual density
-      const dbRooms = Array.isArray(roomsResp?.rooms) ? roomsResp.rooms : []
-      if (dbRooms.length > 0) {
-        const merged = dbRooms.map((r: any) => {
-          const mockMatch = MOCK_OPERATIONAL_ROOMS.find(m => m.number === r.number)
-          return {
-            id: r.id,
-            number: r.number,
-            type: r.type,
-            floor: Number(r.floor) || 1,
-            status: r.status || (mockMatch?.status ?? 'AVAILABLE'),
-            price: r.price,
-            vip: mockMatch?.vip || false
-          }
-        })
-        setRooms(merged)
-      } else {
-        setRooms(MOCK_OPERATIONAL_ROOMS)
+  const departures = allBookings
+    .filter((b: any) => b.status === 'CHECKED_IN' && b.checkOut.startsWith(today))
+    .map((b: any) => ({
+      id: b.id,
+      guestName: b.user?.name || 'Guest',
+      roomNumber: b.room?.number || 'N/A',
+      roomType: b.room?.type || 'Standard',
+      time: 'Today',
+      payment: b.paymentStatus,
+      balance: b.paymentStatus === 'PAID' ? 0 : b.totalAmount
+    }))
+
+  // Mutations
+  const updateBookingMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: string, status: string }) => {
+      const res = await fetch(`/api/bookings/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      })
+      if (!res.ok) throw new Error('Failed to update booking')
+      return res.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['bookings'] })
+      queryClient.invalidateQueries({ queryKey: ['rooms'] })
+    }
+  })
+
+  const handleCheckIn = async (roomNumber: string) => {
+    const booking = arrivals.find((a: any) => a.roomNumber === roomNumber)
+    if (!booking) return
+    
+    toast.promise(
+      updateBookingMutation.mutateAsync({ id: booking.id, status: 'CHECKED_IN' }),
+      {
+        loading: 'Checking in guest...',
+        success: `Room ${roomNumber} checked in successfully!`,
+        error: 'Failed to check in'
       }
+    )
+    setSelectedRoom(null)
+  }
+
+  const handleCheckOut = async (roomNumber: string) => {
+    const booking = departures.find((d: any) => d.roomNumber === roomNumber)
+    if (!booking) return
+
+    toast.promise(
+      updateBookingMutation.mutateAsync({ id: booking.id, status: 'CHECKED_OUT' }),
+      {
+        loading: 'Checking out guest...',
+        success: `Room ${roomNumber} checked out. Housekeeping notified.`,
+        error: 'Failed to check out'
+      }
+    )
+    setSelectedRoom(null)
+  }
+
+  const handleCreateBooking = async (data: any) => {
+    const today = new Date()
+    const checkIn = today.toISOString()
+    const checkOut = new Date(today.getTime() + (data.nights * 24 * 60 * 60 * 1000)).toISOString()
+
+    toast.promise(
+      (async () => {
+        const res = await fetch('/api/bookings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            roomId: data.roomId,
+            checkIn,
+            checkOut,
+            guests: 1, // Default for quick reserve
+            guestName: data.guestName,
+            guestEmail: data.guestEmail,
+            guestPhone: data.guestPhone,
+            paymentMethod: 'pay_later'
+          })
+        })
+        if (!res.ok) {
+          const err = await res.json()
+          throw new Error(err.error || 'Failed to create booking')
+        }
+        return res.json()
+      })(),
+      {
+        loading: 'Creating direct booking...',
+        success: `Booking for ${data.guestName} created!`,
+        error: (err) => err.message
+      }
+    )
+    setSelectedRoom(null)
+  }
+
+  const handleStatusTransition = async (roomNumber: string, nextStatus: string) => {
+    // For manual room status changes (maintenance etc)
+    const room = rooms.find((r: any) => r.number === roomNumber)
+    if (!room) return
+
+    try {
+      const res = await fetch(`/api/rooms/${room.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: nextStatus })
+      })
+      if (!res.ok) throw new Error('Failed to update room')
+      queryClient.invalidateQueries({ queryKey: ['rooms'] })
+      toast.success(`Room ${roomNumber} updated to ${nextStatus}`)
     } catch (err) {
-      console.error(err)
-      toast.error("Failed to fetch live database properties. Utilizing local simulated cache.")
-    } finally {
-      setLoading(false)
+      toast.error('Failed to update room status')
     }
-  }
-
-  // Quick front desk mutations
-  const handleCheckIn = (roomNumber: string) => {
-    setRooms(prev => prev.map(r => r.number === roomNumber ? { ...r, status: "OCCUPIED" } : r))
-    setArrivals(prev => prev.filter(a => a.roomNumber !== roomNumber))
-    setSelectedRoom(null)
-    toast.success(`Room ${roomNumber} checked in successfully!`, {
-      icon: '🔑',
-      style: { background: '#10b981', color: '#fff' }
-    })
-  }
-
-  const handleCheckOut = (roomNumber: string) => {
-    setRooms(prev => prev.map(r => r.number === roomNumber ? { ...r, status: "CLEANING" } : r))
-    setDepartures(prev => prev.filter(d => d.roomNumber !== roomNumber))
-    setSelectedRoom(null)
-    toast.success(`Room ${roomNumber} checked out. Dispatched cleaning task automatically.`, {
-      icon: '🧹',
-      style: { background: '#8b5cf6', color: '#fff' }
-    })
-  }
-
-  const handleStatusTransition = (roomNumber: string, nextStatus: string) => {
-    setRooms(prev => prev.map(r => r.number === roomNumber ? { ...r, status: nextStatus } : r))
-    if (selectedRoom) {
-      setSelectedRoom((prev: any) => ({ ...prev, status: nextStatus }))
-    }
-    toast.success(`Room ${roomNumber} updated to ${nextStatus.replace('_', ' ')}`)
   }
 
   const updateRoomMetadata = () => {
-    if (!selectedRoom) return
-    setRooms(prev => prev.map(r => r.number === selectedRoom.number ? { ...r, notes: guestNotes, vip: isVip } : r))
-    toast.success(`Front Desk metadata updated for Room ${selectedRoom.number}`)
+    toast.error("Metadata updates are restricted to System Admins.")
   }
 
   const selectRoomCard = (room: any) => {
@@ -162,396 +251,173 @@ export default function ReceptionistOperationsCenter() {
   }
 
   // Filter computation
-  const filteredRooms = rooms.filter(r => {
+  const filteredRooms = rooms.filter((r: any) => {
     const matchesSearch = r.number.includes(searchQuery) || r.type.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesStatus = statusFilter === "ALL" || r.status === statusFilter
     return matchesSearch && matchesStatus
   })
 
-  if (status === 'loading' || loading) {
+  if (authStatus === 'loading' || roomsLoading || bookingsLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-slate-950">
-        <PremiumSpinner size="lg" text="Loading Reception Operations Workspace..." />
+        <PremiumSpinner size="lg" text="Decompressing operational matrices..." />
       </div>
     )
   }
 
+  const occupancyRate = Math.round((rooms.filter((r: any) => r.status === 'OCCUPIED').length / rooms.length) * 100)
+  const vipArrivalsCount = arrivals.filter((a: any) => a.vip).length
+
   return (
-    <div className="min-h-screen bg-[#090514] text-slate-100 p-6 font-sans">
-      
-      {/* Top Banner Control Board */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between border-b border-purple-900/40 pb-6 mb-8 gap-4">
-        <div>
-          <div className="flex items-center gap-3">
-            <Badge className="bg-purple-600/10 hover:bg-purple-600/20 text-purple-400 border border-purple-500/30 text-xs tracking-wider uppercase font-bold py-1 px-3">
-              RECEPTION DESK LIVE
-            </Badge>
-            <span className="flex h-2.5 w-2.5 relative">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-            </span>
+    <div className="min-h-screen bg-transparent text-slate-100 p-8 lg:p-12 font-sans">
+      <DashboardHeader 
+        title="Reception Operations"
+        firstName={session?.user?.name?.split(' ')[0]}
+        subtitle="Manage live room occupancy, check-in timelines, and guest relations from your central command desk."
+        role="Front-Desk Controller"
+        unreadNotifications={3}
+      />
+
+      {/* KPI Stats Pulse */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+        <KpiCard 
+          title="Daily Arrivals" 
+          value={arrivals.length} 
+          delta={12} 
+          deltaLabel="vs yesterday"
+          icon={<Users className="w-5 h-5" />}
+          color="success"
+        />
+        <KpiCard 
+          title="Occupancy" 
+          value={`${occupancyRate}%`} 
+          delta={5} 
+          deltaLabel="vs last week"
+          icon={<DoorOpen className="w-5 h-5" />}
+          color="primary"
+        />
+        <KpiCard 
+          title="VIP Arrivals" 
+          value={vipArrivalsCount} 
+          icon={<Sparkles className="w-5 h-5" />}
+          color="warning"
+          subtitle="Requires priority attention"
+        />
+        <KpiCard 
+          title="Pending Checkouts" 
+          value={departures.length} 
+          icon={<Clock className="w-5 h-5" />}
+          color="info"
+        />
+      </div>
+
+      <div className="space-y-10">
+        {/* Arrivals & Departures (P0) */}
+        <section>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-serif font-bold text-white">Live Operations Timeline</h2>
+            <div className="flex items-center gap-2">
+              <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-[10px] uppercase tracking-widest font-black text-white/40">Real-time Sync Active</span>
+            </div>
           </div>
-          <h1 className="text-4xl font-serif font-bold text-white mt-2">SmartHotel Front-Desk Command</h1>
-          <p className="text-slate-400 text-sm mt-1">Real-time room occupancy state, check-ins scheduler, and guest relations dispatch.</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="sm" onClick={loadData} className="bg-white/5 border-purple-900/50 text-purple-300 hover:bg-purple-900/30">
-            <RefreshCw className="w-4 h-4 mr-2 animate-spin-slow" /> Sync Channels
-          </Button>
-          <Button onClick={() => router.push('/admin/dashboard')} className="bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-500 hover:to-amber-500 text-white border-0 font-semibold shadow-lg shadow-purple-950">
-            Master Console
-          </Button>
-        </div>
-      </div>
+          <ArrivalsDeparturesGrid 
+            arrivals={arrivals.map((a: any) => ({ ...a, time: a.time }))}
+            departures={departures.map((d: any) => ({ ...d, time: d.time }))}
+            onCheckIn={handleCheckIn}
+            onCheckOut={handleCheckOut}
+          />
+        </section>
 
-      {/* Grid Layout Container */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        
-        {/* Left Side: arrivals & departures workflow */}
-        <div className="lg:col-span-4 space-y-6">
-          
-          {/* Arrivals Queue */}
-          <Card className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl shadow-luxury">
-            <CardHeader className="border-b border-white/5 pb-4">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg font-serif text-white flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-emerald-400" /> Arrivals Timeline
-                </CardTitle>
-                <Badge className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-bold">{arrivals.length} Today</Badge>
-              </div>
-              <CardDescription className="text-white/40 text-xs">Awaiting arrival check-in verification</CardDescription>
-            </CardHeader>
-            <CardContent className="pt-4 space-y-4 max-h-[350px] overflow-y-auto">
-              {arrivals.length === 0 ? (
-                <div className="text-center py-6 text-white/30 text-sm font-semibold">No pending arrivals today</div>
-              ) : (
-                arrivals.map(arr => (
-                  <div key={arr.id} className="p-4 bg-white/5 border border-white/5 hover:border-white/10 hover:scale-[1.01] transition-all flex flex-col gap-2 relative rounded-xl shadow-sm">
-                    {arr.vip && (
-                      <span className="absolute top-3 right-3 bg-amber-500/10 text-amber-400 border border-amber-500/20 text-[9px] uppercase tracking-widest font-extrabold px-1.5 py-0.5 rounded flex items-center gap-1">
-                        <Sparkles className="w-2.5 h-2.5" /> VIP
-                      </span>
-                    )}
-                    <div className="flex items-start justify-between pr-14">
-                      <div>
-                        <h4 className="font-bold text-white text-sm">{arr.guestName}</h4>
-                        <p className="text-white/60 text-xs">Room {arr.roomNumber} ({arr.roomType})</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-2 text-[11px] text-white/50 mt-1">
-                      <Clock className="w-3.5 h-3.5 text-purple-400" /> 
-                      <span>Check-In: <strong className="text-white/80">{arr.checkIn}</strong></span>
-                      {arr.isLate && <Badge className="bg-rose-500/10 text-rose-400 border border-rose-500/20 text-[10px] font-bold">LATE</Badge>}
-                    </div>
+        {/* Room Inventory (P1) */}
+        <section>
+          <div className="mb-8">
+            <div className="flex border-b border-white/5 w-fit mb-6">
+              <button
+                onClick={() => setActiveTab('grid')}
+                className={`px-6 py-3 text-sm font-black uppercase tracking-widest transition-all ${activeTab === 'grid' ? 'text-primary border-b-2 border-primary' : 'text-white/30 hover:text-white/60'}`}
+              >
+                Room Status Matrix
+              </button>
+              <button
+                onClick={() => setActiveTab('calendar')}
+                className={`px-6 py-3 text-sm font-black uppercase tracking-widest transition-all ${activeTab === 'calendar' ? 'text-primary border-b-2 border-primary' : 'text-white/30 hover:text-white/60'}`}
+              >
+                Booking Calendar
+              </button>
+            </div>
 
-                    {arr.notes && (
-                      <p className="text-[11px] text-purple-300/80 bg-purple-950/20 p-2 border border-purple-950 border-l-2 border-l-purple-500 italic mt-1 rounded-lg">
-                        "{arr.notes}"
-                      </p>
-                    )}
-
-                    <div className="flex items-center justify-between border-t border-white/5 pt-2 mt-2 gap-3">
-                      <span className="text-xs text-white/50 flex items-center gap-1 font-mono">
-                        <DollarSign className="w-3.5 h-3.5 text-emerald-400" /> {arr.payment}
-                      </span>
-                      <Button onClick={() => handleCheckIn(arr.roomNumber)} size="sm" className="bg-emerald-600 hover:bg-emerald-500 text-white h-7 text-xs rounded-xl px-4 font-bold border-0">
-                        Check-In 🔑
-                      </Button>
-                    </div>
-                  </div>
-                ))
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Departures Queue */}
-          <Card className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl shadow-luxury">
-            <CardHeader className="border-b border-white/5 pb-4">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg font-serif text-white flex items-center gap-2">
-                  <DoorOpen className="w-4 h-4 text-purple-400" /> Departures Timeline
-                </CardTitle>
-                <Badge className="bg-purple-500/10 text-purple-400 border border-purple-500/20 text-xs font-bold">{departures.length} Pending</Badge>
-              </div>
-              <CardDescription className="text-white/40 text-xs">Awaiting bill settlement & key return</CardDescription>
-            </CardHeader>
-            <CardContent className="pt-4 space-y-4 max-h-[350px] overflow-y-auto">
-              {departures.length === 0 ? (
-                <div className="text-center py-6 text-white/30 text-sm font-semibold">No pending check-outs</div>
-              ) : (
-                departures.map(dep => (
-                  <div key={dep.id} className="p-4 bg-white/5 border border-white/5 hover:border-white/10 hover:scale-[1.01] transition-all flex flex-col gap-2 relative rounded-xl shadow-sm">
-                    {dep.vip && (
-                      <span className="absolute top-3 right-3 bg-amber-500/10 text-amber-400 border border-amber-500/20 text-[9px] uppercase tracking-widest font-extrabold px-1.5 py-0.5 rounded flex items-center gap-1">
-                        <Sparkles className="w-2.5 h-2.5" /> VIP
-                      </span>
-                    )}
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h4 className="font-bold text-white text-sm">{dep.guestName}</h4>
-                        <p className="text-white/60 text-xs">Room {dep.roomNumber} ({dep.roomType})</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-2 text-[11px] text-white/50 mt-1">
-                      <Clock className="w-3.5 h-3.5 text-purple-400" /> 
-                      <span>Check-Out: <strong className="text-white/80">{dep.checkOut}</strong></span>
-                    </div>
-
-                    <div className="flex items-center justify-between border-t border-white/5 pt-2 mt-2 gap-3">
-                      <span className="text-xs text-white/50 flex items-center gap-1 font-mono">
-                        <DollarSign className="w-3.5 h-3.5 text-amber-400" /> {dep.payment}
-                      </span>
-                      <Button onClick={() => handleCheckOut(dep.roomNumber)} size="sm" className="bg-purple-600 hover:bg-purple-500 text-white h-7 text-xs rounded-xl px-4 font-bold border-0">
-                        Check-Out 🧹
-                      </Button>
-                    </div>
-                  </div>
-                ))
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Center/Right: Occupancy Status Map Room Cards or Calendar */}
-        <div className="lg:col-span-8 space-y-6">
-          
-          <Card className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl shadow-luxury overflow-hidden">
-            <CardHeader className="border-b border-white/5 pb-4">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div>
-                  <div className="flex border-b border-white/5 pb-2">
-                    <button
-                      onClick={() => setActiveTab('grid')}
-                      className={`text-lg font-serif font-bold text-white mr-6 pb-2 border-b-2 transition-all duration-300 ${activeTab === 'grid' ? 'border-primary text-primary' : 'border-transparent text-white/40 hover:text-white/70'}`}
-                    >
-                      Room Grid Map
-                    </button>
-                    <button
-                      onClick={() => setActiveTab('calendar')}
-                      className={`text-lg font-serif font-bold text-white pb-2 border-b-2 transition-all duration-300 ${activeTab === 'calendar' ? 'border-primary text-primary' : 'border-transparent text-white/40 hover:text-white/70'}`}
-                    >
-                      Booking Calendar
-                    </button>
-                  </div>
-                  <CardDescription className="text-white/40 text-xs mt-1.5">
-                    {activeTab === 'grid' 
-                      ? "Grid display of real-time room occupancies, maintenance cycles, and VIP reserves." 
-                      : "Monthly view of all reservations and active/upcoming hotel check-ins."}
-                  </CardDescription>
-                </div>
-
-                {activeTab === 'grid' && (
-                  <div className="flex flex-col sm:flex-row items-center gap-3">
-                    <div className="relative w-full sm:w-auto">
-                      <Search className="w-4 h-4 text-white/40 absolute left-3 top-1/2 -translate-y-1/2" />
-                      <input 
-                        type="text" 
-                        placeholder="Search room, floor..." 
-                        value={searchQuery}
-                        onChange={e => setSearchQuery(e.target.value)}
-                        className="bg-white/5 border border-white/10 text-xs text-white rounded-xl pl-9 pr-4 py-2.5 w-full sm:w-[180px] focus:outline-none focus:ring-1 focus:ring-purple-500 placeholder-white/30"
-                      />
-                    </div>
-                    <div className="flex items-center gap-1 bg-slate-950/40 p-1 border border-white/5 rounded-xl overflow-x-auto w-full sm:w-auto">
-                      {["ALL", "AVAILABLE", "OCCUPIED", "CLEANING", "MAINTENANCE"].map(st => (
-                        <button 
-                          key={st}
-                          onClick={() => setStatusFilter(st)}
-                          className={`text-[9px] uppercase tracking-wider font-extrabold px-2 py-1.5 rounded-lg transition-all whitespace-nowrap ${statusFilter === st ? 'bg-primary text-white' : 'text-white/40 hover:text-white'}`}
-                        >
-                          {st === "ALL" ? "All" : st.toLowerCase()}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent className="pt-6">
-              
+            <AnimatePresence mode="wait">
               {activeTab === 'grid' ? (
-                <>
-                  {/* Room Grid cards */}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                    {filteredRooms.length === 0 ? (
-                      <div className="col-span-full text-center py-12 text-white/30 text-sm font-semibold">No matching room configurations found</div>
-                    ) : (
-                      filteredRooms.map(room => {
-                        const isOccupied = room.status === "OCCUPIED"
-                        const isCleaning = room.status === "CLEANING"
-                        const isMaintenance = room.status === "MAINTENANCE"
-                        const isReserved = room.status === "RESERVED"
-                        const isCheckoutPending = room.status === "CHECKOUT_PENDING"
-
-                        const statusBg = isOccupied ? 'bg-rose-950/40 border-rose-500/30' :
-                                         isCleaning ? 'bg-amber-950/40 border-amber-500/30' :
-                                         isMaintenance ? 'bg-slate-900/60 border-slate-700/40' :
-                                         isReserved ? 'bg-blue-950/40 border-blue-500/30' :
-                                         isCheckoutPending ? 'bg-purple-950/40 border-purple-500/30' :
-                                         'bg-emerald-950/20 border-emerald-500/30'
-
-                        const textBadge = isOccupied ? 'text-rose-400 border-rose-500/20 bg-rose-500/10' :
-                                          isCleaning ? 'text-amber-400 border-amber-500/20 bg-amber-500/10' :
-                                          isMaintenance ? 'text-slate-400 border-slate-700/20 bg-slate-700/10' :
-                                          isReserved ? 'text-blue-400 border-blue-500/20 bg-blue-500/10' :
-                                          isCheckoutPending ? 'text-purple-400 border-purple-500/20 bg-purple-500/10' :
-                                          'text-emerald-400 border-emerald-500/20 bg-emerald-500/10'
-
-                        return (
-                          <div 
-                            key={room.id}
-                            onClick={() => selectRoomCard(room)}
-                            className={`p-4 border backdrop-blur-md cursor-pointer hover:-translate-y-0.5 transition-all flex flex-col justify-between h-[150px] relative rounded-2xl group shadow-md ${statusBg} ${selectedRoom?.number === room.number ? 'ring-2 ring-primary scale-[0.98] border-transparent shadow-lg' : ''}`}
-                          >
-                            {room.vip && (
-                              <span className="absolute top-2 right-2 text-amber-400">
-                                <Sparkles className="w-4 h-4 fill-amber-500/20 animate-pulse" />
-                              </span>
-                            )}
-                            <div>
-                              <p className="text-[10px] text-white/40 uppercase tracking-widest font-extrabold">Floor {room.floor}</p>
-                              <h3 className="text-2xl font-serif font-extrabold text-white mt-1">Room {room.number}</h3>
-                              <p className="text-white/60 text-[10px] mt-0.5">{room.type}</p>
-                            </div>
-
-                            <div className="flex items-center justify-between border-t border-white/5 pt-2.5 mt-2">
-                              <Badge className={`text-[9px] uppercase tracking-wider font-extrabold px-1.5 py-0.5 ${textBadge}`}>
-                                {room.status.replace('_', ' ')}
-                              </Badge>
-                              <span className="text-[11px] text-white/50 font-mono">
-                                LKR {room.price / 1000}K
-                              </span>
-                            </div>
-                          </div>
-                        )
-                      })
-                    )}
-                  </div>
-
-                  {/* Status Legends */}
-                  <div className="flex flex-wrap items-center gap-6 mt-8 p-4 bg-white/5 border border-white/5 rounded-2xl">
-                    <span className="text-xs text-white/40 font-bold uppercase tracking-widest mr-2">Legend:</span>
-                    {[
-                      { name: "Available", color: "bg-emerald-500" },
-                      { name: "Occupied", color: "bg-rose-500" },
-                      { name: "Cleaning", color: "bg-amber-500" },
-                      { name: "Reserved", color: "bg-blue-400" },
-                      { name: "Checkout Pending", color: "bg-purple-400" },
-                      { name: "Maintenance", color: "bg-slate-500" }
-                    ].map(lg => (
-                      <div key={lg.name} className="flex items-center gap-2">
-                        <span className={`w-2.5 h-2.5 rounded-full ${lg.color}`} />
-                        <span className="text-xs text-white/80">{lg.name}</span>
-                      </div>
-                    ))}
-                  </div>
-                </>
+                <motion.div
+                  key="grid"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                >
+                  <RoomStatusGrid 
+                    rooms={rooms}
+                    selectedRoomNumber={selectedRoom?.number}
+                    onSelectRoom={selectRoomCard}
+                    searchQuery={searchQuery}
+                    onSearchChange={setSearchQuery}
+                    statusFilter={statusFilter}
+                    onStatusFilterChange={setStatusFilter}
+                  />
+                </motion.div>
               ) : (
-                <BookingCalendar onMutationSuccess={loadData} />
+                <motion.div
+                  key="calendar"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                >
+                  <Card className="bg-white/5 border-white/10 p-6">
+                    <BookingCalendar onMutationSuccess={() => {
+                      queryClient.invalidateQueries({ queryKey: ['rooms'] })
+                      queryClient.invalidateQueries({ queryKey: ['bookings'] })
+                    }} />
+                  </Card>
+                </motion.div>
               )}
+            </AnimatePresence>
+          </div>
+        </section>
 
-            </CardContent>
-          </Card>
-
-          {/* Quick Actions Action Drawer / Sheet Panel when Room is selected */}
+        {/* Room Action Desk (Modal System) */}
+        <AnimatePresence>
           {selectedRoom && (
-            <Card className="bg-gradient-to-r from-purple-950/15 to-indigo-950/15 border border-white/10 backdrop-blur-xl rounded-2xl shadow-luxury animate-fade-in overflow-hidden relative">
-              <CardHeader className="border-b border-white/5 bg-slate-950/20">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Badge className="bg-amber-500/10 text-amber-400 border border-amber-500/20 text-[9px] uppercase tracking-wider font-extrabold px-2 py-0.5">ROOM CONTROLS DESK</Badge>
-                    <CardTitle className="text-2xl font-serif text-white mt-1.5">Action Desk: Room {selectedRoom.number}</CardTitle>
-                  </div>
-                  <Button variant="ghost" onClick={() => setSelectedRoom(null)} className="text-slate-400 hover:text-white hover:bg-white/5 rounded-xl">
-                    Close Desk
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="pt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-                
-                {/* Status Transitions */}
-                <div className="space-y-4">
-                  <h4 className="text-xs uppercase tracking-widest font-extrabold text-white/40 flex items-center gap-1.5">
-                    <SlidersHorizontal className="w-3.5 h-3.5 text-purple-400" /> Transition Room Status
-                  </h4>
-                  <div className="grid grid-cols-2 gap-2.5">
-                    {[
-                      { name: "Set Available", status: "AVAILABLE", class: "bg-emerald-600 hover:bg-emerald-500 text-white" },
-                      { name: "Set Occupied", status: "OCCUPIED", class: "bg-rose-700 hover:bg-rose-600 text-white" },
-                      { name: "Set Cleaning", status: "CLEANING", class: "bg-amber-600 hover:bg-amber-500 text-white" },
-                      { name: "Set Maintenance", status: "MAINTENANCE", class: "bg-slate-700 hover:bg-slate-600 text-white" }
-                    ].map(stBtn => (
-                      <Button 
-                        key={stBtn.status}
-                        onClick={() => handleStatusTransition(selectedRoom.number, stBtn.status)}
-                        className={`text-xs h-9 rounded-xl font-bold border-0 ${stBtn.class}`}
-                      >
-                        {stBtn.name}
-                      </Button>
-                    ))}
-                  </div>
-
-                  {/* Immediate workflow dispatch buttons */}
-                  <div className="border-t border-white/5 pt-4 space-y-2">
-                    {selectedRoom.status === "AVAILABLE" && (
-                      <Button onClick={() => handleCheckIn(selectedRoom.number)} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl border-0 h-10">
-                        Check-In Guest 🔑
-                      </Button>
-                    )}
-                    {(selectedRoom.status === "OCCUPIED" || selectedRoom.status === "CHECKOUT_PENDING") && (
-                      <Button onClick={() => handleCheckOut(selectedRoom.number)} className="w-full bg-purple-600 hover:bg-purple-500 text-white font-semibold rounded-xl border-0 h-10">
-                        Check-Out & Settlement 🧹
-                      </Button>
-                    )}
-                  </div>
-                </div>
-
-                {/* Metadata & guest note editors */}
-                <div className="space-y-4 border-t md:border-t-0 md:border-l border-white/5 md:pl-6">
-                  <h4 className="text-xs uppercase tracking-widest font-extrabold text-white/40 flex items-center gap-1.5">
-                    <ClipboardList className="w-3.5 h-3.5 text-purple-400" /> Front Desk Relations Memo
-                  </h4>
-                  
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3 bg-white/5 p-3.5 border border-white/5 rounded-xl">
-                      <input 
-                        type="checkbox" 
-                        id="vip_checkbox"
-                        checked={isVip} 
-                        onChange={e => setIsVip(e.target.checked)}
-                        className="w-4 h-4 accent-amber-500 rounded focus:ring-0 focus:outline-none"
-                      />
-                      <label htmlFor="vip_checkbox" className="text-xs text-white/80 font-bold uppercase tracking-widest cursor-pointer flex items-center gap-1.5">
-                        <Sparkles className="w-3.5 h-3.5 text-amber-400" /> Flag Guest as VIP Status
-                      </label>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] uppercase tracking-widest font-extrabold text-white/40">Special Notes & Housekeeping Demands</label>
-                      <textarea 
-                        value={guestNotes}
-                        onChange={e => setGuestNotes(e.target.value)}
-                        placeholder="e.g. Needs daily room cleanup strictly at 10 AM, fruits basket in lounge, allergy alert to peanut oil..."
-                        className="w-full h-24 bg-white/5 border border-white/10 text-xs text-white p-3 focus:outline-none focus:ring-1 focus:ring-purple-500 rounded-xl placeholder-white/20"
-                      />
-                    </div>
-
-                    <Button onClick={updateRoomMetadata} className="w-full bg-gradient-to-r from-purple-800 to-indigo-800 hover:from-purple-700 hover:to-indigo-700 text-white font-bold text-xs h-9 rounded-xl border-0">
-                      Save Front-Desk Updates
-                    </Button>
-                  </div>
-                </div>
-
-              </CardContent>
-            </Card>
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[100] flex items-start justify-center p-4 md:p-8 lg:p-12 bg-slate-950/60 backdrop-blur-md overflow-y-auto pt-20 md:pt-24 pb-12"
+            >
+              <motion.div 
+                initial={{ scale: 0.9, y: 20 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.9, y: 20 }}
+                className="w-full max-w-6xl relative"
+              >
+                <RoomActionDesk 
+                  room={selectedRoom}
+                  isVip={isVip}
+                  onToggleVip={setIsVip}
+                  notes={guestNotes}
+                  onNotesChange={setGuestNotes}
+                  onUpdateMetadata={updateRoomMetadata}
+                  onStatusTransition={handleStatusTransition}
+                  onCheckIn={handleCheckIn}
+                  onCheckOut={handleCheckOut}
+                  onCreateBooking={handleCreateBooking}
+                  roomBookings={allBookings.filter((b: any) => b.roomId === selectedRoom?.id)}
+                  onClose={() => setSelectedRoom(null)}
+                />
+              </motion.div>
+            </motion.div>
           )}
-
-        </div>
-
+        </AnimatePresence>
       </div>
-
     </div>
   )
 }

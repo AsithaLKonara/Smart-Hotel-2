@@ -22,7 +22,7 @@ interface Booking {
   paymentStatus: string
   specialRequests?: string
   confirmationCode?: string
-  user: {
+  guest: {
     id: string
     name: string
     email: string
@@ -128,8 +128,8 @@ export default function AdminBookingsPage() {
   const filteredBookings = (Array.isArray(bookings) ? bookings : []).filter(booking => {
     const matchesSearch = booking.confirmationCode?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          booking.room?.number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         booking.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         booking.user?.email?.toLowerCase().includes(searchTerm.toLowerCase())
+                         booking.guest?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         booking.guest?.email?.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = filterStatus === 'all' || booking.status === filterStatus
     const matchesPayment = filterPayment === 'all' || booking.paymentStatus === filterPayment
     return matchesSearch && matchesStatus && matchesPayment
@@ -326,8 +326,8 @@ export default function AdminBookingsPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm font-medium">{booking.user.name}</div>
-                      <div className="text-xs text-gray-500">{booking.user.email}</div>
+                      <div className="text-sm font-medium">{booking.guest.name}</div>
+                      <div className="text-xs text-gray-500">{booking.guest.email}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium">Room {booking.room.number}</div>

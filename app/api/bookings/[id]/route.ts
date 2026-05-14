@@ -15,10 +15,10 @@ const bookingUpdateSchema = z.object({
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params
+    const { id } = params
     const session = await getServerSession(authOptions)
     
     if (!session) {
@@ -91,10 +91,10 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params
+    const { id } = params
     const session = await getServerSession(authOptions)
     
     if (!session || !['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'].includes(session.user.role)) {
@@ -137,7 +137,29 @@ export async function PATCH(
           where: { id: booking.roomId },
           data: { status: 'OCCUPIED' }
         })
-      } else if (validatedData.status === 'CHECKED_OUT' || validatedData.status === 'CANCELLED') {
+      } else if (validatedData.status === 'CHECKED_OUT') {
+        // Set room to cleaning and create housekeeping task
+        await prisma.room.update({
+          where: { id: booking.roomId },
+          data: { status: 'CLEANING' }
+        })
+
+        // Create automatic housekeeping task
+        await prisma.task.create({
+          data: {
+            title: `Clean Room ${room?.number || 'N/A'}`,
+            description: `Full turn-over cleaning required after guest checkout of booking ${booking.confirmationCode || booking.id}.`,
+            type: 'HOUSEKEEPING',
+            priority: 'HIGH',
+            status: 'PENDING',
+            assignedTo: '', // Unassigned, will be picked up by housekeeping staff
+            createdBy: session.user.id,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            dueDate: new Date(), // Due now
+          }
+        })
+      } else if (validatedData.status === 'CANCELLED') {
         await prisma.room.update({
           where: { id: booking.roomId },
           data: { status: 'AVAILABLE' }
@@ -232,10 +254,10 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params
+    const { id } = params
     const session = await getServerSession(authOptions)
     
     if (!session || session.user.role !== 'SUPER_ADMIN') {

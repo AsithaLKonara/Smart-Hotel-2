@@ -5,7 +5,7 @@
  * and structured output for production monitoring.
  */
 
-import 'server-only'
+// import 'server-only'
 import winston from 'winston'
 import { captureException, captureMessage } from './monitoring'
 

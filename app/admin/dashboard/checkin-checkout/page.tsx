@@ -17,7 +17,7 @@ interface Booking {
   checkOut: string
   guests: number
   status: string
-  user: {
+  guest: {
     id: string
     name: string
     email: string
@@ -129,8 +129,8 @@ export default function CheckInCheckOutPage() {
   const filteredBookings = (activeTab === 'checkin' ? checkInBookings : checkOutBookings).filter(booking => {
     const searchLower = searchTerm.toLowerCase()
     return (
-      booking.user?.name?.toLowerCase().includes(searchLower) ||
-      booking.user?.email?.toLowerCase().includes(searchLower) ||
+      booking.guest?.name?.toLowerCase().includes(searchLower) ||
+      booking.guest?.email?.toLowerCase().includes(searchLower) ||
       booking.room?.number?.toLowerCase().includes(searchLower)
     )
   })
@@ -225,7 +225,7 @@ export default function CheckInCheckOutPage() {
           <Card key={booking.id} className="hover:shadow-lg transition-shadow">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">{booking.user.name}</CardTitle>
+                <CardTitle className="text-lg">{booking.guest.name}</CardTitle>
                 <Badge>Room {booking.room.number}</Badge>
               </div>
             </CardHeader>
@@ -233,11 +233,11 @@ export default function CheckInCheckOutPage() {
               <div className="space-y-3">
                 <div className="text-sm space-y-1">
                   <p className="text-gray-600 dark:text-gray-400">
-                    <span className="font-medium">Email:</span> {booking.user.email}
+                    <span className="font-medium">Email:</span> {booking.guest.email}
                   </p>
-                  {booking.user.phone && (
+                  {booking.guest.phone && (
                     <p className="text-gray-600 dark:text-gray-400">
-                      <span className="font-medium">Phone:</span> {booking.user.phone}
+                      <span className="font-medium">Phone:</span> {booking.guest.phone}
                     </p>
                   )}
                   <p className="text-gray-600 dark:text-gray-400">

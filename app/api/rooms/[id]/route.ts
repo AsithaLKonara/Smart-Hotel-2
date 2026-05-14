@@ -15,14 +15,55 @@ const roomUpdateSchema = z.object({
   isAvailable: z.boolean().optional(),
   floor: z.number().optional(),
   size: z.number().optional(),
+  status: z.string().optional(),
 })
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const { id } = params
+    const session = await getServerSession(authOptions)
+    
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const body = await request.json()
+    const validatedData = roomUpdateSchema.parse(body)
+
+    // Handle BigInt conversion for Prisma/MongoDB
+    const updateData: any = { ...validatedData }
+    if (typeof validatedData.capacity === 'number') updateData.capacity = BigInt(validatedData.capacity)
+    if (typeof validatedData.floor === 'number') updateData.floor = BigInt(validatedData.floor)
+    if (typeof validatedData.size === 'number') updateData.size = BigInt(validatedData.size)
+
+    const room = await prisma.room.update({
+      where: { id: id },
+      data: updateData
+    })
+
+    return NextResponse.json({
+      ...room,
+      capacity: Number(room.capacity),
+      floor: Number(room.floor),
+      size: Number(room.size)
+    })
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: 'Validation error', details: error.errors }, { status: 400 })
+    }
+    return NextResponse.json({ error: 'Failed to update room' }, { status: 500 })
+  }
+}
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params
+    const { id } = params
     // Note: Room model doesn't have bookings relation defined in schema
     // Bookings would need to be fetched separately if needed
     const room = await prisma.room.findUnique({
@@ -48,10 +89,10 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params
+    const { id } = params
     const session = await getServerSession(authOptions)
     
     if (!session || !['SUPER_ADMIN', 'MANAGER'].includes(session.user.role)) {
@@ -81,9 +122,26 @@ export async function PUT(
       }
     }
 
+    const updateData: any = { ...validatedData }
+    
+    // Handle relational updates for images if provided
+    if (validatedData.images) {
+      updateData.roomImages = {
+        deleteMany: {}, // Simplest approach: clear and recreation for relational images
+        create: validatedData.images.map(url => ({
+          imageUrl: url
+        }))
+      }
+      delete updateData.images // Remove the flat array before sending to prisma for Room model
+    }
+
     const room = await prisma.room.update({
       where: { id: id },
-      data: validatedData
+      data: updateData,
+      include: {
+        roomType: true,
+        roomImages: true
+      } as any
     })
 
     return NextResponse.json(room)
@@ -105,10 +163,10 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params
+    const { id } = params
     const session = await getServerSession(authOptions)
     
     if (!session || session.user.role !== 'SUPER_ADMIN') {

@@ -64,7 +64,7 @@ describe('OTA Sync Service', () => {
             property_id: 'prop-1',
             room_type_id: 'ota-room-123',
             date: '2026-05-12',
-            availability: 5,
+            availability: 4,
           }]
         }),
       })

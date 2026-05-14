@@ -1,335 +1,98 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { captureException } from '@/lib/monitoring'
 import Stripe from 'stripe'
-import prisma from '@/lib/db'
+import { prisma } from '@/lib/db'
 import { logAction, AUDIT_ACTIONS } from '@/lib/audit'
+import { Redis } from '@upstash/redis'
+import { RealtimeEvents } from '@/lib/realtime'
 
-// Stripe configuration with fallback for missing keys
-const isStripeConfigured = !!(process.env.STRIPE_SECRET_KEY && process.env.STRIPE_WEBHOOK_SECRET)
-
-const stripe = isStripeConfigured && process.env.STRIPE_SECRET_KEY
-  ? new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2023-10-16',
-})
-  : null
-
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || ''
-
-// Idempotency tracking for webhook processing (in production, use Redis)
-const processedEvents = new Set<string>()
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2023-10-16' })
+const redis = Redis.fromEnv()
 
 export async function POST(request: NextRequest) {
-  // Check if Stripe is configured
-  if (!isStripeConfigured || !stripe || !webhookSecret) {
-    console.warn('Stripe webhook: Stripe not configured - webhook ignored')
-    return NextResponse.json(
-      { error: 'Stripe not configured' },
-      { status: 503 }
-    )
+  const body = await request.text()
+  const signature = request.headers.get('stripe-signature')!
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!
+
+  let event: Stripe.Event
+  try {
+    event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
+  } catch (err: any) {
+    return NextResponse.json({ error: `Webhook Error: ${err.message}` }, { status: 400 })
   }
 
+  // 1. DISTRIBUTED IDEMPOTENCY (Redis)
+  const eventKey = `stripe:event:${event.id}`
+  const isProcessed = await redis.set(eventKey, 'processed', { nx: true, ex: 86400 })
+  if (!isProcessed) return NextResponse.json({ received: true, duplicate: true })
+
   try {
-    const body = await request.text()
-    const signature = request.headers.get('stripe-signature')
-
-    if (!signature) {
-      console.error('Stripe webhook: No signature provided')
-      return NextResponse.json(
-        { error: 'Missing stripe signature' },
-        { status: 400 }
-      )
-    }
-
-    let event: Stripe.Event
-
-    try {
-      event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
-    } catch (err) {
-      console.error('Stripe webhook signature verification failed:', err)
-      return NextResponse.json(
-        { error: 'Invalid signature' },
-        { status: 400 }
-      )
-    }
-
-    // Check for duplicate events (idempotency)
-    if (processedEvents.has(event.id)) {
-      console.log(`Stripe webhook: Duplicate event ${event.id} ignored`)
-      return NextResponse.json({ received: true, duplicate: true })
-    }
-
-    // Add to processed events
-    processedEvents.add(event.id)
-
-    // Handle the event
     switch (event.type) {
-      case 'payment_intent.succeeded':
-        await handlePaymentSuccess(event.data.object as Stripe.PaymentIntent, event.id)
+      case 'payment_intent.succeeded': {
+        const intent = event.data.object as Stripe.PaymentIntent
+        const bookingId = intent.metadata.bookingId
+        
+        await prisma.$transaction([
+          prisma.booking.update({
+            where: { id: bookingId },
+            data: { paymentStatus: 'PAID', updatedAt: new Date() }
+          }),
+          prisma.payment.update({
+            where: { providerId: intent.id },
+            data: { status: 'COMPLETED', capturedAt: new Date() }
+          })
+        ])
+        
+        await RealtimeEvents.emitBookingUpdated({ id: bookingId, paymentStatus: 'PAID' })
         break
-      
-      case 'payment_intent.payment_failed':
-        await handlePaymentFailure(event.data.object as Stripe.PaymentIntent, event.id)
+      }
+
+      case 'payment_intent.payment_failed': {
+        const intent = event.data.object as Stripe.PaymentIntent
+        const bookingId = intent.metadata.bookingId
+        
+        await prisma.payment.update({
+          where: { providerId: intent.id },
+          data: { status: 'FAILED' }
+        })
         break
-      
-      case 'payment_intent.canceled':
-        await handlePaymentCanceled(event.data.object as Stripe.PaymentIntent, event.id)
+      }
+
+      case 'charge.refunded': {
+        const charge = event.data.object as Stripe.Charge
+        const intentId = charge.payment_intent as string
+        
+        const payment = await prisma.payment.findUnique({
+          where: { providerId: intentId },
+          include: { booking: true }
+        })
+
+        if (payment && payment.bookingId) {
+          await prisma.$transaction([
+            prisma.booking.update({
+              where: { id: payment.bookingId },
+              data: { paymentStatus: 'REFUNDED', status: 'CANCELLED' }
+            }),
+            prisma.payment.update({
+              where: { providerId: intentId },
+              data: { status: 'REFUNDED', refundedAt: new Date() }
+            }),
+            // Release the room
+            prisma.room.update({
+              where: { id: payment.booking.roomId },
+              data: { status: 'AVAILABLE' }
+            })
+          ])
+          
+          await RealtimeEvents.emitBookingUpdated({ id: payment.bookingId, status: 'CANCELLED', paymentStatus: 'REFUNDED' })
+        }
         break
-      
-      case 'charge.refunded':
-        await handlePaymentRefunded(event.data.object as Stripe.Charge, event.id)
-        break
-      
-      case 'charge.dispute.created':
-        await handleChargeDispute(event.data.object as Stripe.Dispute, event.id)
-        break
-      
-      default:
-        console.log(`Stripe webhook: Unhandled event type: ${event.type}`)
+      }
     }
 
-    return NextResponse.json({ received: true, eventId: event.id })
-  } catch (error) {
-    // Capture error with Sentry
-    captureException(error, {
-      requestId: request.headers.get('x-request-id') || undefined,
-      eventType: 'stripe_webhook',
-    })
-    
-    console.error('Stripe webhook error:', error)
-    
-    // Log the error for monitoring
-    await logAction(
-      request,
-      undefined,
-      'STRIPE_WEBHOOK_ERROR',
-      'Webhook',
-      'unknown',
-      { 
-        error: error instanceof Error ? error.message : 'Unknown error' 
-      }
-    )
-
-    return NextResponse.json(
-      { error: 'Webhook handler failed' },
-      { status: 500 }
-    )
-  }
-}
-
-async function handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent, eventId: string) {
-  const bookingId = paymentIntent.metadata.bookingId
-  
-  if (!bookingId) {
-    console.error('No booking ID in payment intent metadata')
-    return
-  }
-
-  try {
-    // Update booking status
-    const booking = await prisma.booking.update({
-      where: { id: bookingId },
-      data: {
-        paymentStatus: 'PAID',
-        status: 'CONFIRMED',
-      }
-    })
-    
-    // Note: Booking model doesn't have room, user, or invoice relations defined in schema
-    // Fetch related data separately if needed
-    // const [room, user] = await Promise.all([
-    //   prisma.room.findUnique({ where: { id: booking.roomId } }).catch(() => null),
-    //   prisma.user.findUnique({ where: { id: booking.userId } }).catch(() => null)
-    // ])
-
-    // Note: Invoice model doesn't exist in schema
-    // Invoice status update would need Invoice model to be added to schema
-    // if (booking.invoice) {
-    //   await prisma.invoice.update({
-    //     where: { id: booking.invoice.id },
-    //     data: { status: 'PAID' }
-    //   })
-    // }
-
-    // Fetch room data separately (relations don't exist in schema)
-    const room = await prisma.room.findUnique({ where: { id: booking.roomId } }).catch(() => null)
-    
-    // Update room status
-    if (room) {
-      await prisma.room.update({
-        where: { id: booking.roomId },
-        data: { status: 'OCCUPIED' }
-      })
-    }
-
-    // Log the payment success
-    await logAction(
-      {} as NextRequest, // We don't have the original request in webhooks
-      booking.userId,
-      AUDIT_ACTIONS.PAYMENT_SUCCESS,
-      'Payment',
-      bookingId,
-      {
-        paymentIntentId: paymentIntent.id,
-        amount: paymentIntent.amount / 100, // Convert from cents
-        currency: paymentIntent.currency,
-        roomId: booking.roomId,
-        roomNumber: room?.number || 'N/A',
-      }
-    )
-
-    console.log(`Payment succeeded for booking ${bookingId}`)
-  } catch (error) {
-    console.error('Error handling payment success:', error)
-  }
-}
-
-async function handlePaymentFailure(paymentIntent: Stripe.PaymentIntent, eventId: string) {
-  const bookingId = paymentIntent.metadata.bookingId
-  
-  if (!bookingId) {
-    console.error('No booking ID in payment intent metadata')
-    return
-  }
-
-  try {
-    // Update booking status
-    const booking = await prisma.booking.update({
-      where: { id: bookingId },
-      data: {
-        paymentStatus: 'FAILED',
-        status: 'PENDING',
-      }
-    })
-    
-    // Fetch room data separately (relations don't exist in schema)
-    const room = await prisma.room.findUnique({ where: { id: booking.roomId } }).catch(() => null)
-
-    // Log the payment failure
-    await logAction(
-      {} as NextRequest,
-      booking.userId,
-      AUDIT_ACTIONS.PAYMENT_FAILED,
-      'Payment',
-      bookingId,
-      {
-        paymentIntentId: paymentIntent.id,
-        amount: paymentIntent.amount / 100,
-        currency: paymentIntent.currency,
-        roomId: booking.roomId,
-        roomNumber: room?.number || 'N/A',
-        failureReason: paymentIntent.last_payment_error?.message,
-      }
-    )
-
-    console.log(`Payment failed for booking ${bookingId}`)
-  } catch (error) {
-    console.error('Error handling payment failure:', error)
-  }
-}
-
-async function handlePaymentCanceled(paymentIntent: Stripe.PaymentIntent, eventId: string) {
-  const bookingId = paymentIntent.metadata.bookingId
-  
-  if (!bookingId) {
-    console.error('No booking ID in payment intent metadata')
-    return
-  }
-
-  try {
-    // Update booking status
-    const booking = await prisma.booking.update({
-      where: { id: bookingId },
-      data: {
-        paymentStatus: 'FAILED',
-        status: 'CANCELLED',
-      }
-    })
-    
-    // Fetch room data separately (relations don't exist in schema)
-    const room = await prisma.room.findUnique({ where: { id: booking.roomId } }).catch(() => null)
-
-    // Log the payment cancellation
-    await logAction(
-      {} as NextRequest,
-      booking.userId,
-      AUDIT_ACTIONS.PAYMENT_FAILED,
-      'Payment',
-      bookingId,
-      {
-        paymentIntentId: paymentIntent.id,
-        amount: paymentIntent.amount / 100,
-        currency: paymentIntent.currency,
-        roomId: booking.roomId,
-        roomNumber: room?.number || 'N/A',
-        reason: 'Payment canceled by user',
-      }
-    )
-
-    console.log(`Payment canceled for booking ${bookingId}`)
-  } catch (error) {
-    console.error('Error handling payment cancellation:', error)
-  }
-}
-
-async function handlePaymentRefunded(charge: Stripe.Charge, eventId: string) {
-  const paymentIntentId = charge.payment_intent as string
-  
-  if (!paymentIntentId) {
-    console.error('No payment intent ID in charge')
-    return
-  }
-
-  try {
-    // Note: Booking model doesn't have paymentIntentId field in schema
-    // This webhook handler needs to be updated to match bookings differently
-    // For now, we'll skip this handler as paymentIntentId field doesn't exist
-    console.warn(`Payment intent webhook received but paymentIntentId field doesn't exist in Booking schema: ${paymentIntentId}`)
-    
-    // Original code (commented out - would need paymentIntentId field in schema):
-    // const booking = await prisma.booking.findFirst({
-    //   where: { paymentIntentId },
-    // })
-    // if (!booking) {
-    //   console.error(`No booking found for payment intent ${paymentIntentId}`)
-    //   return
-    // }
-    // await prisma.booking.update({
-    //   where: { id: booking.id },
-    //   data: {
-    //     paymentStatus: 'REFUNDED',
-    //     status: 'CANCELLED',
-    //   }
-    // })
-    // Note: Invoice model doesn't exist in schema
-    // await logAction(...)
-    
     return NextResponse.json({ received: true })
-  } catch (error) {
-    console.error('Error handling payment refund:', error)
+  } catch (err: any) {
+    await redis.del(eventKey) // Allow retry
+    console.error('[STRIPE_WEBHOOK_ERROR]', err)
+    return NextResponse.json({ error: 'Webhook processing failed' }, { status: 500 })
   }
 }
-
-async function handleChargeDispute(dispute: Stripe.Dispute, eventId: string) {
-  try {
-    // Log dispute for manual review
-    await logAction(
-      {} as NextRequest,
-      undefined,
-      'PAYMENT_DISPUTE',
-      'Payment',
-      dispute.id,
-      {
-        chargeId: dispute.charge,
-        amount: dispute.amount / 100,
-        currency: dispute.currency,
-        reason: dispute.reason,
-        stripeEventId: eventId
-      }
-    )
-
-    console.log(`Stripe webhook ${eventId}: Charge dispute created: ${dispute.id}`)
-  } catch (error) {
-    console.error(`Stripe webhook ${eventId}: Error processing dispute:`, error)
-    throw error
-  }
-} 

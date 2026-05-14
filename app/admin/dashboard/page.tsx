@@ -20,7 +20,8 @@ import {
   Clock,
   BarChart3,
   PieChart,
-  Activity
+  Activity,
+  ArrowUpRight
 } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -29,6 +30,8 @@ import toast from 'react-hot-toast'
 import { canAccessAdminDashboard, getUserRole } from '@/lib/rbac-helpers'
 import { PremiumSpinner } from '@/components/ui/premium-spinner'
 import { BookingCalendar } from '@/components/admin/booking-calendar'
+import { DashboardHeader } from '@/components/dashboard/dashboard-header'
+import { KpiCard } from '@/components/ui/kpi-card'
 
 interface DashboardData {
   summary: {
@@ -117,9 +120,9 @@ function AdminDashboardContent() {
   const fetchDashboardData = async () => {
     try {
       setIsLoading(true)
-      // Admin stats pages: 10s timeout (heavy queries, allow more time for initial load)
+      // Admin stats pages: 30s timeout (heavy queries, allow more time for initial load)
       const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 10000)
+      const timeoutId = setTimeout(() => controller.abort(), 30000)
       const response = await fetch('/api/analytics/dashboard', {
         signal: controller.signal,
         cache: 'no-store',
@@ -297,69 +300,54 @@ function AdminDashboardContent() {
 
   return (
     <div className="min-h-screen bg-transparent">
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 py-12">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-serif font-bold text-white">Admin Dashboard</h1>
-          <p className="text-white/50 mt-2 text-sm uppercase tracking-widest">Real-time insights and analytics</p>
-        </div>
+        <DashboardHeader 
+          title="Admin Cockpit"
+          firstName={session?.user?.name?.split(' ')[0]}
+          subtitle="Real-time business intelligence, revenue performance, and unified operational control for the entire hotel ecosystem."
+          role="System Administrator"
+          unreadNotifications={5}
+        />
 
         {/* Key Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="p-6 bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-white/50 uppercase tracking-widest">Total Bookings</p>
-                <p className="text-2xl font-bold text-white">{summary?.totalBookings ?? 0}</p>
-                <div className="flex items-center mt-2">
-                  {getGrowthIcon(summary?.bookingGrowthRate ?? 0)}
-                  <span className={`text-sm ml-1 ${(summary?.bookingGrowthRate ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                    {Math.abs(summary?.bookingGrowthRate ?? 0).toFixed(1)}%
-                  </span>
-                </div>
-              </div>
-              <Calendar className="w-8 h-8 text-primary" />
-            </div>
-          </Card>
-
-          <Card className="p-6 bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-white/50 uppercase tracking-widest">Total Revenue</p>
-                <p className="text-2xl font-bold text-white">{formatCurrency(summary?.totalRevenue ?? 0)}</p>
-                <p className="text-sm text-white/40 mt-2">
-                  Monthly: {formatCurrency(summary?.monthlyRevenue ?? 0)}
-                </p>
-              </div>
-              <DollarSign className="w-8 h-8 text-primary" />
-            </div>
-          </Card>
-
-          <Card className="p-6 bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-white/50 uppercase tracking-widest">Occupancy Rate</p>
-                <p className="text-2xl font-bold text-white">{summary?.occupancyRate ?? 0}%</p>
-                <p className="text-sm text-white/40 mt-2">
-                  Avg Booking: {formatCurrency(summary?.avgBookingValue ?? 0)}
-                </p>
-              </div>
-              <Bed className="w-8 h-8 text-primary" />
-            </div>
-          </Card>
-
-          <Card className="p-6 bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-white/50 uppercase tracking-widest">Total Guests</p>
-                <p className="text-2xl font-bold text-white">{guestStats?.totalGuests || 0}</p>
-                <p className="text-sm text-white/40 mt-2">
-                  Staff: {guestStats?.totalStaff || 0}
-                </p>
-              </div>
-              <Users className="w-8 h-8 text-primary" />
-            </div>
-          </Card>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          <KpiCard 
+            title="Bookings Velocity" 
+            value={summary?.totalBookings ?? 0} 
+            delta={summary?.bookingGrowthRate ?? 0}
+            deltaLabel="vs last month"
+            icon={<Calendar className="w-5 h-5" />}
+            color="primary"
+            sparklineData={[{value: 12}, {value: 18}, {value: 15}, {value: 22}]}
+            aiInsight="High conversion period detected"
+          />
+          <KpiCard 
+            title="Yield Revenue" 
+            value={formatCurrency(summary?.totalRevenue ?? 0)} 
+            icon={<DollarSign className="w-5 h-5" />}
+            color="success"
+            comparativeValue={`Goal: ${formatCurrency((summary?.totalRevenue ?? 0) * 1.2)}`}
+            sparklineData={[{value: 800}, {value: 950}, {value: 1100}, {value: 1050}]}
+          />
+          <KpiCard 
+            title="Occupancy Pacing" 
+            value={`${summary?.occupancyRate ?? 0}%`} 
+            icon={<Bed className="w-5 h-5" />}
+            color="info"
+            delta={2.4}
+            aiInsight="ADR pacing ahead by 5.2%"
+            sparklineData={[{value: 65}, {value: 72}, {value: 78}, {value: 76}]}
+          />
+          <KpiCard 
+            title="SLA Performance" 
+            value="98.2%" 
+            icon={<Star className="w-5 h-5" />}
+            color="luxury"
+            delta={0.5}
+            deltaLabel="Quality Index"
+            sparklineData={[{value: 95}, {value: 97}, {value: 98}, {value: 98}]}
+          />
         </div>
 
         {/* PMS Interactive Tabs */}
@@ -536,92 +524,78 @@ function AdminDashboardContent() {
             <p className="text-sm text-white/50 mt-1">E2E Operational center controllers, real-time sync systems, and yield dashboards.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-            <Card className="p-5 bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/50 hover:bg-white/10 hover:-translate-y-0.5 transition-all flex flex-col justify-between h-[180px] cursor-pointer rounded-2xl group shadow-lg" onClick={() => router.push('/admin/receptionist')}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">            <Card className="p-6 bg-gradient-to-br from-primary/20 to-luxury-500/10 border-luxury-500/30 hover:border-luxury-500 hover:-translate-y-1 transition-all flex flex-col justify-between h-[200px] cursor-pointer rounded-3xl group shadow-2xl relative overflow-hidden" onClick={() => router.push('/admin/executive')}>
+              <div className="absolute -right-6 -top-6 opacity-10 group-hover:opacity-20 transition-opacity">
+                <BarChart3 className="w-32 h-32 text-luxury-500" />
+              </div>
               <div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-white/40 font-extrabold uppercase tracking-wider">Front Desk</span>
+                  <span className="text-[10px] text-luxury-400 font-black uppercase tracking-[0.2em]">Strategy Control</span>
+                  <Badge className="bg-luxury-500 text-white border-none text-[8px] uppercase tracking-widest font-black px-2 py-0.5 shadow-lg shadow-luxury-500/20">PREDICTIVE</Badge>
+                </div>
+                <h3 className="text-xl font-serif font-bold text-white mt-4 group-hover:text-luxury-400 transition-colors">Executive Mission Control</h3>
+                <p className="text-[11px] text-white/50 mt-2 line-clamp-2 leading-relaxed">Pacing gauges, yield intelligence, ADR governance, and AI-driven strategic reporting.</p>
+              </div>
+              <div className="text-right text-[10px] font-black uppercase tracking-widest text-luxury-400 flex items-center justify-end gap-2 mt-4">
+                Launch Command Center <ArrowUpRight className="w-3 h-3" />
+              </div>
+            </Card>
+
+            <Card className="p-5 bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/50 hover:bg-white/10 hover:-translate-y-0.5 transition-all flex flex-col justify-between h-[200px] cursor-pointer rounded-3xl group shadow-lg" onClick={() => router.push('/admin/receptionist')}>
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-white/40 font-black uppercase tracking-wider">Front Desk</span>
                   <Badge className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[9px] uppercase tracking-wider font-extrabold px-1.5 py-0.5">LIVE DESK</Badge>
                 </div>
-                <h3 className="text-lg font-bold text-white mt-2 group-hover:text-primary transition-colors">Receptionist Center</h3>
-                <p className="text-xs text-white/50 mt-1 line-clamp-3">Arrivals/departures timeline, live occupancy room maps, VIP check-in alerts, and guest memo logs.</p>
+                <h3 className="text-lg font-bold text-white mt-3 group-hover:text-primary transition-colors">Receptionist Center</h3>
+                <p className="text-[11px] text-white/50 mt-1 line-clamp-2 leading-relaxed">Arrivals/departures timeline, live occupancy room maps, and VIP check-in alerts.</p>
               </div>
-              <div className="text-right text-xs font-bold text-primary flex items-center justify-end gap-1 mt-4 group-hover:translate-x-1 transition-transform">
+              <div className="text-right text-[10px] font-black uppercase tracking-widest text-primary flex items-center justify-end gap-1 mt-4 group-hover:translate-x-1 transition-transform">
                 Open Workspace &rarr;
               </div>
             </Card>
 
-            <Card className="p-5 bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/50 hover:bg-white/10 hover:-translate-y-0.5 transition-all flex flex-col justify-between h-[180px] cursor-pointer rounded-2xl group shadow-lg" onClick={() => router.push('/admin/manager')}>
+            <Card className="p-5 bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/50 hover:bg-white/10 hover:-translate-y-0.5 transition-all flex flex-col justify-between h-[200px] cursor-pointer rounded-3xl group shadow-lg" onClick={() => router.push('/kitchen/dashboard')}>
               <div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-white/40 font-extrabold uppercase tracking-wider">Revenue & SLA</span>
-                  <Badge className="bg-purple-500/10 text-purple-400 border border-purple-500/20 text-[9px] uppercase tracking-wider font-extrabold px-1.5 py-0.5">FORECASTING</Badge>
-                </div>
-                <h3 className="text-lg font-bold text-white mt-2 group-hover:text-primary transition-colors">Manager Intelligence</h3>
-                <p className="text-xs text-white/50 mt-1 line-clamp-3">Real-time RevPAR metrics, ADR, SLA incident monitors, kitchen bottlenecks, and weekly staffing predictions.</p>
-              </div>
-              <div className="text-right text-xs font-bold text-primary flex items-center justify-end gap-1 mt-4 group-hover:translate-x-1 transition-transform">
-                Open Workspace &rarr;
-              </div>
-            </Card>
-
-            <Card className="p-5 bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/50 hover:bg-white/10 hover:-translate-y-0.5 transition-all flex flex-col justify-between h-[180px] cursor-pointer rounded-2xl group shadow-lg" onClick={() => router.push('/kitchen/dashboard')}>
-              <div>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-white/40 font-extrabold uppercase tracking-wider">Culinary Queue</span>
+                  <span className="text-[10px] text-white/40 font-black uppercase tracking-wider">Culinary Queue</span>
                   <Badge className="bg-amber-500/10 text-amber-400 border border-amber-500/20 text-[9px] uppercase tracking-wider font-extrabold px-1.5 py-0.5">KDS INTERACTIVE</Badge>
                 </div>
-                <h3 className="text-lg font-bold text-white mt-2 group-hover:text-primary transition-colors">Kitchen Display (KDS)</h3>
-                <p className="text-xs text-white/50 mt-1 line-clamp-3">Real-time room order tickers, color-coded preparation SLA timers, special requests, and allergy alerts.</p>
+                <h3 className="text-lg font-bold text-white mt-3 group-hover:text-primary transition-colors">Kitchen Display (KDS)</h3>
+                <p className="text-[11px] text-white/50 mt-1 line-clamp-2 leading-relaxed">Real-time room order tickers, SLA timers, and allergy alerts.</p>
               </div>
-              <div className="text-right text-xs font-bold text-primary flex items-center justify-end gap-1 mt-4 group-hover:translate-x-1 transition-transform">
+              <div className="text-right text-[10px] font-black uppercase tracking-widest text-primary flex items-center justify-end gap-1 mt-4 group-hover:translate-x-1 transition-transform">
                 Open KDS Screen &rarr;
               </div>
             </Card>
 
-            <Card className="p-5 bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/50 hover:bg-white/10 hover:-translate-y-0.5 transition-all flex flex-col justify-between h-[180px] cursor-pointer rounded-2xl group shadow-lg" onClick={() => router.push('/admin/housekeeping')}>
+            <Card className="p-5 bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/50 hover:bg-white/10 hover:-translate-y-0.5 transition-all flex flex-col justify-between h-[200px] cursor-pointer rounded-3xl group shadow-lg" onClick={() => router.push('/admin/housekeeping')}>
               <div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-white/40 font-extrabold uppercase tracking-wider">Service Quality</span>
+                  <span className="text-[10px] text-white/40 font-black uppercase tracking-wider">Service Quality</span>
                   <Badge className="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 text-[9px] uppercase tracking-wider font-extrabold px-1.5 py-0.5">DISPATCH</Badge>
                 </div>
-                <h3 className="text-lg font-bold text-white mt-2 group-hover:text-primary transition-colors">Housekeeping Hub</h3>
-                <p className="text-xs text-white/50 mt-1 line-clamp-3">Mobile task lists, active clean sweep timers, supervisor quality rejections, and room release gates.</p>
+                <h3 className="text-lg font-bold text-white mt-3 group-hover:text-primary transition-colors">Housekeeping Hub</h3>
+                <p className="text-[11px] text-white/50 mt-1 line-clamp-2 leading-relaxed">Mobile task lists, clean sweep timers, and room release gates.</p>
               </div>
-              <div className="text-right text-xs font-bold text-primary flex items-center justify-end gap-1 mt-4 group-hover:translate-x-1 transition-transform">
+              <div className="text-right text-[10px] font-black uppercase tracking-widest text-primary flex items-center justify-end gap-1 mt-4 group-hover:translate-x-1 transition-transform">
                 Open Workspace &rarr;
               </div>
             </Card>
 
-            <Card className="p-5 bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/50 hover:bg-white/10 hover:-translate-y-0.5 transition-all flex flex-col justify-between h-[180px] cursor-pointer rounded-2xl group shadow-lg" onClick={() => router.push('/admin/ota')}>
+            <Card className="p-5 bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/50 hover:bg-white/10 hover:-translate-y-0.5 transition-all flex flex-col justify-between h-[200px] cursor-pointer rounded-3xl group shadow-lg" onClick={() => router.push('/admin/ota')}>
               <div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-white/40 font-extrabold uppercase tracking-wider">Integrations</span>
+                  <span className="text-[10px] text-white/40 font-black uppercase tracking-wider">Integrations</span>
                   <Badge className="bg-blue-500/10 text-blue-400 border border-blue-500/20 text-[9px] uppercase tracking-wider font-extrabold px-1.5 py-0.5">SYNC ENGINE</Badge>
                 </div>
-                <h3 className="text-lg font-bold text-white mt-2 group-hover:text-primary transition-colors">OTA Channel Manager</h3>
-                <p className="text-xs text-white/50 mt-1 line-clamp-3">Simulated Booking.com/Airbnb synchronization, pricing markup schedules, and webhook log terminals.</p>
+                <h3 className="text-lg font-bold text-white mt-3 group-hover:text-primary transition-colors">OTA Channel Manager</h3>
+                <p className="text-[11px] text-white/50 mt-1 line-clamp-2 leading-relaxed">Booking.com/Airbnb synchronization and webhook log terminals.</p>
               </div>
-              <div className="text-right text-xs font-bold text-primary flex items-center justify-end gap-1 mt-4 group-hover:translate-x-1 transition-transform">
+              <div className="text-right text-[10px] font-black uppercase tracking-widest text-primary flex items-center justify-end gap-1 mt-4 group-hover:translate-x-1 transition-transform">
                 Open Channel Sync &rarr;
               </div>
             </Card>
-
-            <Card className="p-5 bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/50 hover:bg-white/10 hover:-translate-y-0.5 transition-all flex flex-col justify-between h-[180px] cursor-pointer rounded-2xl group shadow-lg" onClick={() => router.push('/admin/calendar')}>
-              <div>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-white/40 font-extrabold uppercase tracking-wider">Scheduler</span>
-                  <Badge className="bg-slate-500/10 text-slate-400 border border-slate-500/20 text-[9px] uppercase tracking-wider font-extrabold px-1.5 py-0.5">CALENDAR</Badge>
-                </div>
-                <h3 className="text-lg font-bold text-white mt-2 group-hover:text-primary transition-colors">Matrix Scheduler</h3>
-                <p className="text-xs text-white/50 mt-1 line-clamp-3">View room occupancy grids month-by-month, track conflicts, and edit booking properties in calendar matrices.</p>
-              </div>
-              <div className="text-right text-xs font-bold text-primary flex items-center justify-end gap-1 mt-4 group-hover:translate-x-1 transition-transform">
-                Open Calendar Matrix &rarr;
-              </div>
-            </Card>
-
           </div>
         </div>
       </>

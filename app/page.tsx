@@ -10,7 +10,7 @@ import {
   ChevronRight,
   Quote,
 } from 'lucide-react'
-import { getHotelContactInfo } from '@/lib/settings'
+import { getHotelContactInfo, getHotelAboutContent } from '@/lib/settings'
 import { isDatabaseConfigured } from '@/lib/db-helpers'
 import prisma from '@/lib/db'
 import { Button } from '@/components/ui/button'
@@ -36,18 +36,25 @@ const defaultContact = {
 export default async function HomePage() {
   let contact = defaultContact
   let featuredRooms: any[] = []
+  let aboutContent: any = { story: '', founded: '', milestones: [], staff: [] }
 
-  if (isDatabaseConfigured()) {
-    try {
+  try {
+    if (isDatabaseConfigured()) {
       contact = await getHotelContactInfo()
       featuredRooms = await prisma.room.findMany({
+        where: { status: 'AVAILABLE' },
         take: 3,
-        orderBy: { price: 'desc' },
-        select: { id: true, type: true, price: true, description: true, roomImages: { where: { isMain: true }, take: 1 } },
+        include: {
+          roomType: true,
+          roomImages: { where: { isMain: true }, take: 1 },
+          reviews: true
+        },
+        orderBy: { roomType: { baseRate: 'desc' } },
       })
-    } catch (error) {
-      console.error('Data fetch error:', error)
+      aboutContent = await getHotelAboutContent()
     }
+  } catch (error) {
+    console.error('CRITICAL: Failed to fetch homepage data:', error)
   }
 
   return (
@@ -133,7 +140,7 @@ export default async function HomePage() {
                   />
                   <div className="absolute top-4 left-4">
                     <div className="bg-black/60 backdrop-blur-md px-4 py-2 border border-white/10 rounded-lg">
-                      <span className="text-primary font-serif italic text-lg">{formatPrice(Number(room.price || '450'))}+</span>
+                      <span className="text-primary font-serif italic text-lg">{formatPrice(Number(room.roomType?.baseRate || '450'))}+</span>
                     </div>
                   </div>
                 </div>
@@ -141,9 +148,9 @@ export default async function HomePage() {
                   <div className="flex items-center gap-1">
                     {[...Array(5)].map((_, idx) => <Star key={idx} className="w-3 h-3 fill-primary text-primary" />)}
                   </div>
-                  <h3 className="text-2xl font-serif font-bold group-hover:text-primary transition-colors">{room.type || "Presidential Suite"}</h3>
+                  <h3 className="text-2xl font-serif font-bold group-hover:text-primary transition-colors">{room.roomType?.name || "Presidential Suite"}</h3>
                   <p className="text-white/60 text-sm font-light leading-relaxed line-clamp-2">
-                    {room.description || "Experience the pinnacle of luxury with panoramic city views and bespoke services."}
+                    {room.roomType?.description || "Experience the pinnacle of luxury with panoramic city views and bespoke services."}
                   </p>
                   <Link href={`/rooms/${room.id || '#'}`} className="inline-flex items-center space-x-2 text-xs uppercase tracking-widest font-bold pt-2 group-hover:translate-x-2 transition-transform text-white/80 hover:text-primary">
                     <span>Reserve Now</span>

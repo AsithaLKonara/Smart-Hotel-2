@@ -1,9 +1,10 @@
 "use client"
 
-import { motion } from "framer-motion"
-import { TrendingUp, TrendingDown, Minus } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
+import { TrendingUp, TrendingDown, Minus, AlertCircle, Sparkles, ArrowRight } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { motionVariants } from "@/lib/design-tokens"
+import { Area, AreaChart, ResponsiveContainer } from 'recharts'
+import { Card } from '@/components/ui/card'
 
 interface KpiCardProps {
   title: string
@@ -13,9 +14,14 @@ interface KpiCardProps {
   deltaLabel?: string
   icon?: React.ReactNode
   trend?: 'up' | 'down' | 'neutral' | React.ReactNode
-  color?: 'primary' | 'success' | 'warning' | 'error' | 'info'
+  color?: 'primary' | 'success' | 'warning' | 'error' | 'info' | 'luxury'
   className?: string
   onClick?: () => void
+  sparklineData?: Array<{ value: number }>
+  isAnomaly?: boolean
+  aiInsight?: string
+  comparativeValue?: string
+  actionLabel?: string
 }
 
 export function KpiCard({
@@ -28,7 +34,12 @@ export function KpiCard({
   trend,
   color = 'primary',
   className,
-  onClick
+  onClick,
+  sparklineData,
+  isAnomaly,
+  aiInsight,
+  comparativeValue,
+  actionLabel
 }: KpiCardProps) {
   const formatValue = (val: string | number) => {
     if (typeof val === 'number') {
@@ -39,218 +50,134 @@ export function KpiCard({
 
   const getTrendIcon = () => {
     if (delta === undefined) return null
-    
-    if (delta > 0) {
-      return <TrendingUp className="w-4 h-4" />
-    } else if (delta < 0) {
-      return <TrendingDown className="w-4 h-4" />
-    } else {
-      return <Minus className="w-4 h-4" />
-    }
+    if (delta > 0) return <TrendingUp className="w-3 h-3" />
+    if (delta < 0) return <TrendingDown className="w-3 h-3" />
+    return <Minus className="w-3 h-3" />
   }
 
   const getTrendColor = () => {
-    if (delta === undefined) return 'text-gray-500'
-    
-    if (delta > 0) return 'text-green-600'
-    if (delta < 0) return 'text-red-600'
-    return 'text-gray-500'
+    if (delta === undefined) return 'text-white/20'
+    if (delta > 0) return 'text-emerald-400'
+    if (delta < 0) return 'text-rose-400'
+    return 'text-white/20'
   }
 
-  const getColorClasses = () => {
-    const colors = {
-      primary: 'border-amber-200 bg-gradient-to-br from-amber-50 to-amber-100',
-      success: 'border-green-200 bg-gradient-to-br from-green-50 to-green-100',
-      warning: 'border-yellow-200 bg-gradient-to-br from-yellow-50 to-yellow-100',
-      error: 'border-red-200 bg-gradient-to-br from-red-50 to-red-100',
-      info: 'border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100',
+  const getThemeColors = () => {
+    switch (color) {
+      case 'success': return { text: 'text-emerald-400', bg: 'bg-emerald-400/10', border: 'border-emerald-400/20' }
+      case 'warning': return { text: 'text-amber-400', bg: 'bg-amber-400/10', border: 'border-amber-400/20' }
+      case 'error': return { text: 'text-rose-400', bg: 'bg-rose-400/10', border: 'border-rose-400/20' }
+      case 'info': return { text: 'text-blue-400', bg: 'bg-blue-400/10', border: 'border-blue-400/20' }
+      case 'luxury': return { text: 'text-luxury-400', bg: 'bg-luxury-400/10', border: 'border-luxury-400/20' }
+      default: return { text: 'text-primary', bg: 'bg-primary/10', border: 'border-primary/20' }
     }
-    return colors[color]
   }
 
-  const getIconColor = () => {
-    const colors = {
-      primary: 'text-amber-600',
-      success: 'text-green-600',
-      warning: 'text-yellow-600',
-      error: 'text-red-600',
-      info: 'text-blue-600',
-    }
-    return colors[color]
-  }
-
-  const CardComponent = onClick ? motion.button : motion.div
-  const cardProps = onClick ? {
-    whileHover: { scale: 1.02, y: -2 },
-    whileTap: { scale: 0.98 },
-    transition: { duration: 0.2, ease: 'easeOut' }
-  } : {
-    whileHover: { y: -2 },
-    transition: { duration: 0.2, ease: 'easeOut' }
-  }
+  const theme = getThemeColors()
 
   return (
-    <CardComponent
-      {...cardProps}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, ease: 'easeOut' }}
+    <Card 
       className={cn(
-        "relative p-6 rounded-2xl border-2 shadow-sm hover:shadow-lg transition-all duration-300",
-        getColorClasses(),
-        onClick && "cursor-pointer focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2",
+        "relative overflow-hidden group transition-all duration-300",
+        isAnomaly && "border-rose-500/50 ring-1 ring-rose-500/20",
+        onClick && "cursor-pointer hover:border-white/20 active:scale-[0.98]",
         className
       )}
       onClick={onClick}
     >
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-5">
-        <div className="absolute top-4 right-4 w-16 h-16 rounded-full bg-current" />
-        <div className="absolute bottom-4 left-4 w-8 h-8 rounded-full bg-current" />
-      </div>
+      {/* Anomaly Pulse */}
+      {isAnomaly && (
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-rose-500 to-transparent animate-pulse" />
+      )}
 
-      <div className="relative">
-        {/* Header */}
+      {/* Sparkline Overlay */}
+      {sparklineData && sparklineData.length > 0 && (
+        <div className="absolute inset-x-0 bottom-0 h-16 opacity-20 pointer-events-none group-hover:opacity-40 transition-opacity">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={sparklineData}>
+              <defs>
+                <linearGradient id={`gradient-${title.replace(/\s+/g, '-')}`} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="currentColor" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="currentColor" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <Area
+                type="monotone"
+                dataKey="value"
+                stroke="currentColor"
+                strokeWidth={1.5}
+                fill={`url(#gradient-${title.replace(/\s+/g, '-')})`}
+                className={theme.text}
+                isAnimationActive={true}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+
+      <div className="relative z-10 p-5 flex flex-col h-full min-h-[160px]">
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
             {icon && (
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.1, duration: 0.3, ease: 'easeOut' }}
-                className={cn("p-2 rounded-lg bg-white/50", getIconColor())}
-              >
+              <div className={cn("p-2 rounded-lg border", theme.bg, theme.border, theme.text)}>
                 {icon}
-              </motion.div>
+              </div>
             )}
-            <h3 className="text-sm font-medium text-gray-600 uppercase tracking-wide">
+            <h3 className="text-[10px] font-black text-white/40 uppercase tracking-[0.15em]">
               {title}
             </h3>
           </div>
-        </div>
-
-        {/* Value */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2, duration: 0.3, ease: 'easeOut' }}
-          className="mb-3"
-        >
-          <div className="text-3xl font-bold text-gray-900">
-            {formatValue(value)}
-          </div>
-          {subtitle && (
-            <div className="text-sm text-gray-600 mt-1">
-              {subtitle}
+          
+          {isAnomaly ? (
+            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-500 animate-pulse">
+              <AlertCircle className="w-3 h-3" />
+              <span className="text-[9px] font-black uppercase">Anomaly</span>
             </div>
-          )}
-        </motion.div>
-
-        {/* Delta */}
-        {delta !== undefined && (
-          <motion.div
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3, duration: 0.3, ease: 'easeOut' }}
-            className="flex items-center gap-2"
-          >
-            <div className={cn("flex items-center gap-1", getTrendColor())}>
+          ) : delta !== undefined && (
+            <div className={cn("flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-white/5 border border-white/5", getTrendColor())}>
               {getTrendIcon()}
-              <span className="text-sm font-medium">
+              <span className="text-[10px] font-bold">
                 {Math.abs(delta)}%
               </span>
             </div>
-            
-            {deltaLabel && (
-              <span className="text-sm text-gray-500">
-                {deltaLabel}
+          )}
+        </div>
+
+        <div className="mt-auto">
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-serif font-bold text-white tracking-tight leading-none">
+              {formatValue(value)}
+            </span>
+            {comparativeValue && (
+              <span className="text-[10px] text-white/20 font-medium">
+                / {comparativeValue}
               </span>
             )}
-          </motion.div>
+          </div>
+          
+          <div className="mt-3 flex flex-col gap-1.5">
+            {aiInsight ? (
+              <div className="flex items-start gap-1.5 p-1.5 rounded-lg bg-emerald-500/5 border border-emerald-500/10">
+                <Sparkles className="w-3 h-3 text-emerald-400 mt-0.5 shrink-0" />
+                <p className="text-[10px] text-emerald-400/80 leading-tight font-medium italic">
+                  "{aiInsight}"
+                </p>
+              </div>
+            ) : (subtitle || deltaLabel) && (
+              <div className="text-[10px] text-white/30 uppercase tracking-widest font-black">
+                {subtitle || deltaLabel}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {actionLabel && (
+          <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between group/action">
+            <span className="text-[9px] font-black text-white/40 uppercase tracking-wider">{actionLabel}</span>
+            <ArrowRight className="w-3 h-3 text-white/20 group-hover/action:text-primary transition-colors group-hover/action:translate-x-1 duration-300" />
+          </div>
         )}
       </div>
-
-      {/* Hover Effect */}
-      <motion.div
-        className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/10 to-transparent"
-        initial={{ x: '-100%' }}
-        whileHover={{ x: '100%' }}
-        transition={{ duration: 0.6, ease: 'easeInOut' }}
-      />
-    </CardComponent>
+    </Card>
   )
 }
-
-// Preset KPI Cards for common metrics
-export function OccupancyCard({ occupancy, delta, className }: {
-  occupancy: number
-  delta?: number
-  className?: string
-}) {
-  return (
-    <KpiCard
-      title="Occupancy Rate"
-      value={`${occupancy}%`}
-      delta={delta}
-      deltaLabel="vs last month"
-      icon={<div className="w-5 h-5">🏨</div>}
-      color="primary"
-      className={className}
-    />
-  )
-}
-
-export function RevenueCard({ revenue, delta, className }: {
-  revenue: number
-  delta?: number
-  className?: string
-}) {
-  return (
-    <KpiCard
-      title="Daily Revenue"
-      value={`$${revenue.toLocaleString()}`}
-      delta={delta}
-      deltaLabel="vs yesterday"
-      icon={<div className="w-5 h-5">💰</div>}
-      color="success"
-      className={className}
-    />
-  )
-}
-
-export function BookingsCard({ bookings, delta, className }: {
-  bookings: number
-  delta?: number
-  className?: string
-}) {
-  return (
-    <KpiCard
-      title="Active Bookings"
-      value={bookings}
-      delta={delta}
-      deltaLabel="vs last week"
-      icon={<div className="w-5 h-5">📅</div>}
-      color="info"
-      className={className}
-    />
-  )
-}
-
-export function TasksCard({ tasks, delta, className }: {
-  tasks: number
-  delta?: number
-  className?: string
-}) {
-  return (
-    <KpiCard
-      title="Pending Tasks"
-      value={tasks}
-      delta={delta}
-      deltaLabel="vs yesterday"
-      icon={<div className="w-5 h-5">📋</div>}
-      color={tasks > 10 ? 'warning' : 'success'}
-      className={className}
-    />
-  )
-}
-

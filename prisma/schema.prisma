@@ -8,66 +8,304 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Booking {
-  id              String       @id @default(auto()) @map("_id") @db.ObjectId
-  checkIn         DateTime     @db.Date
-  checkOut        DateTime     @db.Date
-  createdAt       DateTime     @db.Date
-  guests          BigInt
-  paymentMethod   String
-  paymentStatus   String
-  roomId          String       @db.ObjectId
-  specialRequests String?
-  status          String
-  totalAmount     Float
-  updatedAt       DateTime     @db.Date
-  userId          String       @db.ObjectId
-  confirmationCode String?     @unique
-  source          BookingSource @default(WEBSITE)
-  otaReference    String?
-  payments        Payment[]
-  reviews         RoomReview[]
+// ==========================================
+// PROPERTY STRUCTURE
+// ==========================================
+
+model RoomType {
+  id                    String   @id @default(auto()) @map("_id") @db.ObjectId
+  name                  String   @unique 
+  description           String
+  baseRate              Float
+  capacity              Int      @default(2)
+  amenities             String[]
+  images                String[]
+  totalRooms            Int      @default(0)
+  otaMappingId          String?  
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
   
-  // Performance indexes
-  @@index([status])
-  @@index([checkIn])
-  @@index([checkOut])
-  @@index([userId])
-  @@index([roomId])
-  @@index([createdAt])
+  rooms                 Room[]
 }
 
-model FoodMenu {
-  id              String      @id @default(auto()) @map("_id") @db.ObjectId
-  available       Boolean
-  category        String
-  createdAt       DateTime    @db.Date
-  description     String
-  name            String
-  preparationTime BigInt
-  price           Float
-  updatedAt       DateTime    @db.Date
-  orderItems      OrderItem[]
+model Room {
+  id              String           @id @default(auto()) @map("_id") @db.ObjectId
+  version         Int              @default(1) 
+  number          String           @unique
+  floor           Int
+  roomTypeId      String           @db.ObjectId
+  status          RoomStatus       @default(AVAILABLE)
+  lastCleanedAt   DateTime?
+  lastInspectedAt DateTime?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  
+  roomType        RoomType         @relation(fields: [roomTypeId], references: [id])
+  bookings        Booking[]
+  tasks           Task[]
+  statusHistory   RoomStatusHistory[]
+  maintenance     MaintenanceRequest[]
+  roomImages      RoomImage[]
+  reviews         RoomReview[]
+
+  @@index([status])
+  @@index([roomTypeId])
 }
+
+enum RoomStatus {
+  AVAILABLE
+  OCCUPIED
+  DIRTY
+  CLEANING
+  INSPECTION_PENDING
+  MAINTENANCE
+  OUT_OF_ORDER
+}
+
+model RoomStatusHistory {
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  roomId    String     @db.ObjectId
+  oldStatus RoomStatus
+  newStatus RoomStatus
+  actorId   String     @db.ObjectId
+  reason    String?
+  createdAt DateTime   @default(now())
+  
+  room      Room       @relation(fields: [roomId], references: [id])
+}
+
+model RoomImage {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  roomId    String   @db.ObjectId
+  imageUrl  String
+  room      Room     @relation(fields: [roomId], references: [id])
+}
+
+// ==========================================
+// BOOKING & GUESTS
+// ==========================================
+
+model Booking {
+  id               String           @id @default(auto()) @map("_id") @db.ObjectId
+  version          Int              @default(1)
+  confirmationCode String           @unique
+  checkIn          DateTime         @db.Date
+  checkOut         DateTime         @db.Date
+  status           BookingStatus    @default(CONFIRMED)
+  source           BookingSource    @default(WEBSITE)
+  otaReference     String?
+  
+  roomId           String           @db.ObjectId
+  primaryGuestId   String           @db.ObjectId
+  
+  totalAmount      Float
+  paymentStatus    PaymentStatus    @default(UNPAID)
+  
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  
+  room             Room             @relation(fields: [roomId], references: [id])
+  guest            User             @relation("PrimaryGuest", fields: [primaryGuestId], references: [id])
+  additionalGuests BookingGuest[]
+  invoices         Invoice[]
+  payments         Payment[]
+  tasks            Task[]
+  roomReviews      RoomReview[]
+  
+  @@index([checkIn, checkOut])
+  @@index([status])
+}
+
+model BookingGuest {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  bookingId String   @db.ObjectId
+  userId    String?  @db.ObjectId 
+  name      String
+  email     String?
+  phone     String?
+  identity  String?  
+  isMinor   Boolean  @default(false)
+  
+  booking   Booking  @relation(fields: [bookingId], references: [id])
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CHECKED_IN
+  CHECKED_OUT
+  CANCELLED
+  NO_SHOW
+}
+
+enum BookingSource {
+  WALK_IN
+  WEBSITE
+  BOOKING_COM
+  AGODA
+  EXPEDIA
+}
+
+// ==========================================
+// FINANCIALS
+// ==========================================
+
+model Invoice {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  invoiceNo   String   @unique
+  bookingId   String   @db.ObjectId
+  subtotal    Float
+  taxAmount   Float
+  grandTotal  Float
+  status      String   
+  issuedAt    DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  booking     Booking  @relation(fields: [bookingId], references: [id])
+  lineItems   InvoiceLineItem[]
+}
+
+model InvoiceLineItem {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  invoiceId   String   @db.ObjectId
+  description String
+  quantity    Int
+  unitPrice   Float
+  totalPrice  Float
+  category    String   
+  
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id])
+}
+
+model Payment {
+  id              String        @id @default(auto()) @map("_id") @db.ObjectId
+  bookingId       String?       @db.ObjectId
+  orderId         String?       @db.ObjectId
+  amount          Float
+  currency        String        @default("LKR")
+  method          PaymentMethod
+  provider        String?       
+  providerId      String?       @unique
+  status          PaymentStatus @default(PENDING)
+  capturedAt      DateTime?
+  refundedAt      DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  
+  booking         Booking?      @relation(fields: [bookingId], references: [id])
+  order           FoodOrder?    @relation(fields: [orderId], references: [id])
+  adjustments     FinancialAdjustment[]
+}
+
+model FinancialAdjustment {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  paymentId   String   @db.ObjectId
+  type        String   
+  amount      Float
+  reason      String
+  createdAt   DateTime @default(now())
+  
+  payment     Payment  @relation(fields: [paymentId], references: [id])
+}
+
+enum PaymentStatus {
+  UNPAID
+  PENDING
+  PARTIAL
+  PAID
+  REFUNDED
+  FAILED
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  BANK_TRANSFER
+}
+
+// ==========================================
+// OPERATIONS
+// ==========================================
+
+model Task {
+  id              String      @id @default(auto()) @map("_id") @db.ObjectId
+  version         Int         @default(1)
+  type            TaskType
+  status          TaskStatus  @default(PENDING)
+  priority        Priority    @default(MEDIUM)
+  title           String
+  description     String?
+  assignedTo      String?     @db.ObjectId
+  roomId          String?     @db.ObjectId
+  bookingId       String?     @db.ObjectId
+  
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  acceptedAt      DateTime?
+  startedAt       DateTime?
+  completedAt     DateTime?
+  verifiedAt      DateTime?
+  elapsedMinutes  Int?
+  
+  room            Room?       @relation(fields: [roomId], references: [id])
+  booking         Booking?    @relation(fields: [bookingId], references: [id])
+  staff           Staff?      @relation(fields: [assignedTo], references: [id])
+}
+
+enum TaskType {
+  HOUSEKEEPING
+  MAINTENANCE
+  ROOM_SERVICE
+  GUEST_REQUEST
+}
+
+enum TaskStatus {
+  PENDING
+  ACCEPTED
+  IN_PROGRESS
+  COMPLETED
+  VERIFIED
+  CANCELLED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model MaintenanceRequest {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  roomId      String    @db.ObjectId
+  userId      String    @db.ObjectId
+  title       String
+  description String
+  priority    String    
+  status      String    
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  room        Room      @relation(fields: [roomId], references: [id])
+}
+
+// ==========================================
+// KITCHEN & ROOM SERVICE
+// ==========================================
 
 model FoodOrder {
   id              String      @id @default(auto()) @map("_id") @db.ObjectId
-  createdAt       DateTime    @db.Date
-  deliveryTime    DateTime    @db.Date
   guestId         String      @db.ObjectId
   roomNumber      String
-  specialRequests String
-  status          String
+  status          String      
   totalAmount     Float
-  updatedAt       DateTime    @db.Date
+  specialRequests String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  
   items           OrderItem[]
   payments        Payment[]
-  
-  // Performance indexes
-  @@index([status])
-  @@index([guestId])
-  @@index([roomNumber])
-  @@index([createdAt])
+  guest           User        @relation("GuestOrders", fields: [guestId], references: [id])
 }
 
 model OrderItem {
@@ -78,377 +316,179 @@ model OrderItem {
   price      Float
   subtotal   Float
   notes      String?
-  createdAt  DateTime  @default(now()) @db.Date
-  updatedAt  DateTime  @default(now()) @db.Date
+  
   order      FoodOrder @relation(fields: [orderId], references: [id])
   menuItem   FoodMenu  @relation(fields: [menuItemId], references: [id])
 }
 
-model Gallery {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  category  String
-  createdAt DateTime @db.Date
-  imageUrl  String
-  title     String
-  updatedAt DateTime @db.Date
+model FoodMenu {
+  id              String      @id @default(auto()) @map("_id") @db.ObjectId
+  name            String
+  description     String
+  category        String
+  price           Float
+  available       Boolean     @default(true)
+  preparationTime Int         
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  orderItems      OrderItem[]
 }
 
-model Inventory {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  category    String
-  createdAt   DateTime @db.Date
-  description String
-  minQuantity BigInt
-  name        String
-  quantity    BigInt
-  status      String
-  unit        String
-  updatedAt   DateTime @db.Date
-}
-
-model Room {
-  id          String       @id @default(auto()) @map("_id") @db.ObjectId
-  amenities   String[]
-  capacity    BigInt
-  createdAt   DateTime     @db.Date
-  description String
-  floor       BigInt
-  images      String[]
-  number      String
-  price       Float
-  size        BigInt
-  status      String
-  type        String
-  updatedAt   DateTime     @db.Date
-  roomImages  RoomImage[]
-  reviews     RoomReview[]
-  
-  // Performance indexes
-  @@index([status])
-  @@index([type])
-  @@index([price])
-  @@index([number])
-  @@index([createdAt])
-}
-
-model Setting {
-  id    String @id @default(auto()) @map("_id") @db.ObjectId
-  key   String
-  value String
-}
-
-model NavigationLink {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  name      String
-  href      String
-  order     Int
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now()) @db.Date
-  updatedAt DateTime @default(now()) @db.Date
-}
-
-model FAQ {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  question  String
-  answer    String
-  category  String
-  order     Int
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now()) @db.Date
-  updatedAt DateTime @default(now()) @db.Date
-}
-
-model HeroSlide {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  image       String
-  title       String
-  subtitle    String
-  description String
-  cta         String
-  ctaLink     String
-  order       Int
-  active      Boolean  @default(true)
-  createdAt   DateTime @default(now()) @db.Date
-  updatedAt   DateTime @default(now()) @db.Date
-}
-
-model SocialLink {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  platform  String
-  url       String
-  icon      String?
-  order     Int
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now()) @db.Date
-  updatedAt DateTime @default(now()) @db.Date
-}
-
-model Amenity {
-  id           String   @id @default(auto()) @map("_id") @db.ObjectId
-  name         String
-  description  String?
-  icon         String?
-  category     String?
-  displayOrder Int
-  active       Boolean  @default(true)
-  createdAt    DateTime @default(now()) @db.Date
-  updatedAt    DateTime @default(now()) @db.Date
-}
-
-model NearbyAttraction {
-  id           String   @id @default(auto()) @map("_id") @db.ObjectId
-  name         String
-  distance     String
-  description  String?
-  category     String?
-  displayOrder Int
-  active       Boolean  @default(true)
-  createdAt    DateTime @default(now()) @db.Date
-  updatedAt    DateTime @default(now()) @db.Date
-}
-
-model FooterLink {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  label     String
-  url       String
-  category  String
-  order     Int
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now()) @db.Date
-  updatedAt DateTime @default(now()) @db.Date
-}
-
-model Staff {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  createdAt  DateTime @db.Date
-  department String
-  email      String
-  employeeId String
-  hireDate   DateTime @db.Date
-  isActive   Boolean
-  name       String
-  phone      String
-  position   String
-  salary     Float
-  updatedAt  DateTime @db.Date
-}
-
-model Task {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
-  assignedTo  String    @db.ObjectId
-  completedAt DateTime? @db.Date
-  createdAt   DateTime  @db.Date
-  createdBy   String    @db.ObjectId
-  description String
-  dueDate     DateTime  @db.Date
-  priority    String
-  status      String
-  title       String
-  type        String
-  updatedAt   DateTime  @db.Date
-  
-  // Performance indexes
-  @@index([status])
-  @@index([assignedTo])
-  @@index([priority])
-  @@index([dueDate])
-  @@index([createdAt])
-}
+// ==========================================
+// USERS & GUESTS
+// ==========================================
 
 model User {
   id               String           @id @default(auto()) @map("_id") @db.ObjectId
-  createdAt        DateTime         @db.Date
-  email            String
+  email            String           @unique
   name             String
   password         String
-  phone            String
-  role             String
-  updatedAt        DateTime         @db.Date
-  notifications    Notification[]
-  guestPreferences GuestPreference?
-  roomReviews      RoomReview[]
-  hotelReviews     HotelReview[]
-  loyaltyPoints    LoyaltyPoint[]
-  payments         Payment[]
+  role             UserRole         @default(GUEST)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
   
-  // Performance indexes
-  @@index([email])
-  @@index([role])
-  @@index([createdAt])
+  guestBookings    Booking[]        @relation("PrimaryGuest")
+  loyalty          LoyaltyAccount?
+  staffProfile     Staff?
+  guestPreferences GuestPreference?
+  reviews          RoomReview[]
+  hotelReviews     HotelReview[]
+  foodOrders       FoodOrder[]      @relation("GuestOrders")
+  notifications    Notification[]
 }
 
-// Payment Transactions
-model Payment {
-  id              String     @id @default(auto()) @map("_id") @db.ObjectId
-  bookingId       String?    @db.ObjectId
-  orderId         String?    @db.ObjectId
-  userId          String     @db.ObjectId
-  amount          Float
-  currency        String     @default("USD")
-  paymentMethod   String
-  paymentProvider String // stripe, paypal, etc.
-  providerId      String? // Stripe payment intent ID, etc.
-  status          String // pending, completed, failed, refunded
-  transactionDate DateTime   @default(now()) @db.Date
-  createdAt       DateTime   @default(now()) @db.Date
-  updatedAt       DateTime   @default(now()) @db.Date
-  user            User       @relation(fields: [userId], references: [id])
-  booking         Booking?   @relation(fields: [bookingId], references: [id])
-  order           FoodOrder? @relation(fields: [orderId], references: [id])
+model LoyaltyAccount {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @unique @db.ObjectId
+  tier      String   @default("SILVER") 
+  points    Int      @default(0)
+  user      User     @relation(fields: [userId], references: [id])
 }
 
-// Room Reviews
+model GuestPreference {
+  id                  String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId              String   @unique @db.ObjectId
+  dietaryRestrictions String[]
+  allergies           String[]
+  roomPreferences     String[]
+  user                User     @relation(fields: [userId], references: [id])
+}
+
+model Staff {
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String    @unique @db.ObjectId
+  employeeId String    @unique
+  position   String
+  department String
+  isActive   Boolean   @default(true)
+  
+  tasks      Task[]
+  user       User      @relation(fields: [userId], references: [id])
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  MANAGER
+  RECEPTIONIST
+  HOUSEKEEPING
+  MAINTENANCE
+  KITCHEN
+  GUEST
+}
+
+// ==========================================
+// FEEDBACK
+// ==========================================
+
 model RoomReview {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   roomId    String   @db.ObjectId
   userId    String   @db.ObjectId
   bookingId String?  @db.ObjectId
-  rating    Int // 1-5
-  title     String?
+  rating    Int
   comment   String?
-  verified  Boolean  @default(false)
-  createdAt DateTime @default(now()) @db.Date
-  updatedAt DateTime @default(now()) @db.Date
+  createdAt DateTime @default(now())
+  
   room      Room     @relation(fields: [roomId], references: [id])
   user      User     @relation(fields: [userId], references: [id])
   booking   Booking? @relation(fields: [bookingId], references: [id])
 }
 
-// Room Images
-model RoomImage {
-  id           String   @id @default(auto()) @map("_id") @db.ObjectId
-  roomId       String   @db.ObjectId
-  imageUrl     String?
-  cloudinaryId String?
-  isMain       Boolean  @default(false)
-  caption      String?
-  displayOrder Int      @default(0)
-  createdAt    DateTime @default(now()) @db.Date
-  updatedAt    DateTime @default(now()) @db.Date
-  room         Room     @relation(fields: [roomId], references: [id])
+model HotelReview {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+  
+  user      User     @relation(fields: [userId], references: [id])
 }
 
-// Notifications
+// ==========================================
+// INFRA & OTA
+// ==========================================
+
 model Notification {
   id        String    @id @default(auto()) @map("_id") @db.ObjectId
   userId    String    @db.ObjectId
-  type      String // booking, order, task, system, etc.
+  type      String
   title     String
   message   String
-  link      String?
   read      Boolean   @default(false)
-  readAt    DateTime? @db.Date
-  createdAt DateTime  @default(now()) @db.Date
+  createdAt DateTime  @default(now())
   user      User      @relation(fields: [userId], references: [id])
 }
 
-// Guest Preferences
-model GuestPreference {
-  id                  String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId              String   @unique @db.ObjectId
-  dietaryRestrictions String[] // vegetarian, vegan, gluten-free, etc.
-  allergies           String[]
-  roomPreferences     String[] // high floor, quiet, city view, etc.
-  bedType             String? // king, queen, twin
-  specialNeeds        String?
-  preferences         String? // JSON for additional preferences
-  createdAt           DateTime @default(now()) @db.Date
-  updatedAt           DateTime @default(now()) @db.Date
-  user                User     @relation(fields: [userId], references: [id])
-}
-
-// Maintenance Requests
-model MaintenanceRequest {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
-  roomId      String?   @db.ObjectId
-  userId      String    @db.ObjectId
-  assignedTo  String?   @db.ObjectId
-  title       String
-  description String
-  category    String // plumbing, electrical, hvac, general, etc.
-  priority    String // low, medium, high, urgent
-  status      String    @default("pending") // pending, in_progress, completed, cancelled
-  completedAt DateTime? @db.Date
-  createdAt   DateTime  @default(now()) @db.Date
-  updatedAt   DateTime  @default(now()) @db.Date
-}
-
-// Events/Bookings (Hotel Events)
-model Event {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  name          String
-  description   String?
-  eventDate     DateTime @db.Date
-  startTime     String?
-  endTime       String?
-  location      String?
-  capacity      Int?
-  attendeeCount Int      @default(0)
-  status        String   @default("upcoming") // upcoming, ongoing, completed, cancelled
-  category      String? // conference, wedding, party, etc.
-  createdAt     DateTime @default(now()) @db.Date
-  updatedAt     DateTime @default(now()) @db.Date
-}
-
-// Loyalty Program
-model LoyaltyPoint {
+model Outbox {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId      String   @db.ObjectId
-  points      Int      @default(0)
-  tier        String   @default("bronze") // bronze, silver, gold, platinum
-  totalEarned Int      @default(0)
-  totalSpent  Int      @default(0)
-  createdAt   DateTime @default(now()) @db.Date
-  updatedAt   DateTime @default(now()) @db.Date
-  user        User     @relation(fields: [userId], references: [id])
+  topic       String
+  payload     Json
+  status      String   @default("PENDING")
+  attempts    Int      @default(0)
+  createdAt   DateTime @default(now())
+  processedAt DateTime?
 }
 
-model LoyaltyTransaction {
-  id             String   @id @default(auto()) @map("_id") @db.ObjectId
-  loyaltyPointId String   @db.ObjectId
-  type           String // earned, spent, expired
-  points         Int
-  description    String
-  referenceId    String? // booking ID, order ID, etc.
-  createdAt      DateTime @default(now()) @db.Date
-}
-
-// Hotel Reviews
-model HotelReview {
-  id                String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId            String   @db.ObjectId
-  overallRating     Int // 1-5
-  serviceRating     Int? // 1-5
-  cleanlinessRating Int? // 1-5
-  valueRating       Int? // 1-5
-  title             String?
-  comment           String?
-  verified          Boolean  @default(false)
-  helpful           Int      @default(0)
-  createdAt         DateTime @default(now()) @db.Date
-  updatedAt         DateTime @default(now()) @db.Date
-  user              User     @relation(fields: [userId], references: [id])
-}
-
-// ─── Chatbot Models ────────────────────────────────────────────────────────────
-
-model ChatCustomer {
+model SyncLog {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
-  phone        String   @unique
-  name         String?
-  lastOrderId  String?
-  preferences  Json?
-  createdAt    DateTime @default(now()) @db.Date
-  updatedAt    DateTime @default(now()) @db.Date
+  direction    String   
+  status       String   
+  entityType   String   
+  entityId     String?  
+  payload      Json?
+  errorMessage String?
+  createdAt    DateTime @default(now())
 }
 
-model Knowledge {
+model AuditLog {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  content   String
-  embedding Float[]
-  metadata  Json?
-  timestamp DateTime @default(now()) @db.Date
+  actor     String
+  action    String
+  resource  String
+  resourceId String?
+  details   Json?
+  createdAt DateTime @default(now())
 }
+
+model ChannelConfig {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  provider   String   
+  apiKey     String
+  propertyId String
+  isEnabled  Boolean  @default(true)
+}
+
+model RoomMapping {
+  id                    String   @id @default(auto()) @map("_id") @db.ObjectId
+  localRoomTypeId       String   @db.ObjectId
+  otaRoomTypeId         String
+  priceMarkupPercentage Float    @default(15.0)
+  syncEnabled           Boolean  @default(true)
+}
+
+// ==========================================
+// CHAT & AI
+// ==========================================
 
 model Conversation {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
@@ -456,74 +496,18 @@ model Conversation {
   userId    String
   message   String
   response  String
-  timestamp DateTime @default(now()) @db.Date
+  timestamp DateTime @default(now())
 
-  @@index([sessionId, timestamp])
-}
-
-model ChatSession {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId    String?
-  createdAt DateTime @default(now()) @db.Date
-}
-
-model EmbeddingCache {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  text      String   @unique
-  embedding Float[]
-  createdAt DateTime @default(now()) @db.Date
-}
-
-model AuditLog {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId    String?  @db.ObjectId
-  actor     String
-  action    String
-  details   String
-  ip        String?
-  createdAt DateTime @default(now()) @db.Date
-
-  @@index([createdAt])
+  @@index([sessionId])
   @@index([userId])
-  @@index([action])
 }
 
-enum BookingSource {
-  WALK_IN
-  WEBSITE
-  BOOKING_COM
-  AGODA
-}
-
-// 1. Track the external connection settings
-model ChannelConfig {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  hotelId       String   @unique
-  provider      String   // "CHANNEX" or "BEDS24"
-  apiKey        String
-  propertyId    String   // The ID assigned by the middleware
-  isEnabled     Boolean  @default(true)
-  updatedAt     DateTime @updatedAt @db.Date
-}
-
-// 2. Map your local RoomTypes to OTA RoomTypes
-model RoomMapping {
-  id                String   @id @default(auto()) @map("_id") @db.ObjectId
-  localRoomTypeId   String   @db.ObjectId // Reference to Room.id (as category/type)
-  otaRoomTypeId     String   // The ID from Channex/Beds24
-  otaRatePlanId     String?  // Optional: If you want to sync specific prices
-  priceMarkupPercentage Float @default(15.0) // Automatically adds % to pushed prices
-  syncEnabled       Boolean  @default(true)
-  createdAt         DateTime @default(now()) @db.Date
-  updatedAt         DateTime @updatedAt @db.Date
-}
-
-// 3. Log every sync attempt for debugging
-model SyncLog {
+model ChatCustomer {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  direction   String   // "PUSH" (to OTA) or "PULL" (from OTA)
-  status      String   // "SUCCESS" or "FAILED"
-  payload     Json?
-  errorMessage String?
-  createdAt   DateTime @default(now()) @db.Date
+  phone       String   @unique
+  name        String?
+  lastOrderId String?
+  preferences Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

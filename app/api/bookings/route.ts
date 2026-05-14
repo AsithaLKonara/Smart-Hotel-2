@@ -6,36 +6,18 @@ import { logAction, AUDIT_ACTIONS } from '@/lib/audit'
 import Stripe from 'stripe'
 import { sendBookingConfirmation, sendAdminBookingAlert } from '@/lib/email'
 import { getRequestSession } from '@/lib/session'
-import { isDatabaseConfigured, getDatabaseErrorMessage } from '@/lib/db-helpers'
-import { MOCK_ROOMS } from '@/lib/mock-rooms'
-import { chaosState } from '@/lib/chaos'
-import { acquireLock } from '@/lib/lock'
+import { isDatabaseConfigured } from '@/lib/db-helpers'
+import { InventoryLockEngine } from '@/lib/inventory-lock'
+import { RealtimeEvents } from '@/lib/realtime'
+import { pushAvailabilityToOTA } from '@/lib/ota/ota-service'
 import { checkIdempotency, saveIdempotency, clearIdempotency } from '@/lib/idempotency'
 
-// Initialize Stripe only if secret key is configured
-const stripe = process.env.STRIPE_SECRET_KEY && process.env.STRIPE_SECRET_KEY !== ''
-  ? new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: '2023-10-16',
-    })
-  : null
-
-// Simple rate limit response function
-function createRateLimitResponse(result: any) {
-  return NextResponse.json(
-    { error: 'Too many requests', retryAfter: Math.ceil((result.resetTime - Date.now()) / 1000) },
-    { status: 429, headers: { 'Retry-After': Math.ceil((result.resetTime - Date.now()) / 1000).toString() } }
-  )
-}
-
-const dateString = z
-  .string()
-  .min(1, 'Date is required')
-  .refine((value) => !Number.isNaN(Date.parse(value)), 'Invalid date format')
+const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' }) : null
 
 const bookingSchema = z.object({
-  roomId: z.string().min(1, 'Room ID is required'),
-  checkIn: dateString,
-  checkOut: dateString,
+  roomId: z.string().min(1),
+  checkIn: z.string().datetime(),
+  checkOut: z.string().datetime(),
   guests: z.number().min(1).max(10),
   specialRequests: z.string().optional(),
   paymentMethod: z.enum(['pay_now', 'pay_later']).default('pay_later'),
@@ -44,546 +26,200 @@ const bookingSchema = z.object({
   guestPhone: z.string().optional(),
 })
 
-export async function GET(request: NextRequest) {
-  // Soft timeout to avoid 504s surfacing to the client
-  const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> => {
-    return new Promise((resolve, reject) => {
-      const timer = setTimeout(() => reject(new Error('DB timeout')), ms)
-      promise
-        .then((val) => {
-          clearTimeout(timer)
-          resolve(val)
-        })
-        .catch((err) => {
-          clearTimeout(timer)
-          reject(err)
-        })
-    })
-  }
-  const DB_TIMEOUT_MS = 3000
-
-  // Rate limiting
-  const identifier = request.headers.get('x-forwarded-for') || 
-                     request.headers.get('x-real-ip') || 
-                     'unknown'
-  const rateLimitResult = apiLimiter.isAllowed(identifier)
-  if (!rateLimitResult.allowed) {
-    return createRateLimitResponse(rateLimitResult)
-  }
-
-  // Guard session retrieval to avoid throwing before we can respond
-  const session = await getRequestSession(request).catch((err) => {
-    console.error('Error retrieving session for bookings GET:', err)
-    return null
-  })
-  const { searchParams } = new URL(request.url)
-  const hasFilter = searchParams.has('status') || searchParams.has('userId')
-  const allowAnonymous = !session && Boolean(process.env.JEST_WORKER_ID) && hasFilter
-
-  if (!session && !allowAnonymous) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  // Check database configuration
-  if (!isDatabaseConfigured()) {
-    return NextResponse.json({ 
-      bookings: [],
-      isMock: true,
-      message: 'Database not configured. Using empty booking list for preview.'
-    })
-  }
-
-  try {
-    const status = searchParams.get('status')
-    const userId = searchParams.get('userId')
-    const startDateParam = searchParams.get('startDate')
-    const endDateParam = searchParams.get('endDate')
-
-    const actorRole = session?.user.role ?? (allowAnonymous ? 'SUPER_ADMIN' : undefined)
-    const actorId = session?.user.id ?? (allowAnonymous ? 'user-123' : undefined)
-
-    let whereClause: any = {}
-
-    // Filter by status if provided
-    if (status && status !== 'all') {
-      whereClause.status = status
-    }
-
-    // Filter by user if provided (or if user is not admin)
-    if (userId) {
-      whereClause.userId = userId
-    } else if (actorRole === 'GUEST' && actorId) {
-      whereClause.userId = actorId
-    }
-
-    if (startDateParam || endDateParam) {
-      whereClause.createdAt = {}
-      if (startDateParam) {
-        whereClause.createdAt.gte = new Date(startDateParam)
-      }
-      if (endDateParam) {
-        whereClause.createdAt.lte = new Date(endDateParam)
-      }
-    }
-
-    // Fetch bookings with a reasonable upper bound to avoid heavy responses
-    const bookings = await withTimeout(prisma.booking.findMany({
-      where: whereClause,
-      orderBy: {
-        createdAt: 'desc'
-      },
-      take: 100
-    }), DB_TIMEOUT_MS).catch((err) => {
-      console.error('Timed out or failed fetching bookings list:', err)
-      return null
-    })
-
-    if (!bookings || !Array.isArray(bookings)) {
-      return NextResponse.json(
-        { bookings: [] },
-        { status: 200, headers: { 'X-Fallback': 'bookings-timeout' } }
-      )
-    }
-
-    // Fetch related data separately if needed
-    const bookingsWithRelations = await Promise.all(
-      bookings.map(async (booking: any) => {
-        const [user, room] = await Promise.all([
-          actorRole && actorRole !== 'GUEST'
-            ? prisma.user.findUnique({ where: { id: booking.userId } }).catch(() => null)
-            : Promise.resolve(null),
-          prisma.room.findUnique({ where: { id: booking.roomId } }).catch(() => null)
-        ])
-        
-        return {
-          ...booking,
-          guests: Number(booking.guests), // Convert BigInt to Number for JSON serialization
-          user: user ? (actorRole && actorRole !== 'GUEST' ? user : {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-          }) : null,
-          room: room ? {
-            ...room,
-            capacity: Number(room.capacity),
-            floor: Number(room.floor),
-            size: Number(room.size),
-          } : null,
-        }
-      })
-    )
-
-    return NextResponse.json({ bookings: bookingsWithRelations })
-  } catch (error) {
-    console.error('Error fetching bookings:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch bookings' },
-      { status: 500 }
-    )
-  }
-}
-
 export async function POST(request: NextRequest) {
-  // Rate limiting for booking creation
-  const identifier = request.headers.get('x-forwarded-for') || 
-                     request.headers.get('x-real-ip') || 
-                     'unknown'
-  const rateLimitResult = apiLimiter.isAllowed(identifier)
-  if (!rateLimitResult.allowed) {
-    return createRateLimitResponse(rateLimitResult)
-  }
+  const identifier = request.headers.get('x-forwarded-for') || 'unknown'
+  const rateLimit = await apiLimiter.isAllowed(identifier)
+  if (!rateLimit.allowed) return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
 
   const session = await getRequestSession(request)
-
-  if (!isDatabaseConfigured()) {
-    return NextResponse.json(
-      { 
-        error: 'Database not configured',
-        message: 'Booking creation is disabled in preview mode without a database.'
-      },
-      { status: 503 }
-    )
-  }
-
   const idempotencyKey = request.headers.get('idempotency-key')
+
   if (idempotencyKey) {
-    try {
-      const state = await checkIdempotency(idempotencyKey)
-      if (state.state === 'cached' && state.response) {
-        return NextResponse.json(state.response.body, { status: state.response.status })
-      }
-      if (state.state === 'in_flight') {
-        return NextResponse.json(
-          { error: 'Conflict', message: 'A duplicate request is already being processed. Please wait.' },
-          { status: 409 }
-        )
-      }
-    } catch (idemErr) {
-      console.warn('Idempotency error, continuing...', idemErr)
-    }
+    const cached = await checkIdempotency(idempotencyKey)
+    if (cached.state === 'cached') return NextResponse.json(cached.response?.body, { status: cached.response?.status })
   }
 
   try {
     const body = await request.json()
-    const validatedData = bookingSchema.parse(body)
+    const validated = bookingSchema.parse(body)
+    const checkIn = new Date(validated.checkIn)
+    const checkOut = new Date(validated.checkOut)
 
-    // Check if room exists and is available
-    let room
-    try {
-      room = await prisma.room.findUnique({
-        where: { id: validatedData.roomId }
-      })
-    } catch (dbError: any) {
-      // Handle invalid ObjectId format or other database errors
-      console.error('Error fetching room:', dbError)
-      return NextResponse.json(
-        { error: 'Invalid room ID format or room not found', details: dbError.message },
-        { status: 404 }
-      )
-    }
+    // 1. DISTRIBUTED INVENTORY LOCK (Redis)
+    const currentVersion = await InventoryLockEngine.getVersion(validated.roomId)
+    const hold = await InventoryLockEngine.acquireHold(
+      validated.roomId, 
+      'TBD', // Number will be fetched in TX
+      currentVersion, 
+      session?.user?.id || 'guest-checkout'
+    )
 
-    // Acquire room lock to prevent concurrent overlapping booking checks and writes
-    const lockKey = `booking:room:${validatedData.roomId}`
-    let releaseLock: (() => Promise<void>) | null = null
     try {
-      releaseLock = await acquireLock(lockKey)
-    } catch (lockError) {
-      return NextResponse.json(
-        { error: 'Server busy', message: 'This room is currently in the process of being booked. Please try again in a few seconds.' },
-        { status: 429 }
-      )
-    }
-
-    // Perform checking, guest creation, and booking creation atomically within a transaction
-    let transactionResult
-    try {
-      transactionResult = await prisma.$transaction(async (tx: any) => {
-        // 1. Double check room availability inside transaction
-        const roomInTx = await tx.room.findUnique({
-          where: { id: validatedData.roomId }
+      // 2. ATOMIC DB TRANSACTION
+      const result = await prisma.$transaction(async (tx) => {
+        const room = await tx.room.findUnique({ 
+          where: { id: validated.roomId },
+          include: { roomType: true }
         })
+        if (!room || room.status !== 'AVAILABLE') throw new Error('ROOM_UNAVAILABLE')
 
-        if (!roomInTx) {
-          throw new Error('ROOM_NOT_FOUND')
-        }
-
-        if (roomInTx.status && roomInTx.status !== 'AVAILABLE') {
-          throw new Error('ROOM_NOT_AVAILABLE')
-        }
-
-        // 2. Check for overlapping booking conflicts atomically
-        const conflictingBooking = await tx.booking.findFirst({
+        // Double check conflicts
+        const conflict = await tx.booking.findFirst({
           where: {
-            roomId: validatedData.roomId,
-            status: {
-              in: ['PENDING', 'CONFIRMED', 'CHECKED_IN']
-            },
+            roomId: validated.roomId,
+            status: { in: ['CONFIRMED', 'CHECKED_IN'] },
+            NOT: { status: 'CANCELLED' },
             OR: [
-              {
-                checkIn: {
-                  lt: new Date(validatedData.checkOut)
-                },
-                checkOut: {
-                  gt: new Date(validatedData.checkIn)
-                }
-              }
+              { checkIn: { lt: checkOut }, checkOut: { gt: checkIn } }
             ]
           }
         })
+        if (conflict) throw new Error('DOUBLE_BOOKING')
 
-        if (conflictingBooking) {
-          throw new Error('ROOM_DOUBLE_BOOKED')
-        }
-
-        // 3. Resolve user inside transaction
-        let txUserId: string
-        if (session?.user?.id) {
-          txUserId = session.user.id
-        } else if (validatedData.guestEmail && validatedData.guestName) {
-          let user = await tx.user.findFirst({
-            where: { email: validatedData.guestEmail },
-          })
-
-          if (!user) {
-            user = await tx.user.create({
+        // Resolve Guest
+        let guestId = session?.user?.id
+        if (!guestId && validated.guestEmail) {
+          const existing = await tx.user.findUnique({ where: { email: validated.guestEmail } })
+          if (existing) { guestId = existing.id }
+          else {
+            const newUser = await tx.user.create({
               data: {
-                name: validatedData.guestName || 'Guest',
-                email: validatedData.guestEmail,
-                password: '',
-                phone: validatedData.guestPhone || '',
+                email: validated.guestEmail,
+                name: validated.guestName || 'Guest',
+                password: '', // Passwordless guest
                 role: 'GUEST',
                 createdAt: new Date(),
-                updatedAt: new Date(),
-              },
+                updatedAt: new Date()
+              }
             })
+            guestId = newUser.id
           }
-          txUserId = user.id
-        } else {
-          throw new Error('AUTH_REQUIRED')
         }
+        if (!guestId) throw new Error('GUEST_DATA_REQUIRED')
 
-        // Calculate total amount
-        const checkIn = new Date(validatedData.checkIn)
-        const checkOut = new Date(validatedData.checkOut)
         const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24))
-        const totalAmount = roomInTx.price * nights
+        const totalAmount = room.roomType.baseRate * nights
+        const confirmationCode = `SH-${Math.random().toString(36).substring(2, 9).toUpperCase()}`
 
-        // Generate confirmation code
-        const confirmationCode = `GP${Date.now().toString().slice(-6)}${Math.floor(Math.random() * 1000)}`
-
-        // 4. Create the booking atomically
         const booking = await tx.booking.create({
           data: {
-            roomId: validatedData.roomId,
-            userId: txUserId,
+            roomId: room.id,
+            primaryGuestId: guestId,
             checkIn,
             checkOut,
-            guests: BigInt(validatedData.guests), // Convert to BigInt as per schema
+            guests: BigInt(validated.guests),
             totalAmount,
-            specialRequests: validatedData.specialRequests || null,
-            status: 'PENDING',
-            paymentStatus: 'PENDING',
-            paymentMethod: validatedData.paymentMethod === 'pay_now' ? 'CARD' : 'CASH',
+            status: 'CONFIRMED', 
+            paymentStatus: validated.paymentMethod === 'pay_now' ? 'PENDING' : 'UNPAID',
+            paymentMethod: validated.paymentMethod === 'pay_now' ? 'CARD' : 'CASH',
             confirmationCode,
             createdAt: new Date(),
             updatedAt: new Date(),
-          }
+            source: 'WEBSITE'
+          },
+          include: { room: { include: { roomType: true } }, guest: true }
         })
 
-        return { booking, userId: txUserId, totalAmount, nights, room: roomInTx, confirmationCode }
+        // 3. UPDATE ROOM STATUS
+        await tx.room.update({
+          where: { id: room.id },
+          data: { status: 'OCCUPIED' }
+        })
+
+        return booking
       })
-    } catch (txErr: any) {
-      if (releaseLock) await releaseLock()
-      if (txErr instanceof Error) {
-        if (txErr.message === 'ROOM_NOT_FOUND') {
-          return NextResponse.json({ error: 'Room not found' }, { status: 404 })
-        }
-        if (txErr.message === 'ROOM_NOT_AVAILABLE' || txErr.message === 'ROOM_DOUBLE_BOOKED') {
-          return NextResponse.json({ error: 'Room not available' }, { status: 409 })
-        }
-        if (txErr.message === 'AUTH_REQUIRED') {
-          return NextResponse.json(
-            { error: 'Authentication required or guest email must be provided' },
-            { status: 401 }
-          )
-        }
+
+      // 4. COMMIT INVENTORY HOLD (Advances distributed version)
+      await InventoryLockEngine.commitHold(hold.id)
+
+      // 5. REAL-TIME EVENTS (Pusher)
+      await RealtimeEvents.emitBookingCreated(result)
+
+      // 6. OTA SYNCHRONIZATION (Non-blocking but logged)
+      try {
+        const availableCount = await prisma.room.count({ where: { roomTypeId: result.room.roomTypeId, status: 'AVAILABLE' } })
+        await pushAvailabilityToOTA({
+          roomTypeId: result.room.roomTypeId,
+          date: checkIn.toISOString().split('T')[0],
+          availability: availableCount,
+          rate: result.room.roomType.baseRate
+        })
+      } catch (otaErr) {
+        console.error('[OTA] Sync Failed during booking creation:', otaErr)
       }
+
+      // 7. STRIPE PAYMENT INTENT
+      let clientSecret = null
+      if (validated.paymentMethod === 'pay_now' && stripe) {
+        const intent = await stripe.paymentIntents.create({
+          amount: Math.round(result.totalAmount * 100),
+          currency: 'lkr',
+          metadata: { bookingId: result.id },
+        })
+        clientSecret = intent.client_secret
+        // Link to payment in DB
+        await prisma.payment.create({
+          data: {
+            bookingId: result.id,
+            userId: result.userId,
+            amount: result.totalAmount,
+            paymentMethod: 'CARD',
+            paymentProvider: 'STRIPE',
+            providerId: intent.id,
+            status: 'PENDING'
+          }
+        })
+      }
+
+      // 8. AUDIT & EMAIL
+      await logAction(request, result.primaryGuestId, AUDIT_ACTIONS.BOOKING_CREATE, 'Booking', result.id, { total: result.totalAmount })
+      await sendBookingConfirmation({
+        guestName: result.guest.name,
+        guestEmail: result.guest.email,
+        roomNumber: result.room.number,
+        roomType: result.room.roomType.name,
+        checkIn,
+        checkOut,
+        guests: validated.guests,
+        totalAmount: result.totalAmount,
+        bookingId: result.id,
+        confirmationCode: result.confirmationCode
+      })
+
+      const responseBody = { booking: { ...result, guests: Number(result.guests), clientSecret } }
+      if (idempotencyKey) await saveIdempotency(idempotencyKey, { status: 201, body: responseBody })
+      
+      return NextResponse.json(responseBody, { status: 201 })
+
+    } catch (txErr) {
+      await InventoryLockEngine.rollbackHold(hold.id)
       throw txErr
     }
 
-    if (releaseLock) await releaseLock()
-
-    const { booking, userId, totalAmount, nights, room: roomInTx, confirmationCode } = transactionResult
-    room = roomInTx
-    const checkIn = new Date(validatedData.checkIn)
-    const checkOut = new Date(validatedData.checkOut)
-    
-    // Fetch related data separately
-    const [bookingUser, bookingRoom] = await Promise.all([
-      prisma.user.findUnique({ where: { id: booking.userId } }).catch(() => null),
-      prisma.room.findUnique({ where: { id: booking.roomId } }).catch(() => null)
-    ])
-    
-    const bookingWithRelations = {
-      ...booking,
-      guests: Number(booking.guests), // Convert BigInt to Number for JSON serialization
-      room: bookingRoom ? {
-        ...bookingRoom,
-        capacity: Number(bookingRoom.capacity),
-        floor: Number(bookingRoom.floor),
-        size: Number(bookingRoom.size),
-      } : null,
-      user: bookingUser ? {
-        id: bookingUser.id,
-        name: bookingUser.name,
-        email: bookingUser.email,
-      } : null,
-    }
-
-    // Emit WebSocket event for real-time updates
-    try {
-      const { SocketEvents } = await import('@/lib/socket')
-      SocketEvents.emitBookingCreated(booking)
-    } catch (error) {
-      // WebSocket not critical, continue if it fails
-      console.log('WebSocket not available:', error)
-    }
-
-    // Note: Invoice model doesn't exist in schema
-    // Invoice creation would need Invoice model in schema
-    const tax = totalAmount * 0.1 // 10% tax
-    const invoice = {
-        bookingId: booking.id,
-        amount: totalAmount,
-        tax,
-        total: totalAmount + tax,
-        dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours from now
-        status: 'PENDING',
-      }
-
-    // If pay now, create Stripe payment intent
-    let paymentIntent = null
-    if (validatedData.paymentMethod === 'pay_now') {
-      try {
-        // Check if Stripe is configured
-        if (!stripe) {
-          console.warn('Stripe secret key not configured, skipping payment intent creation')
-        } else {
-          // Simulate Stripe API failure under SRE Chaos
-          if (chaosState?.stripeFailure) {
-            throw new Error('Stripe API Outage: Simulated credit card processing failure (SRE Chaos). Code: card_declined')
-          }
-
-          paymentIntent = await stripe.paymentIntents.create({
-            amount: Math.round((totalAmount + tax) * 100), // Convert to cents
-            currency: 'lkr',
-            metadata: {
-              bookingId: booking.id,
-              roomId: room.id,
-              userId: userId,
-            },
-            description: `Booking for Room ${room.number} - ${nights} nights`,
-          })
-        }
-      } catch (stripeError: any) {
-        // Log Stripe error but don't fail the booking
-        console.error('Error creating Stripe payment intent:', stripeError)
-        // Continue without payment intent - booking is still created
-      }
-
-      // Note: paymentIntentId field doesn't exist in Booking schema
-      // Would need to add field to schema to store payment intent ID
-      // await prisma.booking.update({
-      //   where: { id: booking.id },
-      //   data: { paymentIntentId: paymentIntent.id }
-      // })
-    }
-
-                    // Send email notifications
-                try {
-                  const guestName = session?.user?.name || validatedData.guestName || 'Guest'
-                  const guestEmail = session?.user?.email || validatedData.guestEmail
-
-                  if (guestEmail) {
-                    // Send booking confirmation to guest
-                    await sendBookingConfirmation({
-                      guestName,
-                      guestEmail,
-                      roomNumber: room.number,
-                      roomType: room.type,
-                      checkIn,
-                      checkOut,
-                      guests: validatedData.guests,
-                      totalAmount,
-                      bookingId: booking.id,
-                      confirmationCode,
-                      specialRequests: validatedData.specialRequests,
-                    })
-
-                    // Send admin alert
-                    await sendAdminBookingAlert({
-                      bookingId: booking.id,
-                      guestName,
-                      guestEmail,
-                      roomNumber: room.number,
-                      checkIn,
-                      checkOut,
-                      totalAmount,
-                    })
-                  }
-                } catch (emailError) {
-                  console.error('Failed to send email notifications:', emailError)
-                  // Don't fail the booking if email fails
-                }
-
-                // Log the action
-                if (userId) {
-                  await logAction(
-                    request,
-                    userId,
-                    AUDIT_ACTIONS.BOOKING_CREATE,
-                    'Booking',
-                    booking.id,
-                    {
-                      roomId: room.id,
-                      roomNumber: room.number,
-                      checkIn: validatedData.checkIn,
-                      checkOut: validatedData.checkOut,
-                      guests: validatedData.guests,
-                      totalAmount,
-                      paymentMethod: validatedData.paymentMethod,
-                      isGuestCheckout: !session,
-                    }
-                  )
-                }
-
-                const successBody = {
-                  booking: {
-                    ...bookingWithRelations,
-                    invoice,
-                    paymentIntent: paymentIntent ? {
-                      id: paymentIntent.id,
-                      clientSecret: paymentIntent.client_secret,
-                    } : null,
-                  }
-                }
-
-                if (idempotencyKey) {
-                  await saveIdempotency(idempotencyKey, { status: 201, body: successBody })
-                }
-
-                return NextResponse.json(successBody, { status: 201 })
-
-  } catch (error: any) {
-    if (idempotencyKey) {
-      await clearIdempotency(idempotencyKey).catch(() => {})
-    }
-
-    // Handle validation errors
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid booking data', details: error.errors },
-        { status: 400 }
-      )
-    }
-
-    // Handle specific error types
-    if (error?.code === 'P2002') {
-      // Prisma unique constraint error
-      return NextResponse.json(
-        { error: 'Booking already exists', details: error.message },
-        { status: 409 }
-      )
-    }
-
-    if (error?.code === 'P2025') {
-      // Prisma record not found error
-      return NextResponse.json(
-        { error: 'Room or user not found', details: error.message },
-        { status: 404 }
-      )
-    }
-
-    // Log the full error for debugging
-    console.error('Error creating booking:', error)
-    console.error('Error stack:', error?.stack)
-    console.error('Error details:', {
-      message: error?.message,
-      code: error?.code,
-      name: error?.name,
-    })
-
-    // Return more detailed error message in development
-    const errorMessage = process.env.NODE_ENV === 'development'
-      ? error?.message || 'Failed to create booking'
-      : 'Failed to create booking'
-
-    return NextResponse.json(
-      { 
-        error: errorMessage,
-        ...(process.env.NODE_ENV === 'development' && { details: error?.stack })
-      },
-      { status: 500 }
-    )
+  } catch (err: any) {
+    console.error('[BOOKING_ENGINE_ERROR]', err)
+    if (idempotencyKey) await clearIdempotency(idempotencyKey)
+    return NextResponse.json({ error: err.message || 'Booking failed' }, { status: 400 })
   }
-} 
+}
+
+export async function GET(request: NextRequest) {
+  const session = await getRequestSession(request)
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const { searchParams } = new URL(request.url)
+  const status = searchParams.get('status')
+  
+  const bookings = await prisma.booking.findMany({
+    where: {
+      ...(session.user.role === 'GUEST' ? { primaryGuestId: session.user.id } : {}),
+      ...(status ? { status } : {})
+    },
+    include: { room: { include: { roomType: true } }, guest: true },
+    orderBy: { createdAt: 'desc' }
+  })
+
+  return NextResponse.json({
+    bookings: bookings.map(b => ({ ...b, guests: Number(b.guests) }))
+  })
+}

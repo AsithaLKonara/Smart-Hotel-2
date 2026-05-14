@@ -14,8 +14,8 @@ describe('lib/utils', () => {
       expect(formatPrice(1234.56, 'EUR')).toBe('€1,234.56')
     })
 
-    it('falls back to USD currency when none is provided', () => {
-      expect(formatPrice(99.5)).toBe('$99.50')
+    it('defaults to LKR currency when none is provided', () => {
+      expect(formatPrice(99.5)).toMatch(/LKR\s?100/)
     })
   })
 

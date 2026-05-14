@@ -1,5 +1,6 @@
 "use client"
 import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { signIn, getSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -70,46 +71,40 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-midnight font-sans">
-      {/* Visual Side — Video Background */}
-      <div className="hidden lg:flex flex-col justify-center px-20 relative overflow-hidden h-screen">
-        {/* Global background video */}
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover opacity-50"
-        >
-          <source src="/videos/global background.mp4" type="video/mp4" />
-        </video>
-        {/* Blur + gradient overlay */}
-        <div className="absolute inset-0 backdrop-blur-sm bg-black/40" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/40" />
-        <div className="space-y-6 relative z-10">
-          <div className="flex items-center space-x-3 text-primary uppercase tracking-[0.4em] text-[10px] font-bold">
-            <div className="w-10 h-px bg-primary" />
-            <span>Member Access</span>
-          </div>
-          <h2 className="text-5xl font-serif font-bold text-white leading-tight">
-            Elevate Your <span className="text-primary italic">Experience</span>
-          </h2>
-          <p className="text-white/50 font-light text-lg leading-relaxed max-w-md">
-            Enter your sanctuary. Access bespoke services, manage your reservations, and unlock exclusive member benefits.
-          </p>
-        </div>
+    <div className="min-h-screen flex items-center justify-center bg-[#060606] relative font-sans overflow-hidden">
+      {/* Premium Static Background with Dark Overlay */}
+      <div className="absolute inset-0 z-0">
+        <Image
+          src="/images/hotel-hero-1.jpg"
+          alt="SmartHotel Luxury Interior"
+          fill
+          priority
+          className="object-cover opacity-60"
+        />
+        <div className="absolute inset-0 bg-gradient-to-br from-black/80 via-black/40 to-[#0c0714]/90" />
+        <div className="absolute inset-0 backdrop-blur-[2px]" />
       </div>
 
-      {/* Form Side */}
-      <div className="flex items-center justify-center p-6 lg:p-24 bg-black/40 backdrop-blur-2xl relative overflow-y-auto border-l border-white/5">
-        <div className="w-full max-w-md space-y-10 py-10">
-          <div className="space-y-4">
-             <Link href="/" className="inline-block">
-               <span className="text-2xl font-serif font-bold tracking-tighter text-white uppercase">SMART<span className="text-primary">HOTEL</span></span>
-             </Link>
-             <h1 className="text-3xl font-serif font-bold text-white">Welcome Back</h1>
-             <p className="text-white/40 font-light text-sm">Please enter your details to access your sanctuary.</p>
-          </div>
+      {/* Centered Glass Login Card */}
+      <div className="relative z-10 w-full max-w-lg mx-4">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white/[0.03] backdrop-blur-3xl border border-white/10 rounded-[48px] p-10 lg:p-16 shadow-[0_32px_120px_-15px_rgba(0,0,0,0.8)] relative overflow-hidden group"
+        >
+          {/* Inner Light Accent */}
+          <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+          
+          <div className="space-y-10 relative z-10">
+            <div className="space-y-4 text-center">
+               <Link href="/" className="inline-block">
+                 <span className="text-3xl font-serif font-bold tracking-tighter text-white uppercase">SMART<span className="text-primary italic">HOTEL</span></span>
+               </Link>
+               <div className="space-y-2">
+                 <h1 className="text-4xl font-serif font-bold text-white tracking-tight">Staff Sanctuary</h1>
+                 <p className="text-white/40 font-medium text-sm">Authorized personnel only. Enter your credentials to access operational matrices.</p>
+               </div>
+            </div>
 
           {/* Social Logins */}
           <div className="grid grid-cols-2 gap-4">
@@ -219,7 +214,8 @@ export default function SignInPage() {
                <span>Secure Member Access</span>
              </div>
           </div>
-        </div>
+          </div>
+        </motion.div>
       </div>
     </div>
   )

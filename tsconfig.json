@@ -45,6 +45,7 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
+    "tests/**/*.ts",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],
@@ -52,7 +53,6 @@
     "node_modules",
     "prisma/seed*.ts",
     "prisma/seed/**/*",
-    "scripts/**/*",
-    "tests/**/*"
+    "scripts/**/*"
   ]
 }

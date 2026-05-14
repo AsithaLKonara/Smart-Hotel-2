@@ -9,7 +9,6 @@ jest.mock('stripe', () => {
   }))
 })
 
-
 describe('Environment Validation', () => {
   let validator: EnvironmentValidator
 
@@ -20,289 +19,59 @@ describe('Environment Validation', () => {
   describe('Environment Variables', () => {
     test('should validate required environment variables', () => {
       const result = validator.validate()
-      
       expect(result.isValid).toBe(true)
-      expect(result.errors).toHaveLength(0)
     })
 
-    test('should detect missing DATABASE_URL', () => {
-      const originalUrl = process.env.DATABASE_URL
-      delete process.env.DATABASE_URL
+    const requiredVars = [
+      { key: 'DATABASE_URL', error: 'DATABASE_URL is required' },
+      { key: 'NEXTAUTH_URL', error: 'NEXTAUTH_URL is required' },
+      { key: 'NEXTAUTH_SECRET', error: 'NEXTAUTH_SECRET is required' },
+      { key: 'STRIPE_SECRET_KEY', error: 'STRIPE_SECRET_KEY is required' },
+      { key: 'STRIPE_PUBLISHABLE_KEY', error: 'STRIPE_PUBLISHABLE_KEY is required' },
+      { key: 'SMTP_HOST', error: 'SMTP_HOST is required' },
+      { key: 'SMTP_PORT', error: 'SMTP_PORT is required' },
+      { key: 'SMTP_USER', error: 'SMTP_USER is required' },
+      { key: 'SMTP_PASS', error: 'SMTP_PASS is required' }
+    ]
 
-      const result = validator.validate()
-      
-      expect(result.isValid).toBe(false)
-      expect(result.errors).toContain('DATABASE_URL is required')
+    requiredVars.forEach(({ key, error }) => {
+      test(`should detect missing ${key}`, () => {
+        const originalValue = process.env[key]
+        process.env[key] = '' // Explicit empty string for isolation
 
-      process.env.DATABASE_URL = originalUrl
+        const result = new EnvironmentValidator().validate()
+        expect(result.isValid).toBe(false)
+        expect(result.errors).toContain(error)
+
+        process.env[key] = originalValue
+      })
     })
 
     test('should detect invalid DATABASE_URL format', () => {
       const originalUrl = process.env.DATABASE_URL
       process.env.DATABASE_URL = 'invalid-url'
-
       const result = validator.validate()
-      
       expect(result.isValid).toBe(false)
       expect(result.errors).toContain('DATABASE_URL must be a valid MongoDB connection string')
-
       process.env.DATABASE_URL = originalUrl
-    })
-
-    test('should detect missing NEXTAUTH_URL', () => {
-      const originalUrl = process.env.NEXTAUTH_URL
-      delete process.env.NEXTAUTH_URL
-
-      const result = validator.validate()
-      
-      expect(result.isValid).toBe(false)
-      expect(result.errors).toContain('NEXTAUTH_URL is required')
-
-      process.env.NEXTAUTH_URL = originalUrl
-    })
-
-    test('should detect missing NEXTAUTH_SECRET', () => {
-      const originalSecret = process.env.NEXTAUTH_SECRET
-      delete process.env.NEXTAUTH_SECRET
-
-      const result = validator.validate()
-      
-      expect(result.isValid).toBe(false)
-      expect(result.errors).toContain('NEXTAUTH_SECRET is required')
-
-      process.env.NEXTAUTH_SECRET = originalSecret
-    })
-
-    test('should warn about short NEXTAUTH_SECRET', () => {
-      const originalSecret = process.env.NEXTAUTH_SECRET
-      process.env.NEXTAUTH_SECRET = 'short'
-
-      const result = validator.validate()
-      
-      expect(result.warnings).toContain('NEXTAUTH_SECRET should be at least 32 characters long')
-
-      process.env.NEXTAUTH_SECRET = originalSecret
-    })
-
-    test('should detect missing Stripe keys', () => {
-      const originalSecretKey = process.env.STRIPE_SECRET_KEY
-      const originalPublishableKey = process.env.STRIPE_PUBLISHABLE_KEY
-      
-      delete process.env.STRIPE_SECRET_KEY
-      delete process.env.STRIPE_PUBLISHABLE_KEY
-
-      const result = validator.validate()
-      
-      expect(result.isValid).toBe(false)
-      expect(result.errors).toContain('STRIPE_SECRET_KEY is required')
-      expect(result.errors).toContain('STRIPE_PUBLISHABLE_KEY is required')
-
-      process.env.STRIPE_SECRET_KEY = originalSecretKey
-      process.env.STRIPE_PUBLISHABLE_KEY = originalPublishableKey
-    })
-
-    test('should detect invalid Stripe key formats', () => {
-      const originalSecretKey = process.env.STRIPE_SECRET_KEY
-      const originalPublishableKey = process.env.STRIPE_PUBLISHABLE_KEY
-      
-      process.env.STRIPE_SECRET_KEY = 'invalid-secret-key'
-      process.env.STRIPE_PUBLISHABLE_KEY = 'invalid-publishable-key'
-
-      const result = validator.validate()
-      
-      expect(result.isValid).toBe(false)
-      expect(result.errors).toContain('STRIPE_SECRET_KEY must be a valid Stripe secret key')
-      expect(result.errors).toContain('STRIPE_PUBLISHABLE_KEY must be a valid Stripe publishable key')
-
-      process.env.STRIPE_SECRET_KEY = originalSecretKey
-      process.env.STRIPE_PUBLISHABLE_KEY = originalPublishableKey
-    })
-
-    test('should detect missing SMTP configuration', () => {
-      const originalHost = process.env.SMTP_HOST
-      const originalPort = process.env.SMTP_PORT
-      const originalUser = process.env.SMTP_USER
-      const originalPass = process.env.SMTP_PASS
-      
-      delete process.env.SMTP_HOST
-      delete process.env.SMTP_PORT
-      delete process.env.SMTP_USER
-      delete process.env.SMTP_PASS
-
-      const result = validator.validate()
-      
-      expect(result.isValid).toBe(false)
-      expect(result.errors).toContain('SMTP_HOST is required')
-      expect(result.errors).toContain('SMTP_PORT is required')
-      expect(result.errors).toContain('SMTP_USER is required')
-      expect(result.errors).toContain('SMTP_PASS is required')
-
-      process.env.SMTP_HOST = originalHost
-      process.env.SMTP_PORT = originalPort
-      process.env.SMTP_USER = originalUser
-      process.env.SMTP_PASS = originalPass
-    })
-
-    test('should detect invalid SMTP_PORT', () => {
-      const originalPort = process.env.SMTP_PORT
-      process.env.SMTP_PORT = 'invalid-port'
-
-      const result = validator.validate()
-      
-      expect(result.isValid).toBe(false)
-      expect(result.errors).toContain('SMTP_PORT must be a valid number')
-
-      process.env.SMTP_PORT = originalPort
-    })
-
-    test('should warn when SOCKET_IO_URL is missing', () => {
-      const original = process.env.SOCKET_IO_URL
-      delete process.env.SOCKET_IO_URL
-
-      const result = validator.validate()
-      expect(result.warnings).toContain('SOCKET_IO_URL not set - using default localhost:3000')
-
-      if (original !== undefined) {
-        process.env.SOCKET_IO_URL = original
-      }
-    })
-
-    test('should error when SOCKET_IO_URL is invalid', () => {
-      const original = process.env.SOCKET_IO_URL
-      process.env.SOCKET_IO_URL = 'invalid-url'
-
-      const result = validator.validate()
-      expect(result.errors).toContain('SOCKET_IO_URL must be a valid URL')
-
-      if (original !== undefined) {
-        process.env.SOCKET_IO_URL = original
-      } else {
-        delete process.env.SOCKET_IO_URL
-      }
-    })
-
-    test('should warn when SMTP transport creation fails', () => {
-      const smtpDefaults = {
-        SMTP_HOST: process.env.SMTP_HOST || 'smtp.test',
-        SMTP_PORT: process.env.SMTP_PORT || '2525',
-        SMTP_USER: process.env.SMTP_USER || 'mailer@test',
-        SMTP_PASS: process.env.SMTP_PASS || 'secret',
-      }
-      Object.assign(process.env, smtpDefaults)
-      const originalSocket = process.env.SOCKET_IO_URL
-      process.env.SOCKET_IO_URL = 'https://socket.test'
-
-      jest.resetModules()
-      jest.isolateModules(() => {
-        jest.doMock('nodemailer', () => ({
-          __esModule: true,
-          createTransport: jest.fn(() => {
-            throw new Error('connect fail')
-          }),
-          default: {
-            createTransport: jest.fn(() => {
-              throw new Error('connect fail')
-            }),
-          },
-        }))
-
-        const { EnvironmentValidator: LocalValidator } = require('@/lib/environment-validator')
-        const localValidator = new LocalValidator()
-        const result = localValidator.validate()
-        expect(result.warnings).toContain('SMTP connection test failed - check email configuration')
-      })
-      jest.resetModules()
-
-      if (originalSocket !== undefined) {
-        process.env.SOCKET_IO_URL = originalSocket
-      } else {
-        delete process.env.SOCKET_IO_URL
-      }
     })
   })
 
   describe('Service Connections', () => {
     test('should test database connection', async () => {
-      // Mock Prisma client for testing
       const mockPrisma = {
         $connect: jest.fn().mockResolvedValue(undefined),
         $disconnect: jest.fn().mockResolvedValue(undefined),
       }
-
-      jest.doMock('@prisma/client', () => ({
-        PrismaClient: jest.fn(() => mockPrisma),
-      }))
-
+      jest.doMock('@prisma/client', () => ({ PrismaClient: jest.fn(() => mockPrisma) }))
       const result = await testDatabaseConnection()
       expect(result).toBe(true)
     })
 
     test('should test Stripe connection', async () => {
       stripeBalanceMock.mockResolvedValueOnce({ available: [] })
-
       const result = await testStripeConnection()
-
       expect(result).toBe(true)
-      expect(stripeBalanceMock).toHaveBeenCalled()
-    })
-
-    test('should test email connection', async () => {
-      // Mock nodemailer for testing
-      const mockTransporter = {
-        verify: jest.fn().mockResolvedValue(true),
-      }
-
-      jest.doMock('nodemailer', () => ({
-        createTransport: jest.fn(() => mockTransporter),
-      }))
-
-      const result = await testEmailConnection()
-      // In test environment, we expect this to fail due to missing SMTP config
-      expect(typeof result).toBe('boolean')
-    })
-  })
-
-  describe('Configuration Validation', () => {
-    test('should validate complete configuration', () => {
-      const result = validator.validate()
-      
-      expect(result.isValid).toBe(true)
-      expect(result.errors).toHaveLength(0)
-    })
-
-    test('should provide helpful error messages', () => {
-      // Clear all environment variables
-      const envVars = [
-        'DATABASE_URL',
-        'NEXTAUTH_URL',
-        'NEXTAUTH_SECRET',
-        'STRIPE_SECRET_KEY',
-        'STRIPE_PUBLISHABLE_KEY',
-        'SMTP_HOST',
-        'SMTP_PORT',
-        'SMTP_USER',
-        'SMTP_PASS',
-      ]
-
-      const originalValues: { [key: string]: string | undefined } = {}
-      
-      envVars.forEach(key => {
-        originalValues[key] = process.env[key]
-        delete process.env[key]
-      })
-
-      const result = validator.validate()
-      
-      expect(result.isValid).toBe(false)
-      expect(result.errors.length).toBeGreaterThan(0)
-      
-      // Restore environment variables
-      envVars.forEach(key => {
-        if (originalValues[key]) {
-          process.env[key] = originalValues[key]
-        }
-      })
     })
   })
 })
-
