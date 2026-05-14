@@ -116,7 +116,7 @@
     "sharp": "^0.33.0",
     "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.1",
-    "stripe": "^14.10.0",
+    "stripe": "^22.1.1",
     "styled-jsx": "^5.1.7",
     "tailwind-merge": "^2.0.0",
     "three": "^0.184.0",
