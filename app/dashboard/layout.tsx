@@ -4,11 +4,10 @@ import DashboardSidebar from '@/components/dashboard/dashboard-sidebar'
 import { SessionProvider } from 'next-auth/react'
 import { SidebarProvider, useSidebar } from '@/lib/sidebar-context'
 import { cn } from '@/lib/utils'
-import { CommandPalette } from '@/components/command-palette'
 
 export const dynamic = 'force-dynamic'
 
-function AdminLayoutContent({ children }: { children: React.ReactNode }) {
+function GuestLayoutContent({ children }: { children: React.ReactNode }) {
   const { isCollapsed } = useSidebar()
 
   return (
@@ -20,12 +19,11 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
       )}>
         {children}
       </main>
-      <CommandPalette />
     </div>
   )
 }
 
-export default function AdminLayout({
+export default function GuestLayout({
   children,
 }: {
   children: React.ReactNode
@@ -33,9 +31,9 @@ export default function AdminLayout({
   return (
     <SessionProvider>
       <SidebarProvider>
-        <AdminLayoutContent>
+        <GuestLayoutContent>
           {children}
-        </AdminLayoutContent>
+        </GuestLayoutContent>
       </SidebarProvider>
     </SessionProvider>
   )
