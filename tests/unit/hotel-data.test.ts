@@ -7,11 +7,13 @@ jest.mock('@/lib/db', () => ({
       findMany: jest.fn().mockResolvedValue([
         {
           id: 'room-1',
-          type: 'DELUXE',
-          description: 'Spacious deluxe room',
-          price: 299,
-          amenities: ['WiFi', 'TV'],
-          images: ['/images/rooms/deluxe-1.jpg'],
+          roomType: {
+            name: 'Deluxe Suite',
+            description: 'Spacious deluxe room',
+            baseRate: 299,
+            amenities: ['WiFi', 'TV'],
+            images: ['/images/rooms/deluxe-1.jpg'],
+          },
         },
       ]),
     },
@@ -44,11 +46,13 @@ jest.mock('@/lib/db', () => ({
       findMany: jest.fn().mockResolvedValue([
         {
           id: 'room-1',
-          type: 'DELUXE',
-          description: 'Spacious deluxe room',
-          price: 299,
-          amenities: ['WiFi', 'TV'],
-          images: ['/images/rooms/deluxe-1.jpg'],
+          roomType: {
+            name: 'Deluxe Suite',
+            description: 'Spacious deluxe room',
+            baseRate: 299,
+            amenities: ['WiFi', 'TV'],
+            images: ['/images/rooms/deluxe-1.jpg'],
+          },
         },
       ]),
     },

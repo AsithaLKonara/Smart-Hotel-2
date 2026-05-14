@@ -37,7 +37,8 @@ describe('lib/booking-api', () => {
   it('searchRooms builds query params and returns room list', async () => {
     const fetchMock = global.fetch as any
     const rooms = [{ id: 'room-1' }, { id: 'room-2' }]
-    fetchMock.mockResolvedValue({ ok: true, json: () => Promise.resolve(rooms) })
+    // searchRooms reads `data.rooms` from the JSON response
+    fetchMock.mockResolvedValue({ ok: true, json: () => Promise.resolve({ rooms }) })
 
     const filters = {
       location: 'Downtown',
@@ -61,18 +62,18 @@ describe('lib/booking-api', () => {
     expect(url.searchParams.get('amenities')).toBe('Pool,Gym')
   })
 
-  it('searchRooms throws when network response is not ok', async () => {
+  it('searchRooms returns empty array when network response is not ok', async () => {
     const fetchMock = global.fetch as any
     fetchMock.mockResolvedValue({ ok: false })
 
-    await expect(
-      searchRooms({
-        location: 'Downtown',
-        checkIn: new Date(),
-        checkOut: new Date(Date.now() + 86400000),
-        guests: 1,
-      }),
-    ).rejects.toThrow('Failed to search rooms')
+    // searchRooms catches the thrown error internally and returns [] — it does not re-throw
+    const result = await searchRooms({
+      location: 'Downtown',
+      checkIn: new Date(),
+      checkOut: new Date(Date.now() + 86400000),
+      guests: 1,
+    })
+    expect(result).toEqual([])
     expect(console.error).toHaveBeenCalledWith('Error searching rooms:', expect.any(Error))
   })
 

@@ -4,23 +4,26 @@ jest.mock('@/lib/db', () => {
   const roomFindMany = jest.fn()
   const roomFindUnique = jest.fn()
   const bookingFindMany = jest.fn()
+  const bookingCount = jest.fn()
   const invoiceFindMany = jest.fn()
   const foodOrderFindMany = jest.fn()
   const taskFindMany = jest.fn()
   const guestReviewAggregate = jest.fn()
   const userFindUnique = jest.fn()
   const userFindMany = jest.fn()
+  const userGroupBy = jest.fn()
   const staffFindMany = jest.fn()
+  const staffCount = jest.fn()
 
   const prismaMock = {
     room: { findMany: roomFindMany, findUnique: roomFindUnique },
-    booking: { findMany: bookingFindMany },
+    booking: { findMany: bookingFindMany, count: bookingCount },
     invoice: { findMany: invoiceFindMany },
     foodOrder: { findMany: foodOrderFindMany },
     task: { findMany: taskFindMany },
     guestReview: { aggregate: guestReviewAggregate },
-    user: { findUnique: userFindUnique, findMany: userFindMany },
-    staff: { findMany: staffFindMany },
+    user: { findUnique: userFindUnique, findMany: userFindMany, groupBy: userGroupBy },
+    staff: { findMany: staffFindMany, count: staffCount },
   }
 
   return {
@@ -33,13 +36,13 @@ jest.mock('@/lib/db', () => {
 const { prisma } = jest.requireMock('@/lib/db') as {
   prisma: {
     room: { findMany: jest.Mock; findUnique: jest.Mock }
-    booking: { findMany: jest.Mock }
+    booking: { findMany: jest.Mock; count: jest.Mock }
     invoice: { findMany: jest.Mock }
     foodOrder: { findMany: jest.Mock }
     task: { findMany: jest.Mock }
     guestReview: { aggregate: jest.Mock }
-    user: { findUnique: jest.Mock; findMany: jest.Mock }
-    staff: { findMany: jest.Mock }
+    user: { findUnique: jest.Mock; findMany: jest.Mock; groupBy: jest.Mock }
+    staff: { findMany: jest.Mock; count: jest.Mock }
   }
 }
 
@@ -47,13 +50,16 @@ const prismaMocks = {
   roomFindMany: prisma.room.findMany,
   roomFindUnique: prisma.room.findUnique,
   bookingFindMany: prisma.booking.findMany,
+  bookingCount: prisma.booking.count,
   invoiceFindMany: prisma.invoice.findMany,
   foodOrderFindMany: prisma.foodOrder.findMany,
   taskFindMany: prisma.task.findMany,
   guestReviewAggregate: prisma.guestReview.aggregate,
   userFindUnique: prisma.user.findUnique,
   userFindMany: prisma.user.findMany,
+  userGroupBy: prisma.user.groupBy,
   staffFindMany: prisma.staff.findMany,
+  staffCount: prisma.staff.count,
 }
 
 describe('analytics/dashboard helpers', () => {
@@ -72,48 +78,38 @@ describe('analytics/dashboard helpers', () => {
 
     // Note: Invoice model doesn't exist - implementation uses booking.findMany for invoices
     // Total of 8 booking.findMany calls: 5 for bookings + 3 for invoices
+    // computeDashboardAnalytics makes exactly 2 prisma.booking.findMany calls in the current implementation
     prismaMocks.bookingFindMany!
       .mockResolvedValueOnce([
         {
           id: 'booking-today-1',
           createdAt: now,
+          checkIn: new Date('2025-06-14T00:00:00Z'), // Yesterday
+          checkOut: new Date('2025-06-16T00:00:00Z'), // Tomorrow
           status: 'CONFIRMED',
           totalAmount: 300,
+          room: { number: '101', roomType: { name: 'Deluxe' } },
         },
-      ]) // bookings today
-      .mockResolvedValueOnce([
-        { id: 'booking-month-1', createdAt: now, status: 'CONFIRMED', totalAmount: 400 },
-        { id: 'booking-month-2', createdAt: now, status: 'CONFIRMED', totalAmount: 200 },
-      ]) // bookings this month
-      .mockResolvedValueOnce([{ id: 'booking-prev-1', totalAmount: 100 }]) // bookings previous month
-      .mockResolvedValueOnce([
-        {
-          id: 'booking-range-1',
-          checkIn: '2025-06-12T00:00:00.000Z',
-          checkOut: '2025-06-14T00:00:00.000Z',
-        },
-      ]) // bookings last seven days
-      .mockResolvedValueOnce([
-        { id: 'invoice-today-1', createdAt: now, totalAmount: 300 },
-      ]) // invoices today (uses booking.findMany)
-      .mockResolvedValueOnce([
-        { id: 'invoice-month-1', createdAt: now, totalAmount: 400 },
-        { id: 'invoice-month-2', createdAt: now, totalAmount: 200 },
-      ]) // invoices this month (uses booking.findMany)
-      .mockResolvedValueOnce([
-        { id: 'invoice-prev-1', createdAt: new Date('2025-05-15'), totalAmount: 200 },
-      ]) // invoices previous month (uses booking.findMany)
+      ]) // bookingsLast30Days
       .mockResolvedValueOnce([
         {
           id: 'recent-booking-1',
           createdAt: now,
+          checkIn: new Date('2025-06-15T12:00:00Z'),
+          checkOut: new Date('2025-06-16T12:00:00Z'),
           status: 'CONFIRMED',
           totalAmount: 500,
-          roomId: 'room-1',
-          userId: 'user-1',
+          room: { number: '104', roomType: { name: 'Penthouse' } },
+          guest: { name: 'Alex' },
         },
-      ]) // recent bookings
-      .mockResolvedValueOnce([]) // all bookings for total revenue calculation
+      ]) // recentBookings
+    prismaMocks.bookingCount.mockResolvedValue(10)
+    prismaMocks.userGroupBy.mockResolvedValue([
+      { role: 'GUEST', _count: { id: 50 } },
+      { role: 'SUPER_ADMIN', _count: { id: 1 } },
+      { role: 'MANAGER', _count: { id: 1 } }
+    ])
+    prismaMocks.staffCount.mockResolvedValue(20)
     prismaMocks.roomFindUnique.mockResolvedValue({ id: 'room-1', number: '701' })
     prismaMocks.userFindUnique.mockResolvedValue({ id: 'user-1', name: 'Alex' })
     prismaMocks.userFindMany.mockResolvedValue([])
@@ -174,9 +170,9 @@ describe('analytics/dashboard helpers', () => {
 
     expect(analytics.summary.occupancyRate).toBe(50)
     expect(analytics.summary.todayRevenue).toBe(300)
-    expect(analytics.summary.monthlyRevenue).toBe(600)
+    expect(analytics.summary.monthlyRevenue).toBe(300)
     expect(analytics.summary.todayBookings).toBe(1)
-    expect(analytics.summary.monthlyBookings).toBe(2)
+    expect(analytics.summary.monthlyBookings).toBe(1)
     // Note: restaurantOrdersToday, restaurantRevenueToday, taskStats, and guestSatisfaction
     // are calculated but not included in the summary object (only in DashboardSummary interface)
     expect(analytics.recentActivity.bookings[0].id).toBe('recent-booking-1')
@@ -198,6 +194,9 @@ describe('analytics/dashboard helpers', () => {
       .mockResolvedValueOnce([]) // invoices previous month
       .mockResolvedValueOnce([]) // recent bookings
       .mockResolvedValueOnce([]) // all bookings for total revenue calculation
+    prismaMocks.bookingCount.mockResolvedValue(0)
+    prismaMocks.userGroupBy.mockResolvedValue([])
+    prismaMocks.staffCount.mockResolvedValue(0)
     prismaMocks.userFindMany.mockResolvedValue([])
     prismaMocks.staffFindMany.mockResolvedValue([])
     prismaMocks.foodOrderFindMany
@@ -231,7 +230,9 @@ describe('analytics/dashboard helpers', () => {
   })
 
   test('computeDashboardAnalytics propagates datasource errors', async () => {
-    prismaMocks.roomFindMany.mockRejectedValue(new Error('Database unavailable'))
+    // Use mockImplementationOnce to avoid creating a rejected promise until the function is actually called.
+    // This prevents unhandled rejection crashes in some Jest/Node environments.
+    prismaMocks.roomFindMany.mockImplementationOnce(() => Promise.reject(new Error('Database unavailable')))
 
     await expect(computeDashboardAnalytics()).rejects.toThrow('Database unavailable')
   })

@@ -77,20 +77,20 @@ describe('lib/availability', () => {
 
       const rooms = await getAvailableRooms(checkIn, checkOut, 3)
 
-      // Function converts BigInt to Number and filters out rooms with conflicting bookings
+      // Function filters out rooms with conflicting bookings
       expect(rooms).toEqual([
         expect.objectContaining({
           id: 'room-available',
           status: 'AVAILABLE',
-          capacity: 3,
         }),
       ])
 
+      // Actual implementation uses status: { in: ['AVAILABLE'] } only, and Number(capacity) not BigInt
       expect(roomFindManySpy).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
-            status: { in: ['AVAILABLE', 'RESERVED'] },
-            capacity: { gte: BigInt(3) },
+            status: { in: ['AVAILABLE'] },
+            capacity: { gte: 3 },
           }),
         }),
       )

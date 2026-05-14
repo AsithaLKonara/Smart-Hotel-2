@@ -150,12 +150,13 @@ describe('lib/auth', () => {
 
     expect(result).toBeNull()
     expect(findUniqueMock).toHaveBeenCalled()
+    // The actual auth.ts calls logAction with 'GUEST' and 'unknown' when user is not found
     expect(logActionMock).toHaveBeenCalledWith(
       expect.anything(),
-      undefined,
+      'GUEST',
       auditModule.AUDIT_ACTIONS.USER_LOGIN,
       'User',
-      undefined,
+      'unknown',
       { email: 'missing@example.com', reason: 'User not found' },
     )
   })

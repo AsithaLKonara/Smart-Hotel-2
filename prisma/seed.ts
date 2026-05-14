@@ -1,5 +1,7 @@
 import { PrismaClient, RoomStatus, BookingStatus, BookingSource, PaymentStatus, PaymentMethod, TaskType, TaskStatus, Priority, UserRole } from '@prisma/client'
 import { faker } from '@faker-js/faker'
+import bcrypt from 'bcryptjs'
+
 
 const prisma = new PrismaClient()
 
@@ -7,11 +9,28 @@ async function main() {
   console.log('--- STARTING PERFORMANCE-OPTIMIZED SEED ---')
 
   // 1. CLEAN DB
-  const collections = ['AuditLog', 'SyncLog', 'Outbox', 'Task', 'InvoiceLineItem', 'Invoice', 'FinancialAdjustment', 'Payment', 'BookingGuest', 'Booking', 'RoomStatusHistory', 'Room', 'RoomType', 'Staff', 'LoyaltyAccount', 'User']
-  for (const c of collections) {
+  // 1. CLEAN DB (Order matters for relations)
+  const collections = [
+    'auditLog', 'syncLog', 'outbox', 'task', 'invoiceLineItem', 
+    'invoice', 'financialAdjustment', 'payment', 'bookingGuest', 
+    'booking', 'roomStatusHistory', 'room', 'roomType', 
+    'staff', 'loyaltyPoint', 'user'
+  ]
+  
+  console.log('🧹 Cleaning collections...')
+  for (const modelName of collections) {
     // @ts-ignore
-    await prisma[c.charAt(0).toLowerCase() + c.slice(1)].deleteMany()
+    if (prisma[modelName]) {
+      try {
+        // @ts-ignore
+        await prisma[modelName].deleteMany()
+      } catch (e) {
+        console.warn(`⚠️ Failed to clear ${modelName}, might be due to relations.`)
+      }
+    }
   }
+
+
 
   // 2. CREATE ROOM TYPES
   const roomTypes = [
@@ -44,20 +63,30 @@ async function main() {
   const rooms = await prisma.room.findMany()
   console.log(`- Seeded ${rooms.length} Rooms.`)
 
-  // 4. CREATE STAFF
-  const roles = [UserRole.SUPER_ADMIN, UserRole.MANAGER, UserRole.RECEPTIONIST, UserRole.HOUSEKEEPING, UserRole.MAINTENANCE]
+  // 4. CREATE STAFF (Match Sign-in Page Demo Credentials)
+  const demoStaff = [
+    { role: UserRole.SUPER_ADMIN, email: 'admin@smarthotel.com', password: 'SmartHotel@2025!Admin', name: 'Admin User' },
+    { role: UserRole.MANAGER, email: 'manager@smarthotel.com', password: 'SmartHotel@2025!Manager', name: 'Manager User' },
+    { role: UserRole.RECEPTIONIST, email: 'receptionist@smarthotel.com', password: 'SmartHotel@2025!Reception', name: 'Receptionist User' },
+    { role: UserRole.KITCHEN, email: 'kitchen@smarthotel.com', password: 'SmartHotel@2025!Kitchen', name: 'Kitchen Staff' },
+    { role: UserRole.HOUSEKEEPING, email: 'housekeeping1@smarthotel.com', password: 'password123', name: 'Housekeeping User' },
+    { role: UserRole.MAINTENANCE, email: 'maintenance1@smarthotel.com', password: 'password123', name: 'Maintenance User' },
+  ]
+
   const staffMembers = []
-  for (const role of roles) {
+  for (const demo of demoStaff) {
+    const hashedPassword = await bcrypt.hash(demo.password, 12)
     const user = await prisma.user.create({
       data: {
-        name: faker.person.fullName(),
-        email: faker.internet.email().toLowerCase(),
-        password: 'password123',
-        role: role,
+        name: demo.name,
+        email: demo.email,
+        password: hashedPassword,
+        role: demo.role,
         staffProfile: {
           create: {
-            employeeId: `EMP-${faker.string.alphanumeric(5).toUpperCase()}`,
-            position: role.toString(),
+            name: demo.name,
+            employeeId: `EMP-${demo.role}-${faker.string.alphanumeric(3).toUpperCase()}`,
+            position: demo.role.toString(),
             department: 'OPERATIONS'
           }
         }
@@ -67,13 +96,30 @@ async function main() {
     if (user.staffProfile) staffMembers.push(user.staffProfile)
   }
 
+  // Predictable Guest (Match Sign-in Page)
+  await prisma.user.create({
+    data: { 
+      name: 'Guest User', 
+      email: 'guest@example.com', 
+      password: await bcrypt.hash('SmartHotel@2025!Guest', 12), 
+      role: UserRole.GUEST 
+    }
+  })
+
   // 5. SIMULATE HISTORY
   console.log('- Generating 6 months of operations (Parallelized)...')
   const guests = await Promise.all(
-    Array.from({ length: 40 }).map(() => prisma.user.create({
-      data: { name: faker.person.fullName(), email: faker.internet.email().toLowerCase(), password: 'p', role: UserRole.GUEST }
+    Array.from({ length: 40 }).map(async () => prisma.user.create({
+      data: { 
+        name: faker.person.fullName(), 
+        email: faker.internet.email().toLowerCase(), 
+        password: await bcrypt.hash('password123', 12), 
+        role: UserRole.GUEST 
+      }
     }))
   )
+
+
 
   const startDate = new Date()
   startDate.setMonth(startDate.getMonth() - 6)
@@ -105,7 +151,7 @@ async function main() {
               status: currentDay < today ? BookingStatus.CHECKED_OUT : BookingStatus.CONFIRMED,
               totalAmount: roomType.baseRate * 2,
               room: { connect: { id: room.id } },
-              primaryGuest: { connect: { id: guest.id } },
+              guest: { connect: { id: guest.id } },
               payments: {
                 create: {
                   amount: roomType.baseRate * 2,
@@ -126,7 +172,7 @@ async function main() {
                 title: `Clean Room ${room.number}`,
                 room: { connect: { id: room.id } },
                 booking: { connect: { id: booking.id } },
-                ...(hksId && { staff: { connect: { id: hksId } } })
+                ...(hksId && { assignedStaff: { connect: { id: hksId } } })
               }
             })
           }

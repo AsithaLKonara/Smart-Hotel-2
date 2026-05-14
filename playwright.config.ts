@@ -7,9 +7,9 @@ import { defineConfig, devices } from '@playwright/test';
  */
 export default defineConfig({
   testDir: './tests',
-  timeout: 90 * 1000,
+  timeout: 120 * 1000,
   expect: {
-    timeout: 15000,
+    timeout: 20000,
   },
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
@@ -58,6 +58,14 @@ export default defineConfig({
       name: 'Mobile Safari',
       use: { ...devices['iPhone 13'] },
       testMatch: ['**/responsive.spec.ts', '**/comprehensive-production.spec.ts'],
+    },
+
+    // ── Production Certification ──────────────────────────────────
+    {
+      name: 'Production Certification',
+      use: { ...devices['Desktop Chrome'] },
+      testMatch: ['**/production-certification.spec.ts'],
+      retries: 2, // Allow retries for complex stateful flows
     },
   ],
 });

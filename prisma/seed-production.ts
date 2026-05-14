@@ -1,19 +1,7 @@
-import { Prisma, PrismaClient } from '@prisma/client'
-// Note: Enums don't exist in Prisma schema - define locally
-type UserRole = 'GUEST' | 'STAFF' | 'MANAGER' | 'SUPER_ADMIN' | 'RECEPTIONIST'
-type RoomStatus = 'AVAILABLE' | 'OCCUPIED' | 'MAINTENANCE' | 'CLEANING' | 'RESERVED'
-type BookingStatus = 'PENDING' | 'CONFIRMED' | 'CHECKED_IN' | 'CHECKED_OUT' | 'CANCELLED'
-type PaymentStatus = 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED'
-type TaskType = 'CLEANING' | 'MAINTENANCE' | 'ROOM_SERVICE' | 'CONCIERGE' | 'OTHER'
-type TaskPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
-type TaskStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
-type FoodCategory = 'BREAKFAST' | 'LUNCH' | 'DINNER' | 'BEVERAGES' | 'SNACKS'
-type OrderStatus = 'PENDING' | 'CONFIRMED' | 'PREPARING' | 'READY' | 'DELIVERED' | 'CANCELLED'
-type InventoryStatus = 'IN_STOCK' | 'LOW_STOCK' | 'OUT_OF_STOCK'
-type GalleryCategory = 'ROOM' | 'RESTAURANT' | 'FACILITY' | 'EVENT'
-type PromotionType = 'DISCOUNT' | 'PACKAGE' | 'SEASONAL'
-type EmailStatus = 'PENDING' | 'SENT' | 'FAILED'
-type NotificationType = 'GENERAL' | 'BOOKING_REMINDER' | 'ROOM_SERVICE_READY' | 'PAYMENT_RECEIVED' | 'CHECK_IN_REMINDER' | 'CHECK_OUT_REMINDER'
+import { Prisma, PrismaClient, UserRole, RoomStatus, BookingStatus, PaymentStatus, TaskType, Priority, TaskStatus, FoodCategory, OrderStatus, InventoryStatus, GalleryCategory, PromotionType, NotificationType } from '@prisma/client'
+// Note: Local type overrides for compatibility if needed, but we use the imported enums
+type TaskPriority = Priority
+
 import bcrypt from 'bcryptjs'
 import { faker } from '@faker-js/faker'
 import { ObjectId } from 'bson'
@@ -23,29 +11,29 @@ type JsonValue = Prisma.InputJsonValue
 const prisma = new PrismaClient()
 
 const CONFIG = {
-  hotels: 3,
-  adminUsers: 5,
-  managerUsers: 25,
-  receptionistUsers: 60,
-  guestUsers: 8500,
-  staffMembers: 550,
-  rooms: 420,
-  roomImagesPerRoom: 3,
-  roomFeatures: 120,
-  bookings: 20000,
-  tasks: 12000,
-  menuItems: 140,
-  foodOrders: 9000,
-  orderItemsPerOrder: { min: 2, max: 5 },
-  guestReviews: 8000,
-  inventoryItems: 220,
-  galleryItems: 240,
-  promotions: 35,
-  emailTemplates: 24,
-  emailLogs: 25000,
-  notificationsPerUser: 3,
-  wishlistEntries: 10000,
-  auditLogs: 45000,
+  hotels: 1,
+  adminUsers: 1,
+  managerUsers: 2,
+  receptionistUsers: 5,
+  guestUsers: 50,
+  staffMembers: 20,
+  rooms: 50,
+  roomImagesPerRoom: 2,
+  roomFeatures: 20,
+  bookings: 100,
+  tasks: 100,
+  menuItems: 30,
+  foodOrders: 50,
+  orderItemsPerOrder: { min: 2, max: 4 },
+  guestReviews: 50,
+  inventoryItems: 30,
+  galleryItems: 20,
+  promotions: 10,
+  emailTemplates: 10,
+  emailLogs: 100,
+  notificationsPerUser: 2,
+  wishlistEntries: 20,
+  auditLogs: 100,
   settings: [
     { key: 'hotel_name', value: 'SmartHotel Grand Palace' },
     { key: 'hotel_tagline', value: 'Luxury 5-Star Accommodation' },
@@ -107,28 +95,40 @@ function generateObjectId(): string {
 
 async function clearDatabase() {
   console.log('🧹 Clearing existing data...')
-  await prisma.auditLog.deleteMany()
-  await prisma.emailLog.deleteMany()
-  await prisma.emailTemplate.deleteMany()
-  await prisma.notification.deleteMany()
-  await prisma.promotion.deleteMany()
-  await prisma.guestReview.deleteMany()
-  await prisma.wishlist.deleteMany()
-  await prisma.orderItem.deleteMany()
-  await prisma.foodOrder.deleteMany()
-  await prisma.foodMenu.deleteMany()
-  await prisma.task.deleteMany()
-  await prisma.invoice.deleteMany()
-  await prisma.booking.deleteMany()
-  await prisma.roomImage.deleteMany()
-  await prisma.roomFeature.deleteMany()
-  await prisma.room.deleteMany()
-  await prisma.staff.deleteMany()
-  await prisma.inventory.deleteMany()
-  await prisma.gallery.deleteMany()
-  await prisma.setting.deleteMany()
-  await prisma.user.deleteMany()
+  
+  // Define models that actually exist in schema.prisma and are camcelCased by Prisma Client
+  const models = [
+    'auditLog',
+    'notification',
+    'orderItem',
+    'foodOrder',
+    'foodMenu',
+    'task',
+    'invoice',
+    'booking',
+    'roomImage',
+    'roomFeature',
+    'room',
+    'staff',
+    'inventory',
+    'gallery',
+    'setting',
+    'user',
+    'roomType',
+    'syncLog',
+    'outbox',
+    'payment',
+    'roomStatusHistory',
+    'maintenanceRequest'
+  ]
+
+  for (const model of models) {
+    if ((prisma as any)[model]) {
+      await (prisma as any)[model].deleteMany()
+    }
+  }
 }
+
 
 async function insertInBatches<T>(
   data: T[],
