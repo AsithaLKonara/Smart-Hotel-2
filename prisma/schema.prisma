@@ -121,6 +121,7 @@ model Booking {
   payments         Payment[]
   tasks            Task[]
   roomReviews      RoomReview[]
+  complaints       Complaint[]
   
   @@index([checkIn, checkOut])
   @@index([status])
@@ -417,6 +418,8 @@ model User {
   guestPreferences GuestPreference?
   reviews          RoomReview[]
   hotelReviews     HotelReview[]
+  tableBookings    TableBooking[]
+  complaints       Complaint[]
   foodOrders       FoodOrder[]      @relation("GuestOrders")
   payments         Payment[]
   notifications    Notification[]
@@ -736,4 +739,50 @@ model SocialLink {
   updatedAt DateTime @updatedAt
 
   @@index([active, order])
+}
+
+model TableBooking {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String?  @db.ObjectId
+  name            String
+  email           String
+  phone           String
+  guests          Int
+  bookingDate     DateTime
+  bookingTime     String
+  status          String   @default("PENDING") 
+  specialRequests String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User?    @relation(fields: [userId], references: [id])
+}
+
+model Complaint {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  bookingId   String?  @db.ObjectId
+  subject     String
+  description String
+  category    String   
+  status      String   @default("OPEN") 
+  priority    Priority @default(MEDIUM)
+  resolvedAt  DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User     @relation(fields: [userId], references: [id])
+  booking     Booking? @relation(fields: [bookingId], references: [id])
+}
+
+model Testimonial {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  role      String?  
+  content   String
+  rating    Int      @default(5)
+  image     String?
+  active    Boolean  @default(true)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
 }

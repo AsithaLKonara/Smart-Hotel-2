@@ -278,7 +278,22 @@ function KitchenDashboardContent() {
             </span>
           </div>
           <h1 className="text-4xl font-serif font-bold text-white mt-2">Culinary Command System</h1>
-          <p className="text-slate-400 text-sm mt-1">Real-time room service order streams, active preparation SLA counters, and guest allergy alerts.</p>
+          <div className="flex items-center gap-4 mt-2">
+            <p className="text-slate-400 text-sm">Real-time room service order streams, active preparation SLA counters, and guest allergy alerts.</p>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => {
+                toast.success("Incident escalation channel opened. Management notified.", {
+                  icon: "🚨",
+                  style: { background: "#e11d48", color: "#fff" }
+                })
+              }}
+              className="border-rose-500/30 text-rose-400 bg-rose-500/5 hover:bg-rose-500 hover:text-white h-7 text-[10px] uppercase font-black"
+            >
+              <AlertTriangle className="w-3 h-3 mr-1.5" /> Report Incident
+            </Button>
+          </div>
         </div>
         <div className="flex items-center gap-3">
           <Button variant="outline" size="sm" onClick={fetchKitchenData} className="bg-white/5 border-purple-900/50 text-purple-300 hover:bg-purple-900/30">

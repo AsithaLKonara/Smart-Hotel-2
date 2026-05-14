@@ -3,95 +3,68 @@
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { canAccessManagerFeatures } from '@/lib/rbac-helpers'
-import { Save, Loader2, Building2, Mail, Phone, MapPin, Clock, Globe, FileText, Award } from 'lucide-react'
+import { canAccessSuperAdminFeatures } from '@/lib/rbac-helpers'
+import { 
+  Save, Loader2, Hotel, Mail, Phone, MapPin, 
+  Clock, FileText, Globe, ShieldCheck, Sparkles,
+  Image as ImageIcon
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import toast from 'react-hot-toast'
-
-interface SettingsData {
-  // Basic Info
-  hotel_name: string
-  hotel_tagline: string
-  hotel_description: string
-  
-  // Contact Info
-  hotel_email: string
-  hotel_phone: string
-  hotel_address: string
-  
-  // Check-in/out
-  check_in_time: string
-  check_out_time: string
-  
-  // Location
-  hotel_latitude: string
-  hotel_longitude: string
-  
-  // About Content
-  hotel_story: string
-  hotel_founded: string
-  hotel_milestones: string
-}
-
-const defaultSettings: SettingsData = {
-  hotel_name: 'SmartHotel Grand Palace',
-  hotel_tagline: 'Luxury 5-Star Accommodation',
-  hotel_description: 'Experience unparalleled luxury where timeless elegance meets modern hospitality.',
-  hotel_email: 'info@smarthotel.com',
-  hotel_phone: '+1 (800) 555-HOTEL',
-  hotel_address: '123 Grand Boulevard, City Center, Metropolitan Area, ST 10001',
-  check_in_time: '15:00',
-  check_out_time: '11:00',
-  hotel_latitude: '40.7589',
-  hotel_longitude: '-73.9851',
-  hotel_story: 'Since opening our doors in 1985, we have embraced guests with impeccable service, timeless design, and unforgettable experiences.',
-  hotel_founded: '1985',
-  hotel_milestones: JSON.stringify([
-    '1985 - Flagship property opens in the heart of the city',
-    '1992 - Awarded first AAA Five Diamond rating',
-    '2001 - Major expansion adding conference and wellness wings',
-    '2010 - Sustainability initiatives earn green certification',
-    '2020 - Digital transformation enhances guest experiences'
-  ])
-}
+import { PremiumSpinner } from '@/components/ui/premium-spinner'
+import { DashboardHeader } from '@/components/dashboard/dashboard-header'
+import { motion } from 'framer-motion'
 
 export default function AdminSettingsPage() {
-  const { data: session, status } = useSession()
+  const { data: session, status: authStatus } = useSession()
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [formData, setFormData] = useState<SettingsData>(defaultSettings)
+  const [formData, setFormData] = useState({
+    hotel_name: '',
+    hotel_tagline: '',
+    hotel_description: '',
+    hotel_email: '',
+    hotel_phone: '',
+    hotel_address: '',
+    hotel_latitude: '',
+    hotel_longitude: '',
+    hotel_story: '',
+    hotel_founded: '',
+    hotel_milestones: '',
+    check_in_time: '14:00',
+    check_out_time: '12:00',
+  })
 
   useEffect(() => {
-    if (status === 'loading') return
+    if (authStatus === 'loading') return
     
-    if (!canAccessManagerFeatures(session)) {
-      router.push('/auth/signin')
+    if (!canAccessSuperAdminFeatures(session)) {
+      router.push('/admin/dashboard')
       return
     }
 
     fetchSettings()
-  }, [session, status, router])
+  }, [session, authStatus, router])
 
   const fetchSettings = async () => {
     try {
-      const keys = Object.keys(defaultSettings)
-      const response = await fetch(`/api/settings?keys=${keys.join(',')}`)
+      const response = await fetch('/api/settings')
       if (!response.ok) throw new Error('Failed to fetch settings')
-      
       const data = await response.json()
-      const settings = data.settings || {}
       
-      // Populate form with fetched settings or defaults
-      const populated: SettingsData = { ...defaultSettings }
-      Object.keys(populated).forEach(key => {
-        if (settings[key] !== undefined) {
-          populated[key as keyof SettingsData] = settings[key]
-        }
-      })
-      
-      setFormData(populated)
+      const settingsMap = data.reduce((acc: any, curr: any) => {
+        acc[curr.key] = curr.value
+        return acc
+      }, {})
+
+      setFormData(prev => ({
+        ...prev,
+        ...settingsMap
+      }))
     } catch (error) {
       console.error('Error fetching settings:', error)
       toast.error('Failed to load settings')
@@ -106,267 +79,247 @@ export default function AdminSettingsPage() {
 
     try {
       const response = await fetch('/api/settings', {
-        method: 'PUT',
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       })
 
       if (!response.ok) throw new Error('Failed to save settings')
 
-      toast.success('Settings saved successfully')
+      toast.success('System configuration updated successfully', {
+        style: { background: '#0c0c0c', color: '#fff', border: '1px solid #c5a059' }
+      })
     } catch (error) {
-      console.error('Error saving settings:', error)
-      toast.error('Failed to save settings')
+      toast.error('Could not save configuration')
     } finally {
       setSaving(false)
     }
   }
 
-  const handleChange = (key: keyof SettingsData, value: string) => {
+  const handleChange = (key: string, value: string) => {
     setFormData(prev => ({ ...prev, [key]: value }))
   }
 
-  if (status === 'loading' || loading) {
+  if (authStatus === 'loading' || loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <Loader2 className="w-8 h-8 animate-spin" />
+      <div className="min-h-screen bg-transparent flex items-center justify-center">
+        <PremiumSpinner size="lg" text="Accessing core mainframe..." />
       </div>
     )
   }
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+  }
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 }
+  }
+
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">Hotel Settings</h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          Manage hotel information, contact details, and content
-        </p>
-      </div>
+    <div className="min-h-screen bg-transparent p-8 lg:p-12 space-y-12">
+      <DashboardHeader 
+        title="System Governance"
+        firstName={session?.user?.name?.split(' ')[0]}
+        subtitle="Global property configuration, hospitality protocols, and core identity management."
+        role="Super Administrator"
+      />
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Basic Information */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Building2 className="w-5 h-5" />
-              Basic Information
-            </CardTitle>
-            <CardDescription>Hotel name, tagline, and description</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">Hotel Name *</label>
-              <input
-                type="text"
-                value={formData.hotel_name}
-                onChange={(e) => handleChange('hotel_name', e.target.value)}
-                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Tagline *</label>
-              <input
-                type="text"
-                value={formData.hotel_tagline}
-                onChange={(e) => handleChange('hotel_tagline', e.target.value)}
-                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Description *</label>
-              <textarea
-                value={formData.hotel_description}
-                onChange={(e) => handleChange('hotel_description', e.target.value)}
-                rows={3}
-                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
-                required
-              />
-            </div>
-          </CardContent>
-        </Card>
+      <form onSubmit={handleSubmit} className="max-w-5xl space-y-8">
+        <motion.div 
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="grid grid-cols-1 md:grid-cols-2 gap-8"
+        >
+          {/* Brand Identity */}
+          <motion.div variants={itemVariants} className="md:col-span-2">
+            <Card className="bg-[#0c0c0c] border-white/5 rounded-[40px] overflow-hidden group">
+              <CardHeader className="p-10 border-b border-white/5 bg-white/[0.01]">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-2xl font-serif text-white flex items-center gap-3">
+                      <Hotel className="w-6 h-6 text-primary" /> Brand Identity
+                    </CardTitle>
+                    <CardDescription className="text-white/30 text-xs uppercase tracking-widest font-black mt-1">Core property credentials</CardDescription>
+                  </div>
+                  <Sparkles className="w-8 h-8 text-white/5 group-hover:text-primary/20 transition-colors" />
+                </div>
+              </CardHeader>
+              <CardContent className="p-10 space-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-2">
+                    <label className="text-[10px] uppercase tracking-widest font-black text-white/20 ml-1">Property Name</label>
+                    <Input 
+                      value={formData.hotel_name} 
+                      onChange={(e) => handleChange('hotel_name', e.target.value)}
+                      required
+                      className="bg-white/5 border-white/5 rounded-2xl h-14 focus:border-primary/50 transition-all"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] uppercase tracking-widest font-black text-white/20 ml-1">Signature Tagline</label>
+                    <Input 
+                      value={formData.hotel_tagline} 
+                      onChange={(e) => handleChange('hotel_tagline', e.target.value)}
+                      required
+                      className="bg-white/5 border-white/5 rounded-2xl h-14 focus:border-primary/50 transition-all"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase tracking-widest font-black text-white/20 ml-1">Brand Narrative</label>
+                  <Textarea 
+                    value={formData.hotel_description} 
+                    onChange={(e) => handleChange('hotel_description', e.target.value)}
+                    required
+                    rows={4}
+                    className="bg-white/5 border-white/5 rounded-3xl p-6 focus:border-primary/50 transition-all resize-none"
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
 
-        {/* Contact Information */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Mail className="w-5 h-5" />
-              Contact Information
-            </CardTitle>
-            <CardDescription>Email, phone, and address</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">Email *</label>
-              <input
-                type="email"
-                value={formData.hotel_email}
-                onChange={(e) => handleChange('hotel_email', e.target.value)}
-                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Phone *</label>
-              <input
-                type="tel"
-                value={formData.hotel_phone}
-                onChange={(e) => handleChange('hotel_phone', e.target.value)}
-                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Address *</label>
-              <textarea
-                value={formData.hotel_address}
-                onChange={(e) => handleChange('hotel_address', e.target.value)}
-                rows={2}
-                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
-                required
-              />
-            </div>
-          </CardContent>
-        </Card>
+          {/* Contact Infrastructure */}
+          <motion.div variants={itemVariants}>
+            <Card className="bg-[#0c0c0c] border-white/5 rounded-[40px] h-full overflow-hidden">
+              <CardHeader className="p-8 border-b border-white/5 bg-white/[0.01]">
+                <CardTitle className="text-xl font-serif text-white flex items-center gap-3">
+                  <Globe className="w-5 h-5 text-indigo-400" /> Communications
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-8 space-y-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase tracking-widest font-black text-white/20 ml-1">Official Email</label>
+                  <div className="relative">
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
+                    <Input 
+                      type="email"
+                      value={formData.hotel_email} 
+                      onChange={(e) => handleChange('hotel_email', e.target.value)}
+                      required
+                      className="bg-white/5 border-white/5 rounded-2xl h-12 pl-12"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase tracking-widest font-black text-white/20 ml-1">Concierge Line</label>
+                  <div className="relative">
+                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
+                    <Input 
+                      value={formData.hotel_phone} 
+                      onChange={(e) => handleChange('hotel_phone', e.target.value)}
+                      required
+                      className="bg-white/5 border-white/5 rounded-2xl h-12 pl-12"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase tracking-widest font-black text-white/20 ml-1">Physical Address</label>
+                  <div className="relative">
+                    <MapPin className="absolute left-4 top-4 w-4 h-4 text-white/20" />
+                    <Textarea 
+                      value={formData.hotel_address} 
+                      onChange={(e) => handleChange('hotel_address', e.target.value)}
+                      required
+                      rows={2}
+                      className="bg-white/5 border-white/5 rounded-2xl pl-12 pt-3"
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
 
-        {/* Check-in/out Times */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Clock className="w-5 h-5" />
-              Check-in/out Times
-            </CardTitle>
-            <CardDescription>Standard check-in and check-out times</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">Check-in Time *</label>
-                <input
-                  type="time"
-                  value={formData.check_in_time}
-                  onChange={(e) => handleChange('check_in_time', e.target.value)}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Check-out Time *</label>
-                <input
-                  type="time"
-                  value={formData.check_out_time}
-                  onChange={(e) => handleChange('check_out_time', e.target.value)}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
-                  required
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+          {/* Operational Protocols */}
+          <motion.div variants={itemVariants}>
+            <Card className="bg-[#0c0c0c] border-white/5 rounded-[40px] h-full overflow-hidden">
+              <CardHeader className="p-8 border-b border-white/5 bg-white/[0.01]">
+                <CardTitle className="text-xl font-serif text-white flex items-center gap-3">
+                  <Clock className="w-5 h-5 text-amber-400" /> Stay Protocols
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-8 space-y-8">
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] uppercase tracking-widest font-black text-white/20 ml-1">Check-in</label>
+                    <Input 
+                      type="time"
+                      value={formData.check_in_time} 
+                      onChange={(e) => handleChange('check_in_time', e.target.value)}
+                      className="bg-white/5 border-white/5 rounded-2xl h-12 text-center font-bold"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] uppercase tracking-widest font-black text-white/20 ml-1">Check-out</label>
+                    <Input 
+                      type="time"
+                      value={formData.check_out_time} 
+                      onChange={(e) => handleChange('check_out_time', e.target.value)}
+                      className="bg-white/5 border-white/5 rounded-2xl h-12 text-center font-bold"
+                    />
+                  </div>
+                </div>
+                
+                <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[32px] space-y-4">
+                  <div className="flex items-center gap-3">
+                    <ShieldCheck className="w-5 h-5 text-primary" />
+                    <p className="text-[10px] text-white font-black uppercase tracking-widest">Global Sync Status</p>
+                  </div>
+                  <p className="text-[9px] text-white/30 leading-relaxed uppercase tracking-tighter">
+                    These times are automatically pushed to OTA channels (Booking.com, Agoda) and integrated into guest welcome sequences.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
 
-        {/* Location */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <MapPin className="w-5 h-5" />
-              Location
-            </CardTitle>
-            <CardDescription>GPS coordinates for map display</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">Latitude *</label>
-                <input
-                  type="number"
-                  step="any"
-                  value={formData.hotel_latitude}
-                  onChange={(e) => handleChange('hotel_latitude', e.target.value)}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Longitude *</label>
-                <input
-                  type="number"
-                  step="any"
-                  value={formData.hotel_longitude}
-                  onChange={(e) => handleChange('hotel_longitude', e.target.value)}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
-                  required
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+          {/* Legacy & Heritage */}
+          <motion.div variants={itemVariants} className="md:col-span-2">
+            <Card className="bg-[#0c0c0c] border-white/5 rounded-[40px] overflow-hidden">
+              <CardHeader className="p-8 border-b border-white/5 bg-white/[0.01]">
+                <CardTitle className="text-xl font-serif text-white flex items-center gap-3">
+                  <FileText className="w-5 h-5 text-emerald-400" /> Heritage & Milestones
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-8 space-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+                  <div className="md:col-span-1 space-y-2">
+                    <label className="text-[10px] uppercase tracking-widest font-black text-white/20 ml-1">Founded Year</label>
+                    <Input 
+                      value={formData.hotel_founded} 
+                      onChange={(e) => handleChange('hotel_founded', e.target.value)}
+                      placeholder="e.g. 1985"
+                      className="bg-white/5 border-white/5 rounded-2xl h-12"
+                    />
+                  </div>
+                  <div className="md:col-span-3 space-y-2">
+                    <label className="text-[10px] uppercase tracking-widest font-black text-white/20 ml-1">The Story So Far</label>
+                    <Textarea 
+                      value={formData.hotel_story} 
+                      onChange={(e) => handleChange('hotel_story', e.target.value)}
+                      rows={3}
+                      className="bg-white/5 border-white/5 rounded-2xl focus:border-primary/50 transition-all resize-none"
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </motion.div>
 
-        {/* About Content */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="w-5 h-5" />
-              About Page Content
-            </CardTitle>
-            <CardDescription>Story, founded year, and milestones</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">Hotel Story *</label>
-              <textarea
-                value={formData.hotel_story}
-                onChange={(e) => handleChange('hotel_story', e.target.value)}
-                rows={4}
-                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Founded Year *</label>
-              <input
-                type="text"
-                value={formData.hotel_founded}
-                onChange={(e) => handleChange('hotel_founded', e.target.value)}
-                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
-                placeholder="e.g., 1985"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Milestones (JSON Array) *</label>
-              <textarea
-                value={formData.hotel_milestones}
-                onChange={(e) => handleChange('hotel_milestones', e.target.value)}
-                rows={6}
-                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 font-mono text-sm"
-                placeholder='["1985 - Event 1", "1992 - Event 2"]'
-                required
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Enter milestones as a JSON array of strings
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Submit Button */}
-        <div className="flex justify-end">
-          <Button
-            type="submit"
+        <div className="flex justify-end pt-8">
+          <Button 
+            type="submit" 
             disabled={saving}
-            size="lg"
-            className="min-w-32"
+            className="h-16 px-12 bg-gold-gradient text-white rounded-2xl font-black uppercase tracking-widest text-xs border-none shadow-luxury min-w-[240px]"
           >
-            {saving ? (
+            {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : (
               <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              <>
-                <Save className="w-4 h-4 mr-2" />
-                Save Settings
+                <Save className="w-4 h-4 mr-3" /> Commit System Changes
               </>
             )}
           </Button>
@@ -375,4 +328,3 @@ export default function AdminSettingsPage() {
     </div>
   )
 }
-

@@ -1,17 +1,18 @@
+"use client"
+
+import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { 
   Utensils, 
   Wine, 
   Coffee, 
-  Star,
-  ChevronRight,
   Clock,
   MapPin,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-
-export const dynamic = 'force-dynamic'
+import { DiningBookingModal } from '@/components/dining/booking-modal'
+import { MenuModal } from '@/components/dining/menu-modal'
 
 const venues = [
   {
@@ -47,6 +48,20 @@ const venues = [
 ]
 
 export default function DiningPage() {
+  const [selectedVenue, setSelectedVenue] = useState<string | null>(null)
+  const [isBookingOpen, setIsBookingOpen] = useState(false)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+
+  const handleBooking = (venueName: string) => {
+    setSelectedVenue(venueName)
+    setIsBookingOpen(true)
+  }
+
+  const handleViewMenu = (venueName: string) => {
+    setSelectedVenue(venueName)
+    setIsMenuOpen(true)
+  }
+
   return (
     <div className="bg-transparent text-white">
       {/* Hero Section — Blur Glass */}
@@ -94,7 +109,7 @@ export default function DiningPage() {
                     <div className="flex items-center space-x-3 text-luxury uppercase tracking-widest text-xs font-bold">
                       <span>{venue.subtitle}</span>
                     </div>
-                    <h2 className="text-4xl lg:text-5xl font-serif font-bold text-midnight">{venue.name}</h2>
+                    <h2 className="text-4xl lg:text-5xl font-serif font-bold text-white">{venue.name}</h2>
                   </div>
 
                   <p className="text-lg text-white/60 leading-relaxed font-light">
@@ -127,10 +142,17 @@ export default function DiningPage() {
                   </div>
 
                   <div className="flex space-x-4">
-                    <Button className="bg-gold-gradient text-white rounded-xl px-10 h-14 uppercase tracking-widest text-xs font-bold border-none shadow-luxury">
+                    <Button 
+                      onClick={() => handleBooking(venue.name)}
+                      className="bg-gold-gradient text-white rounded-xl px-10 h-14 uppercase tracking-widest text-xs font-bold border-none shadow-luxury"
+                    >
                       Book a Table
                     </Button>
-                    <Button variant="outline" className="border-white/20 text-white rounded-xl px-10 h-14 uppercase tracking-widest text-xs font-bold hover:bg-white/10 transition-all">
+                    <Button 
+                      onClick={() => handleViewMenu(venue.name)}
+                      variant="outline" 
+                      className="border-white/20 text-white rounded-xl px-10 h-14 uppercase tracking-widest text-xs font-bold hover:bg-white/10 transition-all"
+                    >
                       View Menu
                     </Button>
                   </div>
@@ -179,6 +201,18 @@ export default function DiningPage() {
           </Link>
         </div>
       </section>
+
+      <DiningBookingModal 
+        isOpen={isBookingOpen}
+        onClose={() => setIsBookingOpen(false)}
+        venueName={selectedVenue || ''}
+      />
+
+      <MenuModal 
+        isOpen={isMenuOpen}
+        onClose={() => setIsMenuOpen(false)}
+        venueName={selectedVenue || ''}
+      />
     </div>
   )
 }

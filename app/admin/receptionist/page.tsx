@@ -39,30 +39,6 @@ import { RoomStatusGrid } from '@/components/dashboard/room-status-grid'
 import { RoomActionDesk } from '@/components/dashboard/room-action-desk'
 import { AnimatePresence, motion } from 'framer-motion'
 
-// Extended High-Density Mock Operational Datastore
-const MOCK_OPERATIONAL_ROOMS = [
-  { id: "101", number: "101", type: "STANDARD", floor: 1, status: "AVAILABLE", price: 15000 },
-  { id: "102", number: "102", type: "STANDARD", floor: 1, status: "CLEANING", price: 15000 },
-  { id: "103", number: "103", type: "STANDARD", floor: 1, status: "OCCUPIED", price: 15000 },
-  { id: "201", number: "201", type: "DELUXE", floor: 2, status: "RESERVED", price: 25000 },
-  { id: "202", number: "202", type: "DELUXE", floor: 2, status: "OCCUPIED", price: 25000 },
-  { id: "203", number: "203", type: "DELUXE", floor: 2, status: "MAINTENANCE", price: 25000 },
-  { id: "301", number: "301", type: "SUITE", floor: 3, status: "CHECKOUT_PENDING", price: 45000 },
-  { id: "302", number: "302", type: "SUITE", floor: 3, status: "AVAILABLE", price: 45000 },
-  { id: "401", number: "401", type: "PRESIDENTIAL", floor: 4, status: "OCCUPIED", price: 95000, vip: true }
-]
-
-const MOCK_ARRIVALS = [
-  { id: "a1", guestName: "Sir Richard Branson", roomNumber: "401", roomType: "Presidential", checkIn: "Today, 14:00", vip: true, payment: "Paid", notes: "Prefers extra luxury pillows & sparkling water on entry", isLate: false },
-  { id: "a2", guestName: "Amelia Earhart", roomNumber: "201", roomType: "Deluxe Suite", checkIn: "Today, 15:30", vip: false, payment: "Pay on arrival", notes: "Needs airport transfer details", isLate: true },
-  { id: "a3", guestName: "Steve Jobs", roomNumber: "302", roomType: "Executive Suite", checkIn: "Today, 18:00", vip: true, payment: "Paid", notes: "No sugar drinks in mini-bar", isLate: false }
-]
-
-const MOCK_DEPARTURES = [
-  { id: "d1", guestName: "Elon Musk", roomNumber: "301", roomType: "Executive Suite", checkOut: "Today, 11:00", vip: true, payment: "Paid (Stripe)", notes: "Needs express check-out receipt emailed", isPending: true },
-  { id: "d2", guestName: "Jane Doe", roomNumber: "103", roomType: "Standard Single", checkOut: "Today, 12:00", vip: false, payment: "Unpaid ($150 extras)", isPending: false }
-]
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
 export default function ReceptionistOperationsCenter() {

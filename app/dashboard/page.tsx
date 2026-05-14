@@ -51,7 +51,9 @@ export default function DashboardOrchestrator() {
     } else if (role === 'HOUSEKEEPING') {
       router.push('/admin/housekeeping')
     } else if (role === 'KITCHEN') {
-      router.push('/admin/kitchen')
+      router.push('/kitchen/dashboard')
+    } else if (role === 'MAINTENANCE') {
+      router.push('/admin/tasks')
     }
   }, [status, session, router])
 

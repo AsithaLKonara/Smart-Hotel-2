@@ -5,7 +5,7 @@
 
 import { Session } from 'next-auth';
 
-export type UserRole = 'GUEST' | 'RECEPTIONIST' | 'MANAGER' | 'SUPER_ADMIN' | 'KITCHEN_STAFF' | 'HOUSEKEEPING';
+export type UserRole = 'GUEST' | 'RECEPTIONIST' | 'MANAGER' | 'SUPER_ADMIN' | 'KITCHEN' | 'HOUSEKEEPING' | 'MAINTENANCE';
 
 /**
  * Safely get user role from session
@@ -67,7 +67,7 @@ export function canAccessSuperAdminFeatures(session: Session | null | undefined)
  * Check if user can access kitchen features
  */
 export function canAccessKitchenFeatures(session: Session | null | undefined): boolean {
-  return hasRole(session, ['KITCHEN_STAFF', 'MANAGER', 'SUPER_ADMIN']);
+  return hasRole(session, ['KITCHEN', 'MANAGER', 'SUPER_ADMIN']);
 }
 
 /**
@@ -95,7 +95,12 @@ export function getAllowedRoles(route: string): UserRole[] {
     '/admin/dashboard/checkin-checkout': ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'],
     '/admin/tasks': ['RECEPTIONIST', 'HOUSEKEEPING', 'MANAGER', 'SUPER_ADMIN'],
     '/admin/qr-codes': ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'],
-    '/kitchen/dashboard': ['KITCHEN_STAFF', 'MANAGER', 'SUPER_ADMIN'],
+    '/admin/receptionist': ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'],
+    '/admin/housekeeping': ['HOUSEKEEPING', 'MANAGER', 'SUPER_ADMIN'],
+    '/admin/manager': ['MANAGER', 'SUPER_ADMIN'],
+    '/admin/executive': ['MANAGER', 'SUPER_ADMIN'],
+    '/admin/analytics': ['MANAGER', 'SUPER_ADMIN'],
+    '/kitchen/dashboard': ['KITCHEN', 'MANAGER', 'SUPER_ADMIN'],
   };
   
   return routeRoles[route] || [];

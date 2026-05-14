@@ -35,20 +35,26 @@ export default function AdminSidebar() {
   const { data: session } = useSession()
   const { isCollapsed, isMobileOpen, toggleSidebar, toggleMobileMenu, closeMobileMenu } = useSidebar()
 
-  const navigation = [
-    { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
-    { name: 'Rooms', href: '/admin/rooms', icon: Bed },
-    { name: 'Bookings', href: '/admin/bookings', icon: Calendar },
-    { name: 'Check-In/Out', href: '/admin/dashboard/checkin-checkout', icon: UserCheck },
-    { name: 'Staff', href: '/admin/staff', icon: Users },
-    { name: 'Tasks', href: '/admin/tasks', icon: ClipboardList },
-    { name: 'Menu', href: '/admin/menu', icon: UtensilsCrossed },
-    { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
-    { name: 'Inventory', href: '/admin/inventory', icon: Package },
-    { name: 'Gallery', href: '/admin/gallery', icon: ImageIcon },
-    { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
-    { name: 'Settings', href: '/admin/settings', icon: SettingsIcon },
-  ]
+  const getNavigation = () => {
+    const role = session?.user?.role
+    const items = [
+      { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard, roles: ['SUPER_ADMIN', 'MANAGER'] },
+      { name: 'Executive intelligence', href: '/admin/executive', icon: BarChart3, roles: ['SUPER_ADMIN', 'MANAGER'] },
+      { name: 'Receptionist', href: '/admin/receptionist', icon: UserCheck, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'] },
+      { name: 'Housekeeping', href: '/admin/housekeeping', icon: ClipboardList, roles: ['HOUSEKEEPING', 'MANAGER', 'SUPER_ADMIN'] },
+      { name: 'Kitchen', href: '/kitchen/dashboard', icon: UtensilsCrossed, roles: ['KITCHEN', 'MANAGER', 'SUPER_ADMIN'] },
+      { name: 'Rooms', href: '/admin/rooms', icon: Bed, roles: ['SUPER_ADMIN', 'MANAGER'] },
+      { name: 'Bookings', href: '/admin/bookings', icon: Calendar, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'] },
+      { name: 'Staff', href: '/admin/staff', icon: Users, roles: ['SUPER_ADMIN', 'MANAGER'] },
+      { name: 'Tasks', href: '/admin/tasks', icon: Package, roles: ['MAINTENANCE', 'MANAGER', 'SUPER_ADMIN', 'RECEPTIONIST', 'HOUSEKEEPING'] },
+      { name: 'Inventory', href: '/admin/inventory', icon: Package, roles: ['SUPER_ADMIN', 'MANAGER'] },
+      { name: 'Settings', href: '/admin/settings', icon: SettingsIcon, roles: ['SUPER_ADMIN'] },
+    ]
+
+    return items.filter(item => item.roles.includes(role || ''))
+  }
+
+  const navigation = getNavigation()
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full">

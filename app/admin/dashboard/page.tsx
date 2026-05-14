@@ -596,6 +596,34 @@ function AdminDashboardContent() {
                 Open Channel Sync &rarr;
               </div>
             </Card>
+
+            <Card className="p-5 bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/50 hover:bg-white/10 hover:-translate-y-0.5 transition-all flex flex-col justify-between h-[200px] cursor-pointer rounded-3xl group shadow-lg" onClick={() => router.push('/admin/staff')}>
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-white/40 font-black uppercase tracking-wider">Personnel</span>
+                  <Badge className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[9px] uppercase tracking-wider font-extrabold px-1.5 py-0.5">HR GOVERNANCE</Badge>
+                </div>
+                <h3 className="text-lg font-bold text-white mt-3 group-hover:text-primary transition-colors">Staff & HR Center</h3>
+                <p className="text-[11px] text-white/50 mt-1 line-clamp-2 leading-relaxed">Onboarding, role assignments, department structures, and payroll snapshots.</p>
+              </div>
+              <div className="text-right text-[10px] font-black uppercase tracking-widest text-primary flex items-center justify-end gap-1 mt-4 group-hover:translate-x-1 transition-transform">
+                Open Workspace &rarr;
+              </div>
+            </Card>
+
+            <Card className="p-5 bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/50 hover:bg-white/10 hover:-translate-y-0.5 transition-all flex flex-col justify-between h-[200px] cursor-pointer rounded-3xl group shadow-lg" onClick={() => router.push('/admin/settings')}>
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-white/40 font-black uppercase tracking-wider">Governance</span>
+                  <Badge className="bg-rose-500/10 text-rose-400 border border-rose-500/20 text-[9px] uppercase tracking-wider font-extrabold px-1.5 py-0.5">ROOT CONTROL</Badge>
+                </div>
+                <h3 className="text-lg font-bold text-white mt-3 group-hover:text-primary transition-colors">Global Configuration</h3>
+                <p className="text-[11px] text-white/50 mt-1 line-clamp-2 leading-relaxed">Property branding, contact infrastructure, operational protocols, and heritage content.</p>
+              </div>
+              <div className="text-right text-[10px] font-black uppercase tracking-widest text-primary flex items-center justify-end gap-1 mt-4 group-hover:translate-x-1 transition-transform">
+                Configure System &rarr;
+              </div>
+            </Card>
           </div>
         </div>
       </>

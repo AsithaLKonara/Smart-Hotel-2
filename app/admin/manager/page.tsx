@@ -224,6 +224,24 @@ export default function ManagerOperationsCenter() {
           </div>
         </Card>
 
+        <Card 
+          className="bg-white/[0.02] border border-purple-900/20 rounded-none p-6 cursor-pointer hover:border-primary/50 transition-all group"
+          onClick={() => router.push('/admin/staff')}
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-widest font-extrabold text-slate-400">Staff Governance</p>
+              <h3 className="text-3xl font-bold font-serif text-white mt-1.5">18 Active</h3>
+              <p className="text-primary text-[9px] flex items-center gap-1 mt-2 font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
+                Open HR Center <ArrowRight className="w-3 h-3" />
+              </p>
+            </div>
+            <div className="w-12 h-12 bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center rounded-sm group-hover:bg-primary/10 group-hover:border-primary/20 transition-all">
+              <Users className="w-6 h-6 text-indigo-400 group-hover:text-primary transition-colors" />
+            </div>
+          </div>
+        </Card>
+
       </div>
 
       {/* Grid: Bottlenecks & Forecasting */}
@@ -295,7 +313,32 @@ export default function ManagerOperationsCenter() {
 
             </CardContent>
           </Card>
-
+          
+          <Card className="bg-white/[0.02] border border-purple-900/30 backdrop-blur-md rounded-none shadow-xl mt-6">
+            <CardHeader className="border-b border-purple-950/50 pb-4">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg font-serif text-white flex items-center gap-2">
+                  <ShieldAlert className="w-5 h-5 text-rose-400" /> Guest Complaints
+                </CardTitle>
+                <Badge className="bg-rose-500/10 text-rose-400 border border-rose-500/20">Executive Review</Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-4 space-y-4">
+              <div className="p-4 bg-rose-500/5 border border-rose-500/20 rounded-xs">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h5 className="text-xs font-bold text-white">Unresolved Priority Complaint</h5>
+                    <p className="text-[10px] text-slate-400 mt-1">Room 401: Air conditioning failure. Guest requested room change.</p>
+                  </div>
+                  <Badge variant="outline" className="text-[9px] border-rose-500/40 text-rose-400">P0 CRITICAL</Badge>
+                </div>
+                <div className="mt-4 flex gap-2">
+                  <Button size="sm" className="bg-rose-600 hover:bg-rose-500 text-white text-[9px] h-7 px-3">Assign Duty Manager</Button>
+                  <Button size="sm" variant="outline" className="border-slate-800 text-slate-400 text-[9px] h-7 px-3">View History</Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Right Col: Weekly Yield and Forecasting Graph */}

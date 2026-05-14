@@ -15,6 +15,7 @@ import { isDatabaseConfigured } from '@/lib/db-helpers'
 import prisma from '@/lib/db'
 import { Button } from '@/components/ui/button'
 import { formatPrice } from '@/lib/utils'
+import { TestimonialSection } from '@/components/landing/testimonial-section'
 
 export const dynamic = 'force-dynamic'
 
@@ -195,23 +196,7 @@ export default async function HomePage() {
       </section>
 
       {/* Testimonial Section */}
-      <section className="py-24 lg:py-32 bg-black/45 backdrop-blur-xl border-y border-white/5 overflow-hidden">
-        <div className="container mx-auto px-4 relative">
-          <Quote className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-48 text-primary/5 -z-10" />
-          <div className="max-w-4xl mx-auto text-center space-y-12">
-            <div className="flex justify-center gap-1">
-              {[...Array(5)].map((_, i) => <Star key={i} className="w-5 h-5 fill-primary text-primary" />)}
-            </div>
-            <h2 className="text-3xl lg:text-5xl font-serif font-bold italic text-white leading-tight">
-              "An extraordinary experience from start to finish. The attention to detail and personalized service at {contact.name} is simply world-class."
-            </h2>
-            <div className="space-y-2">
-              <h5 className="text-white font-bold tracking-widest uppercase text-sm">Alexandra Sterling</h5>
-              <p className="text-primary text-xs uppercase tracking-widest">Global Travel Critic</p>
-            </div>
-          </div>
-        </div>
-      </section>
+      <TestimonialSection />
 
       {/* Location Section */}
       <section className="py-24 lg:py-32 bg-black/30 backdrop-blur-md border-y border-white/5">
