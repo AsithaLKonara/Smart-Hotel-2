@@ -37,6 +37,12 @@ yarn-error.log*
 /artifacts/
 /logs/
 /backups/
+*.log
 *.txt
 !README.md
 !CLAUDE.md
+
+# local test scripts
+test-*.js
+quick-*.js
+debug-*.js
