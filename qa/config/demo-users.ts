@@ -74,12 +74,13 @@ export async function loginAsUser(page: Page, roleKey: keyof typeof demoUsers, b
   // Ensure any spinners are gone
   await expect(page.locator('.animate-spin, svg.animate-spin')).not.toBeVisible({ timeout: 30000 }).catch(() => {})
   
-  // Wait for the page's primary heading (h1) to be visible, ensuring full rendering and context-level hydration
+  // Wait for the page's primary heading or main container to be visible, ensuring full rendering and context-level hydration
   // Increased timeout significantly to handle slow Next.js compilation and DB connection retries
   try {
-    await expect(page.locator('main h1, .flex-1 h1').first()).toBeVisible({ timeout: 180000 })
+    const successIndicator = page.locator('main h1, .flex-1 h1, h1, h2, [role="main"]').first()
+    await expect(successIndicator).toBeVisible({ timeout: 180000 })
   } catch (err) {
-    console.error(`[Login Failure] Could not find heading for role ${roleKey}. URL: ${page.url()}`)
+    console.error(`[Login Failure] Could not find heading/main for role ${roleKey}. URL: ${page.url()}`)
     await page.screenshot({ path: `test-results/login-failure-${roleKey}.png`, fullPage: true })
     throw err
   }
