@@ -794,3 +794,17 @@ model Testimonial {
   order     Int      @default(0)
   createdAt DateTime @default(now())
 }
+
+model FooterLink {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  label     String
+  url       String
+  category  String
+  order     Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
+  @@index([active, order])
+}
