@@ -55,6 +55,8 @@ interface KitchenData {
   }
 }
 
+import { AdminPageShell } from '@/components/dashboard/admin/admin-page-shell'
+
 function KitchenDashboardContent() {
   const { data: session, status } = useSession()
   const router = useRouter()
@@ -121,7 +123,7 @@ function KitchenDashboardContent() {
 
   if (isLoading && !kitchenData) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-transparent">
+      <div className="flex items-center justify-center py-20">
         <PremiumSpinner size="lg" text="Loading Kitchen Orders..." />
       </div>
     )
@@ -132,132 +134,129 @@ function KitchenDashboardContent() {
   }
 
   return (
-    <div className="p-6 text-white">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between border-b border-white/5 pb-6 mb-8">
-        <div>
-          <h1 className="text-3xl font-serif font-bold text-white">Kitchen Orders</h1>
-          <p className="text-slate-400 text-sm mt-1">Manage real-time room service orders and preparation status.</p>
-        </div>
-        <div className="flex items-center gap-4 mt-4 md:mt-0">
-            <Button 
-              variant="destructive" 
-              onClick={() => router.push('/kitchen/complain')}
-              className="bg-rose-500/10 text-rose-400 border border-rose-500/20 hover:bg-rose-500 hover:text-white"
-            >
-              <AlertTriangle className="w-4 h-4 mr-2" /> Complain to Admin
-            </Button>
-          <Button variant="outline" onClick={fetchKitchenData} className="bg-white/5 border-white/10 text-white hover:bg-white/10">
-            <RefreshCw className="w-4 h-4 mr-2" /> Refresh
-          </Button>
-        </div>
-      </div>
-
+    <AdminPageShell
+      title="Kitchen Control"
+      subtitle="Manage real-time room service orders and preparation status."
+      onRefresh={fetchKitchenData}
+      actions={
+        <Button 
+          variant="destructive" 
+          onClick={() => router.push('/kitchen/complain')}
+          className="bg-rose-500/10 text-rose-400 border border-rose-500/20 hover:bg-rose-500 hover:text-white h-10 px-4 text-[10px] font-black uppercase tracking-widest rounded-xl"
+        >
+          <AlertTriangle className="w-4 h-4 mr-2" /> Report Issue
+        </Button>
+      }
+    >
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* New Orders */}
-        <Card className="bg-white/[0.02] border-white/5">
-          <CardHeader className="p-4 border-b border-white/5">
-            <div className="flex justify-between items-center">
-              <span className="font-bold text-white">New Orders</span>
-              <Badge className="bg-amber-500/20 text-amber-500">{ordersByStatus.PENDING.length}</Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="p-4 space-y-4">
+        <Card className="bg-[#0c0c0c] border-white/5 rounded-3xl shadow-2xl overflow-hidden">
+          <div className="p-6 border-b border-white/5 flex justify-between items-center bg-amber-500/5">
+            <span className="font-bold text-white uppercase tracking-widest text-[10px]">New Orders</span>
+            <Badge className="bg-amber-500/20 text-amber-500 border-amber-500/20">{ordersByStatus.PENDING.length}</Badge>
+          </div>
+          <div className="p-6 space-y-4">
             {ordersByStatus.PENDING.map(ord => (
-              <div key={ord.id} className="p-4 bg-white/5 border border-white/5 rounded-xl space-y-3">
+              <div key={ord.id} className="p-4 bg-white/5 border border-white/5 rounded-2xl space-y-4 hover:border-primary/30 transition-all group">
                 <div className="flex justify-between font-bold text-sm">
-                  <span>#{ord.orderNumber}</span>
-                  <span className="text-primary">Room {ord.roomNumber}</span>
+                  <span className="text-white/40">#{ord.orderNumber}</span>
+                  <span className="text-primary font-black">Room {ord.roomNumber}</span>
                 </div>
-                <div className="text-xs text-slate-400">
-                  {ord.items.map(it => <div key={it.id}>{it.quantity}x {it.menu.name}</div>)}
+                <div className="space-y-1">
+                  {ord.items.map(it => (
+                    <div key={it.id} className="text-xs text-white/60 flex items-center gap-2">
+                      <div className="w-1 h-1 bg-primary rounded-full" />
+                      {it.quantity}x {it.menu.name}
+                    </div>
+                  ))}
                 </div>
                 <Button 
                   onClick={() => updateOrderStatus(ord.id, 'CONFIRMED')}
-                  className="w-full h-8 text-xs bg-primary hover:bg-primary/90"
+                  className="w-full h-10 text-[10px] font-black uppercase tracking-widest bg-primary hover:bg-primary/90 text-white rounded-xl"
                   disabled={updatingOrder === ord.id}
                 >
                   Accept Order
                 </Button>
               </div>
             ))}
-          </CardContent>
+          </div>
         </Card>
 
         {/* Confirmed */}
-        <Card className="bg-white/[0.02] border-white/5">
-          <CardHeader className="p-4 border-b border-white/5">
-            <div className="flex justify-between items-center">
-              <span className="font-bold text-white">Confirmed</span>
-              <Badge className="bg-blue-500/20 text-blue-500">{ordersByStatus.CONFIRMED.length}</Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="p-4 space-y-4">
+        <Card className="bg-[#0c0c0c] border-white/5 rounded-3xl shadow-2xl overflow-hidden">
+          <div className="p-6 border-b border-white/5 flex justify-between items-center bg-blue-500/5">
+            <span className="font-bold text-white uppercase tracking-widest text-[10px]">Confirmed</span>
+            <Badge className="bg-blue-500/20 text-blue-500 border-blue-500/20">{ordersByStatus.CONFIRMED.length}</Badge>
+          </div>
+          <div className="p-6 space-y-4">
             {ordersByStatus.CONFIRMED.map(ord => (
-              <div key={ord.id} className="p-4 bg-white/5 border border-white/5 rounded-xl space-y-3">
-                <div className="font-bold text-sm">#{ord.orderNumber} - Room {ord.roomNumber}</div>
+              <div key={ord.id} className="p-4 bg-white/5 border border-white/5 rounded-2xl space-y-4">
+                <div className="font-bold text-sm text-white">#{ord.orderNumber} - Room {ord.roomNumber}</div>
                 <Button 
                   onClick={() => updateOrderStatus(ord.id, 'PREPARING')}
-                  className="w-full h-8 text-xs bg-indigo-500 hover:bg-indigo-600"
+                  className="w-full h-10 text-[10px] font-black uppercase tracking-widest bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl"
                   disabled={updatingOrder === ord.id}
                 >
-                  Start Cooking
+                  Start Preparation
                 </Button>
               </div>
             ))}
-          </CardContent>
+          </div>
         </Card>
 
         {/* Preparing */}
-        <Card className="bg-white/[0.02] border-white/5">
-          <CardHeader className="p-4 border-b border-white/5">
-            <div className="flex justify-between items-center">
-              <span className="font-bold text-white">Preparing</span>
-              <Badge className="bg-purple-500/20 text-purple-500">{ordersByStatus.PREPARING.length}</Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="p-4 space-y-4">
+        <Card className="bg-[#0c0c0c] border-white/5 rounded-3xl shadow-2xl overflow-hidden">
+          <div className="p-6 border-b border-white/5 flex justify-between items-center bg-purple-500/5">
+            <span className="font-bold text-white uppercase tracking-widest text-[10px]">Preparing</span>
+            <Badge className="bg-purple-500/20 text-purple-500 border-purple-500/20">{ordersByStatus.PREPARING.length}</Badge>
+          </div>
+          <div className="p-6 space-y-4">
             {ordersByStatus.PREPARING.map(ord => (
-              <div key={ord.id} className="p-4 bg-white/5 border border-white/5 rounded-xl space-y-3">
-                <div className="font-bold text-sm text-purple-400 flex items-center">
-                  <ChefHat className="w-4 h-4 mr-2" /> #{ord.orderNumber}
+              <div key={ord.id} className="p-4 bg-white/5 border border-white/5 rounded-2xl space-y-4 border-l-4 border-l-purple-500">
+                <div className="font-bold text-sm text-white flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <ChefHat className="w-4 h-4 text-purple-500" /> #{ord.orderNumber}
+                  </div>
+                  <span className="text-purple-500 font-black">Room {ord.roomNumber}</span>
                 </div>
                 <Button 
                   onClick={() => updateOrderStatus(ord.id, 'READY')}
-                  className="w-full h-8 text-xs bg-amber-500 hover:bg-amber-600 animate-pulse"
+                  className="w-full h-10 text-[10px] font-black uppercase tracking-widest bg-amber-500 hover:bg-amber-600 text-white rounded-xl animate-pulse"
                   disabled={updatingOrder === ord.id}
                 >
-                  Ready to Serve
+                  Mark as Ready
                 </Button>
               </div>
             ))}
-          </CardContent>
+          </div>
         </Card>
 
         {/* Ready */}
-        <Card className="bg-white/[0.02] border-white/5">
-          <CardHeader className="p-4 border-b border-white/5">
-            <div className="flex justify-between items-center">
-              <span className="font-bold text-white">Ready</span>
-              <Badge className="bg-emerald-500/20 text-emerald-500">{ordersByStatus.READY.length}</Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="p-4 space-y-4">
+        <Card className="bg-[#0c0c0c] border-white/5 rounded-3xl shadow-2xl overflow-hidden">
+          <div className="p-6 border-b border-white/5 flex justify-between items-center bg-emerald-500/5">
+            <span className="font-bold text-white uppercase tracking-widest text-[10px]">Ready</span>
+            <Badge className="bg-emerald-500/20 text-emerald-500 border-emerald-500/20">{ordersByStatus.READY.length}</Badge>
+          </div>
+          <div className="p-6 space-y-4">
             {ordersByStatus.READY.map(ord => (
-              <div key={ord.id} className="p-4 bg-white/5 border border-white/5 rounded-xl space-y-3">
-                <div className="font-bold text-sm text-emerald-400">#{ord.orderNumber} - Room {ord.roomNumber}</div>
+              <div key={ord.id} className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl space-y-4">
+                <div className="font-bold text-sm text-emerald-400 flex justify-between items-center">
+                   <span>#{ord.orderNumber}</span>
+                   <span>Room {ord.roomNumber}</span>
+                </div>
                 <Button 
                   onClick={() => updateOrderStatus(ord.id, 'DELIVERED')}
-                  className="w-full h-8 text-xs bg-emerald-500 hover:bg-emerald-600"
+                  className="w-full h-10 text-[10px] font-black uppercase tracking-widest bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl shadow-lg shadow-emerald-900/20"
                   disabled={updatingOrder === ord.id}
                 >
-                  Mark Delivered
+                  Finish & Deliver
                 </Button>
               </div>
             ))}
-          </CardContent>
+          </div>
         </Card>
       </div>
-    </div>
+    </AdminPageShell>
   )
 }
 

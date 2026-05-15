@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { getRequestSession } from '@/lib/session'
 import { prisma } from '@/lib/db'
 import { isDatabaseConfigured } from '@/lib/db-helpers'
 
@@ -25,26 +24,16 @@ let MOCK_NOTIFICATIONS: any[] = [
     link: "/kitchen/dashboard",
     read: false,
     createdAt: new Date(Date.now() - 1000 * 60 * 18).toISOString()
-  },
-  {
-    id: "notif-3",
-    userId: "mock-user-id",
-    type: "task",
-    title: "Room Release Confirmed",
-    message: "Room 102 transitioned to AVAILABLE after final supervisor inspection check.",
-    link: "/admin/housekeeping",
-    read: true,
-    createdAt: new Date(Date.now() - 1000 * 60 * 60).toISOString()
   }
 ];
 
 export async function GET(request: NextRequest) {
-  const session = await getServerSession(authOptions)
+  const session = await getRequestSession(request)
   if (!session) {
     return NextResponse.json({ error: 'Unauthorized: Session missing.' }, { status: 401 })
   }
 
-  const userId = (session.user as any)?.id
+  const userId = session.user.id
 
   if (!isDatabaseConfigured()) {
     return NextResponse.json({
@@ -74,7 +63,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const session = await getServerSession(authOptions)
+  const session = await getRequestSession(request)
   if (!session) {
     return NextResponse.json({ error: 'Unauthorized: Action blocked.' }, { status: 401 })
   }
@@ -87,7 +76,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Bad Request: Missing notification properties.' }, { status: 400 })
     }
 
-    const userId = targetUserId || (session.user as any)?.id || null
+    const userId = targetUserId || session.user.id
 
     const notificationPayload = {
       type,
@@ -121,7 +110,7 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
-  const session = await getServerSession(authOptions)
+  const session = await getRequestSession(request)
   if (!session) {
     return NextResponse.json({ error: 'Unauthorized: Action blocked.' }, { status: 401 })
   }
@@ -144,7 +133,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     if (markAllRead) {
-      const userId = (session.user as any)?.id
+      const userId = session.user.id
       await prisma.notification.updateMany({
         where: userId && userId.length === 24 ? { userId, read: false } : { read: false },
         data: { read: true, readAt: new Date() }

@@ -2,6 +2,7 @@
 
 import React, { useRef, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image';
 
 export interface CinematicHeroProps {
   videoMp4Url?: string;
@@ -73,13 +74,14 @@ export const CinematicHero: React.FC<CinematicHeroProps> = ({
         }}
       >
         {/* Soft Background Fallback Image */}
-        <img
+        <Image
           src={fallbackImageUrl}
           alt="Luxury Backdrop"
+          fill
           className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out ${
             isLoaded ? 'opacity-0' : 'opacity-100'
           }`}
-          loading="lazy"
+          sizes="100vw"
         />
 
         {/* Looping Ambient Video */}

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useSession } from "next-auth/react"
 import { motion, AnimatePresence } from "framer-motion"
 import { ArrowLeft, ArrowRight, Check, Calendar, Users, MapPin, CreditCard, Gift } from "lucide-react"
 import { BookingStepper } from "../ui/stepper"
@@ -385,6 +386,7 @@ function BookingStep3({
   onComplete: () => void
   onBack: () => void
 }) {
+  const { data: session } = useSession()
   const { success } = useToast()
   const [isProcessing, setIsProcessing] = useState(false)
 
@@ -409,10 +411,14 @@ function BookingStep3({
     setIsProcessing(true)
     
     try {
+      if (!session?.user?.id) {
+        throw new Error('Please sign in to complete your booking.')
+      }
+
       // Validate booking data
       const errors = validateBookingData({
         roomId: bookingData.room?.id,
-        userId: 'current-user-id', // This would come from auth context
+        userId: session.user.id,
         checkIn: bookingData.filters.checkIn || new Date(),
         checkOut: bookingData.filters.checkOut || new Date(Date.now() + 24 * 60 * 60 * 1000),
         guests: bookingData.filters.guests,
@@ -438,7 +444,7 @@ function BookingStep3({
       // Create booking
       const bookingRequest = {
         roomId: bookingData.room!.id,
-        userId: 'current-user-id', // This would come from auth context
+        userId: session.user.id,
         checkIn: bookingData.filters.checkIn!,
         checkOut: bookingData.filters.checkOut!,
         guests: bookingData.filters.guests,

@@ -21,6 +21,8 @@ import { RoomStatusGrid } from '@/components/dashboard/room-status-grid'
 import { RoomActionDesk } from '@/components/dashboard/room-action-desk'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { AdminPageShell } from '@/components/dashboard/admin/admin-page-shell'
+
 export default function ReceptionistOperationsCenter() {
   const { data: session, status: authStatus } = useSession()
   const router = useRouter()
@@ -93,32 +95,89 @@ export default function ReceptionistOperationsCenter() {
     }
   }
 
+  const handleCheckIn = async (roomNumber: string) => {
+    const room = rooms.find((r: any) => r.number === roomNumber)
+    if (!room) return
+    const booking = allBookings.find((b: any) => b.roomId === room.id && (b.status === 'CONFIRMED' || b.status === 'PENDING'))
+    if (!booking) {
+      toast.error('No pending/confirmed booking found for this room.')
+      return
+    }
+    updateBookingMutation.mutate({ id: booking.id, status: 'CHECKED_IN' })
+    toast.success(`Check-in successful for Room ${roomNumber}`)
+  }
+
+  const handleCheckOut = async (roomNumber: string) => {
+    const room = rooms.find((r: any) => r.number === roomNumber)
+    if (!room) return
+    const booking = allBookings.find((b: any) => b.roomId === room.id && b.status === 'CHECKED_IN')
+    if (!booking) {
+      toast.error('No active resident found in this room.')
+      return
+    }
+    updateBookingMutation.mutate({ id: booking.id, status: 'CHECKED_OUT' })
+    toast.success(`Check-out and settlement initiated for Room ${roomNumber}`)
+  }
+
+  const handleCreateBooking = async (data: any) => {
+    try {
+      const res = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          roomId: data.roomId,
+          guestName: data.guestName,
+          guestEmail: data.guestEmail,
+          guestPhone: data.guestPhone,
+          guests: 1,
+          checkIn: new Date().toISOString(),
+          checkOut: new Date(Date.now() + data.nights * 24 * 60 * 60 * 1000).toISOString(),
+          paymentMethod: 'pay_later'
+        })
+      })
+      
+      const result = await res.json()
+      if (!res.ok) throw new Error(result.error || 'Failed to create booking')
+      
+      if (result.booking?.id) {
+        await fetch(`/api/bookings/${result.booking.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'CHECKED_IN' })
+        })
+      }
+
+      queryClient.invalidateQueries({ queryKey: ['bookings'] })
+      queryClient.invalidateQueries({ queryKey: ['rooms'] })
+      toast.success(`Walk-in for ${data.guestName} created and checked into Room ${data.roomNumber}.`)
+    } catch (err: any) {
+      toast.error(err.message || 'Walk-in creation failed')
+    }
+  }
+
   if (authStatus === 'loading' || roomsLoading || bookingsLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-transparent">
+      <div className="flex items-center justify-center py-20">
         <PremiumSpinner size="lg" text="Loading Reception Desk..." />
       </div>
     )
   }
 
   return (
-    <div className="p-6 text-white">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between border-b border-white/5 pb-6 mb-8">
-        <div>
-          <h1 className="text-3xl font-serif font-bold text-white">Reception Desk</h1>
-          <p className="text-slate-400 text-sm mt-1">Monitor room occupancy and manage guest assignments.</p>
-        </div>
-        <Button variant="outline" onClick={() => queryClient.invalidateQueries({ queryKey: ['rooms'] })} className="bg-white/5 border-white/10">
-          <RefreshCw className="w-4 h-4 mr-2" /> Sync Rooms
-        </Button>
-      </div>
-
-      <div className="space-y-8">
+    <AdminPageShell
+      title="Reception Desk"
+      subtitle="Monitor room occupancy and manage guest assignments."
+      onRefresh={() => queryClient.invalidateQueries({ queryKey: ['rooms'] })}
+    >
+      <div className="space-y-12">
         <section>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold flex items-center">
-              <Bed className="w-5 h-5 mr-2 text-primary" /> Room Matrix
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-xl font-serif font-bold flex items-center gap-3">
+              <Bed className="w-6 h-6 text-primary" /> Room Matrix
             </h2>
+            <Badge variant="outline" className="text-[10px] border-white/10 text-white/40 uppercase tracking-widest px-4 py-1">
+              {rooms.length} Units Online
+            </Badge>
           </div>
           <RoomStatusGrid 
             rooms={rooms}
@@ -138,13 +197,13 @@ export default function ReceptionistOperationsCenter() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md"
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl"
           >
             <motion.div 
-              initial={{ scale: 0.95 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.95 }}
-              className="w-full max-w-4xl max-h-[90vh] overflow-y-auto"
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="w-full max-w-5xl max-h-[90vh] overflow-y-auto"
             >
               <RoomActionDesk 
                 room={selectedRoom}
@@ -156,14 +215,14 @@ export default function ReceptionistOperationsCenter() {
                 notes=""
                 onNotesChange={() => {}}
                 onUpdateMetadata={() => {}}
-                onCheckIn={() => {}}
-                onCheckOut={() => {}}
-                onCreateBooking={() => {}}
+                onCheckIn={handleCheckIn}
+                onCheckOut={handleCheckOut}
+                onCreateBooking={handleCreateBooking}
               />
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </AdminPageShell>
   )
 }

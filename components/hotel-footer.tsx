@@ -152,9 +152,9 @@ export default function HotelFooter() {
             <ul className="space-y-3">
               {(quickLinks.length > 0 ? quickLinks : [
                 { label: 'Rooms & Suites', url: '/rooms' },
-                { label: 'Dining', url: '/dining' },
                 { label: 'Facilities', url: '/facilities' },
                 { label: 'Gallery', url: '/gallery' },
+                { label: 'Contact', url: '/contact' },
               ]).map((link, index) => (
                 <li key={index}>
                   <Link href={link.url} className="text-white/40 hover:text-primary text-sm font-light transition-colors duration-300 hover:tracking-wider">
@@ -172,7 +172,7 @@ export default function HotelFooter() {
               {(services.length > 0 ? services : [
                 { label: 'Concierge', url: '/contact' },
                 { label: 'Spa & Wellness', url: '/facilities' },
-                { label: 'Room Service', url: '/dining' },
+                { label: 'Fitness Center', url: '/facilities' },
                 { label: 'Valet Parking', url: '/facilities' },
               ]).map((link, index) => (
                 <li key={index}>

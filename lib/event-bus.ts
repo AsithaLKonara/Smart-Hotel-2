@@ -99,17 +99,47 @@ class EnterpriseEventBus {
     });
   }
 
-  private dispatchEventDirect(event: EnterpriseEvent) {
-    // Dispatch to global listeners
+  private async dispatchEventDirect(event: EnterpriseEvent) {
+    // 1. DISPATCH TO INTERNAL LISTENERS
     this.globalListeners.forEach(cb => {
       try { cb(event); } catch (e) { console.error('Error dispatching global event callback:', e); }
     });
 
-    // Dispatch to type listeners
     if (this.listeners.has(event.type)) {
       this.listeners.get(event.type)!.forEach(cb => {
         try { cb(event); } catch (e) { console.error(`Error dispatching callback for type [${event.type}]:`, e); }
       });
+    }
+
+    // 2. PERSIST HIGH-SEVERITY EVENTS TO DATABASE (Audit Hardening)
+    if (['HIGH', 'CRITICAL', 'EMERGENCY'].includes(event.severity)) {
+      try {
+        const { prisma } = await import('./db');
+        await prisma.auditLog.create({
+          data: {
+            actor: 'SYSTEM_EVENT_BUS',
+            action: event.type.toUpperCase(),
+            resource: 'SYSTEM',
+            resourceId: event.id,
+            details: {
+              title: event.title,
+              message: event.message,
+              severity: event.severity,
+              metadata: event.metadata
+            },
+            createdAt: new Date(event.timestamp)
+          }
+        });
+      } catch (err) {
+        console.error('[OBSERVABILITY_FAILURE] Failed to persist critical event to AuditLog:', err);
+      }
+    }
+
+    // 3. LOG TO STDOUT FOR SENTRY/CLOUDWATCH PICKUP
+    if (event.severity === 'CRITICAL' || event.severity === 'EMERGENCY') {
+      console.error(`[${event.severity}] ${event.title}: ${event.message}`, event.metadata);
+    } else if (event.severity === 'HIGH') {
+      console.warn(`[${event.severity}] ${event.title}: ${event.message}`, event.metadata);
     }
   }
 }

@@ -11,7 +11,7 @@ function KitchenLayoutContent({ children }: { children: React.ReactNode }) {
   const { isCollapsed } = useSidebar()
 
   return (
-    <div className="min-h-screen bg-[#090514]">
+    <div className="min-h-screen bg-[#0c0c0c]">
       <DashboardSidebar />
       <main className={cn(
         "transition-all duration-300 pt-16 lg:pt-0 min-h-screen",

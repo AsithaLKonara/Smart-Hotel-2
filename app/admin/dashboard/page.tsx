@@ -15,7 +15,9 @@ import {
   Activity,
   ArrowUpRight,
   ShieldAlert,
-  RefreshCw
+  RefreshCw,
+  ChevronRight,
+  User
 } from 'lucide-react'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -23,6 +25,8 @@ import { Badge } from '@/components/ui/badge'
 import toast from 'react-hot-toast'
 import { canAccessAdminDashboard } from '@/lib/rbac-helpers'
 import { PremiumSpinner } from '@/components/ui/premium-spinner'
+
+import { AdminPageShell } from '@/components/dashboard/admin/admin-page-shell'
 
 function AdminDashboardContent() {
   const { data: session, status } = useSession()
@@ -74,7 +78,7 @@ function AdminDashboardContent() {
 
   if (status === 'loading' || isLoading) {
     return (
-      <div className="min-h-screen bg-transparent flex items-center justify-center">
+      <div className="flex items-center justify-center py-20">
         <PremiumSpinner size="lg" text="Loading Command Deck..." />
       </div>
     )
@@ -84,144 +88,152 @@ function AdminDashboardContent() {
   const recentBookings = dashboardData?.recentActivity?.bookings || []
 
   return (
-    <div className="p-6 text-white">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between border-b border-white/5 pb-6 mb-8">
-        <div>
-          <h1 className="text-3xl font-serif font-bold">Admin Command Deck</h1>
-          <p className="text-slate-400 text-sm mt-1">High-level revenue tracking and system-wide governance.</p>
-        </div>
-        <Button onClick={fetchDashboardData} variant="outline" className="bg-white/5 border-white/10">
-          <RefreshCw className="w-4 h-4 mr-2" /> Refresh
-        </Button>
-      </div>
-
+    <AdminPageShell
+      title="Admin Command Deck"
+      subtitle="High-level revenue tracking and system-wide governance."
+      onRefresh={fetchDashboardData}
+    >
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-        <Card className="bg-white/[0.02] border-white/5 p-6">
+        <Card className="bg-[#0c0c0c] border-white/5 p-6 rounded-3xl shadow-2xl group hover:border-primary/20 transition-all">
           <div className="flex justify-between items-center">
             <div>
-              <p className="text-xs text-slate-400 uppercase font-bold tracking-widest">Revenue</p>
-              <h3 className="text-2xl font-bold mt-1">{formatCurrency(summary.totalRevenue || 0)}</h3>
+              <p className="text-[10px] text-white/20 uppercase font-black tracking-widest">Revenue</p>
+              <h3 className="text-2xl font-serif font-bold text-white mt-1">{formatCurrency(summary.totalRevenue || 0)}</h3>
             </div>
-            <DollarSign className="text-emerald-500 w-8 h-8" />
+            <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform">
+              <DollarSign className="w-6 h-6" />
+            </div>
           </div>
         </Card>
-        <Card className="bg-white/[0.02] border-white/5 p-6">
+        <Card className="bg-[#0c0c0c] border-white/5 p-6 rounded-3xl shadow-2xl group hover:border-primary/20 transition-all">
           <div className="flex justify-between items-center">
             <div>
-              <p className="text-xs text-slate-400 uppercase font-bold tracking-widest">Bookings</p>
-              <h3 className="text-2xl font-bold mt-1">{summary.totalBookings || 0}</h3>
+              <p className="text-[10px] text-white/20 uppercase font-black tracking-widest">Bookings</p>
+              <h3 className="text-2xl font-serif font-bold text-white mt-1">{summary.totalBookings || 0}</h3>
             </div>
-            <TrendingUp className="text-primary w-8 h-8" />
+            <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+              <TrendingUp className="w-6 h-6" />
+            </div>
           </div>
         </Card>
-        <Card className="bg-white/[0.02] border-white/5 p-6">
+        <Card className="bg-[#0c0c0c] border-white/5 p-6 rounded-3xl shadow-2xl group hover:border-primary/20 transition-all">
           <div className="flex justify-between items-center">
             <div>
-              <p className="text-xs text-slate-400 uppercase font-bold tracking-widest">Occupancy</p>
-              <h3 className="text-2xl font-bold mt-1">{summary.occupancyRate || 0}%</h3>
+              <p className="text-[10px] text-white/20 uppercase font-black tracking-widest">Occupancy</p>
+              <h3 className="text-2xl font-serif font-bold text-white mt-1">{summary.occupancyRate || 0}%</h3>
             </div>
-            <Bed className="text-blue-400 w-8 h-8" />
+            <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
+              <Bed className="w-6 h-6" />
+            </div>
           </div>
         </Card>
-        <Card className="bg-white/[0.02] border-white/5 p-6">
+        <Card className="bg-[#0c0c0c] border-white/5 p-6 rounded-3xl shadow-2xl group hover:border-primary/20 transition-all">
           <div className="flex justify-between items-center">
             <div>
-              <p className="text-xs text-slate-400 uppercase font-bold tracking-widest">Service Score</p>
-              <h3 className="text-2xl font-bold mt-1">98.2%</h3>
+              <p className="text-[10px] text-white/20 uppercase font-black tracking-widest">Service Score</p>
+              <h3 className="text-2xl font-serif font-bold text-white mt-1">98.2%</h3>
             </div>
-            <Star className="text-amber-400 w-8 h-8" />
+            <div className="w-12 h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform">
+              <Star className="w-6 h-6" />
+            </div>
           </div>
         </Card>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
-          <Card className="bg-white/[0.02] border-white/5">
-            <CardHeader className="border-b border-white/5 p-4 flex flex-row justify-between items-center">
-              <h3 className="font-bold flex items-center"><Activity className="w-5 h-5 mr-2 text-primary" /> Recent Activity</h3>
-            </CardHeader>
-            <CardContent className="p-0">
-              <div className="divide-y divide-white/5">
-                {recentBookings.slice(0, 5).map((booking: any) => (
-                  <div key={booking.id} className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors">
-                    <div>
-                      <p className="font-bold text-sm">{booking.guestName}</p>
-                      <p className="text-xs text-slate-400">Room {booking.roomNumber} • {booking.roomType}</p>
+          <Card className="bg-[#0c0c0c] border-white/5 rounded-3xl overflow-hidden shadow-2xl">
+            <div className="p-6 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
+              <h3 className="font-bold flex items-center gap-3"><Activity className="w-5 h-5 text-primary" /> Recent Activity</h3>
+              <Badge variant="outline" className="text-[10px] border-white/10 text-white/40">Live Feed</Badge>
+            </div>
+            <div className="divide-y divide-white/5">
+              {recentBookings.slice(0, 5).map((booking: any) => (
+                <div key={booking.id} className="p-6 flex items-center justify-between hover:bg-white/[0.02] transition-colors group">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-white/20 group-hover:bg-primary/20 group-hover:text-primary transition-all">
+                      <User className="w-5 h-5" />
                     </div>
-                    <div className="text-right">
-                      <Badge variant="outline" className="text-[9px] uppercase border-white/10">{booking.status}</Badge>
-                      <p className="text-xs font-bold mt-1">{formatCurrency(booking.totalAmount)}</p>
+                    <div>
+                      <p className="font-bold text-sm text-white">{booking.guestName}</p>
+                      <p className="text-[10px] text-white/40 uppercase font-black tracking-tighter">Room {booking.roomNumber} • {booking.roomType}</p>
                     </div>
                   </div>
-                ))}
-              </div>
-            </CardContent>
+                  <div className="text-right">
+                    <Badge variant="outline" className="text-[8px] font-black uppercase tracking-widest border-primary/20 text-primary">{booking.status}</Badge>
+                    <p className="text-sm font-serif font-bold text-white mt-1">{formatCurrency(booking.totalAmount)}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </Card>
 
-          <Card className="bg-white/[0.02] border-white/5">
-            <CardHeader className="border-b border-white/5 p-4">
-              <h3 className="font-bold flex items-center"><ShieldAlert className="w-5 h-5 mr-2 text-rose-500" /> System Complaints</h3>
-            </CardHeader>
-            <CardContent className="p-4">
-              <div className="p-4 bg-rose-500/5 border border-rose-500/10 rounded-xl">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h5 className="text-sm font-bold">VIP Complaint Escalation</h5>
-                    <p className="text-xs text-slate-400 mt-1">Room 401: AC issues not resolved in 30 mins.</p>
-                  </div>
-                  <Button size="sm" className="bg-rose-500 h-7 text-[10px]">Take Action</Button>
-                </div>
+          <Card className="bg-rose-500/5 border-rose-500/10 p-8 rounded-3xl space-y-6">
+            <div className="flex items-center gap-3 text-rose-500">
+              <ShieldAlert className="w-6 h-6" />
+              <h3 className="text-lg font-serif font-bold">VIP Complaint Escalation</h3>
+            </div>
+            <div className="p-6 bg-rose-500/10 border border-rose-500/20 rounded-2xl flex justify-between items-center">
+              <div>
+                <h5 className="text-sm font-bold text-white">Critical HVAC Issue</h5>
+                <p className="text-xs text-white/40 mt-1">Room 401: Reported by guest 15 mins ago.</p>
               </div>
-            </CardContent>
+              <Button className="bg-rose-600 hover:bg-rose-700 h-10 px-6 rounded-xl text-[10px] font-black uppercase tracking-widest text-white transition-all hover:scale-105">Resolve Now</Button>
+            </div>
           </Card>
         </div>
 
         <div className="space-y-8">
-          <Card className="bg-white/[0.02] border-white/5 p-6">
-            <h3 className="font-bold mb-4">Employee Management</h3>
+          <Card className="bg-[#0c0c0c] border-white/5 p-8 rounded-3xl shadow-2xl space-y-6">
+            <div className="flex items-center gap-3">
+              <Users className="w-5 h-5 text-primary" />
+              <h3 className="font-bold text-white">Personnel</h3>
+            </div>
             <div className="space-y-4">
-              <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center text-xs font-bold text-primary">A</div>
-                  <div>
-                    <p className="text-xs font-bold">Active Staff</p>
-                    <p className="text-[10px] text-slate-400">18 Personnel Online</p>
-                  </div>
+              <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
+                <div>
+                  <p className="text-xs font-bold text-white">18 Staff Active</p>
+                  <p className="text-[10px] text-white/40 uppercase font-black">All Sectors Operational</p>
                 </div>
-                <Users className="w-4 h-4 text-slate-500" />
+                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-lg shadow-emerald-500/50" />
               </div>
-              <Button variant="outline" className="w-full border-white/10 text-xs h-10" onClick={() => router.push('/admin/staff')}>
-                Staff Directory
-              </Button>
-              <Button variant="outline" className="w-full border-white/10 text-xs h-10" onClick={() => router.push('/admin/roles')}>
-                Permissions & Roles
-              </Button>
+              <div className="grid grid-cols-1 gap-3">
+                <Button variant="outline" className="w-full border-white/10 bg-white/5 text-white text-[10px] font-black uppercase tracking-widest h-12 rounded-xl hover:bg-white/10 transition-all" onClick={() => router.push('/admin/staff')}>
+                  Staff Directory
+                </Button>
+                <Button variant="outline" className="w-full border-white/10 bg-white/5 text-white text-[10px] font-black uppercase tracking-widest h-12 rounded-xl hover:bg-white/10 transition-all" onClick={() => router.push('/admin/roles')}>
+                  Role Permissions
+                </Button>
+              </div>
             </div>
           </Card>
 
-          <Card className="bg-white/[0.02] border-white/5 p-6">
-            <h3 className="font-bold mb-4">Operational Links</h3>
+          <Card className="bg-[#0c0c0c] border-white/5 p-8 rounded-3xl shadow-2xl space-y-6">
+            <div className="flex items-center gap-3 text-white/40">
+              <ArrowUpRight className="w-5 h-5" />
+              <h3 className="font-bold uppercase text-[10px] tracking-widest">Internal Links</h3>
+            </div>
             <div className="grid grid-cols-1 gap-2">
-              <Button variant="ghost" className="justify-between text-xs h-10 px-3 hover:bg-white/5" onClick={() => router.push('/admin/rooms')}>
-                Room Management <ArrowUpRight className="w-3 h-3" />
+              <Button variant="ghost" className="justify-between text-xs h-12 px-4 rounded-xl hover:bg-white/5 text-white/60 hover:text-white transition-all group" onClick={() => router.push('/admin/rooms')}>
+                Room Control <ChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-all" />
               </Button>
-              <Button variant="ghost" className="justify-between text-xs h-10 px-3 hover:bg-white/5" onClick={() => router.push('/admin/ota')}>
-                OTA Sync Center <ArrowUpRight className="w-3 h-3" />
+              <Button variant="ghost" className="justify-between text-xs h-12 px-4 rounded-xl hover:bg-white/5 text-white/60 hover:text-white transition-all group" onClick={() => router.push('/admin/ota')}>
+                OTA Management <ChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-all" />
               </Button>
-              <Button variant="ghost" className="justify-between text-xs h-10 px-3 hover:bg-white/5" onClick={() => router.push('/admin/settings')}>
-                System Settings <ArrowUpRight className="w-3 h-3" />
+              <Button variant="ghost" className="justify-between text-xs h-12 px-4 rounded-xl hover:bg-white/5 text-white/60 hover:text-white transition-all group" onClick={() => router.push('/admin/settings')}>
+                System Config <ChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-all" />
               </Button>
             </div>
           </Card>
         </div>
       </div>
-    </div>
+    </AdminPageShell>
   )
 }
 
 function AdminDashboardLoading() {
   return (
-    <div className="min-h-screen bg-transparent flex items-center justify-center">
+    <div className="flex items-center justify-center py-20">
       <PremiumSpinner size="lg" text="Decompressing system matrices..." />
     </div>
   )

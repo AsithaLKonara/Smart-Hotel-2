@@ -9,7 +9,9 @@ export default function ConditionalFooter() {
   // Hide footer on dashboard and admin routes
   const isDashboardRoute = pathname?.startsWith('/dashboard') || 
                           pathname?.startsWith('/admin') || 
-                          pathname?.startsWith('/kitchen')
+                          pathname?.startsWith('/kitchen') ||
+                          pathname?.startsWith('/profile') ||
+                          pathname?.startsWith('/my-bookings')
   
   if (isDashboardRoute) {
     return null

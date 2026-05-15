@@ -17,10 +17,12 @@ export function GuestStayDetails() {
 
   const fetchActiveBooking = async () => {
     try {
-      const res = await fetch('/api/bookings?active=true')
-      const data = await res.json()
-      // Assume the first one is the active stay
-      setBooking(data[0] || null)
+      const res = await fetch('/api/bookings?status=CONFIRMED')
+      if (res.ok) {
+        const data = await res.json()
+        // Assume the first confirmed booking is the active/upcoming stay
+        setBooking(data.bookings?.[0] || null)
+      }
     } catch (error) {
       console.error('Error fetching active booking:', error)
     } finally {

@@ -37,6 +37,9 @@ model Room {
   size            Int              @default(25)
   roomTypeId      String           @db.ObjectId
   status          RoomStatus       @default(AVAILABLE)
+  lastStatusChangeAt DateTime?     @default(now())
+  lockId          String?          
+  lockExpiresAt   DateTime?
   lastCleanedAt   DateTime?
   lastInspectedAt DateTime?
   createdAt       DateTime         @default(now())
@@ -125,6 +128,7 @@ model Booking {
   
   @@index([checkIn, checkOut])
   @@index([status])
+  @@index([createdAt])
 }
 
 model Event {
@@ -233,6 +237,9 @@ model Payment {
   order           FoodOrder?    @relation(fields: [orderId], references: [id])
   user            User?         @relation(fields: [userId], references: [id])
   adjustments     FinancialAdjustment[]
+
+  @@index([createdAt])
+  @@index([status])
 }
 
 model FinancialAdjustment {
@@ -358,6 +365,7 @@ model FoodOrder {
   id              String      @id @default(auto()) @map("_id") @db.ObjectId
   guestId         String      @db.ObjectId
   roomNumber      String
+  idempotencyKey  String?     @unique
   status          String      
   totalAmount     Float
   specialRequests String?

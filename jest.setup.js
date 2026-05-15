@@ -55,16 +55,31 @@ jest.mock('next-auth/react', () => ({
   getSession: jest.fn(),
 }))
 
-// Mock Socket.IO
-jest.mock('socket.io-client', () => ({
-  io: jest.fn(() => ({
-    on: jest.fn(),
-    off: jest.fn(),
-    emit: jest.fn(),
+// Mock Pusher
+jest.mock('pusher-js', () => {
+  const mockChannel = {
+    bind: jest.fn(),
+    unbind: jest.fn(),
+    unbind_all: jest.fn(),
+    trigger: jest.fn(),
+  }
+  return jest.fn().mockImplementation(() => ({
+    subscribe: jest.fn().mockReturnValue(mockChannel),
+    unsubscribe: jest.fn(),
     disconnect: jest.fn(),
-    connected: true,
-  })),
-}))
+    connection: {
+      bind: jest.fn(),
+      unbind: jest.fn(),
+    },
+  }))
+})
+
+// Mock Pusher (server-side)
+jest.mock('pusher', () => {
+  return jest.fn().mockImplementation(() => ({
+    trigger: jest.fn().mockResolvedValue({}),
+  }))
+})
 
 // Mock Stripe
 jest.mock('@stripe/stripe-js', () => ({

@@ -121,19 +121,13 @@ export async function POST(request: NextRequest) {
           include: { room: { include: { roomType: true } }, guest: true }
         })
 
-        // 3. UPDATE ROOM STATUS
-        await tx.room.update({
-          where: { id: room.id },
-          data: { status: 'OCCUPIED' }
-        })
+        // 3. ATOMIC COMMIT: Advance room version and clear lock INSIDE TX
+        await InventoryLockEngine.commitHold(hold, tx)
 
         return booking
       })
 
-      // 4. COMMIT INVENTORY HOLD (Advances distributed version)
-      await InventoryLockEngine.commitHold(hold)
-
-      // 5. REAL-TIME EVENTS (Pusher)
+      // 4. REAL-TIME EVENTS (Pusher) - AFTER SUCCESSFUL TX
       await RealtimeEvents.emitBookingCreated(result)
 
       // 6. OTA SYNCHRONIZATION (Non-blocking but logged)

@@ -43,16 +43,13 @@ export class InventoryLockEngine {
 
   static async acquireHold(roomId: string, roomNumber: string, clientVersion: number, actor: string, durationSec = 600): Promise<InventoryHold> {
     const redisHealthy = await this.isRedisHealthy()
-    const currentVersion = await this.getVersion(roomId)
-
-    // 1. Mission-Critical OCC Check
-    if (clientVersion !== currentVersion) {
-      throw new Error(`State Conflict: Room ${roomNumber} version mismatch. Expected ${clientVersion}, found ${currentVersion}.`)
-    }
+    const now = new Date()
+    const expiresAt = new Date(now.getTime() + durationSec * 1000)
 
     if (redisHealthy) {
       try {
         const lockKey = `room:lock:${roomId}`
+        // Redis Lock with TTL
         const acquired = await this.redis.set(lockKey, actor, { nx: true, ex: durationSec })
         
         if (acquired) {
@@ -61,8 +58,8 @@ export class InventoryLockEngine {
             id: holdId,
             roomId,
             roomNumber,
-            version: currentVersion,
-            expiresAt: new Date(Date.now() + durationSec * 1000).toISOString(),
+            version: clientVersion,
+            expiresAt: expiresAt.toISOString(),
             actor,
             status: 'ACTIVE',
             provider: 'REDIS'
@@ -71,26 +68,37 @@ export class InventoryLockEngine {
           return hold
         }
       } catch (err) {
-        console.warn('[REDIS_FAIL_OVER] Redis acquisition failed, falling back to Database locking.', err)
+        console.warn('[REDIS_FAIL_OVER] Falling back to Database atomic locking.', err)
       }
     }
 
-    // 2. High-Availability DB Fallback (Pessimistic Update)
-    const holdId = `hold-db-${Date.now()}`
-    const expiresAt = new Date(Date.now() + durationSec * 1000).toISOString()
-
-    // Using a "Status Update" as a semaphore for DB locking
-    await prisma.room.update({
-      where: { id: roomId, version: clientVersion },
-      data: { updatedAt: new Date() } // Heartbeat to prove ownership
+    // HIGH-AVAILABILITY ATOMIC DB LOCKING
+    // We update ONLY if version matches AND (lock is expired OR lock is null)
+    const updatedRoom = await prisma.room.update({
+      where: { 
+        id: roomId, 
+        version: clientVersion,
+        OR: [
+          { lockExpiresAt: { lt: now } },
+          { lockExpiresAt: null }
+        ]
+      },
+      data: { 
+        lockId: actor, 
+        lockExpiresAt: expiresAt,
+        updatedAt: now 
+      }
+    }).catch(() => {
+      throw new Error(`LOCK_ACQUISITION_FAILED: Room ${roomNumber} is currently locked or version has advanced.`)
     })
 
+    const holdId = `hold-db-${Date.now()}`
     const hold: InventoryHold = {
       id: holdId,
       roomId,
       roomNumber,
-      version: currentVersion,
-      expiresAt,
+      version: clientVersion,
+      expiresAt: expiresAt.toISOString(),
       actor,
       status: 'ACTIVE',
       provider: 'DATABASE'
@@ -100,22 +108,28 @@ export class InventoryLockEngine {
       id: `hold-acquired-${holdId}`,
       type: 'inventory.lock_acquired',
       severity: 'MEDIUM',
-      title: `HA Lock Acquisition`,
+      title: `Atomic Lock Secured`,
       message: `Lock for Room ${roomNumber} secured via ${hold.provider}.`,
-      metadata: hold,
-      timestamp: new Date().toISOString()
+      metadata: { ...hold, dbVersion: updatedRoom.version },
+      timestamp: now.toISOString()
     })
 
     return hold
   }
 
-  static async commitHold(hold: InventoryHold): Promise<void> {
+  static async commitHold(hold: InventoryHold, tx?: any): Promise<void> {
     const nextVersion = hold.version + 1
+    const db = tx || prisma
 
-    // Atomic Commit: Update Room Version and advance state
-    await prisma.room.update({
+    // Atomic Commit: Update Room Version and advance state, and CLEAR LOCK
+    await db.room.update({
       where: { id: hold.roomId, version: hold.version },
-      data: { version: nextVersion, updatedAt: new Date() }
+      data: { 
+        version: nextVersion, 
+        lockId: null, 
+        lockExpiresAt: null,
+        updatedAt: new Date() 
+      }
     })
 
     if (hold.provider === 'REDIS') {
@@ -138,6 +152,12 @@ export class InventoryLockEngine {
   }
 
   static async rollbackHold(hold: InventoryHold): Promise<void> {
+    // Clear DB Lock if it was a DB hold
+    await prisma.room.update({
+      where: { id: hold.roomId, lockId: hold.actor },
+      data: { lockId: null, lockExpiresAt: null }
+    }).catch(() => {}) // Ignore if already cleared or changed
+
     if (hold.provider === 'REDIS') {
       const multi = this.redis.multi()
       multi.del(`room:lock:${hold.roomId}`)

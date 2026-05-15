@@ -27,86 +27,96 @@ export class AnalyticsEngine {
     const lastMonthStart = startOfMonth(subMonths(now, 1))
     const lastMonthEnd = endOfMonth(subMonths(now, 1))
 
-    // 1. Total Revenue (Aggregated from Payments)
-    const currentRevenue = await prisma.payment.aggregate({
-      where: { 
-        status: 'completed',
-        createdAt: { gte: currentMonthStart, lte: currentMonthEnd }
-      },
-      _sum: { amount: true }
-    })
+    // 1. Parallel Core Metric Collection
+    const [
+      currentRevenue,
+      lastRevenue,
+      totalRooms,
+      activeBookings,
+      adrData,
+      lastAdrData,
+      lastActiveBookings,
+      roomTypes
+    ] = await Promise.all([
+      prisma.payment.aggregate({
+        where: { status: 'completed', createdAt: { gte: currentMonthStart, lte: currentMonthEnd } },
+        _sum: { amount: true }
+      }),
+      prisma.payment.aggregate({
+        where: { status: 'completed', createdAt: { gte: lastMonthStart, lte: lastMonthEnd } },
+        _sum: { amount: true }
+      }),
+      prisma.room.count(),
+      prisma.booking.count({
+        where: {
+          status: { in: ['CONFIRMED', 'CHECKED_IN'] },
+          checkIn: { lte: now },
+          checkOut: { gte: now }
+        }
+      }),
+      prisma.booking.aggregate({
+        where: {
+          status: { in: ['CONFIRMED', 'CHECKED_IN', 'CHECKED_OUT'] },
+          checkIn: { gte: currentMonthStart, lte: currentMonthEnd }
+        },
+        _sum: { totalAmount: true },
+        _count: { id: true }
+      }),
+      prisma.booking.aggregate({
+        where: {
+          status: { in: ['CONFIRMED', 'CHECKED_IN', 'CHECKED_OUT'] },
+          checkIn: { gte: lastMonthStart, lte: lastMonthEnd }
+        },
+        _sum: { totalAmount: true },
+        _count: { id: true }
+      }),
+      prisma.booking.count({
+        where: {
+          status: { in: ['CONFIRMED', 'CHECKED_IN'] },
+          checkIn: { lte: lastMonthEnd },
+          checkOut: { gte: lastMonthStart }
+        }
+      }),
+      prisma.roomType.findMany({
+        include: { _count: { select: { rooms: true } } }
+      })
+    ])
 
-    const lastRevenue = await prisma.payment.aggregate({
-      where: { 
-        status: 'completed',
-        createdAt: { gte: lastMonthStart, lte: lastMonthEnd }
-      },
-      _sum: { amount: true }
-    })
-
+    // 2. Derive Trends
     const revSum = currentRevenue?._sum?.amount || 0
     const lastRevSum = lastRevenue?._sum?.amount || 0
     const revenueTrend = lastRevSum === 0 ? 0 : ((revSum - lastRevSum) / lastRevSum) * 100
 
-    // 2. Occupancy (Active Bookings / Total Rooms)
-    const totalRooms = await prisma.room.count()
-    const activeBookings = await prisma.booking.count({
-      where: {
-        status: { in: ['CONFIRMED', 'CHECKED_IN'] },
-        checkIn: { lte: now },
-        checkOut: { gte: now }
-      }
-    })
-
     const occupancy = totalRooms === 0 ? 0 : (activeBookings / totalRooms) * 100
-    
-    // 3. ADR (Average Daily Rate)
-    // Formula: Total Room Revenue / Number of Rooms Sold
-    const adrData = await prisma.booking.aggregate({
-      where: {
-        status: { in: ['CONFIRMED', 'CHECKED_IN', 'CHECKED_OUT'] },
-        checkIn: { gte: currentMonthStart, lte: currentMonthEnd }
-      },
-      _sum: { totalAmount: true },
-      _count: { id: true }
-    })
+    const lastOccupancy = totalRooms === 0 ? 0 : (lastActiveBookings / totalRooms) * 100
+    const occupancyTrend = lastOccupancy === 0 ? 0 : ((occupancy - lastOccupancy) / lastOccupancy) * 100
 
     const adr = adrData._count.id === 0 ? 0 : (adrData._sum.totalAmount || 0) / adrData._count.id
+    const lastAdr = lastAdrData._count.id === 0 ? 0 : (lastAdrData._sum.totalAmount || 0) / lastAdrData._count.id
+    const adrTrend = lastAdr === 0 ? 0 : ((adr - lastAdr) / lastAdr) * 100
 
-    // 4. RevPAR (Revenue Per Available Room)
-    // Formula: Total Room Revenue / Total Available Rooms
-    const revpar = totalRooms === 0 ? 0 : (adrData._sum.totalAmount || 0) / (totalRooms * 30) // Monthly RevPAR
+    const revpar = totalRooms === 0 ? 0 : (adrData._sum.totalAmount || 0) / (totalRooms * 30)
+    const lastRevpar = totalRooms === 0 ? 0 : (lastAdrData._sum.totalAmount || 0) / (totalRooms * 30)
+    const revparTrend = lastRevpar === 0 ? 0 : ((revpar - lastRevpar) / lastRevpar) * 100
 
-    // 5. Revenue by Month (6 months history)
-    const revenueByMonth = []
-    for (let i = 5; i >= 0; i--) {
+    // 3. Parallel Time-Series Aggregation (Replaces sequential loop)
+    const historicalMonths = [5, 4, 3, 2, 1, 0]
+    const revenueByMonth = await Promise.all(historicalMonths.map(async (i) => {
       const targetMonth = subMonths(now, i)
-      const start = startOfMonth(targetMonth)
-      const end = endOfMonth(targetMonth)
-      
       const res = await prisma.payment.aggregate({
         where: { 
           status: 'completed',
-          createdAt: { gte: start, lte: end }
+          createdAt: { gte: startOfMonth(targetMonth), lte: endOfMonth(targetMonth) }
         },
         _sum: { amount: true }
       })
-
-      revenueByMonth.push({
+      return {
         name: format(targetMonth, 'MMM'),
         total: res?._sum?.amount || 0
-      })
-    }
-
-    // 6. Occupancy by Type
-    const roomTypes = await prisma.roomType.findMany({
-      include: {
-        _count: {
-          select: { rooms: true }
-        }
       }
-    })
+    }))
 
+    // 4. Parallel Occupancy by Type
     const occupancyByType = await Promise.all(roomTypes.map(async (rt) => {
       const activeInType = await prisma.booking.count({
         where: {
@@ -116,7 +126,6 @@ export class AnalyticsEngine {
           checkOut: { gte: now }
         }
       })
-      
       return {
         name: rt.name,
         value: rt._count.rooms === 0 ? 0 : Math.round((activeInType / rt._count.rooms) * 100)
@@ -125,11 +134,11 @@ export class AnalyticsEngine {
 
     return {
       occupancy,
-      occupancyTrend: 5.2, // Simulated trend for UI
+      occupancyTrend,
       adr,
-      adrTrend: 3.8,
+      adrTrend,
       revpar,
-      revparTrend: 4.1,
+      revparTrend,
       totalRevenue: revSum,
       revenueTrend,
       revenueByMonth,

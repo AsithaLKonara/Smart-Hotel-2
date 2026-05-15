@@ -60,10 +60,18 @@ export async function GET(request: NextRequest) {
 
 // POST /api/restaurant/orders - Create new order
 export async function POST(request: NextRequest) {
+  const idempotencyKey = request.headers.get('idempotency-key')
+  
+  if (idempotencyKey) {
+    const { checkIdempotency } = await import('@/lib/idempotency')
+    const cached = await checkIdempotency(idempotencyKey)
+    if (cached.state === 'cached') return NextResponse.json(cached.response?.body, { status: cached.response?.status })
+  }
+
   try {
     const session = await getRequestSession(request)
     const body: CreateOrderRequest = await request.json()
-    const { roomNumber, guestId, bookingId, items, specialRequests } = body
+    const { roomNumber, guestId, items, specialRequests } = body
 
     if (!roomNumber || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
@@ -74,21 +82,28 @@ export async function POST(request: NextRequest) {
 
     const resolvedGuestId = guestId ?? session?.user.id
     if (!resolvedGuestId) {
-      return NextResponse.json(
-        { error: 'Guest ID is required' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Guest ID is required' }, { status: 400 })
+    }
+
+    // SECURITY VERIFICATION: Ensure guest is checked into this room
+    const activeBooking = await prisma.booking.findFirst({
+      where: {
+        primaryGuestId: resolvedGuestId,
+        room: { number: roomNumber },
+        status: 'CHECKED_IN'
+      }
+    })
+
+    if (!activeBooking) {
+      return NextResponse.json({ 
+        error: 'Forbidden: Room Verification Failed', 
+        message: `Guest is not currently checked into Room ${roomNumber}. Orders can only be placed for active suites.` 
+      }, { status: 403 })
     }
 
     // Calculate total amount and validate items
     let totalAmount = 0
-    interface LocalOrderItem {
-      menuId: string
-      quantity: number
-      unitPrice: number
-      notes?: string
-    }
-    const orderItems: LocalOrderItem[] = []
+    const orderItems: any[] = []
 
     for (const item of items) {
       const menuItem = await prisma.foodMenu.findUnique({
@@ -96,10 +111,7 @@ export async function POST(request: NextRequest) {
       })
 
       if (!menuItem) {
-        return NextResponse.json(
-          { error: 'Menu item not found' },
-          { status: 400 }
-        )
+        return NextResponse.json({ error: `Menu item ${item.menuId} not found` }, { status: 400 })
       }
 
       totalAmount += menuItem.price * item.quantity
@@ -116,45 +128,55 @@ export async function POST(request: NextRequest) {
       data: {
         roomNumber,
         guestId: resolvedGuestId,
+        idempotencyKey,
         totalAmount,
         specialRequests: specialRequests || '',
         status: 'PENDING',
-        deliveryTime: new Date(Date.now() + 30 * 60 * 1000), // Default 30 min delivery time
+        deliveryTime: new Date(Date.now() + 30 * 60 * 1000), 
         createdAt: new Date(),
         updatedAt: new Date(),
         items: {
-          create: items.map(item => {
-            const matchedItem = orderItems.find(oi => oi.menuId === item.menuId)
-            const unitPrice = matchedItem ? matchedItem.unitPrice : 0
-            return {
-              menuItemId: item.menuId,
-              quantity: item.quantity,
-              price: unitPrice,
-              subtotal: unitPrice * item.quantity,
-              notes: item.notes || null,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            }
-          })
+          create: orderItems.map(item => ({
+            menuItemId: item.menuId,
+            quantity: item.quantity,
+            price: item.unitPrice,
+            subtotal: item.unitPrice * item.quantity,
+            notes: item.notes || null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          }))
         }
-      }
+      },
+      include: { items: { include: { menuItem: true } } }
     })
 
     const normalizedTotal = Math.round(totalAmount * 100) / 100
+    const responseBody = { order: { ...order, totalAmount: normalizedTotal } }
 
-    return NextResponse.json(
-      {
-        order: {
-          ...order,
-          totalAmount: normalizedTotal
-        }
-      },
-      { status: 201 }
-    )
-  } catch (error) {
+    // Emit Real-time Event to Kitchen
+    const { RealtimeEvents } = await import('@/lib/realtime')
+    await RealtimeEvents.emitOpsMessage({
+      type: 'KITCHEN_ORDER_NEW',
+      orderId: order.id,
+      roomNumber: order.roomNumber,
+      total: normalizedTotal,
+      items: order.items.map(i => ({ name: i.menuItem.name, qty: i.quantity }))
+    })
+
+    if (idempotencyKey) {
+      const { saveIdempotency } = await import('@/lib/idempotency')
+      await saveIdempotency(idempotencyKey, { status: 201, body: responseBody })
+    }
+
+    return NextResponse.json(responseBody, { status: 201 })
+  } catch (error: any) {
     console.error('Error creating order:', error)
+    if (idempotencyKey) {
+      const { clearIdempotency } = await import('@/lib/idempotency')
+      await clearIdempotency(idempotencyKey)
+    }
     return NextResponse.json(
-      { error: 'Failed to create order' },
+      { error: 'Failed to create order', details: error.message },
       { status: 500 }
     )
   }
@@ -168,7 +190,7 @@ export async function PATCH(request: NextRequest) {
 
     if (
       !allowAnonymous &&
-      (!session || !['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'].includes(session.user.role))
+      (!session || !['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'KITCHEN'].includes(session.user.role))
     ) {
       return NextResponse.json(
         { error: 'Unauthorized' },

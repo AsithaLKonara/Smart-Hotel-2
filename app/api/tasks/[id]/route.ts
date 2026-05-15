@@ -228,11 +228,31 @@ export async function PATCH(
       updateData.completedAt = validatedData.completedAt ? new Date(validatedData.completedAt) : null
     }
     
-    const updatedTask = await prisma.task.update({
-      where: { id: id },
-      data: updateData
+    const updatedTask = await prisma.$transaction(async (tx) => {
+      const t = await tx.task.update({
+        where: { id: id },
+        data: updateData,
+        include: { room: true }
+      })
+
+      // SIDE EFFECT: Housekeeping Completion restores room status
+      if (validatedData.status === 'COMPLETED' && t.type === 'HOUSEKEEPING' && t.roomId) {
+        await tx.room.update({
+          where: { id: t.roomId },
+          data: { status: 'AVAILABLE', lastStatusChangeAt: new Date() }
+        })
+      }
+
+      return t
     })
     
+    // 3. REAL-TIME SYNCHRONIZATION
+    const { RealtimeEvents } = await import('@/lib/realtime')
+    await RealtimeEvents.emitTaskUpdated(updatedTask)
+    if (updatedTask.room && validatedData.status === 'COMPLETED' && updatedTask.type === 'HOUSEKEEPING') {
+      await RealtimeEvents.emitRoomStatusChanged({ ...updatedTask.room, status: 'AVAILABLE' })
+    }
+
     // Fetch related data separately (relations don't exist in schema)
     const [updatedStaff, updatedUser] = await Promise.all([
       updatedTask.assignedTo ? prisma.staff.findUnique({ where: { id: updatedTask.assignedTo } }).catch(() => null) : null,

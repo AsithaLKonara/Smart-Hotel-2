@@ -42,16 +42,7 @@ const OPERATIONAL_ROOMS = [
   { id: "r401", number: "401", type: "PRESIDENTIAL", floor: 4, price: 95000 }
 ];
 
-// Continuous booking records mapped across rooms
-const OPERATIONAL_RESERVATIONS = [
-  { id: "res-1", roomId: "r101", guest: "Steve Jobs", channel: "DIRECT_BOOKING", startDay: 1, endDay: 3, status: "CONFIRMED" },
-  { id: "res-2", roomId: "r103", guest: "Amelia Earhart", channel: "AIRBNB", startDay: 2, endDay: 5, status: "CONFIRMED" },
-  { id: "res-3", roomId: "r202", guest: "Jane Doe", channel: "EXPEDIA", startDay: 1, endDay: 4, status: "CONFIRMED" },
-  { id: "res-4", roomId: "r301", guest: "Elon Musk", channel: "BOOKING_COM", startDay: 3, endDay: 6, status: "CONFIRMED" },
-  { id: "res-5", roomId: "r401", guest: "Sir Richard Branson", channel: "DIRECT_BOOKING", startDay: 4, endDay: 7, status: "CONFIRMED" },
-  // Split Stay Example (Amelia shifting standard to deluxe on Day 5)
-  { id: "res-6", roomId: "r201", guest: "Amelia Earhart (Split)", channel: "DIRECT_BOOKING", startDay: 5, endDay: 7, status: "CONFIRMED", isSplitStay: true, splitFrom: "res-2" }
-];
+// REAL-TIME BOOKING SYNC
 
 export default function RoomOccupancyTimelineMatrix() {
   const { data: session, status } = useSession()
@@ -63,7 +54,7 @@ export default function RoomOccupancyTimelineMatrix() {
   // Matrix variables
   const [loading, setLoading] = useState(true)
   const [rooms, setRooms] = useState<any[]>(OPERATIONAL_ROOMS)
-  const [reservations, setReservations] = useState<any[]>(OPERATIONAL_RESERVATIONS)
+  const [reservations, setReservations] = useState<any[]>([])
   const [timelineStartDay, setTimelineStartDay] = useState(1) // 7-day view window
   
   // Hold desk state desk
@@ -106,17 +97,44 @@ export default function RoomOccupancyTimelineMatrix() {
   const loadDatabaseMetadata = async () => {
     try {
       setLoading(true)
-      const dbRooms = await fetch('/api/rooms').then(r => r.json()).catch(() => null)
-      if (dbRooms && Array.isArray(dbRooms.rooms) && dbRooms.rooms.length > 0) {
-        // Merge rooms cleanly
-        const merged = dbRooms.rooms.map((r: any) => ({
+      const [dbRooms, dbBookings] = await Promise.all([
+        fetch('/api/rooms').then(r => r.json()),
+        fetch('/api/bookings').then(r => r.json())
+      ])
+
+      if (dbRooms && Array.isArray(dbRooms.rooms)) {
+        setRooms(dbRooms.rooms.map((r: any) => ({
           id: r.id,
           number: r.number,
           type: r.type,
           floor: Number(r.floor) || 1,
           price: r.price
-        }))
-        setRooms(merged)
+        })))
+      }
+
+      if (dbBookings && Array.isArray(dbBookings.bookings)) {
+        // Map real dates to timeline days (1-7 for current view)
+        const today = new Date()
+        const mapped = dbBookings.bookings.map((b: any) => {
+          const checkIn = new Date(b.checkIn)
+          const checkOut = new Date(b.checkOut)
+          
+          // Simplified mapping for the 7-day demonstration matrix
+          // In a real prod environment, this would use absolute timestamps
+          const startDay = Math.max(1, Math.floor((checkIn.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)) + 1)
+          const endDay = Math.floor((checkOut.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)) + 1
+
+          return {
+            id: b.id,
+            roomId: b.roomId,
+            guest: b.guestName || b.primaryGuest?.name || 'Valued Guest',
+            channel: b.source || 'DIRECT',
+            startDay,
+            endDay,
+            status: b.status
+          }
+        })
+        setReservations(mapped)
       }
     } catch (err) {
       console.error(err)

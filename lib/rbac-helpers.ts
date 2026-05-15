@@ -93,13 +93,12 @@ export function getAllowedRoles(route: string): UserRole[] {
     '/admin/bookings': ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'],
     '/admin/calendar': ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'],
     '/admin/dashboard/checkin-checkout': ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'],
-    '/admin/tasks': ['RECEPTIONIST', 'HOUSEKEEPING', 'MANAGER', 'SUPER_ADMIN'],
+    '/admin/tasks': ['RECEPTIONIST', 'HOUSEKEEPING', 'MAINTENANCE', 'MANAGER', 'SUPER_ADMIN'],
     '/admin/qr-codes': ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'],
     '/admin/receptionist': ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'],
     '/admin/housekeeping': ['HOUSEKEEPING', 'MANAGER', 'SUPER_ADMIN'],
     '/admin/manager': ['MANAGER', 'SUPER_ADMIN'],
     '/admin/executive': ['MANAGER', 'SUPER_ADMIN'],
-    '/admin/analytics': ['MANAGER', 'SUPER_ADMIN'],
     '/kitchen/dashboard': ['KITCHEN', 'MANAGER', 'SUPER_ADMIN'],
   };
   

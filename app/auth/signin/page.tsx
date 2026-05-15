@@ -50,9 +50,9 @@ export default function SignInPage() {
         let targetUrl = '/dashboard'
         
         if (role === 'SUPER_ADMIN' || role === 'MANAGER') targetUrl = '/admin/dashboard'
-        else if (role === 'RECEPTIONIST') targetUrl = '/admin/bookings'
+        else if (role === 'RECEPTIONIST') targetUrl = '/admin/receptionist'
         else if (role === 'KITCHEN') targetUrl = '/kitchen/dashboard'
-        else if (role === 'HOUSEKEEPING') targetUrl = '/admin/tasks'
+        else if (role === 'HOUSEKEEPING' || role === 'MAINTENANCE') targetUrl = '/admin/tasks'
         
         window.location.href = targetUrl
       }

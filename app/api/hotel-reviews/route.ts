@@ -15,12 +15,18 @@ const hotelReviewSchema = z.object({
 
 export async function GET(request: NextRequest) {
   try {
+    const session = await getRequestSession(request)
     const { searchParams } = new URL(request.url)
     const verified = searchParams.get('verified')
     const limit = parseInt(searchParams.get('limit') || '50')
 
     const where: any = {}
     if (verified === 'true') where.verified = true
+
+    // RBAC: Guests only see their own reviews
+    if (session && session.user.role === 'GUEST') {
+      where.userId = session.user.id
+    }
 
     const reviews = await prisma.hotelReview.findMany({
       where,

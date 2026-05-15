@@ -6,35 +6,56 @@ const PROTECTED_ROUTES = [
   { prefix: '/admin/settings', roles: ['SUPER_ADMIN'] },
   { prefix: '/admin/audit-logs', roles: ['SUPER_ADMIN'] },
   { prefix: '/admin/staff', roles: ['SUPER_ADMIN', 'MANAGER'] },
-  { prefix: '/admin/executive', roles: ['SUPER_ADMIN', 'MANAGER'] },
+  { prefix: '/api/staff', roles: ['SUPER_ADMIN', 'MANAGER'] },
   { prefix: '/admin/receptionist', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'] },
+  { prefix: '/api/chaos', roles: ['SUPER_ADMIN', 'MANAGER'] },
+  { prefix: '/api/admin', roles: ['SUPER_ADMIN', 'MANAGER'] },
+  { prefix: '/admin/tasks', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'HOUSEKEEPING', 'MAINTENANCE'] },
+  { prefix: '/api/tasks', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'HOUSEKEEPING', 'MAINTENANCE'] },
   { prefix: '/admin/housekeeping', roles: ['SUPER_ADMIN', 'MANAGER', 'HOUSEKEEPING'] },
-  { prefix: '/admin/manager', roles: ['SUPER_ADMIN', 'MANAGER'] },
-  { prefix: '/admin/dashboard', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'] }, // Admin cockpit
+  { prefix: '/admin/bookings', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'] }, 
+  { prefix: '/api/bookings', roles: ['GUEST', 'SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'] },
   { prefix: '/kitchen', roles: ['SUPER_ADMIN', 'MANAGER', 'KITCHEN'] },
-  { prefix: '/dashboard', roles: ['GUEST', 'SUPER_ADMIN', 'MANAGER'] }, // Guest dashboard
+  { prefix: '/api/kitchen', roles: ['SUPER_ADMIN', 'MANAGER', 'KITCHEN'] },
+  { prefix: '/dashboard', roles: ['GUEST', 'SUPER_ADMIN', 'MANAGER'] },
+  { prefix: '/api/restaurant', roles: ['GUEST', 'SUPER_ADMIN', 'MANAGER', 'KITCHEN', 'RECEPTIONIST'] },
+  { prefix: '/order', roles: ['GUEST', 'SUPER_ADMIN', 'MANAGER'] },
+  { prefix: '/dining', roles: ['GUEST', 'SUPER_ADMIN', 'MANAGER'] },
+  { prefix: '/profile', roles: ['GUEST', 'SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'KITCHEN', 'HOUSEKEEPING', 'MAINTENANCE'] },
+  { prefix: '/my-bookings', roles: ['GUEST', 'SUPER_ADMIN', 'MANAGER'] },
 ]
 
 export async function middleware(request: NextRequest) {
   const url = request.nextUrl
   const path = url.pathname
 
-  // 1. Resolve Session
+  // 1. Bypass Public Assets & Public APIs
+  if (
+    path.startsWith('/_next') || 
+    path.startsWith('/images') || 
+    path.startsWith('/favicon') ||
+    PUBLIC_API_PREFIXES.some(p => path.startsWith(p))
+  ) {
+    return NextResponse.next()
+  }
+
+  // 2. Resolve Session
   const token = await getToken({ 
     req: request, 
     secret: process.env.NEXTAUTH_SECRET 
   })
 
-  // 2. Identify applicable protection rule
+  // 3. Enforce Authentication for ALL remaining /api routes (Default Deny)
+  if (path.startsWith('/api') && !token) {
+    return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+  }
+
+  // 4. Identify applicable authorization rule
   const rule = PROTECTED_ROUTES.find(r => path.startsWith(r.prefix))
 
   if (rule) {
-    // Check Authentication
+    // Check Authentication (for pages)
     if (!token) {
-      const isApi = path.startsWith('/api')
-      if (isApi) {
-        return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
-      }
       return NextResponse.redirect(new URL('/auth/signin', request.url))
     }
 
@@ -48,7 +69,6 @@ export async function middleware(request: NextRequest) {
           message: `Role [${userRole}] does not have permission to access this resource.` 
         }, { status: 403 })
       }
-      // Redirect to home if unauthorized for page
       return NextResponse.redirect(new URL('/', request.url))
     }
   }
@@ -61,7 +81,18 @@ export const config = {
     '/admin/:path*',
     '/kitchen/:path*',
     '/dashboard/:path*',
-    '/api/admin/:path*',
-    '/api/kitchen/:path*',
+    '/api/:path*',
+    '/profile',
+    '/my-bookings',
   ],
 }
+
+// Routes that are explicitly PUBLIC and bypass middleware
+const PUBLIC_API_PREFIXES = [
+  '/api/auth',
+  '/api/health',
+  '/api/webhooks',
+  '/api/rooms/availability',
+  '/api/rooms/check-availability',
+  '/api/contact',
+]

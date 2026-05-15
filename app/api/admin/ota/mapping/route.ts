@@ -1,13 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { log } from '@/lib/logger';
+import { getRequestSession } from '@/lib/session';
 
 /**
  * GET /api/admin/ota/mapping
  * Fetches all room mappings and available room types
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const session = await getRequestSession(request);
+    if (!session || !['MANAGER', 'SUPER_ADMIN'].includes(session.user.role)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const mappings = await prisma.roomMapping.findMany();
     const roomTypes = await prisma.roomType.findMany({
       select: { id: true, name: true }
@@ -25,6 +30,11 @@ export async function GET() {
  */
 export async function POST(req: NextRequest) {
   try {
+    const session = await getRequestSession(req);
+    if (!session || !['MANAGER', 'SUPER_ADMIN'].includes(session.user.role)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await req.json();
     const { localRoomTypeId, otaRoomTypeId, otaRatePlanId, syncEnabled } = body;
 

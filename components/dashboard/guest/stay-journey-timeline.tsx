@@ -12,12 +12,22 @@ interface StayStep {
   date: string
 }
 
+const defaultSteps: StayStep[] = [
+  { label: 'Arrival', desc: 'Welcome to Grand Palace', date: 'Today' },
+  { label: 'Check-in', desc: 'Elite Suite assigned', date: 'Active' },
+  { label: 'Experience', desc: 'Enjoy our amenities', date: 'Ongoing' },
+  { label: 'Departure', desc: 'Final farewell', date: 'Scheduled' }
+]
+
 interface StayJourneyTimelineProps {
-  steps: StayStep[]
-  activeStep: number
+  steps?: StayStep[]
+  activeStep?: number
 }
 
-export function StayJourneyTimeline({ steps, activeStep }: StayJourneyTimelineProps) {
+export function StayJourneyTimeline({ 
+  steps = defaultSteps, 
+  activeStep = 1 
+}: StayJourneyTimelineProps) {
   return (
     <Card className="bg-white/5 border-white/10 backdrop-blur-xl mb-10 overflow-hidden relative">
       <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary/20 to-transparent" />

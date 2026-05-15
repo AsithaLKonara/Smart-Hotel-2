@@ -30,7 +30,6 @@ export default function HotelNavigation() {
   const [navigation, setNavigation] = useState([
     { name: 'Home', href: '/' },
     { name: 'Rooms', href: '/rooms' },
-    { name: 'Dining', href: '/dining' },
     { name: 'Gallery', href: '/gallery' },
     { name: 'Facilities', href: '/facilities' },
     { name: 'Contact', href: '/contact' },
@@ -39,7 +38,11 @@ export default function HotelNavigation() {
   const pathname = usePathname()
 
   // Hide navigation on dashboard/admin routes
-  const isDashboardRoute = pathname?.startsWith('/dashboard') || pathname?.startsWith('/admin') || pathname?.startsWith('/kitchen')
+  const isDashboardRoute = pathname?.startsWith('/dashboard') || 
+                          pathname?.startsWith('/admin') || 
+                          pathname?.startsWith('/kitchen') ||
+                          pathname?.startsWith('/profile') ||
+                          pathname?.startsWith('/my-bookings')
 
   const getDashboardUrl = () => {
     if (!session?.user) return '/auth/signin'
@@ -137,9 +140,9 @@ export default function HotelNavigation() {
               <span className="relative text-white font-serif font-bold text-xl">GP</span>
             </div>
             <div className="hidden sm:block">
-              <h1 className="text-xl lg:text-2xl font-serif font-bold text-white tracking-tight">
+              <div className="text-xl lg:text-2xl font-serif font-bold text-white tracking-tight">
                 {contactInfo.name.split(' ')[0]} <span className="text-luxury">{contactInfo.name.split(' ').slice(1).join(' ')}</span>
-              </h1>
+              </div>
             </div>
           </Link>
 

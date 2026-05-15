@@ -27,7 +27,14 @@ import {
   Home,
   User,
   CreditCard,
-  Star
+  Star,
+  Grid,
+  Globe,
+  ShieldCheck,
+  Activity,
+  History,
+  Box,
+  Gift
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useSidebar } from '@/lib/sidebar-context'
@@ -43,35 +50,37 @@ export default function DashboardSidebar() {
     
     // Define navigation items per role as requested by the user
     const items = [
-      // Guest Navigation
-      { name: 'My Stay', href: '/dashboard', icon: Home, roles: ['GUEST'] },
-      { name: 'Room Service', href: '/order', icon: UtensilsCrossed, roles: ['GUEST'] },
-      { name: 'Table Booking', href: '/dining', icon: Calendar, roles: ['GUEST'] },
-      { name: 'Requests', href: '/dashboard/requests', icon: ClipboardList, roles: ['GUEST'] },
-      { name: 'Complaints', href: '/dashboard/complaints', icon: AlertTriangle, roles: ['GUEST'] },
-      { name: 'Spending', href: '/dashboard/spending', icon: CreditCard, roles: ['GUEST'] },
-      { name: 'Reviews', href: '/dashboard/reviews', icon: Star, roles: ['GUEST'] },
-      { name: 'Profile', href: '/profile', icon: User, roles: ['GUEST'] },
+      // 🟢 GUEST SUITE
+      { name: 'My Sanctuary', href: '/dashboard', icon: Home, roles: ['GUEST'] },
+      { name: 'Dining Hub', href: '/dashboard/dining', icon: UtensilsCrossed, roles: ['GUEST'] },
+      { name: 'Service Requests', href: '/dashboard/requests', icon: ClipboardList, roles: ['GUEST'] },
+      { name: 'Resolution Desk', href: '/dashboard/complaints', icon: AlertTriangle, roles: ['GUEST'] },
+      { name: 'Elite Rewards', href: '/dashboard/loyalty', icon: Gift, roles: ['GUEST'] },
+      { name: 'Financials', href: '/dashboard/spending', icon: CreditCard, roles: ['GUEST'] },
+      { name: 'Memories', href: '/dashboard/reviews', icon: Star, roles: ['GUEST'] },
+      { name: 'Profile Settings', href: '/profile', icon: User, roles: ['GUEST'] },
 
-      // Kitchen Navigation
-      { name: 'Orders', href: '/kitchen/dashboard', icon: UtensilsCrossed, roles: ['KITCHEN'] },
+      // 🟠 KITCHEN COMMAND
+      { name: 'Execution Deck', href: '/kitchen/dashboard', icon: UtensilsCrossed, roles: ['KITCHEN'] },
       
-      // Receptionist Navigation
-      { name: 'Room Status', href: '/admin/receptionist', icon: Bed, roles: ['RECEPTIONIST'] },
-      { name: 'Bookings', href: '/admin/bookings', icon: Calendar, roles: ['RECEPTIONIST'] },
+      // 🔵 FRONT DESK OPERATIONS
+      { name: 'Reception Rack', href: '/admin/receptionist', icon: Bed, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'] },
+      { name: 'Live Bookings', href: '/admin/bookings', icon: Calendar, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'] },
+      { name: 'Inventory Engine', href: '/admin/inventory', icon: Box, roles: ['MANAGER', 'SUPER_ADMIN'] },
       
-      // Housekeeping Navigation
-      { name: 'Cleaning Tasks', href: '/admin/housekeeping', icon: ClipboardList, roles: ['HOUSEKEEPING'] },
+      // 🟣 HOUSEKEEPING & MAINTENANCE
+      { name: 'Room Status', href: '/admin/housekeeping', icon: Bed, roles: ['HOUSEKEEPING', 'MANAGER', 'SUPER_ADMIN'] },
+      { name: 'Task Board', href: '/admin/tasks', icon: ClipboardList, roles: ['HOUSEKEEPING', 'MAINTENANCE', 'MANAGER', 'SUPER_ADMIN'] },
+
+      // 🔴 MANAGEMENT & GOVERNANCE
+      { name: 'Operations Map', href: '/admin/manager', icon: BarChart3, roles: ['MANAGER', 'SUPER_ADMIN'] },
+      { name: 'Channel Sync', href: '/admin/ota', icon: Globe, roles: ['MANAGER', 'SUPER_ADMIN'] },
+      { name: 'Audit Stream', href: '/admin/audit-logs', icon: History, roles: ['SUPER_ADMIN'] },
+      { name: 'Security (RBAC)', href: '/admin/roles', icon: ShieldCheck, roles: ['SUPER_ADMIN'] },
       
-      // Manager Navigation
-      { name: 'Operations', href: '/admin/manager', icon: BarChart3, roles: ['MANAGER'] },
-      { name: 'Complaints', href: '/admin/complaints', icon: AlertTriangle, roles: ['MANAGER'] },
-      
-      // Admin Navigation
-      { name: 'Overview', href: '/admin/dashboard', icon: LayoutDashboard, roles: ['SUPER_ADMIN'] },
-      { name: 'Staff', href: '/admin/staff', icon: Users, roles: ['SUPER_ADMIN'] },
-      { name: 'Revenue', href: '/admin/analytics', icon: BarChart3, roles: ['SUPER_ADMIN'] },
-      { name: 'Settings', href: '/admin/settings', icon: SettingsIcon, roles: ['SUPER_ADMIN'] },
+      // 🛠 PLATFORM ENGINEERING (Hidden/SRE)
+      { name: 'Chaos Console', href: '/admin/chaos', icon: Activity, roles: ['SUPER_ADMIN'] },
+      { name: 'Platform Settings', href: '/admin/settings', icon: SettingsIcon, roles: ['SUPER_ADMIN'] },
     ]
 
     // Special items available for multiple roles (like Complaints)
@@ -97,7 +106,7 @@ export default function DashboardSidebar() {
           </div>
           {!isCollapsed && (
             <div className="transition-all duration-300">
-              <h1 className="text-lg font-bold text-white leading-tight">SmartHotel</h1>
+              <div className="text-lg font-bold text-white leading-tight">SmartHotel</div>
               <p className="text-[10px] uppercase tracking-widest text-primary font-bold">Experience Elite</p>
             </div>
           )}

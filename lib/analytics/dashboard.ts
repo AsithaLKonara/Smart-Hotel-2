@@ -90,16 +90,13 @@ export async function computeDashboardAnalytics(referenceDate = new Date()): Pro
   const [
     rooms,
     bookingsLast30Days,
+    foodOrdersLast30Days,
     bookingsPreviousMonth,
     recentBookings,
     userStats,
     staffCount
   ] = await Promise.all([
-    // Rooms with their types for status breakdown
-    prisma.room.findMany({
-      include: { roomType: true }
-    }),
-    // All relevant bookings for charts and growth
+    prisma.room.findMany({ include: { roomType: true } }),
     prisma.booking.findMany({
       where: {
         OR: [
@@ -109,41 +106,45 @@ export async function computeDashboardAnalytics(referenceDate = new Date()): Pro
       },
       include: { room: { include: { roomType: true } }, guest: true }
     }),
-    // Previous month specifically for growth comparison
-    prisma.booking.count({
-      where: { createdAt: { gte: previousMonthStart, lte: previousMonthEnd } }
+    prisma.foodOrder.findMany({
+      where: { createdAt: { gte: previousMonthStart }, status: 'DELIVERED' }
     }),
-    // 5 most recent activities
+    prisma.booking.count({
+      where: { createdAt: { gte: previousMonthStart, lte: previousMonthEnd }, paymentStatus: 'completed' }
+    }),
     prisma.booking.findMany({
       orderBy: { createdAt: 'desc' },
       take: 5,
       include: { room: { include: { roomType: true } }, guest: true }
     }),
-    // Aggregate user roles
-    prisma.user.groupBy({
-      by: ['role'],
-      _count: { id: true }
-    }),
-    // Total staff count
+    prisma.user.groupBy({ by: ['role'], _count: { id: true } }),
     prisma.staff.count()
   ])
 
-  // 2. Summary Calculations
-  const totalRooms = rooms.length
+  // 2. Summary Calculations (Room + Dining)
   const todayBookings = bookingsLast30Days.filter(b => b.createdAt >= todayStart && b.createdAt <= todayEnd)
   const monthlyBookings = bookingsLast30Days.filter(b => b.createdAt >= monthStart)
   
-  const todayRevenue = todayBookings.reduce((sum, b) => sum + (b.totalAmount || 0), 0)
-  const monthlyRevenue = monthlyBookings.reduce((sum, b) => sum + (b.totalAmount || 0), 0)
+  // Strictly aggregate completed revenue
+  const getRevenue = (list: any[], orders: any[], start: Date, end: Date) => {
+    const roomRev = list.filter(b => b.createdAt >= start && b.createdAt <= end && b.paymentStatus === 'completed')
+                       .reduce((sum, b) => sum + (b.totalAmount || 0), 0)
+    const foodRev = orders.filter(o => o.createdAt >= start && o.createdAt <= end)
+                         .reduce((sum, o) => sum + (o.totalAmount || 0), 0)
+    return roomRev + foodRev
+  }
+
+  const todayRevenue = getRevenue(bookingsLast30Days, foodOrdersLast30Days, todayStart, todayEnd)
+  const monthlyRevenue = getRevenue(bookingsLast30Days, foodOrdersLast30Days, monthStart, todayEnd)
   
-  // Yearly stats (we'd need a broader fetch if we want exact yearly, but let's approximate or fetch)
   const currentYearStart = new Date(now.getFullYear(), 0, 1)
-  const yearlyBookings = bookingsLast30Days.filter(b => b.createdAt >= currentYearStart).length // This is limited by our 30-day fetch, but better for performance
-  const yearlyRevenue = bookingsLast30Days.filter(b => b.createdAt >= currentYearStart).reduce((sum, b) => sum + (b.totalAmount || 0), 0)
+  const yearlyBookings = bookingsLast30Days.filter(b => b.createdAt >= currentYearStart).length
+  const yearlyRevenue = getRevenue(bookingsLast30Days, foodOrdersLast30Days, currentYearStart, todayEnd)
 
   const bookingGrowthRate = calculateGrowthRate(monthlyBookings.length, bookingsPreviousMonth)
 
   // 3. Occupancy & Charts
+  const totalRooms = rooms.length
   const roomStatusBreakdown = [
     { status: 'AVAILABLE', count: rooms.filter(r => r.status === 'AVAILABLE').length },
     { status: 'OCCUPIED', count: rooms.filter(r => r.status === 'OCCUPIED').length },

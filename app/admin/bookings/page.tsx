@@ -8,7 +8,7 @@ import { Calendar, Search, Filter, DollarSign, User, Bed, Edit, CheckCircle, XCi
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { formatPrice, formatDate } from '@/lib/utils'
+import { formatPrice, formatDate, cn } from '@/lib/utils'
 import toast from 'react-hot-toast'
 import { PremiumSpinner } from '@/components/ui/premium-spinner'
 
@@ -35,6 +35,8 @@ interface Booking {
   }
 }
 
+import { AdminPageShell } from '@/components/dashboard/admin/admin-page-shell'
+
 export default function AdminBookingsPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
@@ -46,11 +48,9 @@ export default function AdminBookingsPage() {
 
   const fetchBookings = useCallback(async () => {
     try {
-      // Bookings page: 10s timeout (may have many bookings with relations)
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), 10000)
       const response = await fetch('/api/bookings', {
-        // Be explicit to avoid any caching / SW interference
         method: 'GET',
         cache: 'no-store',
         credentials: 'include',
@@ -59,22 +59,17 @@ export default function AdminBookingsPage() {
       clearTimeout(timeoutId)
 
       if (controller.signal.aborted) {
-        throw new Error('Request timeout - bookings data took too long to load')
+        throw new Error('Request timeout')
       }
 
-      // Redirect unauthenticated users cleanly
       if (response.status === 401) {
         router.push('/auth/signin?callbackUrl=/admin/bookings')
         return
       }
 
-      if (!response.ok) {
-        console.error('Failed to fetch bookings. Status:', response.status)
-        throw new Error('Failed to fetch bookings')
-      }
+      if (!response.ok) throw new Error('Failed to fetch bookings')
 
       const data = await response.json()
-      // Ensure data is always an array even if the API returns { bookings: [...] }
       const bookingsArray: Booking[] = Array.isArray(data)
         ? data
         : Array.isArray(data?.bookings)
@@ -84,13 +79,8 @@ export default function AdminBookingsPage() {
       setBookings(bookingsArray)
     } catch (error: any) {
       console.error('Error fetching bookings:', error)
-      // Handle timeout errors gracefully
-      if (error.name === 'AbortError' || error.message?.includes('timeout')) {
-        toast.error('Bookings are taking longer than expected. Please refresh the page.')
-      } else {
-        toast.error('Failed to load bookings')
-      }
-      setBookings([]) // Set empty array on error
+      toast.error('Failed to load bookings')
+      setBookings([])
     } finally {
       setLoading(false)
     }
@@ -98,12 +88,10 @@ export default function AdminBookingsPage() {
 
   useEffect(() => {
     if (status === 'loading') return
-    
     if (!canAccessReceptionistFeatures(session)) {
       router.push('/auth/signin')
       return
     }
-
     fetchBookings()
   }, [session, status, router, fetchBookings])
 
@@ -120,7 +108,6 @@ export default function AdminBookingsPage() {
       toast.success(`Booking ${newStatus.toLowerCase()} successfully`)
       fetchBookings()
     } catch (error) {
-      console.error('Error updating booking:', error)
       toast.error('Failed to update booking')
     }
   }
@@ -137,29 +124,20 @@ export default function AdminBookingsPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'CONFIRMED':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-      case 'CHECKED_IN':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-      case 'CHECKED_OUT':
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
-      case 'CANCELLED':
-        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-      default:
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+      case 'CONFIRMED': return 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+      case 'CHECKED_IN': return 'bg-primary/10 text-primary border-primary/20'
+      case 'CHECKED_OUT': return 'bg-white/10 text-white/40 border-white/10'
+      case 'CANCELLED': return 'bg-rose-500/10 text-rose-500 border-rose-500/20'
+      default: return 'bg-amber-500/10 text-amber-500 border-amber-500/20'
     }
   }
 
   const getPaymentStatusColor = (status: string) => {
     switch (status) {
-      case 'PAID':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-      case 'PENDING':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-      case 'FAILED':
-        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-      default:
-        return 'bg-gray-100 text-gray-800'
+      case 'PAID': return 'text-emerald-500'
+      case 'PENDING': return 'text-amber-500'
+      case 'FAILED': return 'text-rose-500'
+      default: return 'text-white/40'
     }
   }
 
@@ -168,100 +146,85 @@ export default function AdminBookingsPage() {
     total: bookingsArray.length,
     confirmed: bookingsArray.filter(b => b.status === 'CONFIRMED').length,
     checkedIn: bookingsArray.filter(b => b.status === 'CHECKED_IN').length,
-    checkedOut: bookingsArray.filter(b => b.status === 'CHECKED_OUT').length,
-    pending: bookingsArray.filter(b => b.status === 'PENDING').length,
-    totalRevenue: bookingsArray
-      .filter(b => b.paymentStatus === 'PAID')
-      .reduce((sum, b) => sum + (b.totalAmount || 0), 0)
+    totalRevenue: bookingsArray.filter(b => b.paymentStatus === 'PAID').reduce((sum, b) => sum + (b.totalAmount || 0), 0)
   }
 
   if (status === 'loading' || loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-50/50">
+      <div className="flex items-center justify-center py-20">
         <PremiumSpinner size="lg" text="Fetching Bookings..." />
       </div>
     )
   }
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">Booking Management</h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          Manage guest reservations and bookings
-        </p>
-      </div>
-
+    <AdminPageShell
+      title="Booking Control"
+      subtitle="Manage guest reservations and bookings"
+      onRefresh={fetchBookings}
+    >
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Total Bookings</p>
-                <p className="text-2xl font-bold">{statsData.total}</p>
-              </div>
-              <Calendar className="w-8 h-8 text-primary-600" />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        <Card className="bg-[#0c0c0c] border-white/5 p-6 rounded-3xl shadow-2xl">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[10px] text-white/20 uppercase font-black tracking-widest">Total Active</p>
+              <p className="text-2xl font-serif font-bold text-white mt-1">{statsData.total}</p>
             </div>
-          </CardContent>
+            <Calendar className="w-8 h-8 text-primary" />
+          </div>
         </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Confirmed</p>
-                <p className="text-2xl font-bold text-green-600">{statsData.confirmed}</p>
-              </div>
-              <CheckCircle className="w-8 h-8 text-green-600" />
+        <Card className="bg-[#0c0c0c] border-white/5 p-6 rounded-3xl shadow-2xl">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[10px] text-white/20 uppercase font-black tracking-widest">Confirmed</p>
+              <p className="text-2xl font-serif font-bold text-emerald-500 mt-1">{statsData.confirmed}</p>
             </div>
-          </CardContent>
+            <CheckCircle className="w-8 h-8 text-emerald-500" />
+          </div>
         </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Checked In</p>
-                <p className="text-2xl font-bold text-blue-600">{statsData.checkedIn}</p>
-              </div>
-              <Bed className="w-8 h-8 text-blue-600" />
+        <Card className="bg-[#0c0c0c] border-white/5 p-6 rounded-3xl shadow-2xl">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[10px] text-white/20 uppercase font-black tracking-widest">In Residence</p>
+              <p className="text-2xl font-serif font-bold text-primary mt-1">{statsData.checkedIn}</p>
             </div>
-          </CardContent>
+            <Bed className="w-8 h-8 text-primary" />
+          </div>
         </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Total Revenue</p>
-                <p className="text-2xl font-bold text-primary-600">
-                  {formatPrice(statsData.totalRevenue)}
-                </p>
-              </div>
-              <DollarSign className="w-8 h-8 text-primary-600" />
+        <Card className="bg-[#0c0c0c] border-white/5 p-6 rounded-3xl shadow-2xl">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[10px] text-white/20 uppercase font-black tracking-widest">Revenue</p>
+              <p className="text-2xl font-serif font-bold text-primary mt-1">
+                {formatPrice(statsData.totalRevenue)}
+              </p>
             </div>
-          </CardContent>
+            <DollarSign className="w-8 h-8 text-primary" />
+          </div>
         </Card>
       </div>
 
       {/* Filters */}
-      <div className="mb-6 flex flex-col md:flex-row gap-4">
+      <div className="mb-8 flex flex-col md:flex-row gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/20 w-4 h-4" />
           <input
             type="text"
-            placeholder="Search by confirmation code, room, guest..."
+            placeholder="Search code, room, or guest name..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 pr-4 py-2 border rounded-lg w-full focus:ring-2 focus:ring-primary-500"
+            className="pl-12 pr-4 py-3 bg-[#0c0c0c] border border-white/5 rounded-2xl w-full text-white placeholder:text-white/20 focus:border-primary/50 transition-all outline-none"
           />
         </div>
 
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
-          className="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
+          className="px-4 py-3 bg-[#0c0c0c] border border-white/5 rounded-2xl text-white outline-none focus:border-primary/50 transition-all text-xs font-bold uppercase tracking-widest"
         >
           <option value="all">All Status</option>
           <option value="PENDING">Pending</option>
@@ -274,128 +237,100 @@ export default function AdminBookingsPage() {
         <select
           value={filterPayment}
           onChange={(e) => setFilterPayment(e.target.value)}
-          className="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
+          className="px-4 py-3 bg-[#0c0c0c] border border-white/5 rounded-2xl text-white outline-none focus:border-primary/50 transition-all text-xs font-bold uppercase tracking-widest"
         >
           <option value="all">All Payment</option>
           <option value="PENDING">Pending</option>
           <option value="PAID">Paid</option>
           <option value="FAILED">Failed</option>
-          <option value="REFUNDED">Refunded</option>
         </select>
       </div>
 
       {/* Bookings Table */}
-      <Card>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 dark:bg-gray-800 border-b">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Booking
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Guest
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Room
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Dates
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Amount
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
+      <Card className="bg-[#0c0c0c] border-white/5 rounded-3xl shadow-2xl overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="bg-white/[0.02] border-b border-white/5">
+                <th className="px-8 py-4 text-left text-[10px] font-black text-white/20 uppercase tracking-widest">Booking</th>
+                <th className="px-8 py-4 text-left text-[10px] font-black text-white/20 uppercase tracking-widest">Guest</th>
+                <th className="px-8 py-4 text-left text-[10px] font-black text-white/20 uppercase tracking-widest">Room</th>
+                <th className="px-8 py-4 text-left text-[10px] font-black text-white/20 uppercase tracking-widest">Dates</th>
+                <th className="px-8 py-4 text-left text-[10px] font-black text-white/20 uppercase tracking-widest">Revenue</th>
+                <th className="px-8 py-4 text-left text-[10px] font-black text-white/20 uppercase tracking-widest">Status</th>
+                <th className="px-8 py-4 text-left text-[10px] font-black text-white/20 uppercase tracking-widest">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/5">
+              {filteredBookings.map((booking) => (
+                <tr key={booking.id} className="hover:bg-white/[0.02] transition-colors group">
+                  <td className="px-8 py-6">
+                    <div className="text-sm font-bold text-white group-hover:text-primary transition-colors">
+                      {booking.confirmationCode || booking.id.slice(-8)}
+                    </div>
+                    <div className="text-[10px] text-white/20 font-black uppercase tracking-tighter">
+                      {booking.guests} GUEST{booking.guests > 1 ? 'S' : ''}
+                    </div>
+                  </td>
+                  <td className="px-8 py-6">
+                    <div className="text-sm font-bold text-white">{booking.guest.name}</div>
+                    <div className="text-[10px] text-white/40">{booking.guest.email}</div>
+                  </td>
+                  <td className="px-8 py-6">
+                    <div className="text-sm font-bold text-white">ROOM {booking.room.number}</div>
+                    <div className="text-[10px] text-white/40 uppercase font-black">{booking.room.type}</div>
+                  </td>
+                  <td className="px-8 py-6">
+                    <div className="text-xs text-white">{formatDate(booking.checkIn)}</div>
+                    <div className="text-[10px] text-white/20">TO {formatDate(booking.checkOut)}</div>
+                  </td>
+                  <td className="px-8 py-6">
+                    <div className="text-sm font-serif font-bold text-white">{formatPrice(booking.totalAmount)}</div>
+                    <div className={cn("text-[10px] font-black uppercase", getPaymentStatusColor(booking.paymentStatus))}>
+                      {booking.paymentStatus}
+                    </div>
+                  </td>
+                  <td className="px-8 py-6">
+                    <Badge variant="outline" className={cn("text-[8px] font-black uppercase tracking-widest", getStatusColor(booking.status))}>
+                      {booking.status.replace('_', ' ')}
+                    </Badge>
+                  </td>
+                  <td className="px-8 py-6">
+                    <div className="flex gap-2">
+                      {booking.status === 'PENDING' && (
+                        <Button size="sm" className="bg-primary hover:bg-primary/90 text-white rounded-xl text-[10px] font-black uppercase tracking-widest h-8 px-4" onClick={() => handleStatusUpdate(booking.id, 'CONFIRMED')}>
+                          Confirm
+                        </Button>
+                      )}
+                      {booking.status === 'CONFIRMED' && (
+                        <Button size="sm" className="bg-primary hover:bg-primary/90 text-white rounded-xl text-[10px] font-black uppercase tracking-widest h-8 px-4" onClick={() => handleStatusUpdate(booking.id, 'CHECKED_IN')}>
+                          Check In
+                        </Button>
+                      )}
+                      {booking.status === 'CHECKED_IN' && (
+                        <Button size="sm" className="bg-primary hover:bg-primary/90 text-white rounded-xl text-[10px] font-black uppercase tracking-widest h-8 px-4" onClick={() => handleStatusUpdate(booking.id, 'CHECKED_OUT')}>
+                          Check Out
+                        </Button>
+                      )}
+                    </div>
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-                {filteredBookings.map((booking) => (
-                  <tr key={booking.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium">
-                        {booking.confirmationCode || booking.id.slice(-8)}
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        {booking.guests} guest{booking.guests > 1 ? 's' : ''}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm font-medium">{booking.guest.name}</div>
-                      <div className="text-xs text-gray-500">{booking.guest.email}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium">Room {booking.room.number}</div>
-                      <div className="text-xs text-gray-500">{booking.room.type}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <div>{formatDate(booking.checkIn)}</div>
-                      <div className="text-gray-500">to {formatDate(booking.checkOut)}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium">{formatPrice(booking.totalAmount)}</div>
-                      <Badge className={`${getPaymentStatusColor(booking.paymentStatus)} text-xs`}>
-                        {booking.paymentStatus}
-                      </Badge>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <Badge className={getStatusColor(booking.status)}>
-                        {booking.status.replace('_', ' ')}
-                      </Badge>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <div className="flex gap-2">
-                        {booking.status === 'PENDING' && (
-                          <Button
-                            size="sm"
-                            onClick={() => handleStatusUpdate(booking.id, 'CONFIRMED')}
-                          >
-                            Confirm
-                          </Button>
-                        )}
-                        {booking.status === 'CONFIRMED' && (
-                          <Button
-                            size="sm"
-                            onClick={() => handleStatusUpdate(booking.id, 'CHECKED_IN')}
-                          >
-                            Check In
-                          </Button>
-                        )}
-                        {booking.status === 'CHECKED_IN' && (
-                          <Button
-                            size="sm"
-                            onClick={() => handleStatusUpdate(booking.id, 'CHECKED_OUT')}
-                          >
-                            Check Out
-                          </Button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
-          {filteredBookings.length === 0 && (
-            <div className="p-12 text-center">
-              <Calendar className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-              <h3 className="text-xl font-semibold mb-2">No bookings found</h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                {searchTerm || filterStatus !== 'all' || filterPayment !== 'all'
-                  ? 'Try adjusting your filters'
-                  : 'No bookings have been made yet'}
-              </p>
-            </div>
-          )}
-        </CardContent>
+        {filteredBookings.length === 0 && (
+          <div className="p-20 text-center">
+            <Calendar className="w-16 h-16 mx-auto text-white/10 mb-6" />
+            <h3 className="text-xl font-serif font-bold text-white mb-2">No reservations found</h3>
+            <p className="text-white/40 text-sm max-w-xs mx-auto">
+              We couldn't find any bookings matching your current filters. Try broadening your search criteria.
+            </p>
+          </div>
+        )}
       </Card>
-    </div>
+    </AdminPageShell>
   )
 }
 

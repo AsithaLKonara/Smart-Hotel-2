@@ -4,13 +4,17 @@ import { authOptions } from '@/lib/auth'
 import { getChaosScenarios, saveChaosScenarios } from '@/qa/chaos/chaos-engine'
 
 export async function GET(request: NextRequest) {
+  const session = await getServerSession(authOptions)
+  if (!session || session.user.role !== 'SUPER_ADMIN') {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
   const scenarios = getChaosScenarios()
   return NextResponse.json({ scenarios })
 }
 
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions)
-  if (!session) {
+  if (!session || session.user.role !== 'SUPER_ADMIN') {
     return NextResponse.json({ error: 'Unauthorized: Admin context missing.' }, { status: 401 })
   }
 

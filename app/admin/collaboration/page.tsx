@@ -305,7 +305,7 @@ export default function StaffCollaborationHub() {
                 <div className="text-slate-600 text-center py-8 text-xs">No online staff detected.</div>
               ) : (
                 onlineStaff.map(staff => (
-                  <div key={staff.socketId} className="flex items-center justify-between gap-3 bg-slate-950/20 p-2.5 border border-purple-950/20">
+                  <div key={staff.id} className="flex items-center justify-between gap-3 bg-slate-950/20 p-2.5 border border-purple-950/20">
                     <div className="flex items-center gap-2.5 min-w-0">
                       
                       {/* Avatar placeholder with glow indicators */}

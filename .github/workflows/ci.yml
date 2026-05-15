@@ -43,6 +43,19 @@ jobs:
     - name: Install dependencies
       run: npm ci
       
+    - name: Validate environment
+      run: npm run validate:env
+      env:
+        DATABASE_URL: mongodb://localhost:27017/smarthotel_test
+        NEXTAUTH_SECRET: test-secret-at-least-32-chars-long-123456
+        PUSHER_APP_ID: test-app-id
+        NEXT_PUBLIC_PUSHER_KEY: test-key
+        PUSHER_SECRET: test-secret
+        UPSTASH_REDIS_REST_URL: https://test-redis.upstash.io
+        UPSTASH_REDIS_REST_TOKEN: test-token
+        STRIPE_SECRET_KEY: sk_test_test
+        STRIPE_PUBLISHABLE_KEY: pk_test_test
+
     - name: Run linting
       run: npm run lint
       

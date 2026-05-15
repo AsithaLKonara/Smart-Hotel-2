@@ -130,75 +130,82 @@ export async function PATCH(
     const oldStatus = booking.status
     const oldPaymentStatus = booking.paymentStatus
 
-    // Update room availability based on status change
-    if (validatedData.status && validatedData.status !== booking.status) {
-      if (validatedData.status === 'CHECKED_IN') {
-        await prisma.room.update({
-          where: { id: booking.roomId },
-          data: { status: 'OCCUPIED' }
-        })
-      } else if (validatedData.status === 'CHECKED_OUT') {
-        // Set room to cleaning and create housekeeping task
-        await prisma.room.update({
-          where: { id: booking.roomId },
-          data: { status: 'CLEANING' }
-        })
+    // ATOMIC STATE TRANSITION
+    const updatedBooking = await prisma.$transaction(async (tx) => {
+      // 1. Update Booking
+      const b = await tx.booking.update({
+        where: { id },
+        data: {
+          ...validatedData,
+          updatedAt: new Date(),
+        },
+        include: { room: { include: { roomType: true } }, guest: true }
+      })
 
-        // Create automatic housekeeping task
-        await prisma.task.create({
-          data: {
-            title: `Clean Room ${room?.number || 'N/A'}`,
-            description: `Full turn-over cleaning required after guest checkout of booking ${booking.confirmationCode || booking.id}.`,
-            type: 'HOUSEKEEPING',
-            priority: 'HIGH',
-            status: 'PENDING',
-            assignedTo: '', // Unassigned, will be picked up by housekeeping staff
-            createdBy: session.user.id,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            dueDate: new Date(), // Due now
-          }
-        })
-      } else if (validatedData.status === 'CANCELLED') {
-        await prisma.room.update({
-          where: { id: booking.roomId },
-          data: { status: 'AVAILABLE' }
-        })
-      }
-    }
+      // 2. Resolve Side Effects (Room Status & Tasks)
+      if (validatedData.status && validatedData.status !== oldStatus) {
+        if (validatedData.status === 'CHECKED_IN') {
+          await tx.room.update({
+            where: { id: b.roomId },
+            data: { status: 'OCCUPIED' }
+          })
+        } else if (validatedData.status === 'CHECKED_OUT') {
+          await tx.room.update({
+            where: { id: b.roomId },
+            data: { status: 'CLEANING' }
+          })
 
-    const updatedBooking = await prisma.booking.update({
-      where: { id: id },
-      data: {
-        ...validatedData,
-        updatedAt: new Date(),
+          // Create automatic housekeeping task
+          await tx.task.create({
+            data: {
+              title: `Clean Room ${b.room.number}`,
+              description: `Checkout cleaning for ${b.confirmationCode}.`,
+              type: 'HOUSEKEEPING',
+              priority: 'HIGH',
+              status: 'PENDING',
+              assignedTo: null,
+              createdBy: session.user.id,
+              roomId: b.roomId,
+              bookingId: b.id,
+              dueDate: new Date(),
+            }
+          })
+        } else if (validatedData.status === 'CANCELLED') {
+          await tx.room.update({
+            where: { id: b.roomId },
+            data: { status: 'AVAILABLE' }
+          })
+        }
       }
+
+      return b
     })
-    
-    // Fetch updated related data
-    const [updatedUser, updatedRoom] = await Promise.all([
-      prisma.user.findUnique({ where: { id: updatedBooking.primaryGuestId } }).catch(() => null),
-      prisma.room.findUnique({ where: { id: updatedBooking.roomId } }).catch(() => null)
-    ])
+
+    // 3. EMIT REAL-TIME EVENTS
+    const { RealtimeEvents } = await import('@/lib/realtime')
+    await RealtimeEvents.emitBookingUpdated(updatedBooking)
+    if (updatedBooking.room) {
+      await RealtimeEvents.emitRoomStatusChanged(updatedBooking.room)
+    }
     
     // Return booking with related data
     const bookingWithRelations = {
       ...updatedBooking,
-      guests: Number(updatedBooking.guests), // Convert BigInt to Number for JSON serialization
-      user: updatedUser ? {
-        id: updatedUser.id,
-        name: updatedUser.name,
-        email: updatedUser.email,
-        phone: updatedUser.phone,
+      guests: Number(updatedBooking.guests),
+      user: updatedBooking.guest ? {
+        id: updatedBooking.guest.id,
+        name: updatedBooking.guest.name,
+        email: updatedBooking.guest.email,
+        phone: updatedBooking.guest.phone,
       } : null,
-      room: updatedRoom ? {
-        id: updatedRoom.id,
-        number: updatedRoom.number,
-        type: (updatedRoom as any).type,
-        price: (updatedRoom as any).price,
-        capacity: Number(updatedRoom.capacity),
-        floor: Number(updatedRoom.floor),
-        size: Number(updatedRoom.size),
+      room: updatedBooking.room ? {
+        id: updatedBooking.room.id,
+        number: updatedBooking.room.number,
+        type: updatedBooking.room.roomType.name,
+        price: updatedBooking.room.roomType.baseRate,
+        capacity: Number(updatedBooking.room.roomType.capacity),
+        floor: Number(updatedBooking.room.floor),
+        size: Number(updatedBooking.room.size),
       } : null,
     }
 

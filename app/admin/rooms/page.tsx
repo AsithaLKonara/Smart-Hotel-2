@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { canAccessManagerFeatures } from '@/lib/rbac-helpers'
 import { Plus, Edit, Trash2, Search, Filter, Bed, Users, DollarSign, Loader2, Save, X, Image as ImageIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -360,9 +361,11 @@ export default function AdminRoomsPage() {
             <CardHeader className="pb-3">
               <div className="aspect-video w-full overflow-hidden rounded-md bg-gray-100 mb-3">
                 {room.images && room.images.length > 0 ? (
-                  <img 
+                  <Image 
                     src={room.images[0]} 
                     alt={`Room ${room.number}`}
+                    width={400}
+                    height={300}
                     className="w-full h-full object-cover transition-transform hover:scale-105"
                   />
                 ) : (

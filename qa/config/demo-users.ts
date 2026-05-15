@@ -20,7 +20,7 @@ export const demoUsers = {
   kitchen: {
     email: 'kitchen@smarthotel.com',
     password: 'SmartHotel@2025!Kitchen',
-    expectedRole: 'KITCHEN_STAFF',
+    expectedRole: 'KITCHEN',
   },
   guest: {
     email: 'guest@example.com',
@@ -41,21 +41,25 @@ export async function loginAsUser(page: Page, roleKey: keyof typeof demoUsers, b
   const user = demoUsers[roleKey]
 
   const performLogin = async () => {
-    await page.goto(`${baseUrl}/auth/signin`)
+    await page.goto(`${baseUrl}/auth/signin`, { waitUntil: 'load', timeout: 300000 })
     await page.fill('input[type="email"]', user.email)
     await page.fill('input[type="password"]', user.password)
-    await page.click('button[type="submit"]')
+    await page.waitForTimeout(2000) // Ensure hydration is fully stable
+    await page.click('button[type="submit"]', { force: true })
     
     // Wait for the URL to change away from /auth/signin and resolve to a valid dashboard or landing route
+    // Increased timeout significantly to handle slow Next.js compilation and manual window.location.href redirects
     await page.waitForURL((url) => {
       const path = url.pathname
       return !path.includes('/auth/signin') && (
         path.includes('/dashboard') || 
-        path.includes('/admin/bookings') || 
-        path.includes('/admin/tasks') ||
+        path.includes('/admin') || 
+        path.includes('/kitchen') ||
+        path.includes('/profile') ||
+        path.includes('/my-bookings') ||
         path === '/'
       )
-    }, { timeout: 10000 }).catch(() => {})
+    }, { timeout: 90000 }).catch(() => {})
   }
 
   await performLogin()
@@ -68,11 +72,18 @@ export async function loginAsUser(page: Page, roleKey: keyof typeof demoUsers, b
   }
 
   // Ensure any spinners are gone
-  await expect(page.locator('.animate-spin, svg.animate-spin')).not.toBeVisible({ timeout: 15000 }).catch(() => {})
+  await expect(page.locator('.animate-spin, svg.animate-spin')).not.toBeVisible({ timeout: 30000 }).catch(() => {})
   
   // Wait for the page's primary heading (h1) to be visible, ensuring full rendering and context-level hydration
-  await expect(page.locator('h1').first()).toBeVisible({ timeout: 15000 })
-  await page.waitForTimeout(1000)
+  // Increased timeout significantly to handle slow Next.js compilation and DB connection retries
+  try {
+    await expect(page.locator('main h1, .flex-1 h1').first()).toBeVisible({ timeout: 180000 })
+  } catch (err) {
+    console.error(`[Login Failure] Could not find heading for role ${roleKey}. URL: ${page.url()}`)
+    await page.screenshot({ path: `test-results/login-failure-${roleKey}.png`, fullPage: true })
+    throw err
+  }
+  await page.waitForTimeout(2000)
 }
 
 /**

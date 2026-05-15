@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { canAccessAdminDashboard } from '@/lib/rbac-helpers'
-import { useSocket } from '@/hooks/use-socket'
+import { useRealtimeUpdates } from '@/hooks/use-realtime-updates'
 import { 
   Terminal, 
   RefreshCw, 
@@ -30,6 +30,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import toast from 'react-hot-toast'
 import { PremiumSpinner } from '@/components/ui/premium-spinner'
+import { getPusherClient } from '@/lib/pusher-client'
 
 // Hourly timelines for baseline Gantt grid
 const HOURS = ['08:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00', '22:00']
@@ -118,7 +119,8 @@ const INITIAL_EVENTS: TimelineEvent[] = [
 export default function UnifiedLiveTimeline() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const { socket, isConnected } = useSocket()
+  const { isConnected: isRealtimeConnected } = useRealtimeUpdates()
+  const isConnected = isRealtimeConnected
 
   const [loading, setLoading] = useState(true)
   const [events, setEvents] = useState<TimelineEvent[]>(INITIAL_EVENTS)
@@ -143,30 +145,29 @@ export default function UnifiedLiveTimeline() {
     setLoading(false)
   }, [session, status, router])
 
-  // WebSocket instant event integration listener
+  // Pusher real-time event integration
   useEffect(() => {
-    if (!socket) return
+    const pusher = getPusherClient()
+    const adminChannel = pusher.subscribe('admin')
 
-    const handleNewTimelineTrigger = (event: any) => {
+    const handleNewTimelineTrigger = (data: any) => {
       const parsedEvent: TimelineEvent = {
-        id: event.id || `evt-${Date.now()}`,
-        category: event.category || "SECURITY",
-        title: event.title || "External System Trigger",
-        message: event.message || "Anomalous telemetry signal resolved.",
-        time: event.time || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        spanHours: event.spanHours || 1.5,
-        severity: event.severity || "info",
-        assignedStaff: event.assignedStaff || "AI Guard Dog",
-        room: event.room || "System Wide"
+        id: data.id || `evt-${Date.now()}`,
+        category: data.category || "SECURITY",
+        title: data.title || "External System Trigger",
+        message: data.message || "Anomalous telemetry signal resolved.",
+        time: data.time || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        spanHours: data.spanHours || 1.5,
+        severity: data.severity || "info",
+        assignedStaff: data.assignedStaff || "AI Guard Dog",
+        room: data.room || "System Wide"
       }
 
       setEvents(prev => {
-        // Prevent duplicate appending
         if (prev.some(e => e.id === parsedEvent.id)) return prev
         return [parsedEvent, ...prev]
       })
 
-      // Tick log feed
       setLogsFeed(prev => [
         {
           id: `log-${Date.now()}`,
@@ -183,41 +184,28 @@ export default function UnifiedLiveTimeline() {
       })
     }
 
-    socket.on('timelineEventTriggered', handleNewTimelineTrigger as any)
+    adminChannel.bind('timelineEventTriggered', handleNewTimelineTrigger)
     return () => {
-      socket.off('timelineEventTriggered', handleNewTimelineTrigger as any)
+      adminChannel.unbind('timelineEventTriggered', handleNewTimelineTrigger)
+      pusher.unsubscribe('admin')
     }
-  }, [socket])
+  }, [])
 
   const triggerManualSimulationEvent = () => {
-    if (socket) {
-      socket.emit('triggerTimelineEvent', {
-        id: `evt-${Date.now()}`,
-        category: "MAINTENANCE",
-        title: "Simulation Trigger: Elevator Fault",
-        message: "Cable tension tolerance alarm active. Main shaft locked out.",
-        time: "22:00",
-        spanHours: 2,
-        severity: "critical",
-        assignedStaff: "Marcus Lift Engineer",
-        room: "Elevator Shaft B"
-      })
-    } else {
-      // Local fallback trigger
-      const fallbackEvent: TimelineEvent = {
-        id: `evt-${Date.now()}`,
-        category: "MAINTENANCE",
-        title: "Simulation Trigger: Elevator Fault (Local Fallback)",
-        message: "Cable tension tolerance alarm active. Main shaft locked out.",
-        time: "22:00",
-        spanHours: 2,
-        severity: "critical",
-        assignedStaff: "Marcus Lift Engineer",
-        room: "Elevator Shaft B"
-      }
-      setEvents(prev => [fallbackEvent, ...prev])
-      toast.success('Simulation event injected onto local timeline.')
+    // Simulation event injected onto local timeline (since we transitioned to Pusher)
+    const fallbackEvent: TimelineEvent = {
+      id: `evt-${Date.now()}`,
+      category: "MAINTENANCE",
+      title: "Simulation Trigger: Elevator Fault (Local)",
+      message: "Cable tension tolerance alarm active. Main shaft locked out.",
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      spanHours: 2,
+      severity: "critical",
+      assignedStaff: "Marcus Lift Engineer",
+      room: "Elevator Shaft B"
     }
+    setEvents(prev => [fallbackEvent, ...prev])
+    toast.success('Simulation event injected onto local timeline.')
   }
 
   if (status === 'loading' || loading) {

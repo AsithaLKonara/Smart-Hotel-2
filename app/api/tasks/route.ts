@@ -40,7 +40,10 @@ export async function GET(request: NextRequest) {
       whereClause.type = type
     }
 
-    if (assignedTo) {
+    // Enforce role-based visibility
+    if (session.user.role === 'GUEST') {
+      whereClause.createdBy = session.user.id
+    } else if (assignedTo) {
       whereClause.assignedTo = assignedTo
     }
 
@@ -90,17 +93,23 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     
-    if (!session || !['SUPER_ADMIN', 'MANAGER'].includes(session.user.role)) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const body = await request.json()
     const validatedData = taskSchema.parse(body)
 
-    // Note: assignedTo is required (String, not nullable), so use existing value or session user ID as fallback
+    // Authorization logic
+    if (session.user.role === 'GUEST') {
+      // Guests can only create GUEST_REQUEST or HOUSEKEEPING or MAINTENANCE
+      if (!['GUEST_REQUEST', 'HOUSEKEEPING', 'MAINTENANCE'].includes(validatedData.type)) {
+        return NextResponse.json({ error: 'Forbidden: Guests can only create service requests.' }, { status: 403 })
+      }
+    } else if (!['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'].includes(session.user.role)) {
+       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+    }
+
     const task = await prisma.task.create({
       data: {
         title: validatedData.title,

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { useSession } from 'next-auth/react'
-import { useSocket } from '@/hooks/use-socket'
+import { getPusherClient } from '@/lib/pusher-client'
 import toast from 'react-hot-toast'
 import React from 'react'
 
@@ -18,7 +18,6 @@ export interface RealtimeNotification {
 
 export function useRealtimeNotifications() {
   const { data: session } = useSession()
-  const { socket, isConnected } = useSocket()
   const [notifications, setNotifications] = useState<RealtimeNotification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [isPollingActive, setIsPollingActive] = useState(false)
@@ -124,38 +123,35 @@ export function useRealtimeNotifications() {
 
   // Setup listeners
   useEffect(() => {
-    if (!session) return
+    if (!session?.user?.id) return
 
     fetchNotifications()
 
-    // 1. Socket live listener
-    if (socket && isConnected) {
-      setIsPollingActive(false)
-      
-      const handleSocketNotification = (notif: any) => {
-        const typedNotif = notif as RealtimeNotification
-        if (!toastedIds.current.has(typedNotif.id)) {
-          toastedIds.current.add(typedNotif.id)
-          setNotifications(prev => [typedNotif, ...prev])
-          setUnreadCount(c => c + 1)
-          triggerToast(typedNotif)
-        }
+    // 1. Get Shared Pusher Client
+    const pusher = getPusherClient()
+    const userChannel = pusher.subscribe(`user-${session.user.id}`)
+    
+    setIsPollingActive(false)
+    
+    const handleNotification = (notif: any) => {
+      // Handle both raw notification objects and the new wrapped event payload
+      const typedNotif = notif.bookingId ? notif : notif
+      if (typedNotif && !toastedIds.current.has(typedNotif.id)) {
+        toastedIds.current.add(typedNotif.id)
+        setNotifications(prev => [typedNotif, ...prev])
+        setUnreadCount(c => c + 1)
+        triggerToast(typedNotif)
       }
-
-      socket.on('notificationReceived', handleSocketNotification)
-      return () => {
-        socket.off('notificationReceived', handleSocketNotification)
-      }
-    } else {
-      // 2. Resilient API Fallback Polling (Downtime/Chaos mitigation)
-      setIsPollingActive(true)
-      const pollInterval = setInterval(() => {
-        fetchNotifications()
-      }, 5000)
-
-      return () => clearInterval(pollInterval)
     }
-  }, [session, socket, isConnected])
+
+    userChannel.bind('notification.received', handleNotification)
+    userChannel.bind('admin.alert.new_booking', handleNotification)
+
+    return () => {
+      userChannel.unbind_all()
+      pusher.unsubscribe(`user-${session.user.id}`)
+    }
+  }, [session])
 
   return {
     notifications,

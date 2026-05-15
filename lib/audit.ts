@@ -35,7 +35,15 @@ export async function logAction(
   details: any
 ) {
   try {
-    const ip = request?.headers.get('x-forwarded-for') || 'system'
+    // Extract IP from either standard NextRequest or NextAuth request object
+    let ip = 'system'
+    if (request) {
+      const headers = request.headers instanceof Headers 
+        ? Object.fromEntries(request.headers.entries()) 
+        : (request.headers as any || {})
+        
+      ip = (headers['x-forwarded-for'] as string) || 'system'
+    }
     
     // Normalize audit entry for the Enterprise Schema
     const log = await prisma.auditLog.create({

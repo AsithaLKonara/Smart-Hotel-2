@@ -60,7 +60,7 @@ export function GuestDiningHub() {
 
         <div className="pt-4 border-t border-white/5 flex items-center justify-between">
           <p className="text-[10px] text-white/20 font-black uppercase tracking-widest">Available 24/7 for In-Room Dining</p>
-          <Link href="/order">
+          <Link href="/dashboard/dining">
             <Button variant="link" className="text-primary text-[10px] font-black uppercase tracking-widest p-0 h-auto">
               Open Room Service Portal &rarr;
             </Button>
