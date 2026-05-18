@@ -30,24 +30,24 @@ export async function GET(request: NextRequest) {
     let totalTax = 0
     let pendingPayments = 0
 
-    bookings.forEach(b => {
+    bookings.forEach((b: any) => {
       totalRoomCharges += b.totalAmount
       if (b.paymentStatus !== 'completed') {
         pendingPayments += b.totalAmount
       }
-      b.invoices.forEach(inv => {
+      b.invoices.forEach((inv: any) => {
         totalTax += inv.taxAmount
       })
     })
 
-    foodOrders.forEach(o => {
+    foodOrders.forEach((o: any) => {
       totalFoodCharges += o.totalAmount
-      const paidAmount = o.payments.reduce((sum, p) => sum + (p.status === 'completed' ? p.amount : 0), 0)
+      const paidAmount = o.payments.reduce((sum: number, p: any) => sum + (p.status === 'completed' ? p.amount : 0), 0)
       pendingPayments += (o.totalAmount - paidAmount)
     })
 
     const detailedSpending = [
-      ...bookings.map(b => ({
+      ...bookings.map((b: any) => ({
         id: b.id,
         category: 'ROOM',
         description: `Stay: ${b.checkIn.toLocaleDateString()} - ${b.checkOut.toLocaleDateString()}`,
@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
         date: b.createdAt,
         status: b.paymentStatus
       })),
-      ...foodOrders.map(o => ({
+      ...foodOrders.map((o: any) => ({
         id: o.id,
         category: 'FOOD',
         description: `Room Service: ${o.roomNumber}`,

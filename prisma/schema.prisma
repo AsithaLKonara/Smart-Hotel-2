@@ -4,7 +4,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mongodb"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -13,7 +13,7 @@ datasource db {
 // ==========================================
 
 model RoomType {
-  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  id           String   @id @default(uuid())
   name         String   @unique
   description  String
   baseRate     Float
@@ -29,19 +29,20 @@ model RoomType {
 }
 
 model Room {
-  id                 String     @id @default(auto()) @map("_id") @db.ObjectId
+  id                 String     @id @default(uuid())
   version            Int        @default(1)
   number             String     @unique
   floor              Int
   capacity           Int        @default(2)
   size               Int        @default(25)
-  roomTypeId         String     @db.ObjectId
+  roomTypeId         String
   status             RoomStatus @default(AVAILABLE)
   lastStatusChangeAt DateTime?  @default(now())
   lockId             String?
   lockExpiresAt      DateTime?
   lastCleanedAt      DateTime?
   lastInspectedAt    DateTime?
+  deletedAt          DateTime?
   createdAt          DateTime   @default(now())
   updatedAt          DateTime   @updatedAt
 
@@ -68,11 +69,11 @@ enum RoomStatus {
 }
 
 model RoomStatusHistory {
-  id        String     @id @default(auto()) @map("_id") @db.ObjectId
-  roomId    String     @db.ObjectId
+  id        String     @id @default(uuid())
+  roomId    String
   oldStatus RoomStatus
   newStatus RoomStatus
-  actorId   String     @db.ObjectId
+  actorId   String
   reason    String?
   createdAt DateTime   @default(now())
 
@@ -80,8 +81,8 @@ model RoomStatusHistory {
 }
 
 model RoomImage {
-  id           String   @id @default(auto()) @map("_id") @db.ObjectId
-  roomId       String   @db.ObjectId
+  id           String   @id @default(uuid())
+  roomId       String
   imageUrl     String
   isMain       Boolean  @default(false)
   displayOrder Int      @default(0)
@@ -96,7 +97,7 @@ model RoomImage {
 // ==========================================
 
 model Booking {
-  id               String        @id @default(auto()) @map("_id") @db.ObjectId
+  id               String        @id @default(uuid())
   version          Int           @default(1)
   confirmationCode String        @unique
   checkIn          DateTime      @db.Date
@@ -105,8 +106,8 @@ model Booking {
   source           BookingSource @default(WEBSITE)
   otaReference     String?
 
-  roomId         String @db.ObjectId
-  primaryGuestId String @db.ObjectId
+  roomId         String
+  primaryGuestId String
 
   guests          Int           @default(1)
   totalAmount     Float
@@ -114,6 +115,7 @@ model Booking {
   paymentMethod   String?
   paymentProvider String?
 
+  deletedAt DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -129,10 +131,12 @@ model Booking {
   @@index([checkIn, checkOut])
   @@index([status])
   @@index([createdAt])
+  @@index([status, createdAt])
+  @@index([roomId, status])
 }
 
 model Event {
-  id          String      @id @default(auto()) @map("_id") @db.ObjectId
+  id          String      @id @default(uuid())
   name        String
   description String?
   eventDate   DateTime
@@ -157,9 +161,9 @@ enum EventStatus {
 }
 
 model BookingGuest {
-  id        String  @id @default(auto()) @map("_id") @db.ObjectId
-  bookingId String  @db.ObjectId
-  userId    String? @db.ObjectId
+  id        String  @id @default(uuid())
+  bookingId String
+  userId    String?
   name      String
   email     String?
   phone     String?
@@ -191,13 +195,14 @@ enum BookingSource {
 // ==========================================
 
 model Invoice {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  id         String   @id @default(uuid())
   invoiceNo  String   @unique
-  bookingId  String   @db.ObjectId
+  bookingId  String
   subtotal   Float
   taxAmount  Float
   grandTotal Float
   status     String
+  deletedAt  DateTime?
   issuedAt   DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
@@ -206,8 +211,8 @@ model Invoice {
 }
 
 model InvoiceLineItem {
-  id          String @id @default(auto()) @map("_id") @db.ObjectId
-  invoiceId   String @db.ObjectId
+  id          String @id @default(uuid())
+  invoiceId   String
   description String
   quantity    Int
   unitPrice   Float
@@ -218,10 +223,10 @@ model InvoiceLineItem {
 }
 
 model Payment {
-  id              String        @id @default(auto()) @map("_id") @db.ObjectId
-  bookingId       String?       @db.ObjectId
-  orderId         String?       @db.ObjectId
-  userId          String?       @db.ObjectId
+  id              String        @id @default(uuid())
+  bookingId       String?
+  orderId         String?
+  userId          String?
   amount          Float
   currency        String        @default("LKR")
   paymentMethod   PaymentMethod @default(card)
@@ -230,6 +235,7 @@ model Payment {
   status          PaymentStatus @default(pending)
   capturedAt      DateTime?
   refundedAt      DateTime?
+  deletedAt       DateTime?
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
@@ -243,8 +249,8 @@ model Payment {
 }
 
 model FinancialAdjustment {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  paymentId String   @db.ObjectId
+  id        String   @id @default(uuid())
+  paymentId String
   type      String
   amount    Float
   reason    String
@@ -275,17 +281,17 @@ enum PaymentMethod {
 // ==========================================
 
 model Task {
-  id          String     @id @default(auto()) @map("_id") @db.ObjectId
+  id          String     @id @default(uuid())
   version     Int        @default(1)
   type        TaskType
   status      TaskStatus @default(PENDING)
   priority    Priority   @default(MEDIUM)
   title       String
   description String?
-  assignedTo  String?    @db.ObjectId
-  roomId      String?    @db.ObjectId
-  bookingId   String?    @db.ObjectId
-  createdBy   String?    @db.ObjectId
+  assignedTo  String?
+  roomId      String?
+  bookingId   String?
+  createdBy   String?
   dueDate     DateTime?
 
   assignedStaff Staff? @relation("StaffTasks", fields: [assignedTo], references: [id])
@@ -328,10 +334,10 @@ enum Priority {
 }
 
 model MaintenanceRequest {
-  id          String              @id @default(auto()) @map("_id") @db.ObjectId
-  roomId      String?             @db.ObjectId
-  userId      String              @db.ObjectId
-  assignedTo  String?             @db.ObjectId
+  id          String              @id @default(uuid())
+  roomId      String?
+  userId      String
+  assignedTo  String?
   title       String
   description String
   category    String
@@ -362,8 +368,8 @@ enum MaintenanceStatus {
 // ==========================================
 
 model FoodOrder {
-  id              String    @id @default(auto()) @map("_id") @db.ObjectId
-  guestId         String    @db.ObjectId
+  id              String    @id @default(uuid())
+  guestId         String
   roomNumber      String
   idempotencyKey  String?   @unique
   status          String
@@ -379,9 +385,9 @@ model FoodOrder {
 }
 
 model OrderItem {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  orderId    String   @db.ObjectId
-  menuItemId String   @db.ObjectId
+  id         String   @id @default(uuid())
+  orderId    String
+  menuItemId String
   quantity   Int
   price      Float
   subtotal   Float
@@ -394,7 +400,7 @@ model OrderItem {
 }
 
 model FoodMenu {
-  id              String      @id @default(auto()) @map("_id") @db.ObjectId
+  id              String      @id @default(uuid())
   name            String
   description     String
   category        String
@@ -411,12 +417,13 @@ model FoodMenu {
 // ==========================================
 
 model User {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  id        String   @id @default(uuid())
   email     String   @unique
   name      String
   phone     String?
   password  String
   role      UserRole @default(GUEST)
+  deletedAt DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -436,8 +443,8 @@ model User {
 }
 
 model GuestPreference {
-  id                  String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId              String   @unique @db.ObjectId
+  id                  String   @id @default(uuid())
+  userId              String   @unique
   dietaryRestrictions String[]
   allergies           String[]
   roomPreferences     String[]
@@ -445,8 +452,8 @@ model GuestPreference {
 }
 
 model Staff {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId     String   @unique @db.ObjectId
+  id         String   @id @default(uuid())
+  userId     String   @unique
   employeeId String   @unique
   name       String
   email      String?
@@ -478,10 +485,10 @@ enum UserRole {
 // ==========================================
 
 model RoomReview {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  roomId    String   @db.ObjectId
-  userId    String   @db.ObjectId
-  bookingId String?  @db.ObjectId
+  id        String   @id @default(uuid())
+  roomId    String
+  userId    String
+  bookingId String?
   rating    Int
   comment   String?
   createdAt DateTime @default(now())
@@ -492,8 +499,8 @@ model RoomReview {
 }
 
 model HotelReview {
-  id                String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId            String   @db.ObjectId
+  id                String   @id @default(uuid())
+  userId            String
   rating            Int      @default(5) // Legacy compatibility (mapped to overall)
   overallRating     Int      @default(5)
   serviceRating     Int?
@@ -508,7 +515,7 @@ model HotelReview {
 }
 
 model Amenity {
-  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  id           String   @id @default(uuid())
   name         String   @unique
   description  String?
   category     String?
@@ -520,7 +527,7 @@ model Amenity {
 }
 
 model Knowledge {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  id        String   @id @default(uuid())
   category  String?
   content   String
   embedding Float[]
@@ -533,7 +540,7 @@ model Knowledge {
 }
 
 model EmbeddingCache {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  id        String   @id @default(uuid())
   text      String   @unique
   embedding Float[]
   model     String   @default("nomic-embed-text-v1_5")
@@ -545,8 +552,8 @@ model EmbeddingCache {
 // ==========================================
 
 model Notification {
-  id        String    @id @default(auto()) @map("_id") @db.ObjectId
-  userId    String    @db.ObjectId
+  id        String    @id @default(uuid())
+  userId    String
   type      String
   title     String
   message   String
@@ -558,7 +565,7 @@ model Notification {
 }
 
 model Outbox {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  id          String    @id @default(uuid())
   topic       String
   payload     Json
   status      String    @default("PENDING")
@@ -568,7 +575,7 @@ model Outbox {
 }
 
 model SyncLog {
-  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  id           String   @id @default(uuid())
   direction    String
   status       String
   entityType   String
@@ -581,8 +588,8 @@ model SyncLog {
 }
 
 model AuditLog {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId     String?  @db.ObjectId
+  id         String   @id @default(uuid())
+  userId     String?
   actor      String
   action     String
   resource   String
@@ -594,7 +601,7 @@ model AuditLog {
 }
 
 model ChannelConfig {
-  id         String  @id @default(auto()) @map("_id") @db.ObjectId
+  id         String  @id @default(uuid())
   provider   String
   apiKey     String
   propertyId String
@@ -602,8 +609,8 @@ model ChannelConfig {
 }
 
 model RoomMapping {
-  id                    String  @id @default(auto()) @map("_id") @db.ObjectId
-  localRoomTypeId       String  @db.ObjectId
+  id                    String  @id @default(uuid())
+  localRoomTypeId       String
   otaRoomTypeId         String
   otaRatePlanId         String?
   priceMarkupPercentage Float   @default(15.0)
@@ -615,7 +622,7 @@ model RoomMapping {
 // ==========================================
 
 model Gallery {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  id        String   @id @default(uuid())
   title     String
   imageUrl  String
   category  String
@@ -626,7 +633,7 @@ model Gallery {
 }
 
 model HeroSlide {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  id          String   @id @default(uuid())
   image       String
   title       String
   subtitle    String
@@ -642,7 +649,7 @@ model HeroSlide {
 }
 
 model Inventory {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  id          String   @id @default(uuid())
   name        String
   description String?
   category    String
@@ -658,8 +665,8 @@ model Inventory {
 }
 
 model LoyaltyPoint {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId      String   @unique @db.ObjectId
+  id          String   @id @default(uuid())
+  userId      String   @unique
   points      Int      @default(0)
   totalEarned Int      @default(0)
   totalSpent  Int      @default(0)
@@ -672,8 +679,8 @@ model LoyaltyPoint {
 }
 
 model LoyaltyTransaction {
-  id             String                 @id @default(auto()) @map("_id") @db.ObjectId
-  loyaltyPointId String                 @db.ObjectId
+  id             String                 @id @default(uuid())
+  loyaltyPointId String
   type           LoyaltyTransactionType
   points         Int
   description    String
@@ -692,7 +699,7 @@ enum LoyaltyTransactionType {
 }
 
 model NavigationLink {
-  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  id        String     @id @default(uuid())
   name      String
   href      String
   icon      String?
@@ -706,7 +713,7 @@ model NavigationLink {
 }
 
 model Conversation {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  id        String   @id @default(uuid())
   sessionId String
   userId    String
   message   String
@@ -718,7 +725,7 @@ model Conversation {
 }
 
 model ChatCustomer {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  id          String   @id @default(uuid())
   phone       String   @unique
   name        String?
   lastOrderId String?
@@ -728,7 +735,7 @@ model ChatCustomer {
 }
 
 model Setting {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  id        String   @id @default(uuid())
   key       String   @unique
   value     String
   createdAt DateTime @default(now())
@@ -736,7 +743,7 @@ model Setting {
 }
 
 model SocialLink {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  id        String   @id @default(uuid())
   platform  String
   url       String
   icon      String?
@@ -749,8 +756,8 @@ model SocialLink {
 }
 
 model TableBooking {
-  id              String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId          String?  @db.ObjectId
+  id              String   @id @default(uuid())
+  userId          String?
   name            String
   email           String
   phone           String
@@ -766,9 +773,9 @@ model TableBooking {
 }
 
 model Complaint {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
-  userId      String    @db.ObjectId
-  bookingId   String?   @db.ObjectId
+  id          String    @id @default(uuid())
+  userId      String
+  bookingId   String?
   subject     String
   description String
   category    String
@@ -783,7 +790,7 @@ model Complaint {
 }
 
 model Testimonial {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  id        String   @id @default(uuid())
   name      String
   role      String?
   content   String
@@ -795,10 +802,38 @@ model Testimonial {
 }
 
 model FooterLink {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  id        String   @id @default(uuid())
   label     String
   url       String
   category  String
+  order     Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
+  @@index([active, order])
+}
+
+model ContactMessage {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  subject   String
+  message   String
+  status    String   @default("UNREAD") // UNREAD, READ, REPLIED, ARCHIVED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([createdAt])
+  @@index([status])
+}
+
+model FAQ {
+  id        String   @id @default(uuid())
+  question  String
+  answer    String
+  category  String   @default("General")
   order     Int      @default(0)
   active    Boolean  @default(true)
   createdAt DateTime @default(now())

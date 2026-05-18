@@ -131,7 +131,7 @@ export async function PATCH(
     const oldPaymentStatus = booking.paymentStatus
 
     // ATOMIC STATE TRANSITION
-    const updatedBooking = await prisma.$transaction(async (tx) => {
+    const updatedBooking = await prisma.$transaction(async (tx: any) => {
       // 1. Update Booking
       const b = await tx.booking.update({
         where: { id },

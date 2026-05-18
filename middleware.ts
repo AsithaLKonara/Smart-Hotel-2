@@ -92,6 +92,7 @@ const PUBLIC_API_PREFIXES = [
   '/api/auth',
   '/api/health',
   '/api/webhooks',
+  '/api/rooms',
   '/api/rooms/availability',
   '/api/rooms/check-availability',
   '/api/contact',

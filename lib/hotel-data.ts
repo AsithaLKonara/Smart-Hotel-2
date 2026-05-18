@@ -1,4 +1,5 @@
 import prisma from '@/lib/db'
+import { Room, RoomType, FoodMenu, Staff } from '@prisma/client'
 import { getHotelContactInfo, getHotelSettings } from './settings'
 
 type RestaurantMenu = Record<string, Array<{ name: string; description?: string | null; price: number; image?: string | null }>>
@@ -66,7 +67,7 @@ async function loadHotelData(): Promise<HotelData> {
   }
 
   const menu: RestaurantMenu = {}
-  menuItems.forEach(item => {
+  menuItems.forEach((item: FoodMenu) => {
     const category = item.category.toLowerCase()
     if (!menu[category]) menu[category] = []
     menu[category].push({
@@ -105,7 +106,7 @@ async function loadHotelData(): Promise<HotelData> {
     })(),
   }
 
-  const mappedRooms = rooms.map(room => ({
+  const mappedRooms = rooms.map((room: Room & { roomType: RoomType }) => ({
     id: room.id,
     type: room.roomType.name,
     description: room.roomType.description,
@@ -114,7 +115,7 @@ async function loadHotelData(): Promise<HotelData> {
     images: room.roomType.images?.length ? room.roomType.images : ['/images/hotel/room-deluxe.jpg'],
   }))
 
-  const staffProfiles = staff.map((member, index) => ({
+  const staffProfiles = staff.map((member: Staff, index: number) => ({
     name: member.name,
     position: member.position,
     department: member.department,

@@ -50,16 +50,31 @@ export async function GET(request: NextRequest) {
       orderBy: { number: 'asc' }
     })
 
-    // Flatten for legacy frontend compatibility if needed, but best practice is to keep structure
-    const serializedRooms = rooms.map((room: any) => ({
-      ...room,
-      // Mapping fields for legacy UI components
-      type: room.roomType.name,
-      price: room.roomType.baseRate,
-      capacity: room.roomType.capacity,
-      description: room.roomType.description,
-      amenities: room.roomType.amenities,
-    }))
+    // Flatten for legacy frontend compatibility with strict null handling
+    const serializedRooms = rooms.map((room: any) => {
+      const typeInfo = room.roomType || {
+        name: 'Standard',
+        baseRate: 0,
+        description: 'Luxury suite details arriving soon.',
+        capacity: 2,
+        amenities: []
+      }
+
+      // Ensure at least one image exists for hydration stability
+      const images = room.roomImages?.length > 0 
+        ? room.roomImages 
+        : [{ imageUrl: 'https://images.unsplash.com/photo-1590490359683-658d3d23f972?auto=format&fit=crop&q=80&w=800' }]
+
+      return {
+        ...room,
+        type: typeInfo.name,
+        price: typeInfo.baseRate,
+        capacity: typeInfo.capacity,
+        description: typeInfo.description,
+        amenities: typeInfo.amenities,
+        roomImages: images, // Standardized for the Image component
+      }
+    })
 
     return NextResponse.json({
       rooms: serializedRooms,

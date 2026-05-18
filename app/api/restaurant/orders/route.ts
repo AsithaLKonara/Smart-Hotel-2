@@ -160,7 +160,7 @@ export async function POST(request: NextRequest) {
       orderId: order.id,
       roomNumber: order.roomNumber,
       total: normalizedTotal,
-      items: order.items.map(i => ({ name: i.menuItem.name, qty: i.quantity }))
+      items: order.items.map((i: any) => ({ name: i.menuItem.name, qty: i.quantity }))
     })
 
     if (idempotencyKey) {

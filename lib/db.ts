@@ -1,37 +1,35 @@
 import { PrismaClient } from '@prisma/client'
 
 const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined
+  prisma: any
 }
 
-function createPrismaClient(): PrismaClient {
-  let connectionUrl = process.env.DATABASE_URL || ''
-  
-  if (connectionUrl && !connectionUrl.includes('retryWrites')) {
-    const separator = connectionUrl.includes('?') ? '&' : '?'
-    connectionUrl = `${connectionUrl}${separator}retryWrites=true&w=majority`
-  }
-  
-  if (connectionUrl && !connectionUrl.includes('connectTimeoutMS')) {
-    const separator = connectionUrl.includes('?') ? '&' : '?'
-    connectionUrl = `${connectionUrl}${separator}connectTimeoutMS=5000&socketTimeoutMS=10000&serverSelectionTimeoutMS=5000`
-  }
-
-  return new PrismaClient({
-    datasources: {
-      db: {
-        url: connectionUrl,
+function createPrismaClient() {
+  const baseClient = new PrismaClient()
+  return baseClient.$extends({
+    query: {
+      $allModels: {
+        async $allOperations({ model, operation, args, query }) {
+          if (
+            ['findMany', 'findFirst', 'count'].includes(operation) &&
+            ['Room', 'Booking', 'Invoice', 'Payment', 'User'].includes(model)
+          ) {
+            const queryArgs = args as any
+            queryArgs.where = queryArgs.where || {}
+            // If the query didn't explicitly request soft-deleted records, default to filtering them out
+            if (queryArgs.where.deletedAt === undefined) {
+              queryArgs.where.deletedAt = null
+            }
+          }
+          return query(args)
+        },
       },
     },
-    // log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
   })
 }
 
 export const prisma = globalForPrisma.prisma ?? createPrismaClient()
-
-if (process.env.NODE_ENV !== 'production') {
-  globalForPrisma.prisma = prisma
-}
+globalForPrisma.prisma = prisma as any
 
 /**
  * Standard execution wrapper with connection retry logic.

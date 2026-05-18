@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import prisma from '@/lib/db'
 import { z } from 'zod'
 import { logAction, AUDIT_ACTIONS } from '@/lib/audit'
+import { Prisma } from '@prisma/client'
 
 const taskUpdateSchema = z.object({
   title: z.string().min(1, 'Title is required').optional(),
@@ -109,7 +110,7 @@ export async function PUT(
       )
     }
 
-    const updateData: any = {
+    const updateData: Prisma.TaskUncheckedUpdateInput = {
       ...validatedData,
       updatedAt: new Date(),
     }
@@ -212,7 +213,7 @@ export async function PATCH(
       )
     }
 
-    const updateData: any = {
+    const updateData: Prisma.TaskUncheckedUpdateInput = {
       ...validatedData,
       updatedAt: new Date(),
     }
@@ -228,7 +229,7 @@ export async function PATCH(
       updateData.completedAt = validatedData.completedAt ? new Date(validatedData.completedAt) : null
     }
     
-    const updatedTask = await prisma.$transaction(async (tx) => {
+    const updatedTask = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const t = await tx.task.update({
         where: { id: id },
         data: updateData,

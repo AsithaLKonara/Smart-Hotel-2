@@ -175,7 +175,7 @@ async function createExcelReport(range: string, analytics: Awaited<ReturnType<ty
 
 export async function GET(request: NextRequest) {
   try {
-    const rateLimitResult = enhancedRateLimit(request, 'api')
+    const rateLimitResult = await enhancedRateLimit(request, 'api')
     if (!rateLimitResult.allowed) {
       return createEnhancedRateLimitResponse(rateLimitResult)
     }

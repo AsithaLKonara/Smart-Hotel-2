@@ -14,7 +14,7 @@ const registerSchema = z.object({
 
 export async function POST(request: NextRequest) {
   // Apply rate limiting
-  const rateLimitResult = enhancedRateLimit(request, 'auth')
+  const rateLimitResult = await enhancedRateLimit(request, 'auth')
   if (!rateLimitResult.allowed) {
     return createEnhancedRateLimitResponse(rateLimitResult)
   }

@@ -2,7 +2,7 @@ import { prisma } from '../db';
 import { eventBus } from '../event-bus';
 
 export interface BootstrapReport {
-  mongodbOk: boolean;
+  databaseOk: boolean;
   redisOk: boolean;
   stripeOk: boolean;
   isClusteredReplica: boolean;
@@ -14,24 +14,20 @@ export class SelfHealingRuntime {
    * Bootstrapping Validator: Checks crucial infrastructure blocks on system startup
    */
   static async validateEnvironment(): Promise<BootstrapReport> {
-    let mongodbOk = false;
+    let databaseOk = false;
     let redisOk = false;
     let stripeOk = false;
     let isClusteredReplica = false;
 
-    // 1. Audit MongoDB & transactional capabilities
+    // 1. Audit Database & transactional capabilities
     try {
-      await prisma.$runCommandRaw({ ping: 1 }).catch(() => {});
-      mongodbOk = true;
+      await prisma.$queryRaw`SELECT 1`.catch(() => {});
+      databaseOk = true;
 
-      // Check if replica-sets are available by examining transactions capability
-      const txSuccess = await prisma.$transaction(async (tx: any) => {
-        return true;
-      }).then(() => true).catch(() => false);
-
-      isClusteredReplica = txSuccess;
+      // PostgreSQL supports transactions by default
+      isClusteredReplica = true;
     } catch (err) {
-      console.error('CRITICAL: MongoDB connection check failed', err);
+      console.error('CRITICAL: Database connection check failed', err);
     }
 
     // 2. Audit Upstash Redis environment setups
@@ -55,7 +51,7 @@ export class SelfHealingRuntime {
       console.error('Stripe credential check failed', err);
     }
 
-    const canBoot = mongodbOk; // Soft-fallback: allow boot if DB ok, but raise alerts for others
+    const canBoot = databaseOk; // Soft-fallback: allow boot if DB ok, but raise alerts for others
 
     // Emit startup events to the SRE log streams
     eventBus.emit({
@@ -63,12 +59,12 @@ export class SelfHealingRuntime {
       type: 'sre.environment_validated',
       severity: canBoot ? (redisOk ? 'INFO' : 'MEDIUM') : 'EMERGENCY',
       title: 'Startup Environment Validated',
-      message: `System startup validation: MongoDB=${mongodbOk}, ClusteredReplica=${isClusteredReplica}, Redis=${redisOk}, Stripe=${stripeOk}`,
-      metadata: { mongodbOk, redisOk, stripeOk, isClusteredReplica, canBoot },
+      message: `System startup validation: Database=${databaseOk}, ClusteredReplica=${isClusteredReplica}, Redis=${redisOk}, Stripe=${stripeOk}`,
+      metadata: { databaseOk, redisOk, stripeOk, isClusteredReplica, canBoot },
       timestamp: new Date().toISOString()
     });
 
-    return { mongodbOk, redisOk, stripeOk, isClusteredReplica, canBoot };
+    return { databaseOk, redisOk, stripeOk, isClusteredReplica, canBoot };
   }
 
   /**

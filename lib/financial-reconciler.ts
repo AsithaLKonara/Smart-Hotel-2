@@ -36,13 +36,13 @@ export class FinancialReconciler {
       }
     })
 
-    const discrepancies = []
+    const discrepancies: ReconciliationReport['discrepancies'] = []
     let totalBookingValue = 0
     let totalPaymentValue = 0
 
     for (const booking of bookings) {
       const bookingTotal = booking.totalAmount
-      const paymentTotal = (booking as any).payments.reduce((sum: number, p: any) => sum + p.amount, 0)
+      const paymentTotal = booking.payments.reduce((sum: number, p: { amount: number }) => sum + p.amount, 0)
       
       totalBookingValue += bookingTotal
       totalPaymentValue += paymentTotal

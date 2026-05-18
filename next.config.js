@@ -1,3 +1,28 @@
+const fs = require('fs')
+const path = require('path')
+
+// Manually parse .env.local / .env to bypass Next.js's variable expansion on $ characters
+try {
+  const loadRawEnv = (fileName) => {
+    const filePath = path.join(__dirname, fileName)
+    if (fs.existsSync(filePath)) {
+      const content = fs.readFileSync(filePath, 'utf8')
+      const dbUrlMatch = content.match(/^DATABASE_URL=["']?([^"'\n]+)["']?/m)
+      if (dbUrlMatch && dbUrlMatch[1]) {
+        process.env.DATABASE_URL = dbUrlMatch[1]
+      }
+      const directUrlMatch = content.match(/^DIRECT_URL=["']?([^"'\n]+)["']?/m)
+      if (directUrlMatch && directUrlMatch[1]) {
+        process.env.DIRECT_URL = directUrlMatch[1]
+      }
+    }
+  }
+  loadRawEnv('.env')
+  loadRawEnv('.env.local')
+} catch (err) {
+  console.error('Failed to programmatically inject database URL:', err.message)
+}
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Basic configuration

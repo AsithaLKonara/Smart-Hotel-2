@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import prisma from '@/lib/db'
 import { z } from 'zod'
 import { logAction, AUDIT_ACTIONS } from '@/lib/audit'
+import { Prisma, TaskStatus, TaskType, Task } from '@prisma/client'
 
 const taskSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -30,14 +31,14 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get('type')
     const assignedTo = searchParams.get('assignedTo')
 
-    let whereClause: any = {}
+    let whereClause: Prisma.TaskWhereInput = {}
 
     if (status && status !== 'all') {
-      whereClause.status = status
+      whereClause.status = status as TaskStatus
     }
 
     if (type && type !== 'all') {
-      whereClause.type = type
+      whereClause.type = type as TaskType
     }
 
     // Enforce role-based visibility
@@ -57,7 +58,7 @@ export async function GET(request: NextRequest) {
     
     // Fetch related data separately for each task
     const tasksWithRelations = await Promise.all(
-      tasks.map(async (task) => {
+      tasks.map(async (task: Task) => {
         const [staff, user] = await Promise.all([
           task.assignedTo ? prisma.staff.findUnique({ where: { id: task.assignedTo } }).catch(() => null) : null,
           task.createdBy ? prisma.user.findUnique({ where: { id: task.createdBy } }).catch(() => null) : null

@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
       orderBy: { name: 'asc' }
     })
 
-    return NextResponse.json(staff.map(s => ({
+    return NextResponse.json(staff.map((s: (typeof staff)[number]) => ({
       ...s,
       taskCount: s._count.tasks,
       workloadPercentage: Math.min(100, (s._count.tasks / 5) * 100) // Scale: 5 tasks = 100% load

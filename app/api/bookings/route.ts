@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
 
     try {
       // 2. ATOMIC DB TRANSACTION
-      const result = await prisma.$transaction(async (tx) => {
+      const result = await prisma.$transaction(async (tx: any) => {
         const room = await tx.room.findUnique({ 
           where: { id: validated.roomId },
           include: { roomType: true }
@@ -144,7 +144,7 @@ export async function POST(request: NextRequest) {
       }
 
       // 7. STRIPE PAYMENT INTENT
-      let clientSecret = null
+      let clientSecret: string | null = null
       if (validated.paymentMethod === 'pay_now' && stripe) {
         const intent = await stripe.paymentIntents.create({
           amount: Math.round(result.totalAmount * 100),

@@ -67,7 +67,7 @@ export async function GET() {
   let databaseHealthy = false
 
   try {
-    await withTimeout(prisma.$runCommandRaw({ ping: 1 }), DB_TIMEOUT_MS)
+    await withTimeout(prisma.$queryRaw`SELECT 1`, DB_TIMEOUT_MS)
     checks.database = 'healthy'
     databaseHealthy = true
   } catch (error) {

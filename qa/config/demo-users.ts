@@ -9,17 +9,17 @@ export const demoUsers = {
   },
   manager: {
     email: 'manager@smarthotel.com',
-    password: 'SmartHotel@2025!Manager',
+    password: 'password123',
     expectedRole: 'MANAGER',
   },
   receptionist: {
-    email: 'receptionist@smarthotel.com',
-    password: 'SmartHotel@2025!Reception',
+    email: 'reception@smarthotel.com',
+    password: 'password123',
     expectedRole: 'RECEPTIONIST',
   },
   kitchen: {
-    email: 'kitchen@smarthotel.com',
-    password: 'SmartHotel@2025!Kitchen',
+    email: 'chef@smarthotel.com',
+    password: 'password123',
     expectedRole: 'KITCHEN',
   },
   guest: {

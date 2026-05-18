@@ -117,7 +117,7 @@ export class AnalyticsEngine {
     }))
 
     // 4. Parallel Occupancy by Type
-    const occupancyByType = await Promise.all(roomTypes.map(async (rt) => {
+    const occupancyByType = await Promise.all(roomTypes.map(async (rt: (typeof roomTypes)[number]) => {
       const activeInType = await prisma.booking.count({
         where: {
           room: { roomTypeId: rt.id },
@@ -155,7 +155,7 @@ export class AnalyticsEngine {
       _count: { id: true }
     })
 
-    return stats.map(s => ({
+    return stats.map((s: (typeof stats)[number]) => ({
       status: s.status,
       count: s._count.id
     }))

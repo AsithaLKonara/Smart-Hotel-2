@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
     // Test 2: Database Ping
     const test2Start = Date.now()
     try {
-      await prisma.$runCommandRaw({ ping: 1 })
+      await prisma.$queryRaw`SELECT 1`
       results.push({
         name: 'Database Ping',
         status: 'success',

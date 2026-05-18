@@ -4,6 +4,7 @@ import CredentialsProvider from 'next-auth/providers/credentials'
 import GoogleProvider from 'next-auth/providers/google'
 import bcrypt from 'bcryptjs'
 import prisma, { connectWithRetry } from './db'
+import { User } from '@prisma/client'
 import { logAction, AUDIT_ACTIONS } from './audit'
 import { isDatabaseConfigured } from './db-helpers'
 // Note: UserRole enum doesn't exist in Prisma schema - define locally
@@ -52,7 +53,7 @@ export const authOptions: NextAuthOptions = {
           console.info('Credentials authorize: lookup user', credentials.email)
           
           // Use connection retry wrapper to handle MongoDB Atlas sleeping
-          let user = null;
+          let user: User | null = null;
           if (isDatabaseConfigured()) {
             user = await connectWithRetry(async () => {
               return await prisma.user.findFirst({ 
@@ -194,6 +195,35 @@ export const authOptions: NextAuthOptions = {
   },
   pages: { 
     signIn: '/auth/signin'
+  },
+  cookies: {
+    sessionToken: {
+      name: process.env.NODE_ENV === 'production' ? '__Secure-next-auth.session-token' : 'next-auth.session-token',
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: true,
+      },
+    },
+    callbackUrl: {
+      name: process.env.NODE_ENV === 'production' ? '__Secure-next-auth.callback-url' : 'next-auth.callback-url',
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: true,
+      },
+    },
+    csrfToken: {
+      name: process.env.NODE_ENV === 'production' ? '__Host-next-auth.csrf-token' : 'next-auth.csrf-token',
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: true,
+      },
+    },
   },
   secret: process.env.NEXTAUTH_SECRET,
 } 

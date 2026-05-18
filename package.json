@@ -163,5 +163,8 @@
     "tsx": "^4.6.0",
     "typescript": "^5",
     "webpack-bundle-analyzer": "^4.10.2"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   }
 }

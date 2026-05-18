@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
         count: 0, // Would fetch from Redis SCAN in production
         status: 'HEALTHY'
       },
-      lineage: lineage.map(l => ({
+      lineage: lineage.map((l: any) => ({
         type: l.action,
         message: `${l.action} on ${l.resource}`,
         time: l.createdAt.toLocaleTimeString(),

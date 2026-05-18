@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { sendContactEmail } from '@/lib/email'
+import { prisma } from '@/lib/db'
 
 const contactSchema = z.object({
   name: z.string().min(2, 'Name is required'),
@@ -14,6 +15,18 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const data = contactSchema.parse(body)
 
+    // Structural Fix: Persist to DB first to ensure zero data loss
+    await prisma.contactMessage.create({
+      data: {
+        name: data.name,
+        email: data.email,
+        subject: data.subject,
+        message: data.message,
+        status: 'UNREAD'
+      }
+    })
+
+    // Background task (or fire-and-forget) for email
     await sendContactEmail(data)
 
     return NextResponse.json({ success: true }, { status: 201 })

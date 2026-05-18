@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
     })
 
     // Convert to object format for easier consumption
-    const settingsObject = settings.reduce((acc, setting) => {
+    const settingsObject = settings.reduce((acc: any, setting: any) => {
       acc[setting.key] = setting.value
       return acc
     }, {} as Record<string, string>)

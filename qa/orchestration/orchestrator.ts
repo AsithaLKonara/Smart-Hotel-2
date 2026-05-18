@@ -104,8 +104,8 @@ async function executeOrchestratedSweep() {
 
     console.log(`🧭 [ORCHESTRATOR]: Site crawl complete. Found ${routesToScan.length} unique routes to audit.`);
 
-    const accessibilityScans = [];
-    const visualScans = [];
+    const accessibilityScans: any[] = [];
+    const visualScans: any[] = [];
 
     // 4. Run visual and accessibility validation sweeps over crawled routes
     for (const route of routesToScan) {

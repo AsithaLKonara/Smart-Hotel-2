@@ -6,7 +6,7 @@ import { enhancedRateLimit, createEnhancedRateLimitResponse } from '@/lib/rate-l
 
 export async function POST(request: NextRequest) {
   // Apply rate limiting
-  const rateLimitResult = enhancedRateLimit(request, 'auth')
+  const rateLimitResult = await enhancedRateLimit(request, 'auth')
   if (!rateLimitResult.allowed) {
     return createEnhancedRateLimitResponse(rateLimitResult)
   }

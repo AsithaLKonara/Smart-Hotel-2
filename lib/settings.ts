@@ -37,15 +37,15 @@ export const getHotelSettings = cache(async () => {
       return {}
     }
     
-    const records = await prisma.setting.findMany().catch((error) => {
+    const records = await prisma.setting.findMany().catch((error: any) => {
       console.error('Error fetching hotel settings:', error)
       return []
     })
     
-  return records.reduce<SettingsMap>((acc, setting) => {
+  return records.reduce((acc: any, setting: any) => {
     acc[setting.key] = setting.value
     return acc
-  }, {})
+  }, {} as SettingsMap)
   } catch (error) {
     console.error('Error in getHotelSettings:', error)
     // Return empty object if database query fails

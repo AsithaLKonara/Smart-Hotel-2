@@ -61,7 +61,7 @@ const level = () => {
 }
 
 // Create transports
-const transports = []
+const transports: any[] = []
 
 // Console transport (always enabled)
 transports.push(

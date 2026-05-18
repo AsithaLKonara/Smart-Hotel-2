@@ -1,190 +1,319 @@
-import { PrismaClient, RoomStatus, BookingStatus, BookingSource, PaymentStatus, PaymentMethod, TaskType, TaskStatus, Priority, UserRole } from '@prisma/client'
+import { PrismaClient, RoomStatus, BookingStatus, BookingSource, PaymentStatus, PaymentMethod, TaskType, TaskStatus, Priority, UserRole, MaintenancePriority, MaintenanceStatus, EventStatus, LoyaltyTransactionType } from '@prisma/client'
 import { faker } from '@faker-js/faker'
 import bcrypt from 'bcryptjs'
-
 
 const prisma = new PrismaClient()
 
 async function main() {
-  console.log('--- STARTING PERFORMANCE-OPTIMIZED SEED ---')
+  console.log('--- STARTING ENTERPRISE RELATIONAL SEEDING (POSTGRESQL) ---')
 
-  // 1. CLEAN DB
-  // 1. CLEAN DB (Order matters for relations)
-  const collections = [
-    'auditLog', 'syncLog', 'outbox', 'task', 'invoiceLineItem', 
-    'invoice', 'financialAdjustment', 'payment', 'bookingGuest', 
-    'booking', 'roomStatusHistory', 'room', 'roomType', 
-    'staff', 'loyaltyPoint', 'user'
+  const passwordHash = await bcrypt.hash('password123', 12)
+  const adminPasswordHash = await bcrypt.hash('SmartHotel@2025!Admin', 12)
+
+  // 1. CLEAN DB (Order matters for FK constraints)
+  console.log('🧹 Cleaning database...')
+  const deleteOrder = [
+    'AuditLog', 'SyncLog', 'Outbox', 'Task', 'MaintenanceRequest', 
+    'InvoiceLineItem', 'Invoice', 'FinancialAdjustment', 'Payment', 
+    'OrderItem', 'FoodOrder', 'FoodMenu', 'LoyaltyTransaction', 'LoyaltyPoint',
+    'RoomReview', 'HotelReview', 'Complaint', 'TableBooking', 'BookingGuest',
+    'Booking', 'RoomImage', 'RoomStatusHistory', 'Room', 'RoomType', 
+    'Staff', 'GuestPreference', 'User', 'Amenity', 'Knowledge', 'Gallery', 
+    'HeroSlide', 'Inventory', 'Conversation', 'ChatCustomer', 'Setting', 
+    'SocialLink', 'Testimonial', 'FooterLink', 'NavigationLink', 'FAQ', 'Event'
   ]
-  
-  console.log('🧹 Cleaning collections...')
-  for (const modelName of collections) {
-    // @ts-ignore
-    if (prisma[modelName]) {
-      try {
-        // @ts-ignore
+
+  for (const model of deleteOrder) {
+    try {
+      // @ts-ignore
+      const modelName = model.charAt(0).toLowerCase() + model.slice(1);
+      if (prisma[modelName]) {
         await prisma[modelName].deleteMany()
-      } catch (e) {
-        console.warn(`⚠️ Failed to clear ${modelName}, might be due to relations.`)
       }
+    } catch (e) {
+      // Ignore models that might not exist or have deletion issues
     }
   }
 
+  // 2. CREATE AMENITIES
+  console.log('🏨 Creating Amenities...')
+  const amenitiesList = [
+    'Ultra High-Speed Wi-Fi', 'Smart 4K TV', 'Nespresso Machine', 'Ocean View Balcony',
+    'Mini Bar', 'Luxury Robes', 'Rain Shower', 'Room Automation', 'Safe Box',
+    'Jacuzzi', 'Work Desk', 'Air Conditioning'
+  ]
+  for (const name of amenitiesList) {
+    await prisma.amenity.create({ data: { name, active: true } })
+  }
 
-
-  // 2. CREATE ROOM TYPES
-  const roomTypes = [
-    { name: 'Standard', baseRate: 15000, capacity: 2, amenities: ['Wifi', 'TV'] },
-    { name: 'Deluxe', baseRate: 25000, capacity: 2, amenities: ['Wifi', 'TV', 'City View'] },
-    { name: 'Suite', baseRate: 45000, capacity: 3, amenities: ['Wifi', 'TV', 'Mini Bar'] },
-    { name: 'Presidential', baseRate: 120000, capacity: 4, amenities: ['Wifi', 'TV', 'Bar', 'Jacuzzi'] }
+  // 3. CREATE ROOM TYPES
+  console.log('🏢 Creating Room Types...')
+  const roomTypesData = [
+    { name: 'Deluxe', baseRate: 250, capacity: 2, amenities: ['Wifi', 'TV', 'Mini Bar'] },
+    { name: 'Executive', baseRate: 450, capacity: 2, amenities: ['Wifi', 'TV', 'Mini Bar', 'Work Desk'] },
+    { name: 'Presidential', baseRate: 1500, capacity: 4, amenities: ['Wifi', 'TV', 'Mini Bar', 'Jacuzzi', 'Bar'] },
+    { name: 'Suite', baseRate: 600, capacity: 3, amenities: ['Wifi', 'TV', 'Kitchenette'] },
+    { name: 'Family', baseRate: 500, capacity: 5, amenities: ['Wifi', 'TV', 'Bunk Beds'] },
+    { name: 'Ocean View', baseRate: 550, capacity: 2, amenities: ['Wifi', 'TV', 'Balcony'] }
   ]
 
-  const createdRoomTypes = await Promise.all(
-    roomTypes.map(rt => prisma.roomType.create({ data: { ...rt, description: faker.lorem.sentence() } }))
-  )
+  const createdRoomTypes = []
+  for (const rt of roomTypesData) {
+    const created = await prisma.roomType.create({
+      data: {
+        ...rt,
+        description: faker.lorem.paragraph()
+      }
+    })
+    createdRoomTypes.push(created)
+  }
 
-  // 3. CREATE ROOMS
-  const roomData = []
+  // 4. CREATE ROOMS (100)
+  console.log('🛏️ Creating 100 Rooms...')
+  const rooms = []
   for (let floor = 1; floor <= 5; floor++) {
-    for (let i = 1; i <= 20; i++) {
-      const type = i > 18 ? createdRoomTypes[3] : i > 15 ? createdRoomTypes[2] : i > 10 ? createdRoomTypes[1] : createdRoomTypes[0]
-      roomData.push({
-        number: `${floor}${i.toString().padStart(2, '0')}`,
-        floor,
-        roomTypeId: type.id,
-        status: RoomStatus.AVAILABLE
+    for (let r = 1; r <= 20; r++) {
+      const roomNumber = `${floor}${r.toString().padStart(2, '0')}`
+      const rt = faker.helpers.arrayElement(createdRoomTypes)
+      const room = await prisma.room.create({
+        data: {
+          number: roomNumber,
+          floor,
+          capacity: rt.capacity,
+          roomTypeId: rt.id,
+          status: 'AVAILABLE',
+          version: 1
+        }
+      })
+      rooms.push(room)
+    }
+  }
+
+  // 5. CREATE USERS (50)
+  console.log('👥 Creating 50 Users...')
+  const users = []
+  
+  // Create Essential Staff
+  const staffConfigs = [
+    { role: UserRole.SUPER_ADMIN, email: 'admin@smarthotel.com', name: 'System Administrator' },
+    { role: UserRole.MANAGER, email: 'manager@smarthotel.com', name: 'General Manager' },
+    { role: UserRole.RECEPTIONIST, email: 'reception@smarthotel.com', name: 'Front Desk Lead' },
+    { role: UserRole.KITCHEN, email: 'chef@smarthotel.com', name: 'Executive Chef' },
+    { role: UserRole.HOUSEKEEPING, email: 'cleaning@smarthotel.com', name: 'Housekeeping Supervisor' },
+    { role: UserRole.MAINTENANCE, email: 'tech@smarthotel.com', name: 'Chief Engineer' }
+  ]
+
+  for (const cfg of staffConfigs) {
+    const user = await prisma.user.create({
+      data: {
+        email: cfg.email,
+        name: cfg.name,
+        password: cfg.role === UserRole.SUPER_ADMIN ? adminPasswordHash : passwordHash,
+        role: cfg.role,
+        staffProfile: {
+          create: {
+            employeeId: `SH-${faker.string.alphanumeric(4).toUpperCase()}`,
+            name: cfg.name,
+            position: cfg.role.toString(),
+            department: cfg.role === UserRole.KITCHEN ? 'FOOD & BEVERAGE' : 'OPERATIONS'
+          }
+        }
+      }
+    })
+    users.push(user)
+  }
+
+  // Create Guest for demo
+  const guestUser = await prisma.user.create({
+    data: {
+      email: 'guest@example.com',
+      name: 'John Doe (Guest)',
+      password: await bcrypt.hash('SmartHotel@2025!Guest', 12),
+      role: 'GUEST',
+      loyalty: { create: { tier: 'GOLD', points: 1500, totalEarned: 2000 } }
+    }
+  })
+  users.push(guestUser)
+
+  // Create 43 more guests
+  for (let i = 0; i < 43; i++) {
+    const user = await prisma.user.create({
+      data: {
+        email: faker.internet.email().toLowerCase(),
+        name: faker.person.fullName(),
+        password: passwordHash,
+        role: 'GUEST',
+        phone: faker.phone.number()
+      }
+    })
+    users.push(user)
+  }
+
+  const guests = users.filter(u => u.role === 'GUEST')
+  const staff = users.filter(u => u.role !== 'GUEST')
+
+  // 6. CREATE BOOKINGS (500)
+  console.log('📅 Generating 500+ Bookings in parallel chunks of 20...')
+  const today = new Date()
+
+  async function createSingleBooking(i) {
+    const guest = faker.helpers.arrayElement(guests)
+    const room = faker.helpers.arrayElement(rooms)
+    const rt = createdRoomTypes.find(t => t.id === room.roomTypeId)!
+    
+    // Distribute across -6 months to +3 months
+    const checkIn = faker.date.between({ 
+      from: new Date(today.getTime() - 180 * 24 * 3600000), 
+      to: new Date(today.getTime() + 90 * 24 * 3600000) 
+    })
+    const stayNights = faker.number.int({ min: 1, max: 7 })
+    const checkOut = new Date(checkIn.getTime() + stayNights * 24 * 3600000)
+    
+    let status: BookingStatus = 'CONFIRMED'
+    if (checkOut < today) status = 'CHECKED_OUT'
+    else if (checkIn < today && checkOut > today) status = 'CHECKED_IN'
+    else if (faker.number.int({ min: 1, max: 10 }) === 1) status = 'CANCELLED'
+
+    const totalAmount = rt.baseRate * stayNights
+
+    const booking = await prisma.booking.create({
+      data: {
+        confirmationCode: `SH-${faker.string.alphanumeric(6).toUpperCase()}`,
+        checkIn,
+        checkOut,
+        status,
+        guests: faker.number.int({ min: 1, max: rt.capacity }),
+        totalAmount,
+        roomId: room.id,
+        primaryGuestId: guest.id,
+        paymentStatus: status === 'CHECKED_OUT' ? 'completed' : 'unpaid',
+        paymentMethod: 'card',
+        source: faker.helpers.arrayElement(['WEBSITE', 'BOOKING_COM', 'AGODA', 'WALK_IN']) as BookingSource
+      }
+    })
+
+    // Create Invoice if Checked Out
+    if (status === 'CHECKED_OUT') {
+      await prisma.invoice.create({
+        data: {
+          invoiceNo: `INV-${faker.number.int({ min: 100000, max: 999999 })}`,
+          bookingId: booking.id,
+          subtotal: totalAmount / 1.1,
+          taxAmount: totalAmount - (totalAmount / 1.1),
+          grandTotal: totalAmount,
+          status: 'PAID',
+          lineItems: {
+            create: [
+              { description: `Accommodation - ${rt.name}`, quantity: stayNights, unitPrice: rt.baseRate, totalPrice: totalAmount, category: 'STAY' }
+            ]
+          }
+        }
+      })
+      
+      await prisma.payment.create({
+        data: {
+          bookingId: booking.id,
+          amount: totalAmount,
+          status: 'completed',
+          paymentMethod: 'card',
+          capturedAt: checkIn
+        }
       })
     }
   }
-  
-  // Use createMany for speed where no relations are needed during creation
-  await prisma.room.createMany({ data: roomData })
-  const rooms = await prisma.room.findMany()
-  console.log(`- Seeded ${rooms.length} Rooms.`)
 
-  // 4. CREATE STAFF (Match Sign-in Page Demo Credentials)
-  const demoStaff = [
-    { role: UserRole.SUPER_ADMIN, email: 'admin@smarthotel.com', password: 'SmartHotel@2025!Admin', name: 'Admin User' },
-    { role: UserRole.MANAGER, email: 'manager@smarthotel.com', password: 'SmartHotel@2025!Manager', name: 'Manager User' },
-    { role: UserRole.RECEPTIONIST, email: 'receptionist@smarthotel.com', password: 'SmartHotel@2025!Reception', name: 'Receptionist User' },
-    { role: UserRole.KITCHEN, email: 'kitchen@smarthotel.com', password: 'SmartHotel@2025!Kitchen', name: 'Kitchen Staff' },
-    { role: UserRole.HOUSEKEEPING, email: 'housekeeping1@smarthotel.com', password: 'password123', name: 'Housekeeping User' },
-    { role: UserRole.MAINTENANCE, email: 'maintenance1@smarthotel.com', password: 'password123', name: 'Maintenance User' },
-  ]
-
-  const staffMembers = []
-  for (const demo of demoStaff) {
-    const hashedPassword = await bcrypt.hash(demo.password, 12)
-    const user = await prisma.user.create({
-      data: {
-        name: demo.name,
-        email: demo.email,
-        password: hashedPassword,
-        role: demo.role,
-        staffProfile: {
-          create: {
-            name: demo.name,
-            employeeId: `EMP-${demo.role}-${faker.string.alphanumeric(3).toUpperCase()}`,
-            position: demo.role.toString(),
-            department: 'OPERATIONS'
-          }
-        }
-      },
-      include: { staffProfile: true }
-    })
-    if (user.staffProfile) staffMembers.push(user.staffProfile)
+  // Execute in batches of 20 to speed up seeding and prevent timeout disconnects
+  const chunkSize = 20;
+  for (let i = 0; i < 500; i += chunkSize) {
+    const chunkPromises = [];
+    for (let j = 0; j < chunkSize && i + j < 500; j++) {
+      chunkPromises.push(createSingleBooking(i + j));
+    }
+    await Promise.all(chunkPromises);
+    if ((i + chunkSize) % 100 === 0 || i + chunkSize >= 500) {
+      console.log(`  - Seeded ${Math.min(i + chunkSize, 500)}/500 bookings`);
+    }
   }
 
-  // Predictable Guest (Match Sign-in Page)
-  await prisma.user.create({
-    data: { 
-      name: 'Guest User', 
-      email: 'guest@example.com', 
-      password: await bcrypt.hash('SmartHotel@2025!Guest', 12), 
-      role: UserRole.GUEST 
+  // 7. CREATE TASKS & MAINTENANCE
+  console.log('🧹 Creating Tasks...')
+  const housekeepingStaff = await prisma.staff.findFirst({
+    where: {
+      user: {
+        role: 'HOUSEKEEPING'
+      }
     }
   })
+  const hksId = housekeepingStaff?.id || null
 
-  // 5. SIMULATE HISTORY
-  console.log('- Generating 6 months of operations (Parallelized)...')
-  const guests = await Promise.all(
-    Array.from({ length: 40 }).map(async () => prisma.user.create({
-      data: { 
-        name: faker.person.fullName(), 
-        email: faker.internet.email().toLowerCase(), 
-        password: await bcrypt.hash('password123', 12), 
-        role: UserRole.GUEST 
+  for (let i = 0; i < 30; i++) {
+    const room = faker.helpers.arrayElement(rooms)
+    await prisma.task.create({
+      data: {
+        type: 'HOUSEKEEPING',
+        status: faker.helpers.arrayElement(['PENDING', 'IN_PROGRESS', 'COMPLETED']),
+        title: `Clean Room ${room.number}`,
+        priority: 'MEDIUM',
+        roomId: room.id,
+        assignedTo: hksId
       }
-    }))
-  )
-
-
-
-  const startDate = new Date()
-  startDate.setMonth(startDate.getMonth() - 6)
-  const today = new Date()
-
-  // Process in weekly chunks to avoid overwhelming MongoDB
-  for (let d = new Date(startDate); d <= today; d.setDate(d.getDate() + 7)) {
-    const weekBatch = []
-    
-    for (let i = 0; i < 7; i++) {
-      const currentDay = new Date(d)
-      currentDay.setDate(currentDay.getDate() + i)
-      if (currentDay > today) break
-
-      const isWeekend = currentDay.getDay() === 0 || currentDay.getDay() === 6
-      const occupancyCount = isWeekend ? 8 : 3
-      
-      for (let b = 0; b < occupancyCount; b++) {
-        const room = faker.helpers.arrayElement(rooms)
-        const guest = faker.helpers.arrayElement(guests)
-        const roomType = createdRoomTypes.find(rt => rt.id === room.roomTypeId)!
-        
-        weekBatch.push((async () => {
-          const booking = await prisma.booking.create({
-            data: {
-              confirmationCode: `SH-${faker.string.alphanumeric(6).toUpperCase()}`,
-              checkIn: currentDay,
-              checkOut: new Date(currentDay.getTime() + 2 * 24 * 3600000),
-              status: currentDay < today ? BookingStatus.CHECKED_OUT : BookingStatus.CONFIRMED,
-              totalAmount: roomType.baseRate * 2,
-              room: { connect: { id: room.id } },
-              guest: { connect: { id: guest.id } },
-              payments: {
-                create: {
-                  amount: roomType.baseRate * 2,
-                  method: PaymentMethod.CARD,
-                  status: PaymentStatus.PAID,
-                  providerId: `pi_${faker.string.alphanumeric(20)}`
-                }
-              }
-            }
-          })
-          
-          if (currentDay < today) {
-            const hksId = staffMembers.find(s => s.position === UserRole.HOUSEKEEPING.toString())?.id
-            await prisma.task.create({
-              data: {
-                type: TaskType.HOUSEKEEPING,
-                status: TaskStatus.COMPLETED,
-                title: `Clean Room ${room.number}`,
-                room: { connect: { id: room.id } },
-                booking: { connect: { id: booking.id } },
-                ...(hksId && { assignedStaff: { connect: { id: hksId } } })
-              }
-            })
-          }
-        })())
-      }
-    }
-    
-    await Promise.all(weekBatch)
-    console.log(`- Seeded week starting ${d.toDateString()}`)
+    })
   }
 
-  console.log('--- SEEDING COMPLETE: OPERATIONAL DATASET CERTIFIED ---')
+  // 8. FOOD MENU & ORDERS
+  console.log('🍴 Creating Food Menu...')
+  const menuCategories = ['Breakfast', 'Main Course', 'Appetizers', 'Drinks', 'Dessert']
+  const menuItems = []
+  for (const cat of menuCategories) {
+    for (let i = 0; i < 4; i++) {
+      const item = await prisma.foodMenu.create({
+        data: {
+          name: faker.food.dish(),
+          description: faker.food.description(),
+          category: cat,
+          price: faker.number.float({ min: 10, max: 50, fractionDigits: 2 }),
+          preparationTime: faker.number.int({ min: 15, max: 45 })
+        }
+      })
+      menuItems.push(item)
+    }
+  }
+
+  // 9. AUDIT LOGS
+  console.log('📜 Generating Audit Logs...')
+  for (let i = 0; i < 50; i++) {
+    await prisma.auditLog.create({
+      data: {
+        actor: faker.helpers.arrayElement(staff).name,
+        action: faker.helpers.arrayElement(['LOGIN', 'BOOKING_CREATE', 'ROOM_UPDATE', 'PAYMENT_CAPTURE']),
+        resource: 'SYSTEM',
+        details: { ip: faker.internet.ip(), browser: 'Chrome' }
+      }
+    })
+  }
+
+  // 10. CONTACT MESSAGES
+  console.log('📧 Creating Contact Messages...')
+  for (let i = 0; i < 15; i++) {
+    await prisma.contactMessage.create({
+      data: {
+        name: faker.person.fullName(),
+        email: faker.internet.email(),
+        subject: faker.helpers.arrayElement(['Booking Inquiry', 'Corporate Rates', 'Event Hosting']),
+        message: faker.lorem.paragraph(),
+        status: faker.helpers.arrayElement(['UNREAD', 'READ', 'REPLIED'])
+      }
+    })
+  }
+
+  console.log('🚀 ENTERPRISE SEEDING COMPLETE')
 }
 
-main().finally(() => prisma.$disconnect())
+main()
+  .catch((e) => {
+    console.error(e)
+    process.exit(1)
+  })
+  .finally(async () => {
+    await prisma.$disconnect()
+  })

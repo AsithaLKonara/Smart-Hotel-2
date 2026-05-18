@@ -1,3 +1,6 @@
+import { Booking, Room } from '@prisma/client'
+// Local DTO for constructed invoice summaries (derived from bookings)
+interface InvoiceSummary { id: string; bookingId: string; total: number | null | undefined; createdAt: Date; updatedAt: Date }
 import { endOfDay, endOfMonth, endOfWeek, eachDayOfInterval, eachMonthOfInterval, format, startOfDay, startOfMonth, startOfWeek, subDays, subMonths } from 'date-fns'
 import prisma from '@/lib/db'
 
@@ -161,7 +164,7 @@ export async function computeAnalytics(range: AnalyticsRange, referenceDate = ne
     ])
   
   // Use bookings as invoice data since Invoice model doesn't exist
-  const invoicesAll = bookingsCurrent.map(booking => ({
+  const invoicesAll = bookingsCurrent.map((booking: Booking) => ({
     id: booking.id,
     bookingId: booking.id,
     total: booking.totalAmount,
@@ -169,12 +172,12 @@ export async function computeAnalytics(range: AnalyticsRange, referenceDate = ne
     updatedAt: booking.updatedAt,
   }))
   
-  const invoicesCurrent = invoicesAll.filter(invoice => {
+  const invoicesCurrent = invoicesAll.filter((invoice: InvoiceSummary) => {
     const date = new Date(invoice.createdAt)
     return date >= startDate && date <= endDate
   })
   
-  const invoicesPrevious = bookingsPrevious.map(booking => ({
+  const invoicesPrevious = bookingsPrevious.map((booking: Booking) => ({
     id: booking.id,
     bookingId: booking.id,
     total: booking.totalAmount,
@@ -183,18 +186,18 @@ export async function computeAnalytics(range: AnalyticsRange, referenceDate = ne
   }))
 
   const totalRooms = rooms.length
-  const occupiedRooms = rooms.filter(room => room.status === 'OCCUPIED').length
-  const availableRooms = rooms.filter(room => room.status === 'AVAILABLE').length
-  const maintenanceRooms = rooms.filter(room => room.status === 'MAINTENANCE').length
+  const occupiedRooms = rooms.filter((room: Room) => room.status === 'OCCUPIED').length
+  const availableRooms = rooms.filter((room: Room) => room.status === 'AVAILABLE').length
+  const maintenanceRooms = rooms.filter((room: Room) => room.status === 'MAINTENANCE').length
 
-  const invoicesById = new Map(invoicesAll.map(invoice => [invoice.bookingId, invoice]))
+  const invoicesById = new Map<string, InvoiceSummary>(invoicesAll.map((invoice: InvoiceSummary) => [invoice.bookingId, invoice] as [string, InvoiceSummary]))
   const now = referenceDate
 
   const sumInvoiceTotals = <T extends { total: number | null | undefined }>(items: T[]) =>
     items.reduce((sum, invoice) => sum + (invoice.total ?? 0), 0)
 
-  const filterInvoicesInRange = (items: typeof invoicesCurrent, start: Date, end: Date) =>
-    items.filter(invoice => {
+  const filterInvoicesInRange = (items: InvoiceSummary[], start: Date, end: Date) =>
+    items.filter((invoice: InvoiceSummary) => {
       const invoiceDate = new Date(invoice.createdAt)
       return invoiceDate >= start && invoiceDate <= end
     })
@@ -205,14 +208,14 @@ export async function computeAnalytics(range: AnalyticsRange, referenceDate = ne
   const totalRevenue = sumInvoiceTotals(invoicesAll)
 
   const totalBookings = bookingsCurrent.length
-  const confirmedBookings = bookingsCurrent.filter(booking => booking.status === 'CONFIRMED').length
-  const pendingBookings = bookingsCurrent.filter(booking => booking.status === 'PENDING').length
-  const cancelledBookings = bookingsCurrent.filter(booking => booking.status === 'CANCELLED').length
+  const confirmedBookings = bookingsCurrent.filter((booking: Booking) => booking.status === 'CONFIRMED').length
+  const pendingBookings = bookingsCurrent.filter((booking: Booking) => booking.status === 'PENDING').length
+  const cancelledBookings = bookingsCurrent.filter((booking: Booking) => booking.status === 'CANCELLED').length
 
   const roomPerformance: RoomPerformanceEntry[] = rooms
-    .map(room => {
-      const roomBookings = bookingsCurrent.filter(booking => booking.roomId === room.id)
-      const roomRevenue = roomBookings.reduce((sum, booking) => {
+    .map((room: Room) => {
+      const roomBookings = bookingsCurrent.filter((booking: Booking) => booking.roomId === room.id)
+      const roomRevenue = roomBookings.reduce((sum: number, booking: Booking) => {
         const invoice = invoicesById.get(booking.id)
         return sum + (invoice?.total ?? 0)
       }, 0)
@@ -223,18 +226,18 @@ export async function computeAnalytics(range: AnalyticsRange, referenceDate = ne
 
       return {
         roomNumber: room.number,
-        type: (room as any).type || room.roomTypeId,
+        type: ('type' in room ? (room as Record<string, unknown>).type as string : room.roomTypeId),
         bookings: roomBookings.length,
         revenue: Number(roomRevenue.toFixed(2)),
         occupancyRate,
       }
     })
-    .sort((a, b) => b.revenue - a.revenue)
+    .sort((a: RoomPerformanceEntry, b: RoomPerformanceEntry) => b.revenue - a.revenue)
     .slice(0, 10)
 
   const dailyRevenue: RevenueSeriesEntry[] = eachDayOfInterval({ start: startDate, end: endDate }).map(date => {
     const revenue = sumInvoiceTotals(filterInvoicesInRange(invoicesCurrent, startOfDay(date), endOfDay(date)))
-    const bookingsCount = bookingsCurrent.filter(booking => {
+    const bookingsCount = bookingsCurrent.filter((booking: Booking) => {
       const checkIn = new Date(booking.checkIn)
       const checkOut = new Date(booking.checkOut)
       return checkIn <= endOfDay(date) && checkOut >= startOfDay(date)
@@ -248,7 +251,7 @@ export async function computeAnalytics(range: AnalyticsRange, referenceDate = ne
   })
 
   const occupancySeries: OccupancySeriesEntry[] = eachDayOfInterval({ start: startDate, end: endDate }).map(date => {
-    const activeBookings = bookingsCurrent.filter(booking => {
+    const activeBookings = bookingsCurrent.filter((booking: Booking) => {
       const checkIn = new Date(booking.checkIn)
       const checkOut = new Date(booking.checkOut)
       return checkIn <= endOfDay(date) && checkOut >= startOfDay(date) && booking.status !== 'CANCELLED'
@@ -270,17 +273,17 @@ export async function computeAnalytics(range: AnalyticsRange, referenceDate = ne
     start: subMonths(now, 11),
     end: now,
   }).map(date => {
-    const monthInvoices = invoicesAll.filter(invoice => {
+    const monthInvoices = invoicesAll.filter((invoice: InvoiceSummary) => {
       const createdAt = new Date(invoice.createdAt)
       return createdAt >= startOfMonth(date) && createdAt <= endOfMonth(date)
     })
 
-    const monthBookings = bookingsCurrent.filter(booking => {
+    const monthBookings = bookingsCurrent.filter((booking: Booking) => {
       const createdAt = new Date(booking.createdAt)
       return createdAt >= startOfMonth(date) && createdAt <= endOfMonth(date)
     })
 
-    const roomNights = monthBookings.reduce((sum, booking) => {
+    const roomNights = monthBookings.reduce((sum: number, booking: Booking) => {
       const checkIn = new Date(booking.checkIn)
       const checkOut = new Date(booking.checkOut)
       const nights = Math.max(
@@ -307,11 +310,11 @@ export async function computeAnalytics(range: AnalyticsRange, referenceDate = ne
 
   const previousAverageOccupancy = (() => {
     if (!rangeDays) return 0
-    const previousBookings = bookingsPrevious.filter(booking => booking.status !== 'CANCELLED')
+    const previousBookings = bookingsPrevious.filter((booking: Booking) => booking.status !== 'CANCELLED')
     if (!previousBookings.length || !totalRooms) return 0
 
     const occupancyTotals = eachDayOfInterval({ start: previousStart, end: previousEnd }).map(date => {
-      const active = previousBookings.filter(booking => {
+      const active = previousBookings.filter((booking: Booking) => {
         const checkIn = new Date(booking.checkIn)
         const checkOut = new Date(booking.checkOut)
         return checkIn <= endOfDay(date) && checkOut >= startOfDay(date)
@@ -325,15 +328,15 @@ export async function computeAnalytics(range: AnalyticsRange, referenceDate = ne
       : 0
   })()
 
-  const guestSourceMap = bookingsCurrent.reduce<Record<string, number>>((acc, booking) => {
+  const guestSourceMap = bookingsCurrent.reduce((acc: Record<string, number>, booking: Booking) => {
     const source = (booking.paymentMethod || 'PAY_LATER').toUpperCase()
     acc[source] = (acc[source] || 0) + 1
     return acc
-  }, {})
+  }, {} as Record<string, number>)
 
   const guestSources: GuestSourceEntry[] = Object.entries(guestSourceMap)
-    .map(([source, count]) => {
-      const percentage = totalBookings > 0 ? (count / totalBookings) * 100 : 0
+    .map(([source, count]: [string, unknown]) => {
+      const percentage = totalBookings > 0 ? ((count as number) / totalBookings) * 100 : 0
       const label = source
         .replace(/_/g, ' ')
         .toLowerCase()
@@ -341,7 +344,7 @@ export async function computeAnalytics(range: AnalyticsRange, referenceDate = ne
 
       return {
         source: label,
-        count,
+        count: Number(count as number),
         percentage: Number(percentage.toFixed(1)),
       }
     })

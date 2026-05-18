@@ -1,4 +1,5 @@
 import { endOfDay, startOfDay, startOfMonth, subDays, subMonths } from 'date-fns'
+import { Booking, Room, FoodOrder } from '@prisma/client'
 import prisma from '@/lib/db'
 
 const ALLOWED_ROLES = ['MANAGER', 'SUPER_ADMIN'] as const
@@ -122,15 +123,15 @@ export async function computeDashboardAnalytics(referenceDate = new Date()): Pro
   ])
 
   // 2. Summary Calculations (Room + Dining)
-  const todayBookings = bookingsLast30Days.filter(b => b.createdAt >= todayStart && b.createdAt <= todayEnd)
-  const monthlyBookings = bookingsLast30Days.filter(b => b.createdAt >= monthStart)
+  const todayBookings = bookingsLast30Days.filter((b: Booking) => b.createdAt >= todayStart && b.createdAt <= todayEnd)
+  const monthlyBookings = bookingsLast30Days.filter((b: Booking) => b.createdAt >= monthStart)
   
   // Strictly aggregate completed revenue
-  const getRevenue = (list: any[], orders: any[], start: Date, end: Date) => {
-    const roomRev = list.filter(b => b.createdAt >= start && b.createdAt <= end && b.paymentStatus === 'completed')
-                       .reduce((sum, b) => sum + (b.totalAmount || 0), 0)
-    const foodRev = orders.filter(o => o.createdAt >= start && o.createdAt <= end)
-                         .reduce((sum, o) => sum + (o.totalAmount || 0), 0)
+  const getRevenue = (list: Booking[], orders: FoodOrder[], start: Date, end: Date) => {
+    const roomRev = list.filter((b: Booking) => b.createdAt >= start && b.createdAt <= end && b.paymentStatus === 'completed')
+                       .reduce((sum: number, b: Booking) => sum + (b.totalAmount || 0), 0)
+    const foodRev = orders.filter((o: FoodOrder) => o.createdAt >= start && o.createdAt <= end)
+                         .reduce((sum: number, o: FoodOrder) => sum + (o.totalAmount || 0), 0)
     return roomRev + foodRev
   }
 
@@ -138,7 +139,7 @@ export async function computeDashboardAnalytics(referenceDate = new Date()): Pro
   const monthlyRevenue = getRevenue(bookingsLast30Days, foodOrdersLast30Days, monthStart, todayEnd)
   
   const currentYearStart = new Date(now.getFullYear(), 0, 1)
-  const yearlyBookings = bookingsLast30Days.filter(b => b.createdAt >= currentYearStart).length
+  const yearlyBookings = bookingsLast30Days.filter((b: Booking) => b.createdAt >= currentYearStart).length
   const yearlyRevenue = getRevenue(bookingsLast30Days, foodOrdersLast30Days, currentYearStart, todayEnd)
 
   const bookingGrowthRate = calculateGrowthRate(monthlyBookings.length, bookingsPreviousMonth)
@@ -146,17 +147,17 @@ export async function computeDashboardAnalytics(referenceDate = new Date()): Pro
   // 3. Occupancy & Charts
   const totalRooms = rooms.length
   const roomStatusBreakdown = [
-    { status: 'AVAILABLE', count: rooms.filter(r => r.status === 'AVAILABLE').length },
-    { status: 'OCCUPIED', count: rooms.filter(r => r.status === 'OCCUPIED').length },
-    { status: 'MAINTENANCE', count: rooms.filter(r => r.status === 'MAINTENANCE').length },
-    { status: 'DIRTY', count: rooms.filter(r => r.status === 'DIRTY').length },
-  ].filter(s => s.count > 0)
+    { status: 'AVAILABLE', count: rooms.filter((r: Room) => r.status === 'AVAILABLE').length },
+    { status: 'OCCUPIED', count: rooms.filter((r: Room) => r.status === 'OCCUPIED').length },
+    { status: 'MAINTENANCE', count: rooms.filter((r: Room) => r.status === 'MAINTENANCE').length },
+    { status: 'DIRTY', count: rooms.filter((r: Room) => r.status === 'DIRTY').length },
+  ].filter((s: { status: string, count: number }) => s.count > 0)
 
-  const occupancyChartData = []
+  const occupancyChartData: any[] = []
   for (let i = 29; i >= 0; i--) {
     const date = subDays(todayStart, i)
     const dateStr = date.toISOString().split('T')[0]
-    const activeOnDate = bookingsLast30Days.filter(b => {
+    const activeOnDate = bookingsLast30Days.filter((b: Booking) => {
       const bIn = new Date(b.checkIn)
       const bOut = new Date(b.checkOut)
       return bIn <= date && bOut >= date && b.status !== 'CANCELLED'
@@ -172,7 +173,7 @@ export async function computeDashboardAnalytics(referenceDate = new Date()): Pro
 
   // 4. Performance Leaderboard (Top Rooms)
   const roomPerformanceMap = new Map<string, { number: string; type: string; count: number; revenue: number }>()
-  bookingsLast30Days.forEach(b => {
+  bookingsLast30Days.forEach((b: any) => {
     if (!b.room) return
     const roomId = b.roomId
     const existing = roomPerformanceMap.get(roomId) || { 
@@ -191,7 +192,7 @@ export async function computeDashboardAnalytics(referenceDate = new Date()): Pro
   const topRooms = Array.from(roomPerformanceMap.values())
     .sort((a, b) => b.revenue - a.revenue)
     .slice(0, 5)
-    .map((r, i) => ({
+    .map((r: any, i: number) => ({
       rank: i + 1,
       roomNumber: r.number,
       roomType: r.type,
@@ -200,7 +201,7 @@ export async function computeDashboardAnalytics(referenceDate = new Date()): Pro
     }))
 
   // 5. Activity Transformation
-  const recentActivityBookings = recentBookings.map(b => ({
+  const recentActivityBookings = recentBookings.map((b: any) => ({
     id: b.id,
     guestName: b.guest?.name || 'Guest',
     roomNumber: b.room?.number || 'N/A',
@@ -213,7 +214,7 @@ export async function computeDashboardAnalytics(referenceDate = new Date()): Pro
   }))
 
   // 6. Guest Stats
-  const getRoleCount = (role: string) => userStats.find(s => s.role === role)?._count.id || 0
+  const getRoleCount = (role: string) => userStats.find((s: any) => s.role === role)?._count.id || 0
   const guestStats = {
     totalGuests: getRoleCount('GUEST'),
     totalStaff: staffCount,

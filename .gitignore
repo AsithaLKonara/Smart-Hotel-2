@@ -46,3 +46,7 @@ yarn-error.log*
 test-*.js
 quick-*.js
 debug-*.js
+.env.backup.mongodb
+prisma/schema.prisma.backup.mongodb
+*.backup.*
+.env*.backup*

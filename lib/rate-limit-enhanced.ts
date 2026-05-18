@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { Redis } from '@upstash/redis'
+import { Ratelimit } from '@upstash/ratelimit'
 
 interface RateLimitConfig {
   interval: number // Time window in milliseconds
@@ -14,6 +16,9 @@ interface RateLimitResult {
   blockUntil?: number
 }
 
+// Check if Upstash Redis credentials exist in the environment
+const hasRedis = !!(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN)
+
 class EnhancedRateLimiter {
   private requests: Map<string, { 
     count: number
@@ -22,9 +27,48 @@ class EnhancedRateLimiter {
     blockUntil?: number
   }> = new Map()
 
-  constructor(private config: RateLimitConfig) {}
+  private upstashRatelimit: Ratelimit | null = null
 
-  isAllowed(identifier: string): RateLimitResult {
+  constructor(private prefix: string, private config: RateLimitConfig) {
+    if (hasRedis) {
+      try {
+        const redis = Redis.fromEnv()
+        const durationSeconds = Math.ceil(this.config.interval / 1000)
+        
+        this.upstashRatelimit = new Ratelimit({
+          redis: redis,
+          limiter: Ratelimit.slidingWindow(this.config.limit, `${durationSeconds} s`),
+          prefix: `@upstash/ratelimit:${prefix}`,
+          analytics: true,
+        })
+      } catch (err) {
+        console.warn(`[SRE] Failed to initialize Upstash Redis ratelimiter for prefix "${prefix}", falling back to memory:`, err)
+      }
+    }
+  }
+
+  /**
+   * Resilient, high-concurrency rate limit check.
+   * Utilizes Upstash Redis sliding window rate limiting when active,
+   * with automatic, seamless fallback to in-memory tracking.
+   */
+  async isAllowedAsync(identifier: string): Promise<RateLimitResult> {
+    if (this.upstashRatelimit) {
+      try {
+        const result = await this.upstashRatelimit.limit(identifier)
+        return {
+          allowed: result.success,
+          remaining: result.remaining,
+          resetTime: result.reset,
+          blocked: !result.success,
+          blockUntil: !result.success ? Date.now() + (this.config.blockDuration || this.config.interval) : undefined
+        }
+      } catch (err) {
+        console.error(`[SRE] Upstash Redis call failed for prefix "${this.prefix}", falling back to memory:`, err)
+      }
+    }
+
+    // In-memory fallback
     const now = Date.now()
     const record = this.requests.get(identifier)
 
@@ -89,18 +133,71 @@ class EnhancedRateLimiter {
     }
   }
 
-  getRemaining(identifier: string): number {
+  /**
+   * Synchronous rate limit check.
+   * Leveraged by legacy or synchronous invocation contexts.
+   */
+  isAllowed(identifier: string): RateLimitResult {
+    const now = Date.now()
     const record = this.requests.get(identifier)
-    if (!record || record.blocked) return 0
-    return Math.max(0, this.config.limit - record.count)
+
+    if (record?.blocked && record.blockUntil && now < record.blockUntil) {
+      return {
+        allowed: false,
+        remaining: 0,
+        resetTime: record.resetTime,
+        blocked: true,
+        blockUntil: record.blockUntil
+      }
+    }
+
+    if (record?.blocked && record.blockUntil && now >= record.blockUntil) {
+      this.requests.delete(identifier)
+    }
+
+    if (!record || now > record.resetTime) {
+      this.requests.set(identifier, {
+        count: 1,
+        resetTime: now + this.config.interval,
+        blocked: false
+      })
+      return {
+        allowed: true,
+        remaining: this.config.limit - 1,
+        resetTime: now + this.config.interval,
+        blocked: false
+      }
+    }
+
+    if (record.count >= this.config.limit) {
+      const blockUntil = now + (this.config.blockDuration || this.config.interval)
+      this.requests.set(identifier, {
+        ...record,
+        blocked: true,
+        blockUntil
+      })
+      
+      return {
+        allowed: false,
+        remaining: 0,
+        resetTime: record.resetTime,
+        blocked: true,
+        blockUntil
+      }
+    }
+
+    record.count++
+    this.requests.set(identifier, record)
+
+    return {
+      allowed: true,
+      remaining: this.config.limit - record.count,
+      resetTime: record.resetTime,
+      blocked: false
+    }
   }
 
-  getResetTime(identifier: string): number {
-    const record = this.requests.get(identifier)
-    return record?.resetTime || Date.now() + this.config.interval
-  }
-
-  // Clean up expired records periodically
+  // Clean up expired in-memory records periodically
   cleanup() {
     const now = Date.now()
     const entries = Array.from(this.requests.entries())
@@ -112,32 +209,32 @@ class EnhancedRateLimiter {
   }
 }
 
-// Enhanced rate limiters with blocking
-const authLimiter = new EnhancedRateLimiter({ 
+// Scoped enhanced rate limiters
+const authLimiter = new EnhancedRateLimiter('auth', { 
   interval: 15 * 60 * 1000, // 15 minutes
   limit: 5, // 5 attempts per 15 minutes
   blockDuration: 30 * 60 * 1000 // Block for 30 minutes after limit exceeded
 })
 
-const bookingLimiter = new EnhancedRateLimiter({ 
+const bookingLimiter = new EnhancedRateLimiter('booking', { 
   interval: 60 * 1000, // 1 minute
   limit: 10, // 10 requests per minute
   blockDuration: 5 * 60 * 1000 // Block for 5 minutes
 })
 
-const apiLimiter = new EnhancedRateLimiter({ 
+const apiLimiter = new EnhancedRateLimiter('api', { 
   interval: 60 * 1000, // 1 minute
   limit: 100, // 100 requests per minute
   blockDuration: 2 * 60 * 1000 // Block for 2 minutes
 })
 
-const paymentLimiter = new EnhancedRateLimiter({ 
+const paymentLimiter = new EnhancedRateLimiter('payment', { 
   interval: 60 * 1000, // 1 minute
   limit: 5, // 5 payment attempts per minute
   blockDuration: 10 * 60 * 1000 // Block for 10 minutes
 })
 
-// Cleanup expired records every 5 minutes
+// Cleanup expired in-memory records every 5 minutes
 const cleanupInterval = setInterval(() => {
   authLimiter.cleanup()
   bookingLimiter.cleanup()
@@ -150,12 +247,10 @@ if (typeof cleanupInterval.unref === 'function') {
 }
 
 export function getClientIdentifier(req: NextRequest): string {
-  // Use IP address as identifier with additional fingerprinting
   const forwarded = req.headers.get('x-forwarded-for')
   const realIp = req.headers.get('x-real-ip')
   const ip = forwarded ? forwarded.split(',')[0].trim() : realIp || 'unknown'
   
-  // Add user agent hash for additional uniqueness (if available)
   const userAgent = req.headers.get('user-agent') || ''
   const userAgentHash = userAgent.length > 0 ? 
     Buffer.from(userAgent).toString('base64').slice(0, 8) : ''
@@ -169,10 +264,10 @@ export function getTenantIdentifier(req: NextRequest): string {
   return `tenant:${tenantId}:${clientIp}`
 }
 
-export function enhancedRateLimit(
+export async function enhancedRateLimit(
   req: NextRequest,
   type: 'auth' | 'booking' | 'api' | 'payment' = 'api'
-): RateLimitResult {
+): Promise<RateLimitResult> {
   const identifier = getTenantIdentifier(req)
   const tenantTier = req.headers.get('x-tenant-tier') || 'standard'
   let limiter: EnhancedRateLimiter
@@ -191,7 +286,7 @@ export function enhancedRateLimit(
       limiter = apiLimiter
   }
 
-  const result = limiter.isAllowed(identifier)
+  const result = await limiter.isAllowedAsync(identifier)
 
   // Adaptive Throttling: Bypass standard rates for enterprise subscription tokens
   if (!result.allowed && !result.blocked && tenantTier === 'enterprise') {
@@ -238,4 +333,3 @@ export function createEnhancedRateLimitResponse(
 
 // Export individual limiters for specific use cases
 export { authLimiter, bookingLimiter, apiLimiter, paymentLimiter }
-
