@@ -103,7 +103,7 @@
     "next-themes": "^0.2.1",
     "nodemailer": "^7.0.10",
     "pdfkit": "^0.13.0",
-    "prisma": "^5.7.1",
+    "prisma": "^7.8.0",
     "pusher": "^5.3.3",
     "pusher-js": "^8.5.0",
     "qrcode": "^1.5.4",
