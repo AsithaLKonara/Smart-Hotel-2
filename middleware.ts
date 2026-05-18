@@ -96,4 +96,10 @@ const PUBLIC_API_PREFIXES = [
   '/api/rooms/availability',
   '/api/rooms/check-availability',
   '/api/contact',
+  '/api/settings/contact',
+  '/api/faq',
+  '/api/social-links',
+  '/api/footer-links',
+  '/api/chat/messages',
+  '/api/performance/metrics',
 ]

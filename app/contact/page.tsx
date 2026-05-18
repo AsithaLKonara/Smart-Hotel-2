@@ -253,8 +253,8 @@ export default function ContactPage() {
 
               <div className="relative aspect-video shadow-2xl overflow-hidden rounded-2xl border border-white/10">
                 <GoogleMapFallback 
-                  lat={contactInfo?.coordinates.lat || 40.7589}
-                  lng={contactInfo?.coordinates.lng || -73.9851}
+                  lat={contactInfo?.coordinates?.lat || 40.7589}
+                  lng={contactInfo?.coordinates?.lng || -73.9851}
                   address={contactInfo?.address || '123 Grand Boulevard'}
                 />
               </div>
