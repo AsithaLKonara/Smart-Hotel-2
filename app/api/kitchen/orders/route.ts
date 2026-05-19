@@ -13,15 +13,54 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    // If today is requested, filter orders created today (optional but good practice)
+    const today = searchParams.get('today') === 'true'
+    const startOfDay = new Date()
+    startOfDay.setHours(0, 0, 0, 0)
+
     const orders = await prisma.foodOrder.findMany({
       where: {
-        ...(statusFilter && statusFilter !== 'all' ? { status: statusFilter } : { status: { in: ['PENDING', 'PREPARING', 'READY'] } })
+        ...(statusFilter && statusFilter !== 'all' ? { status: statusFilter } : { status: { in: ['PENDING', 'CONFIRMED', 'PREPARING', 'READY', 'DELIVERED'] } }),
+        ...(today ? { createdAt: { gte: startOfDay } } : {})
       },
       include: { guest: true, items: { include: { menuItem: true } } },
       orderBy: { createdAt: 'asc' }
     })
 
-    return NextResponse.json({ orders })
+    const mappedOrders = orders.map(order => ({
+      id: order.id,
+      orderNumber: order.id.substring(0, 8).toUpperCase(),
+      status: order.status,
+      totalAmount: order.totalAmount,
+      kitchenNotes: order.specialRequests || '',
+      createdAt: order.createdAt.toISOString(),
+      roomNumber: order.roomNumber,
+      user: {
+        id: order.guest?.id || '',
+        name: order.guest?.name || 'Guest'
+      },
+      items: order.items.map(item => ({
+        id: item.id,
+        quantity: item.quantity,
+        specialInstructions: item.notes || '',
+        menu: {
+          id: item.menuItem?.id || '',
+          name: item.menuItem?.name || '',
+          category: item.menuItem?.category || '',
+          preparationTime: item.menuItem?.preparationTime || 15
+        }
+      }))
+    }))
+
+    const ordersByStatus = {
+      PENDING: mappedOrders.filter(o => o.status === 'PENDING'),
+      CONFIRMED: mappedOrders.filter(o => o.status === 'CONFIRMED'),
+      PREPARING: mappedOrders.filter(o => o.status === 'PREPARING'),
+      READY: mappedOrders.filter(o => o.status === 'READY'),
+      DELIVERED: mappedOrders.filter(o => o.status === 'DELIVERED')
+    }
+
+    return NextResponse.json({ orders: mappedOrders, ordersByStatus })
   } catch (error) {
     console.error('[KITCHEN_API_ERROR]', error)
     return NextResponse.json({ error: 'Failed to fetch kitchen orders' }, { status: 500 })
