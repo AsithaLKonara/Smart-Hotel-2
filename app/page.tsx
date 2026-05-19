@@ -131,7 +131,7 @@ export default async function HomePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
             {(featuredRooms.length > 0 ? featuredRooms : [1, 2, 3]).map((room, i) => (
-              <div key={i} className="group cursor-pointer bg-white/5 backdrop-blur-xl border border-white/10 p-5 rounded-2xl transition-all duration-500 hover:-translate-y-2 hover:border-primary/40 hover:shadow-luxury">
+              <div key={i} className="group cursor-pointer bg-black/40 border border-white/10 p-5 rounded-2xl transition-all duration-500 hover:-translate-y-2 hover:border-primary/40 hover:shadow-luxury">
                 <div className="relative aspect-[3/4] overflow-hidden rounded-xl mb-6">
                   <Image 
                     src={room.roomImages?.[0]?.url || `https://images.unsplash.com/photo-1590490359683-658d3d23f972?auto=format&fit=crop&q=80&w=800&sig=${i}`}
@@ -140,7 +140,7 @@ export default async function HomePage() {
                     className="object-cover group-hover:scale-110 transition-transform duration-1000"
                   />
                   <div className="absolute top-4 left-4">
-                    <div className="bg-black/60 backdrop-blur-md px-4 py-2 border border-white/10 rounded-lg">
+                    <div className="bg-black/85 px-4 py-2 border border-white/10 rounded-lg">
                       <span className="text-primary font-serif italic text-lg">{formatPrice(Number(room.roomType?.baseRate || '450'))}+</span>
                     </div>
                   </div>

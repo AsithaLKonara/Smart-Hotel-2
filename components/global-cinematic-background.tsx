@@ -66,15 +66,16 @@ export default function GlobalCinematicBackground() {
         const baseOpacity = isDashboard ? 0.65 : 0.4
         const maxOpacity = isDashboard ? 0.92 : 0.88
         const darkOpacity = baseOpacity + progress * (maxOpacity - baseOpacity)  // 0.65 → 0.92 or 0.4 → 0.88
-        const blurAmount  = progress * 12         // 0px → 12px
-
+        const isHomepage = pathname === '/'
+        const blurAmount  = isHomepage ? 0 : progress * 12         // 0px on homepage, otherwise 0px → 12px
+        
         overlayRef.current.style.background = `radial-gradient(
           ellipse at center,
           rgba(20, 14, 6, ${darkOpacity - 0.15}) 0%,
           rgba(8, 5, 2, ${darkOpacity}) 100%
         )`
-        overlayRef.current.style.backdropFilter = `blur(${blurAmount}px)`;
-        (overlayRef.current.style as any).webkitBackdropFilter = `blur(${blurAmount}px)`
+        overlayRef.current.style.backdropFilter = blurAmount > 0 ? `blur(${blurAmount}px)` : 'none';
+        (overlayRef.current.style as any).webkitBackdropFilter = blurAmount > 0 ? `blur(${blurAmount}px)` : 'none'
       }
     }
 
