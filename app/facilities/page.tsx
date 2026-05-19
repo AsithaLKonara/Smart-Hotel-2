@@ -58,7 +58,7 @@ const facilities = [
 
 export default function FacilitiesPage() {
   return (
-    <div className="bg-transparent text-white">
+    <div className="bg-transparent text-white pt-24">
       {/* Hero Section — Blur Glass */}
       <section className="relative h-[60vh] min-h-[500px] overflow-hidden">
         <div className="absolute inset-0 bg-black/50 backdrop-blur-xl" />

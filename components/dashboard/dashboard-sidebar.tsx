@@ -50,6 +50,11 @@ export default function DashboardSidebar() {
     
     // Define navigation items per role as requested by the user
     const items = [
+      // 🌐 UNIFIED DASHBOARD LINKS (AT THE VERY TOP)
+      { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, roles: ['GUEST'] },
+      { name: 'Dashboard', href: '/kitchen/dashboard', icon: LayoutDashboard, roles: ['KITCHEN'] },
+      { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard, roles: ['RECEPTIONIST', 'HOUSEKEEPING', 'MAINTENANCE', 'MANAGER', 'SUPER_ADMIN'] },
+
       // 🟢 GUEST SUITE
       { name: 'My Sanctuary', href: '/dashboard', icon: Home, roles: ['GUEST'] },
       { name: 'Dining Hub', href: '/dashboard/dining', icon: UtensilsCrossed, roles: ['GUEST'] },

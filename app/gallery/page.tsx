@@ -24,7 +24,7 @@ export default function GalleryPage() {
   ]
 
   return (
-    <div className="bg-transparent text-white min-h-screen">
+    <div className="bg-transparent text-white min-h-screen pt-24">
       {/* Hero Section — Blur Glass */}
       <section className="relative h-[40vh] min-h-[300px] overflow-hidden">
         <div className="absolute inset-0 bg-black/50 backdrop-blur-xl" />

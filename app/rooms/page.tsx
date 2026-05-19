@@ -57,7 +57,7 @@ export default function RoomsPage() {
   })
 
   return (
-    <div className="bg-transparent text-white">
+    <div className="bg-transparent text-white pt-24">
       {/* Hero Section — Blur Glass */}
       <section className="relative h-[50vh] min-h-[400px] overflow-hidden">
         {/* Glass blur overlay — lets video show through */}
