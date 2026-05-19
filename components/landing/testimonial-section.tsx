@@ -64,7 +64,7 @@ export function TestimonialSection() {
   }
 
   return (
-    <section className="py-24 lg:py-32 bg-black/45 backdrop-blur-xl border-y border-white/5 overflow-hidden relative">
+    <section className="py-24 lg:py-32 bg-black/45 border-y border-white/5 overflow-hidden relative">
       <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-primary/5 pointer-events-none" />
       
       <div className="container mx-auto px-4 relative">
