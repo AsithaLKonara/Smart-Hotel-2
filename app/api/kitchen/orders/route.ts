@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: 'asc' }
     })
 
-    const mappedOrders = orders.map(order => ({
+    const mappedOrders = orders.map((order: any) => ({
       id: order.id,
       orderNumber: order.id.substring(0, 8).toUpperCase(),
       status: order.status,
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
         id: order.guest?.id || '',
         name: order.guest?.name || 'Guest'
       },
-      items: order.items.map(item => ({
+      items: order.items.map((item: any) => ({
         id: item.id,
         quantity: item.quantity,
         specialInstructions: item.notes || '',
@@ -53,11 +53,11 @@ export async function GET(request: NextRequest) {
     }))
 
     const ordersByStatus = {
-      PENDING: mappedOrders.filter(o => o.status === 'PENDING'),
-      CONFIRMED: mappedOrders.filter(o => o.status === 'CONFIRMED'),
-      PREPARING: mappedOrders.filter(o => o.status === 'PREPARING'),
-      READY: mappedOrders.filter(o => o.status === 'READY'),
-      DELIVERED: mappedOrders.filter(o => o.status === 'DELIVERED')
+      PENDING: mappedOrders.filter((o: any) => o.status === 'PENDING'),
+      CONFIRMED: mappedOrders.filter((o: any) => o.status === 'CONFIRMED'),
+      PREPARING: mappedOrders.filter((o: any) => o.status === 'PREPARING'),
+      READY: mappedOrders.filter((o: any) => o.status === 'READY'),
+      DELIVERED: mappedOrders.filter((o: any) => o.status === 'DELIVERED')
     }
 
     return NextResponse.json({ orders: mappedOrders, ordersByStatus })
