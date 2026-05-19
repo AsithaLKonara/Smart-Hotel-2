@@ -33,6 +33,13 @@ const TEST_USERS = [
     phone: '+1-800-555-0003'
   },
   {
+    email: 'kitchen@smarthotel.com',
+    name: 'Kitchen Culinary Staff',
+    password: 'SmartHotel@2025!Kitchen',
+    role: 'KITCHEN',
+    phone: '+1-800-555-0004'
+  },
+  {
     email: 'guest@example.com',
     name: 'John Doe',
     password: 'SmartHotel@2025!Guest',
