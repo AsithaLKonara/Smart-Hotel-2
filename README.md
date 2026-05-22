@@ -1,16 +1,42 @@
 # SmartHotel OS — Enterprise Hospitality Platform
 
-**SmartHotel OS** is a high-performance, enterprise-grade Hotel Management System (HMS) built with Next.js 14. It features a distributed booking engine, real-time operational dashboards, and a robust security model designed for modern hospitality operations.
+**SmartHotel OS** is a high-performance, enterprise-grade Hotel Management System (HMS) built with Next.js 14. It transforms fragmented operations into a unified, real-time digital ecosystem.
 
 ---
 
-## 🏛 Platform Overview
-SmartHotel OS transforms fragmented hotel operations into a unified, real-time digital ecosystem.
+## 🌟 Current Project Status
+**Status: Production Ready**
+The project has successfully integrated a comprehensive suite of modules spanning administrative, operational, executive, and guest-facing functions.
 
-- **Unified Front Desk**: Centralized booking, room assignments, and guest management.
-- **Real-time KDS**: Kitchen Display System for seamless room service orchestration.
-- **Operational Intelligence**: Automated staff dispatching and inventory protections.
-- **Guest Super App**: Self-service check-in, dining, and concierge services.
+---
+
+## 🚀 Integrated Features & Hotel Benefits
+
+### 1. Centralized Administrative & Global Command Center
+- **Global Command Center**: A unified birds-eye view of entire hotel operations.
+- **Executive Intelligence & Analytics**: Real-time reporting, predictive insights, and automated dashboards for executive decision-making.
+- **Role-Based Access Control (RBAC)**: Fine-grained permissions securing data across Reception, Kitchen, Housekeeping, and Management.
+- **Governance & Audit Logs**: Complete traceability for every operational mutation, ensuring compliance and security.
+
+### 2. Intelligent Booking & Revenue Management
+- **Unified Booking Engine**: Centralized room assignments, calendar management, and guest handling.
+- **Interactive Room Rack**: Visual timeline for fast, drag-and-drop booking modifications.
+- **OTA Integration**: Seamless synchronization with Online Travel Agencies to prevent double-bookings.
+- **Dynamic Pricing & App Marketplace**: Extendable platform integrating dynamic pricing rules and third-party tools.
+
+### 3. F&B and Kitchen Operations (KDS)
+- **Real-time Kitchen Display System (KDS)**: Seamless orchestration from order placement to room delivery.
+- **Digital Menus & Order Management**: Automated billing routed directly to the guest's room folio.
+
+### 4. Operational Excellence (Housekeeping & SRE)
+- **Automated Housekeeping & Tasks**: Smart dispatching and real-time status updates for room cleaning and repairs.
+- **Incident & Chaos Management**: Track operational incidents and monitor system health (SRE/Observability tools integrated).
+- **Staff Collaboration**: Internal communication timelines and task tracking.
+
+### 5. The Guest Super App Experience
+- **Self-Service Onboarding & Mobile App**: Digital check-in, dynamic QR codes, and personalized onboarding.
+- **Digital Concierge**: Direct access to Spa, Facilities, and Attractions bookings.
+- **Secure Payments**: Frictionless checkout using Stripe integration.
 
 ---
 
@@ -19,8 +45,10 @@ SmartHotel OS transforms fragmented hotel operations into a unified, real-time d
 - **Database**: MongoDB + Prisma ORM
 - **State/Cache**: TanStack Query (v5) + Upstash Redis
 - **Real-time**: Pusher (Distributed Event Bus)
-- **Security**: NextAuth.js + Role-Based Access Control (RBAC)
+- **Security**: NextAuth.js + RBAC
 - **Payments**: Stripe (Checkout & Webhooks)
+- **AI/LLM**: Groq SDK integrated for intelligence features.
+- **Testing**: Playwright for E2E, Jest for Unit/Integration, Lighthouse for performance.
 
 ---
 
@@ -63,17 +91,6 @@ Copy `.env.example` to `.env.local` and configure your credentials:
 ```bash
 npm run dev
 ```
-
----
-
-## 👥 Roles & Access
-| Role | Access Level | Primary Focus |
-| :--- | :--- | :--- |
-| **Super Admin** | Full | Platform config & Audit |
-| **Receptionist** | Operational | Bookings & Check-in |
-| **Kitchen** | Task-based | F&B Production |
-| **Staff (HK/MT)** | Task-based | Cleaning & Repairs |
-| **Guest** | Self-Service | Orders & Folio |
 
 ---
 
