@@ -1057,3 +1057,82 @@ model FAQ {
   @@index([category])
   @@index([active, order])
 }
+
+// ==========================================
+// PROCUREMENT & INVENTORY (PHASE 9)
+// ==========================================
+
+model Vendor {
+  id            String          @id @default(uuid())
+  name          String
+  contactPerson String?
+  email         String?
+  phone         String?
+  address       String?
+  isActive      Boolean         @default(true)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  items         InventoryItem[]
+  purchaseOrders PurchaseOrder[]
+}
+
+model InventoryItem {
+  id              String           @id @default(uuid())
+  name            String
+  sku             String?          @unique
+  category        String           // FOOD, BEVERAGE, LINEN, MAINTENANCE
+  unit            String           // KG, LITER, PIECE, BOX
+  unitPrice       Float
+  parLevel        Int              @default(10) // Reorder threshold
+  vendorId        String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  vendor          Vendor?          @relation(fields: [vendorId], references: [id])
+  stocks          InventoryStock[]
+  purchaseItems   PurchaseOrderItem[]
+}
+
+model InventoryStock {
+  id              String        @id @default(uuid())
+  itemId          String
+  location        String        // MAIN_STORE, KITCHEN, BAR, HOUSEKEEPING
+  quantity        Int           @default(0)
+  lastCountedAt   DateTime      @default(now())
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  item            InventoryItem @relation(fields: [itemId], references: [id])
+
+  @@unique([itemId, location])
+}
+
+model PurchaseOrder {
+  id              String              @id @default(uuid())
+  orderNumber     String              @unique
+  vendorId        String
+  status          String              // DRAFT, PENDING_APPROVAL, APPROVED, DELIVERED, CANCELLED
+  totalAmount     Float               @default(0)
+  expectedDate    DateTime?
+  notes           String?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  vendor          Vendor              @relation(fields: [vendorId], references: [id])
+  items           PurchaseOrderItem[]
+}
+
+model PurchaseOrderItem {
+  id              String        @id @default(uuid())
+  purchaseOrderId String
+  itemId          String
+  quantity        Int
+  unitPrice       Float
+  totalPrice      Float
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  item            InventoryItem @relation(fields: [itemId], references: [id])
+}

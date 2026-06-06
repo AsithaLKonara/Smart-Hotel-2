@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { DollarSign, Users, Bed, UtensilsCrossed, TrendingUp, TrendingDown, Calendar, Loader2, Download, FileText, FileSpreadsheet } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { canAccessManagerFeatures } from '@/lib/rbac-helpers'
 
 export default function AdminAnalyticsPage() {

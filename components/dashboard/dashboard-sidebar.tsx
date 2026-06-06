@@ -4,46 +4,12 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
 import {
-  LayoutDashboard,
-  Bed,
-  Calendar,
-  Users,
-  ClipboardList,
-  UtensilsCrossed,
-  ShoppingCart,
-  Package,
-  Image as ImageIcon,
-  QrCode,
-  BarChart3,
-  LogOut,
-  UserCheck,
-  Menu,
-  X,
-  Settings as SettingsIcon,
-  ChevronLeft,
-  ChevronRight,
-  MessageSquare,
-  AlertTriangle,
-  Home,
-  User,
-  CreditCard,
-  Star,
-  Grid,
-  Globe,
-  ShieldCheck,
-  Activity,
-  History,
-  Box,
-  Gift,
-  Building2,
-  FileText,
-  Moon,
-  Brush,
-  Wrench,
-  TrendingUp,
-  Store,
-  CalendarDays,
-  Plane
+  LayoutDashboard, Bed, Calendar, Users, ClipboardList, UtensilsCrossed, 
+  ShoppingCart, Package, Image as ImageIcon, QrCode, BarChart3, LogOut, 
+  UserCheck, Menu, X, Settings as SettingsIcon, ChevronLeft, ChevronRight, 
+  MessageSquare, AlertTriangle, Home, User, CreditCard, Star, Grid, Globe, 
+  ShieldCheck, Activity, History, Box, Gift, Building2, FileText, Moon, 
+  Brush, Wrench, TrendingUp, Store, CalendarDays, Plane, Truck, FileCheck
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useSidebar } from '@/lib/sidebar-context'
@@ -96,6 +62,11 @@ export default function DashboardSidebar() {
 
       // 🎉 EVENTS & BANQUETING
       { name: 'Event Command Center', href: '/admin/events/dashboard', icon: CalendarDays, roles: ['MANAGER', 'SUPER_ADMIN'] },
+
+      // 📦 PROCUREMENT & INVENTORY
+      { name: 'Vendors & Suppliers', href: '/admin/procurement/vendors', icon: Truck, roles: ['MANAGER', 'SUPER_ADMIN'] },
+      { name: 'Master Inventory', href: '/admin/procurement/items', icon: Package, roles: ['MANAGER', 'SUPER_ADMIN'] },
+      { name: 'Purchase Orders', href: '/admin/procurement/orders', icon: FileCheck, roles: ['MANAGER', 'SUPER_ADMIN'] },
 
       // 🔴 MANAGEMENT & GOVERNANCE
       { name: 'Operations Map', href: '/admin/manager', icon: BarChart3, roles: ['MANAGER', 'SUPER_ADMIN'] },
