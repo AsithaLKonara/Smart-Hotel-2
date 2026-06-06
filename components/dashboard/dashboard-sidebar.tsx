@@ -39,7 +39,8 @@ import {
   FileText,
   Moon,
   Brush,
-  Wrench
+  Wrench,
+  TrendingUp
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useSidebar } from '@/lib/sidebar-context'
@@ -83,6 +84,9 @@ export default function DashboardSidebar() {
       // 🟣 HOUSEKEEPING & MAINTENANCE
       { name: 'Housekeeping Board', href: '/admin/housekeeping/board', icon: Brush, roles: ['HOUSEKEEPING', 'MANAGER', 'SUPER_ADMIN'] },
       { name: 'Maintenance Tickets', href: '/admin/maintenance/tickets', icon: Wrench, roles: ['MAINTENANCE', 'MANAGER', 'SUPER_ADMIN'] },
+
+      // 🟢 REVENUE MANAGEMENT
+      { name: 'Yield Engine', href: '/admin/yield', icon: TrendingUp, roles: ['MANAGER', 'SUPER_ADMIN'] },
 
       // 🔴 MANAGEMENT & GOVERNANCE
       { name: 'Operations Map', href: '/admin/manager', icon: BarChart3, roles: ['MANAGER', 'SUPER_ADMIN'] },
