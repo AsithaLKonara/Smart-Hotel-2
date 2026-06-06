@@ -51,3 +51,4 @@ prisma/schema.prisma.backup.mongodb
 .env*.backup*
 .env*.local
 config.bat
+.env

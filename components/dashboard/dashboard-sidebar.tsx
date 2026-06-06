@@ -37,7 +37,9 @@ import {
   Gift,
   Building2,
   FileText,
-  Moon
+  Moon,
+  Brush,
+  Wrench
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useSidebar } from '@/lib/sidebar-context'
@@ -79,8 +81,8 @@ export default function DashboardSidebar() {
       { name: 'Inventory Engine', href: '/admin/inventory', icon: Box, roles: ['MANAGER', 'SUPER_ADMIN'] },
       
       // 🟣 HOUSEKEEPING & MAINTENANCE
-      { name: 'Room Status', href: '/admin/housekeeping', icon: Bed, roles: ['HOUSEKEEPING', 'MANAGER', 'SUPER_ADMIN'] },
-      { name: 'Task Board', href: '/admin/tasks', icon: ClipboardList, roles: ['HOUSEKEEPING', 'MAINTENANCE', 'MANAGER', 'SUPER_ADMIN'] },
+      { name: 'Housekeeping Board', href: '/admin/housekeeping/board', icon: Brush, roles: ['HOUSEKEEPING', 'MANAGER', 'SUPER_ADMIN'] },
+      { name: 'Maintenance Tickets', href: '/admin/maintenance/tickets', icon: Wrench, roles: ['MAINTENANCE', 'MANAGER', 'SUPER_ADMIN'] },
 
       // 🔴 MANAGEMENT & GOVERNANCE
       { name: 'Operations Map', href: '/admin/manager', icon: BarChart3, roles: ['MANAGER', 'SUPER_ADMIN'] },
