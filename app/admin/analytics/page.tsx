@@ -37,6 +37,8 @@ export default function AdminAnalyticsPage() {
     } finally {
       setLoading(false)
     }
+  }
+
   const handleExport = (format: 'pdf' | 'excel') => {
     window.open(`/api/analytics/export?range=${range}&format=${format}`, '_blank')
   }
