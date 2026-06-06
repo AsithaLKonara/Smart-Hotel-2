@@ -212,6 +212,7 @@ model Invoice {
 
   booking   Booking           @relation(fields: [bookingId], references: [id])
   lineItems InvoiceLineItem[]
+  posOrders POSOrder[]
 }
 
 model InvoiceLineItem {
@@ -438,6 +439,64 @@ model YieldRule {
   isActive        Boolean  @default(true)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+}
+
+// ==========================================
+// ENTERPRISE POS (RESTAURANT, BAR, SPA)
+// ==========================================
+
+model POSOutlet {
+  id          String   @id @default(uuid())
+  name        String
+  type        String   // RESTAURANT, BAR, SPA, RETAIL
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  products    POSProduct[]
+  orders      POSOrder[]
+}
+
+model POSProduct {
+  id          String   @id @default(uuid())
+  outletId    String
+  name        String
+  category    String
+  price       Float
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  outlet      POSOutlet @relation(fields: [outletId], references: [id])
+  orderItems  POSOrderItem[]
+}
+
+model POSOrder {
+  id          String   @id @default(uuid())
+  outletId    String
+  invoiceId   String?  // If charged to room
+  status      String   // PENDING, COMPLETED, CANCELLED
+  totalAmount Float
+  paymentType String   // CASH, CARD, ROOM_CHARGE
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  outlet      POSOutlet @relation(fields: [outletId], references: [id])
+  invoice     Invoice?  @relation(fields: [invoiceId], references: [id])
+  items       POSOrderItem[]
+}
+
+model POSOrderItem {
+  id          String   @id @default(uuid())
+  orderId     String
+  productId   String
+  quantity    Int
+  price       Float
+  subtotal    Float
+
+  order       POSOrder   @relation(fields: [orderId], references: [id])
+  product     POSProduct @relation(fields: [productId], references: [id])
 }
 
 model FoodMenu {

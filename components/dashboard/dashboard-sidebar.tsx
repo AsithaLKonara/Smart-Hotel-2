@@ -40,7 +40,8 @@ import {
   Moon,
   Brush,
   Wrench,
-  TrendingUp
+  TrendingUp,
+  Store
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useSidebar } from '@/lib/sidebar-context'
@@ -87,6 +88,9 @@ export default function DashboardSidebar() {
 
       // 🟢 REVENUE MANAGEMENT
       { name: 'Yield Engine', href: '/admin/yield', icon: TrendingUp, roles: ['MANAGER', 'SUPER_ADMIN'] },
+
+      // 🛒 ENTERPRISE POS
+      { name: 'POS Terminal', href: '/admin/pos/terminal', icon: Store, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'] },
 
       // 🔴 MANAGEMENT & GOVERNANCE
       { name: 'Operations Map', href: '/admin/manager', icon: BarChart3, roles: ['MANAGER', 'SUPER_ADMIN'] },
