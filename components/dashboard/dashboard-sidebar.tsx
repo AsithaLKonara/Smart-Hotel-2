@@ -10,7 +10,7 @@ import {
   MessageSquare, AlertTriangle, Home, User, CreditCard, Star, Grid, Globe, 
   ShieldCheck, Activity, History, Box, Gift, Building2, FileText, Moon, 
   Brush, Wrench, TrendingUp, Store, CalendarDays, Plane, Truck, FileCheck,
-  Briefcase, CalendarRange, Clock, CircleDollarSign, CalendarClock, ClipboardCheck, Award, MessageCircle
+  Briefcase, CalendarRange, Clock, CircleDollarSign, CalendarClock, ClipboardCheck, Award, MessageCircle, PieChart
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useSidebar } from '@/lib/sidebar-context'
@@ -79,6 +79,7 @@ export default function DashboardSidebar() {
       { name: 'Payroll Center', href: '/admin/hr/payroll', icon: CircleDollarSign, roles: ['MANAGER', 'SUPER_ADMIN'] },
 
       // 🔴 MANAGEMENT & GOVERNANCE
+      { name: 'Enterprise BI', href: '/admin/analytics/bi', icon: PieChart, roles: ['MANAGER', 'SUPER_ADMIN'] },
       { name: 'Operations Map', href: '/admin/manager', icon: BarChart3, roles: ['MANAGER', 'SUPER_ADMIN'] },
       { name: 'Guest CRM', href: '/admin/crm/guests', icon: UserCheck, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'] },
       { name: 'Guest Messaging', href: '/admin/crm/messaging', icon: MessageCircle, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'] },
