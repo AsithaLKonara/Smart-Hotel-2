@@ -1,6 +1,5 @@
 import { Booking, Room } from '@prisma/client'
-// Local DTO for constructed invoice summaries (derived from bookings)
-interface InvoiceSummary { id: string; bookingId: string; total: number | null | undefined; createdAt: Date; updatedAt: Date }
+// No local mock needed anymore.
 import { endOfDay, endOfMonth, endOfWeek, eachDayOfInterval, eachMonthOfInterval, format, startOfDay, startOfMonth, startOfWeek, subDays, subMonths } from 'date-fns'
 import prisma from '@/lib/db'
 
@@ -137,9 +136,8 @@ export async function buildAnalytics(rangeParam: string) {
 export async function computeAnalytics(range: AnalyticsRange, referenceDate = new Date()): Promise<AnalyticsPayload> {
   const { startDate, endDate, previousStart, previousEnd, rangeDays } = getAnalyticsWindow(range, referenceDate)
 
-  // Note: Invoice model doesn't exist in schema
-  // Use booking.totalAmount as revenue source instead
-  const [rooms, bookingsCurrent, bookingsPrevious] =
+  // Queries: Get Rooms, Bookings, and real Invoices for the date range
+  const [rooms, bookingsCurrent, bookingsPrevious, invoicesAll] =
     await Promise.all([
       prisma.room.findMany(),
       prisma.booking.findMany({
@@ -161,43 +159,36 @@ export async function computeAnalytics(range: AnalyticsRange, referenceDate = ne
         },
         // Note: Booking model doesn't have room or invoice relations defined in schema
       }),
+      prisma.invoice.findMany({
+          where: {
+              status: { in: ['PAID', 'PENDING'] }
+          }
+      })
     ])
   
-  // Use bookings as invoice data since Invoice model doesn't exist
-  const invoicesAll = bookingsCurrent.map((booking: Booking) => ({
-    id: booking.id,
-    bookingId: booking.id,
-    total: booking.totalAmount,
-    createdAt: booking.createdAt,
-    updatedAt: booking.updatedAt,
-  }))
-  
-  const invoicesCurrent = invoicesAll.filter((invoice: InvoiceSummary) => {
+  const invoicesCurrent = invoicesAll.filter((invoice: any) => {
     const date = new Date(invoice.createdAt)
     return date >= startDate && date <= endDate
   })
   
-  const invoicesPrevious = bookingsPrevious.map((booking: Booking) => ({
-    id: booking.id,
-    bookingId: booking.id,
-    total: booking.totalAmount,
-    createdAt: booking.createdAt,
-    updatedAt: booking.updatedAt,
-  }))
+  const invoicesPrevious = invoicesAll.filter((invoice: any) => {
+    const date = new Date(invoice.createdAt)
+    return date >= previousStart && date <= previousEnd
+  })
 
   const totalRooms = rooms.length
   const occupiedRooms = rooms.filter((room: Room) => room.status === 'OCCUPIED').length
   const availableRooms = rooms.filter((room: Room) => room.status === 'AVAILABLE').length
   const maintenanceRooms = rooms.filter((room: Room) => room.status === 'MAINTENANCE').length
 
-  const invoicesById = new Map<string, InvoiceSummary>(invoicesAll.map((invoice: InvoiceSummary) => [invoice.bookingId, invoice] as [string, InvoiceSummary]))
+  const invoicesById = new Map<string, any>(invoicesAll.map((invoice: any) => [invoice.bookingId, invoice] as [string, any]))
   const now = referenceDate
 
   const sumInvoiceTotals = <T extends { total: number | null | undefined }>(items: T[]) =>
     items.reduce((sum, invoice) => sum + (invoice.total ?? 0), 0)
 
-  const filterInvoicesInRange = (items: InvoiceSummary[], start: Date, end: Date) =>
-    items.filter((invoice: InvoiceSummary) => {
+  const filterInvoicesInRange = (items: any[], start: Date, end: Date) =>
+    items.filter((invoice: any) => {
       const invoiceDate = new Date(invoice.createdAt)
       return invoiceDate >= start && invoiceDate <= end
     })
@@ -273,7 +264,7 @@ export async function computeAnalytics(range: AnalyticsRange, referenceDate = ne
     start: subMonths(now, 11),
     end: now,
   }).map(date => {
-    const monthInvoices = invoicesAll.filter((invoice: InvoiceSummary) => {
+    const monthInvoices = invoicesAll.filter((invoice: any) => {
       const createdAt = new Date(invoice.createdAt)
       return createdAt >= startOfMonth(date) && createdAt <= endOfMonth(date)
     })

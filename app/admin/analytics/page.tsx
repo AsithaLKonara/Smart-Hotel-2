@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { DollarSign, Users, Bed, UtensilsCrossed, TrendingUp, TrendingDown, Calendar, Loader2 } from 'lucide-react'
+import { DollarSign, Users, Bed, UtensilsCrossed, TrendingUp, TrendingDown, Calendar, Loader2, Download, FileText, FileSpreadsheet } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { canAccessManagerFeatures } from '@/lib/rbac-helpers'
 
@@ -12,6 +12,7 @@ export default function AdminAnalyticsPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [analytics, setAnalytics] = useState<any>(null)
+  const [range, setRange] = useState('month')
 
   useEffect(() => {
     if (status === 'loading') return
@@ -22,11 +23,12 @@ export default function AdminAnalyticsPage() {
     }
 
     fetchAnalytics()
-  }, [session, status, router])
+  }, [session, status, router, range])
 
   const fetchAnalytics = async () => {
     try {
-      const response = await fetch('/api/analytics/dashboard')
+      setLoading(true)
+      const response = await fetch(`/api/analytics/dashboard?range=${range}`)
       if (!response.ok) throw new Error('Failed to fetch analytics')
       const data = await response.json()
       setAnalytics(data)
@@ -35,9 +37,11 @@ export default function AdminAnalyticsPage() {
     } finally {
       setLoading(false)
     }
+  const handleExport = (format: 'pdf' | 'excel') => {
+    window.open(`/api/analytics/export?range=${range}&format=${format}`, '_blank')
   }
 
-  if (status === 'loading' || loading) {
+  if (status === 'loading') {
     return (
       <div className="flex items-center justify-center h-screen">
         <Loader2 className="w-8 h-8 animate-spin" />
@@ -70,13 +74,39 @@ export default function AdminAnalyticsPage() {
 
   return (
     <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">Analytics Dashboard</h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          Track your hotel's performance and key metrics
-        </p>
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
+        <div>
+          <h1 className="text-3xl font-bold mb-2 text-white">Analytics Dashboard</h1>
+          <p className="text-white/60">
+            Track your hotel's performance, revenue, and key metrics.
+          </p>
+        </div>
+        <div className="flex items-center gap-4">
+            <select 
+                value={range} 
+                onChange={e => setRange(e.target.value)}
+                className="bg-[#1a1a1a] border border-white/10 text-white p-2 rounded-lg"
+            >
+                <option value="week">This Week</option>
+                <option value="month">This Month</option>
+                <option value="quarter">This Quarter</option>
+                <option value="year">This Year</option>
+            </select>
+            <Button onClick={() => handleExport('pdf')} variant="outline" className="bg-[#1a1a1a] border-white/10 text-white hover:bg-white/5">
+                <FileText className="w-4 h-4 mr-2 text-red-400" /> Export PDF
+            </Button>
+            <Button onClick={() => handleExport('excel')} variant="outline" className="bg-[#1a1a1a] border-white/10 text-white hover:bg-white/5">
+                <FileSpreadsheet className="w-4 h-4 mr-2 text-green-400" /> Export Excel
+            </Button>
+        </div>
       </div>
 
+      {loading ? (
+        <div className="flex items-center justify-center h-[400px]">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      ) : (
+          <>
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
         <Card>
@@ -245,6 +275,8 @@ export default function AdminAnalyticsPage() {
           </CardContent>
         </Card>
       </div>
+      </>
+      )}
     </div>
   )
 }
