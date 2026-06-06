@@ -613,6 +613,7 @@ model User {
   auditLogs        AuditLog[]
   nightAuditsRun   NightAuditLog[]
   employee         Employee?
+  guestConversations GuestConversation[]
 }
 
 model GuestPreference {
@@ -1275,4 +1276,32 @@ model Property {
   status          String   @default("ACTIVE") // ACTIVE, PRE_OPENING, INACTIVE
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+}
+
+// ==========================================
+// GUEST MESSAGING & AI CONCIERGE (PHASE 13)
+// ==========================================
+
+model GuestConversation {
+  id              String   @id @default(uuid())
+  guestId         String
+  status          String   @default("OPEN") // OPEN, CLOSED
+  aiEnabled       Boolean  @default(true)
+  lastMessageAt   DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  guest           User     @relation(fields: [guestId], references: [id])
+  messages        GuestMessage[]
+}
+
+model GuestMessage {
+  id                String   @id @default(uuid())
+  conversationId    String
+  senderType        String   // GUEST, STAFF, AI
+  content           String
+  isRead            Boolean  @default(false)
+  createdAt         DateTime @default(now())
+
+  conversation      GuestConversation @relation(fields: [conversationId], references: [id])
 }

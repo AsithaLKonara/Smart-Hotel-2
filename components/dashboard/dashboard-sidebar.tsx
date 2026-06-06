@@ -10,7 +10,7 @@ import {
   MessageSquare, AlertTriangle, Home, User, CreditCard, Star, Grid, Globe, 
   ShieldCheck, Activity, History, Box, Gift, Building2, FileText, Moon, 
   Brush, Wrench, TrendingUp, Store, CalendarDays, Plane, Truck, FileCheck,
-  Briefcase, CalendarRange, Clock, CircleDollarSign, CalendarClock, ClipboardCheck, Award
+  Briefcase, CalendarRange, Clock, CircleDollarSign, CalendarClock, ClipboardCheck, Award, MessageCircle
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useSidebar } from '@/lib/sidebar-context'
@@ -81,6 +81,7 @@ export default function DashboardSidebar() {
       // 🔴 MANAGEMENT & GOVERNANCE
       { name: 'Operations Map', href: '/admin/manager', icon: BarChart3, roles: ['MANAGER', 'SUPER_ADMIN'] },
       { name: 'Guest CRM', href: '/admin/crm/guests', icon: UserCheck, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'] },
+      { name: 'Guest Messaging', href: '/admin/crm/messaging', icon: MessageCircle, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'] },
       { name: 'System Settings', href: '/admin/settings', icon: SettingsIcon, roles: ['MANAGER', 'SUPER_ADMIN'] },
 
       // 🌐 CORPORATE HQ (MULTI-PROPERTY)
