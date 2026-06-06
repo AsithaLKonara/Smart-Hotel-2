@@ -27,6 +27,7 @@ model RoomType {
   updatedAt    DateTime @updatedAt
 
   rooms Room[]
+  groupBlocks GroupBlock[]
 }
 
 model Room {
@@ -497,6 +498,66 @@ model POSOrderItem {
 
   order       POSOrder   @relation(fields: [orderId], references: [id])
   product     POSProduct @relation(fields: [productId], references: [id])
+}
+
+// ==========================================
+// EVENTS & BANQUETING (PHASE 6)
+// ==========================================
+
+model EventSpace {
+  id          String   @id @default(uuid())
+  name        String
+  capacity    Int
+  hourlyRate  Float
+  dailyRate   Float
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  bookings    EventBooking[]
+}
+
+model BanquetingEvent {
+  id                String   @id @default(uuid())
+  name              String
+  type              String   // CONFERENCE, WEDDING, MEETING
+  status            String   // PROSPECT, TENTATIVE, DEFINITE, CANCELLED
+  startDate         DateTime @db.Date
+  endDate           DateTime @db.Date
+  expectedAttendees Int
+  organizerName     String
+  organizerEmail    String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  spaceBookings     EventBooking[]
+  groupBlocks       GroupBlock[]
+}
+
+model EventBooking {
+  id          String   @id @default(uuid())
+  eventId     String
+  spaceId     String
+  startTime   DateTime
+  endTime     DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  event       BanquetingEvent @relation(fields: [eventId], references: [id])
+  space       EventSpace      @relation(fields: [spaceId], references: [id])
+}
+
+model GroupBlock {
+  id             String   @id @default(uuid())
+  eventId        String
+  roomTypeId     String
+  blockedCount   Int
+  contractedRate Float
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  event          BanquetingEvent @relation(fields: [eventId], references: [id])
+  roomType       RoomType        @relation(fields: [roomTypeId], references: [id])
 }
 
 model FoodMenu {
