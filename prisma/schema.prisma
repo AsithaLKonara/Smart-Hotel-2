@@ -204,6 +204,9 @@ model Invoice {
   grandTotal Float
   status     String
   deletedAt  DateTime?
+  folioType  String   @default("MASTER")
+  routingRules Json?
+  isLocked   Boolean  @default(false)
   issuedAt   DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
@@ -221,6 +224,30 @@ model InvoiceLineItem {
   category    String
 
   invoice Invoice @relation(fields: [invoiceId], references: [id])
+}
+
+model JournalEntry {
+  id            String   @id @default(uuid())
+  transactionId String?
+  accountId     String
+  debit         Float    @default(0)
+  credit        Float    @default(0)
+  description   String
+  postingDate   DateTime @db.Date
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model NightAuditLog {
+  id              String   @id @default(uuid())
+  businessDate    DateTime @db.Date
+  totalRevenue    Float
+  roomsProcessed  Int
+  status          String   @default("COMPLETED")
+  runByUserId     String?
+  createdAt       DateTime @default(now())
+
+  user            User?    @relation(fields: [runByUserId], references: [id])
 }
 
 model Payment {
@@ -451,6 +478,7 @@ model User {
   notifications    Notification[]
   createdTasks     Task[]           @relation("CreatedTasks")
   auditLogs        AuditLog[]
+  nightAuditsRun   NightAuditLog[]
 }
 
 model GuestPreference {

@@ -35,7 +35,9 @@ import {
   History,
   Box,
   Gift,
-  Building2
+  Building2,
+  FileText,
+  Moon
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useSidebar } from '@/lib/sidebar-context'
@@ -85,6 +87,8 @@ export default function DashboardSidebar() {
       { name: 'Guest CRM', href: '/admin/crm/guests', icon: UserCheck, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'] },
       { name: 'Corporate B2B', href: '/admin/crm/corporate', icon: Building2, roles: ['MANAGER', 'SUPER_ADMIN'] },
       { name: 'Channel Sync', href: '/admin/ota', icon: Globe, roles: ['MANAGER', 'SUPER_ADMIN'] },
+      { name: 'Folios & Billing', href: '/admin/accounting/folios', icon: FileText, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'] },
+      { name: 'Night Audit', href: '/admin/accounting/night-audit', icon: Moon, roles: ['MANAGER', 'SUPER_ADMIN'] },
       { name: 'Audit Stream', href: '/admin/audit-logs', icon: History, roles: ['SUPER_ADMIN'] },
       { name: 'Security (RBAC)', href: '/admin/roles', icon: ShieldCheck, roles: ['SUPER_ADMIN'] },
       
