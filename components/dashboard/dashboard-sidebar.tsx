@@ -42,7 +42,8 @@ import {
   Wrench,
   TrendingUp,
   Store,
-  CalendarDays
+  CalendarDays,
+  Plane
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useSidebar } from '@/lib/sidebar-context'
@@ -100,6 +101,7 @@ export default function DashboardSidebar() {
       { name: 'Operations Map', href: '/admin/manager', icon: BarChart3, roles: ['MANAGER', 'SUPER_ADMIN'] },
       { name: 'Guest CRM', href: '/admin/crm/guests', icon: UserCheck, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'] },
       { name: 'Corporate B2B', href: '/admin/crm/corporate', icon: Building2, roles: ['MANAGER', 'SUPER_ADMIN'] },
+      { name: 'Travel Agents', href: '/admin/crm/travel-agents', icon: Plane, roles: ['MANAGER', 'SUPER_ADMIN'] },
       { name: 'Channel Sync', href: '/admin/ota', icon: Globe, roles: ['MANAGER', 'SUPER_ADMIN'] },
       { name: 'Folios & Billing', href: '/admin/accounting/folios', icon: FileText, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'] },
       { name: 'Night Audit', href: '/admin/accounting/night-audit', icon: Moon, roles: ['MANAGER', 'SUPER_ADMIN'] },

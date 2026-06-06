@@ -10,7 +10,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const accounts = await prisma.corporateAccount.findMany({
+    const agents = await prisma.travelAgent.findMany({
       include: {
         _count: {
           select: { users: true }
@@ -19,9 +19,9 @@ export async function GET(req: Request) {
       orderBy: { createdAt: 'desc' }
     });
 
-    return NextResponse.json({ accounts });
+    return NextResponse.json({ agents });
   } catch (error) {
-    console.error('Failed to fetch corporate accounts:', error);
+    console.error('Failed to fetch travel agents:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
@@ -34,21 +34,22 @@ export async function POST(req: Request) {
     }
 
     const data = await req.json();
-    const { companyName, contactName, contactEmail, contactPhone, negotiatedRate } = data;
+    const { agencyName, iataNumber, contactName, contactEmail, contactPhone, commissionRate } = data;
 
-    const account = await prisma.corporateAccount.create({
+    const agent = await prisma.travelAgent.create({
       data: {
-        companyName,
+        agencyName,
+        iataNumber,
         contactName,
         contactEmail,
         contactPhone,
-        negotiatedRate: parseFloat(negotiatedRate)
+        commissionRate: commissionRate ? parseFloat(commissionRate) : 10.0
       }
     });
 
-    return NextResponse.json({ success: true, account });
+    return NextResponse.json({ success: true, agent });
   } catch (error) {
-    console.error('Failed to create corporate account:', error);
+    console.error('Failed to create travel agent:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
