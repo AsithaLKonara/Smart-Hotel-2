@@ -34,7 +34,8 @@ import {
   Activity,
   History,
   Box,
-  Gift
+  Gift,
+  Building2
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useSidebar } from '@/lib/sidebar-context'
@@ -67,9 +68,11 @@ export default function DashboardSidebar() {
 
       // 🟠 KITCHEN COMMAND
       { name: 'Execution Deck', href: '/kitchen/dashboard', icon: UtensilsCrossed, roles: ['KITCHEN'] },
+      { name: 'Point of Sale', href: '/kitchen/pos', icon: ShoppingCart, roles: ['KITCHEN'] },
       
       // 🔵 FRONT DESK OPERATIONS
       { name: 'Reception Rack', href: '/admin/receptionist', icon: Bed, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'] },
+      { name: 'Point of Sale', href: '/admin/pos', icon: ShoppingCart, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'] },
       { name: 'Live Bookings', href: '/admin/bookings', icon: Calendar, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'] },
       { name: 'Inventory Engine', href: '/admin/inventory', icon: Box, roles: ['MANAGER', 'SUPER_ADMIN'] },
       
@@ -79,6 +82,8 @@ export default function DashboardSidebar() {
 
       // 🔴 MANAGEMENT & GOVERNANCE
       { name: 'Operations Map', href: '/admin/manager', icon: BarChart3, roles: ['MANAGER', 'SUPER_ADMIN'] },
+      { name: 'Guest CRM', href: '/admin/crm/guests', icon: UserCheck, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'] },
+      { name: 'Corporate B2B', href: '/admin/crm/corporate', icon: Building2, roles: ['MANAGER', 'SUPER_ADMIN'] },
       { name: 'Channel Sync', href: '/admin/ota', icon: Globe, roles: ['MANAGER', 'SUPER_ADMIN'] },
       { name: 'Audit Stream', href: '/admin/audit-logs', icon: History, roles: ['SUPER_ADMIN'] },
       { name: 'Security (RBAC)', href: '/admin/roles', icon: ShieldCheck, roles: ['SUPER_ADMIN'] },

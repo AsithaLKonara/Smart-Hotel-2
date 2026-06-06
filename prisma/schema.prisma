@@ -428,6 +428,16 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  vipStatus          String    @default("STANDARD")
+  blacklistStatus    Boolean   @default(false)
+  blacklistReason    String?
+  corporateAccountId String?
+  travelAgentId      String?
+
+  corporateAccount   CorporateAccount? @relation(fields: [corporateAccountId], references: [id])
+  travelAgent        TravelAgent?      @relation(fields: [travelAgentId], references: [id])
+  guestHistory       GuestHistory?
+
   guestBookings    Booking[]        @relation("PrimaryGuest")
   loyalty          LoyaltyPoint?
   staffProfile     Staff?
@@ -450,6 +460,49 @@ model GuestPreference {
   allergies           String[]
   roomPreferences     String[]
   user                User     @relation(fields: [userId], references: [id])
+}
+
+model CorporateAccount {
+  id              String   @id @default(uuid())
+  companyName     String   @unique
+  contactName     String
+  contactEmail    String
+  contactPhone    String
+  negotiatedRate  Float?   
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  users           User[]
+}
+
+model TravelAgent {
+  id              String   @id @default(uuid())
+  agencyName      String   @unique
+  iataNumber      String?
+  contactName     String
+  contactEmail    String
+  contactPhone    String
+  commissionRate  Float    @default(10.0) 
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  users           User[]
+}
+
+model GuestHistory {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  totalStays      Int      @default(0)
+  totalNights     Int      @default(0)
+  totalSpend      Float    @default(0)
+  lastStayDate    DateTime?
+  lastRoomTypeId  String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User     @relation(fields: [userId], references: [id])
 }
 
 model Staff {
