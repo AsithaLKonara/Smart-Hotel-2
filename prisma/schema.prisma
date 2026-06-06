@@ -614,6 +614,7 @@ model User {
   nightAuditsRun   NightAuditLog[]
   employee         Employee?
   guestConversations GuestConversation[]
+  resortBookings   ResortBooking[]
 }
 
 model GuestPreference {
@@ -1329,4 +1330,46 @@ model WebhookEndpoint {
   secret          String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+}
+
+// ==========================================
+// RESORT MODULES (PHASE 16)
+// ==========================================
+
+model ResortFacility {
+  id              String   @id @default(uuid())
+  name            String
+  type            String   // SPA, GOLF, TENNIS, CABANA
+  operatingHours  String   @default("09:00-18:00")
+  status          String   @default("ACTIVE")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  services        ResortService[]
+  bookings        ResortBooking[]
+}
+
+model ResortService {
+  id              String   @id @default(uuid())
+  facilityId      String
+  name            String
+  durationMins    Int
+  price           Float
+  createdAt       DateTime @default(now())
+
+  facility        ResortFacility @relation(fields: [facilityId], references: [id])
+}
+
+model ResortBooking {
+  id              String   @id @default(uuid())
+  facilityId      String
+  guestId         String
+  startTime       DateTime
+  endTime         DateTime
+  status          String   @default("CONFIRMED") // CONFIRMED, COMPLETED, CANCELLED
+  notes           String?
+  createdAt       DateTime @default(now())
+
+  facility        ResortFacility @relation(fields: [facilityId], references: [id])
+  guest           User           @relation(fields: [guestId], references: [id])
 }

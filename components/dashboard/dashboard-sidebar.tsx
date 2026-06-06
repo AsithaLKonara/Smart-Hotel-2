@@ -10,7 +10,7 @@ import {
   MessageSquare, AlertTriangle, Home, User, CreditCard, Star, Grid, Globe, 
   ShieldCheck, Activity, History, Box, Gift, Building2, FileText, Moon, 
   Brush, Wrench, TrendingUp, Store, CalendarDays, Plane, Truck, FileCheck,
-  Briefcase, CalendarRange, Clock, CircleDollarSign, CalendarClock, ClipboardCheck, Award, MessageCircle, PieChart, Link as LinkIcon
+  Briefcase, CalendarRange, Clock, CircleDollarSign, CalendarClock, ClipboardCheck, Award, MessageCircle, PieChart, Link as LinkIcon, Palmtree
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useSidebar } from '@/lib/sidebar-context'
@@ -45,10 +45,11 @@ export default function DashboardSidebar() {
       { name: 'Execution Deck', href: '/kitchen/dashboard', icon: UtensilsCrossed, roles: ['KITCHEN'] },
       { name: 'Point of Sale', href: '/kitchen/pos', icon: ShoppingCart, roles: ['KITCHEN'] },
       
-      // 🔵 FRONT DESK OPERATIONS
-      { name: 'Reception Rack', href: '/admin/receptionist', icon: Bed, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'] },
-      { name: 'Point of Sale', href: '/admin/pos', icon: ShoppingCart, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'] },
-      { name: 'Live Bookings', href: '/admin/bookings', icon: Calendar, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'] },
+      // 🔵 FRONT OFFICE & CRM
+      { name: 'Front Desk', href: '/admin/front-desk', icon: UserCheck, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'] },
+      { name: 'Reservations', href: '/admin/reservations', icon: CalendarDays, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'] },
+      { name: 'Resort & Spa', href: '/admin/resort', icon: Palmtree, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'] },
+      { name: 'Housekeeping', href: '/admin/housekeeping', icon: Brush, roles: ['HOUSEKEEPING', 'MANAGER', 'SUPER_ADMIN'] },
       { name: 'Inventory Engine', href: '/admin/inventory', icon: Box, roles: ['MANAGER', 'SUPER_ADMIN'] },
       
       // 🧹 HOUSEKEEPING & MAINTENANCE
