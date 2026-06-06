@@ -10,7 +10,7 @@ import {
   MessageSquare, AlertTriangle, Home, User, CreditCard, Star, Grid, Globe, 
   ShieldCheck, Activity, History, Box, Gift, Building2, FileText, Moon, 
   Brush, Wrench, TrendingUp, Store, CalendarDays, Plane, Truck, FileCheck,
-  Briefcase, CalendarRange, Clock, CircleDollarSign
+  Briefcase, CalendarRange, Clock, CircleDollarSign, CalendarClock, ClipboardCheck
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useSidebar } from '@/lib/sidebar-context'
@@ -51,9 +51,12 @@ export default function DashboardSidebar() {
       { name: 'Live Bookings', href: '/admin/bookings', icon: Calendar, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'] },
       { name: 'Inventory Engine', href: '/admin/inventory', icon: Box, roles: ['MANAGER', 'SUPER_ADMIN'] },
       
-      // 🟣 HOUSEKEEPING & MAINTENANCE
-      { name: 'Housekeeping Board', href: '/admin/housekeeping/board', icon: Brush, roles: ['HOUSEKEEPING', 'MANAGER', 'SUPER_ADMIN'] },
-      { name: 'Maintenance Tickets', href: '/admin/maintenance/tickets', icon: Wrench, roles: ['MAINTENANCE', 'MANAGER', 'SUPER_ADMIN'] },
+      // 🧹 HOUSEKEEPING & MAINTENANCE
+      { name: 'Room Status', href: '/admin/housekeeping', icon: Bed, roles: ['HOUSEKEEPER', 'MANAGER', 'SUPER_ADMIN'] },
+      { name: 'Service Tickets', href: '/admin/maintenance', icon: Wrench, roles: ['MAINTENANCE', 'MANAGER', 'SUPER_ADMIN'] },
+      { name: 'Asset Registry', href: '/admin/maintenance/assets', icon: Box, roles: ['MAINTENANCE', 'MANAGER', 'SUPER_ADMIN'] },
+      { name: 'Preventative Schedules', href: '/admin/maintenance/schedules', icon: CalendarClock, roles: ['MAINTENANCE', 'MANAGER', 'SUPER_ADMIN'] },
+      { name: 'Inspection Logs', href: '/admin/maintenance/inspections', icon: ClipboardCheck, roles: ['MAINTENANCE', 'MANAGER', 'SUPER_ADMIN'] },
 
       // 🟢 REVENUE MANAGEMENT
       { name: 'Yield Engine', href: '/admin/yield', icon: TrendingUp, roles: ['MANAGER', 'SUPER_ADMIN'] },

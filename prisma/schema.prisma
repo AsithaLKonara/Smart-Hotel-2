@@ -1209,3 +1209,52 @@ model PayrollRecord {
 
   employee        Employee @relation(fields: [employeeId], references: [id])
 }
+
+// ==========================================
+// CMMS & PREVENTIVE MAINTENANCE (PHASE 11)
+// ==========================================
+
+model Asset {
+  id              String   @id @default(uuid())
+  name            String
+  category        String   // HVAC, PLUMBING, ELECTRICAL, KITCHEN_EQUIPMENT
+  location        String
+  serialNumber    String?
+  installationDate DateTime? @db.Date
+  warrantyExpiry  DateTime? @db.Date
+  status          String   @default("OPERATIONAL") // OPERATIONAL, MAINTENANCE, OUT_OF_ORDER
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  schedules       MaintenanceSchedule[]
+  inspections     InspectionLog[]
+}
+
+model MaintenanceSchedule {
+  id              String   @id @default(uuid())
+  assetId         String
+  taskName        String
+  frequencyDays   Int      // e.g., 30 for monthly, 90 for quarterly
+  lastRun         DateTime? @db.Date
+  nextRun         DateTime @db.Date
+  assignedToRole  String?  // e.g. "MAINTENANCE"
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  asset           Asset    @relation(fields: [assetId], references: [id])
+}
+
+model InspectionLog {
+  id              String   @id @default(uuid())
+  assetId         String
+  technicianName  String
+  inspectionDate  DateTime @default(now())
+  status          String   // PASS, FAIL, REPAIR_NEEDED
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  asset           Asset    @relation(fields: [assetId], references: [id])
+}
