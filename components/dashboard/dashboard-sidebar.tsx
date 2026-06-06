@@ -9,7 +9,8 @@ import {
   UserCheck, Menu, X, Settings as SettingsIcon, ChevronLeft, ChevronRight, 
   MessageSquare, AlertTriangle, Home, User, CreditCard, Star, Grid, Globe, 
   ShieldCheck, Activity, History, Box, Gift, Building2, FileText, Moon, 
-  Brush, Wrench, TrendingUp, Store, CalendarDays, Plane, Truck, FileCheck
+  Brush, Wrench, TrendingUp, Store, CalendarDays, Plane, Truck, FileCheck,
+  Briefcase, CalendarRange, Clock, CircleDollarSign
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useSidebar } from '@/lib/sidebar-context'
@@ -67,6 +68,12 @@ export default function DashboardSidebar() {
       { name: 'Vendors & Suppliers', href: '/admin/procurement/vendors', icon: Truck, roles: ['MANAGER', 'SUPER_ADMIN'] },
       { name: 'Master Inventory', href: '/admin/procurement/items', icon: Package, roles: ['MANAGER', 'SUPER_ADMIN'] },
       { name: 'Purchase Orders', href: '/admin/procurement/orders', icon: FileCheck, roles: ['MANAGER', 'SUPER_ADMIN'] },
+
+      // 👥 HUMAN RESOURCES (HR)
+      { name: 'Employee Directory', href: '/admin/hr/employees', icon: Briefcase, roles: ['MANAGER', 'SUPER_ADMIN'] },
+      { name: 'Shift Roster', href: '/admin/hr/shifts', icon: Clock, roles: ['MANAGER', 'SUPER_ADMIN'] },
+      { name: 'Leave Management', href: '/admin/hr/leaves', icon: CalendarRange, roles: ['MANAGER', 'SUPER_ADMIN'] },
+      { name: 'Payroll Center', href: '/admin/hr/payroll', icon: CircleDollarSign, roles: ['MANAGER', 'SUPER_ADMIN'] },
 
       // 🔴 MANAGEMENT & GOVERNANCE
       { name: 'Operations Map', href: '/admin/manager', icon: BarChart3, roles: ['MANAGER', 'SUPER_ADMIN'] },

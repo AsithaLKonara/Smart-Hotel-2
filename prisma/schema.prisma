@@ -612,6 +612,7 @@ model User {
   createdTasks     Task[]           @relation("CreatedTasks")
   auditLogs        AuditLog[]
   nightAuditsRun   NightAuditLog[]
+  employee         Employee?
 }
 
 model GuestPreference {
@@ -1135,4 +1136,76 @@ model PurchaseOrderItem {
 
   purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
   item            InventoryItem @relation(fields: [itemId], references: [id])
+}
+
+// ==========================================
+// HR & WORKFORCE (PHASE 10)
+// ==========================================
+
+model Employee {
+  id          String   @id @default(uuid())
+  userId      String?  @unique
+  firstName   String
+  lastName    String
+  email       String   @unique
+  phone       String?
+  department  String   // FRONT_DESK, KITCHEN, HOUSEKEEPING, MANAGEMENT, MAINTENANCE
+  position    String
+  baseSalary  Float
+  hireDate    DateTime @db.Date
+  status      String   @default("ACTIVE") // ACTIVE, ON_LEAVE, TERMINATED
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User?          @relation(fields: [userId], references: [id])
+  shifts      Shift[]
+  leaves      LeaveRequest[]
+  payrolls    PayrollRecord[]
+}
+
+model Shift {
+  id          String   @id @default(uuid())
+  employeeId  String
+  startTime   DateTime
+  endTime     DateTime
+  role        String?  // Optional override for specific shift role
+  status      String   @default("SCHEDULED") // SCHEDULED, COMPLETED, NO_SHOW
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  employee    Employee @relation(fields: [employeeId], references: [id])
+}
+
+model LeaveRequest {
+  id          String   @id @default(uuid())
+  employeeId  String
+  type        String   // ANNUAL, SICK, UNPAID, MATERNITY
+  startDate   DateTime @db.Date
+  endDate     DateTime @db.Date
+  reason      String?
+  status      String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  approvedBy  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  employee    Employee @relation(fields: [employeeId], references: [id])
+}
+
+model PayrollRecord {
+  id              String   @id @default(uuid())
+  employeeId      String
+  periodStart     DateTime @db.Date
+  periodEnd       DateTime @db.Date
+  baseAmount      Float
+  overtimeAmount  Float    @default(0)
+  deductions      Float    @default(0)
+  bonuses         Float    @default(0)
+  netPay          Float
+  status          String   @default("DRAFT") // DRAFT, PAID
+  paidAt          DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  employee        Employee @relation(fields: [employeeId], references: [id])
 }
