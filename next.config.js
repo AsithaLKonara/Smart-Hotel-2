@@ -1,5 +1,60 @@
 const fs = require('fs')
 const path = require('path')
+const http = require('http')
+
+// Mitigate Next.js WebSocket SSRF (CVE-2026-44578) globally
+try {
+  const originalOn = http.Server.prototype.on
+  const patchUpgrade = function (event, listener) {
+    if (event === 'upgrade') {
+      return originalOn.call(this, event, function (req, socket, head) {
+        console.warn(`[SECURITY WARNING] Intercepted and blocked WebSocket upgrade attempt to: ${req.url}`)
+        socket.write('HTTP/1.1 400 Bad Request\r\nConnection: close\r\nContent-Type: text/plain\r\nContent-Length: 32\r\n\r\nWebSocket upgrades not allowed\n')
+        socket.destroy()
+      })
+    }
+    return originalOn.apply(this, arguments)
+  }
+  http.Server.prototype.on = patchUpgrade
+  http.Server.prototype.addListener = patchUpgrade
+
+  // Active Handles Scanner: Since Next.js registers the 'upgrade' event before parsing next.config.js,
+  // we scan active handles to find the running HTTP server and override its listeners.
+  const scanAndPatchActiveServers = () => {
+    if (typeof process._getActiveHandles !== 'function') return
+    const handles = process._getActiveHandles()
+    for (const handle of handles) {
+      if (
+        handle &&
+        (handle instanceof http.Server ||
+         handle.constructor?.name === 'Server' ||
+         (typeof handle.listen === 'function' && typeof handle.addListener === 'function'))
+      ) {
+        // Only patch if we haven't patched this server already
+        if (!handle.__webSocketFirewallApplied) {
+          handle.__webSocketFirewallApplied = true
+          handle.removeAllListeners('upgrade')
+          handle.on('upgrade', function (req, socket, head) {
+            console.warn(`[SECURITY WARNING] Intercepted and blocked WebSocket upgrade attempt via handle to: ${req.url}`)
+            socket.write('HTTP/1.1 400 Bad Request\r\nConnection: close\r\nContent-Type: text/plain\r\nContent-Length: 32\r\n\r\nWebSocket upgrades not allowed\n')
+            socket.destroy()
+          })
+          console.log(`🛡️ WebSocket SSRF Firewall patched active server instance listening on port ${handle.address()?.port || 'unknown'}.`)
+        }
+      }
+    }
+  }
+
+  // Scan immediately
+  scanAndPatchActiveServers()
+  // Scan periodically for the first 5 seconds to ensure we catch any deferred servers
+  const scanInterval = setInterval(scanAndPatchActiveServers, 500)
+  setTimeout(() => clearInterval(scanInterval), 5000)
+
+  console.log('🛡️ WebSocket SSRF Firewall patch applied to next.config.js successfully.')
+} catch (err) {
+  console.error('Failed to apply WebSocket SSRF Firewall patch:', err.message)
+}
 
 // Manually parse .env.local / .env to bypass Next.js's variable expansion on $ characters
 try {
@@ -29,10 +84,10 @@ const nextConfig = {
   poweredByHeader: false,
   optimizeFonts: false,
   productionBrowserSourceMaps: true,
-  
+
   // Next.js 15 compatible configuration
   transpilePackages: ['lucide-react', 'framer-motion'],
-  
+
   // Image optimization
   images: {
     formats: ['image/avif', 'image/webp'],
@@ -44,6 +99,7 @@ const nextConfig = {
 
   // 1. Externalize server-only runtime packages
   experimental: {
+    optimizePackageImports: ['lucide-react', 'framer-motion'],
     serverComponentsExternalPackages: [
       '@prisma/client',
       'prisma',
@@ -57,30 +113,6 @@ const nextConfig = {
     ],
   },
 
-  // 2. Configure safe client Webpack fallbacks to avoid browser loading crashes
-  webpack: (config, { isServer }) => {
-    if (!isServer) {
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        fs: false,
-        net: false,
-        tls: false,
-        dns: false,
-        child_process: false,
-        perf_hooks: false,
-        async_hooks: false,
-        crypto: false,
-        path: false,
-        os: false,
-        http: false,
-        https: false,
-        stream: false,
-        zlib: false,
-      }
-    }
-    return config
-  },
-  
   // Configure enterprise-grade security headers
   async headers() {
     return [

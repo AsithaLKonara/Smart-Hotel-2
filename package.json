@@ -19,6 +19,9 @@
     "test:e2e:production": "BASE_URL=https://smart-hotel-2.vercel.app playwright test tests/e2e/certification.spec.ts --project=chromium",
     "test:e2e:local": "BASE_URL=http://localhost:3000 playwright test tests/e2e/certification.spec.ts",
     "test:e2e:full": "playwright test tests/e2e/certification.spec.ts tests/e2e/accessibility-wcag.spec.ts",
+    "test:audit": "BASE_URL=http://localhost:3000 playwright test tests/e2e/production-audit.spec.ts --project=chromium",
+    "test:audit:production": "BASE_URL=https://smart-hotel-2.vercel.app playwright test tests/e2e/production-audit.spec.ts --project=chromium",
+    "test:audit:report": "BASE_URL=http://localhost:3000 playwright test tests/e2e/production-audit.spec.ts --project=chromium --reporter=html && npx playwright show-report",
     "test:e2e:responsive": "playwright test tests/e2e/responsive.spec.ts --project='Mobile Chrome' --project='Mobile Safari'",
     "test:e2e:cross-browser": "playwright test tests/e2e/certification.spec.ts --project=chromium --project=firefox --project=webkit",
     "test:security": "snyk test",
@@ -98,10 +101,10 @@
     "hls.js": "^1.6.16",
     "lucide-react": "^0.294.0",
     "multer": "^1.4.5-lts.1",
-    "next": "14.2.16",
+    "next": "14.2.35",
     "next-auth": "^4.24.5",
     "next-themes": "^0.2.1",
-    "nodemailer": "^7.0.10",
+    "nodemailer": "^9.0.0",
     "pdfkit": "^0.13.0",
     "prisma": "^5.7.1",
     "pusher": "^5.3.3",
@@ -139,8 +142,8 @@
     "@types/node": "^20",
     "@types/nodemailer": "^6.4.19",
     "@types/pdfkit": "^0.17.3",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
     "@types/supertest": "^6.0.3",
     "@types/three": "^0.184.1",
     "autoprefixer": "^10.0.1",
@@ -155,16 +158,36 @@
     "msw": "^2.11.2",
     "nyc": "^15.1.0",
     "playwright": "^1.56.1",
-    "postcss": "^8",
+    "postcss": "^8.5.10",
     "snyk": "^1.1299.0",
     "supertest": "^7.1.4",
     "tailwindcss": "^3.3.0",
     "ts-jest": "^29.4.3",
     "tsx": "^4.6.0",
-    "typescript": "^5",
+    "typescript": "^6.0.3",
     "webpack-bundle-analyzer": "^4.10.2"
   },
   "prisma": {
-    "seed": "tsx prisma/seed.ts"
+    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
+  },
+  "overrides": {
+    "uuid": "^11.1.1",
+    "nodemailer": "^9.0.0",
+    "postcss": "^8.5.10",
+    "test-exclude": {
+      "minimatch": "^3.1.4"
+    },
+    "glob@7": {
+      "minimatch": "^3.1.4"
+    },
+    "glob@8": {
+      "minimatch": "^3.1.4"
+    },
+    "eslint": {
+      "minimatch": "^3.1.4"
+    },
+    "@typescript-eslint/typescript-estree": {
+      "minimatch": "^9.0.7"
+    }
   }
 }
