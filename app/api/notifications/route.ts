@@ -3,29 +3,7 @@ import { getRequestSession } from '@/lib/session'
 import { prisma } from '@/lib/db'
 import { isDatabaseConfigured } from '@/lib/db-helpers'
 
-// High-fidelity fallback notifications cache
-let MOCK_NOTIFICATIONS: any[] = [
-  {
-    id: "notif-1",
-    userId: "mock-user-id",
-    type: "booking",
-    title: "New Premium Booking",
-    message: "Sir Richard Branson completed booking for Room 401 (Presidential Suite).",
-    link: "/admin/receptionist",
-    read: false,
-    createdAt: new Date(Date.now() - 1000 * 60 * 10).toISOString()
-  },
-  {
-    id: "notif-2",
-    userId: "mock-user-id",
-    type: "system",
-    title: "Kitchen SLA Warning",
-    message: "Order #K104 (Room 202) has exceeded SLA target limit of 20 minutes.",
-    link: "/kitchen/dashboard",
-    read: false,
-    createdAt: new Date(Date.now() - 1000 * 60 * 18).toISOString()
-  }
-];
+// MOCK_NOTIFICATIONS removed to enforce production constraints.
 
 export async function GET(request: NextRequest) {
   const session = await getRequestSession(request)
@@ -36,11 +14,7 @@ export async function GET(request: NextRequest) {
   const userId = session.user.id
 
   if (!isDatabaseConfigured()) {
-    return NextResponse.json({
-      notifications: MOCK_NOTIFICATIONS,
-      isMock: true,
-      message: 'Utilizing local simulated notifications queue.'
-    })
+    return NextResponse.json({ error: 'Database not configured or missing connection.' }, { status: 501 })
   }
 
   try {
@@ -54,11 +28,9 @@ export async function GET(request: NextRequest) {
   } catch (error: any) {
     console.error('Error loading notifications:', error)
     return NextResponse.json({
-      notifications: MOCK_NOTIFICATIONS,
-      isMock: true,
       error: error.message,
-      message: 'Fell back to simulated notification context.'
-    })
+      message: 'Failed to load notifications.'
+    }, { status: 500 })
   }
 }
 
@@ -88,14 +60,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!isDatabaseConfigured() || !notificationPayload.userId) {
-      const mockNotifEntry = {
-        id: `notif-${Date.now()}`,
-        ...notificationPayload,
-        userId: notificationPayload.userId || "mock-user-id",
-        createdAt: new Date().toISOString()
-      }
-      MOCK_NOTIFICATIONS = [mockNotifEntry, ...MOCK_NOTIFICATIONS]
-      return NextResponse.json({ notification: mockNotifEntry, isMock: true })
+      return NextResponse.json({ error: 'Database not configured or invalid userId.' }, { status: 501 })
     }
 
     const notification = await prisma.notification.create({
@@ -124,12 +89,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     if (!isDatabaseConfigured()) {
-      if (markAllRead) {
-        MOCK_NOTIFICATIONS = MOCK_NOTIFICATIONS.map(n => ({ ...n, read: true, readAt: new Date().toISOString() }))
-      } else {
-        MOCK_NOTIFICATIONS = MOCK_NOTIFICATIONS.map(n => n.id === id ? { ...n, read: true, readAt: new Date().toISOString() } : n)
-      }
-      return NextResponse.json({ success: true, isMock: true })
+      return NextResponse.json({ error: 'Database not configured.' }, { status: 501 })
     }
 
     if (markAllRead) {

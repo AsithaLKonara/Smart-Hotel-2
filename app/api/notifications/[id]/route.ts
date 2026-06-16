@@ -28,7 +28,7 @@ export async function PATCH(
 
     // Only allow users to update their own notifications, or admins
     if (notification.userId !== session.user.id && 
-        !['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'].includes(session.user.role)) {
+        !['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'].includes((session.user as any).roleName as string)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
@@ -78,7 +78,7 @@ export async function DELETE(
 
     // Only allow users to delete their own notifications, or admins
     if (notification.userId !== session.user.id && 
-        !['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'].includes(session.user.role)) {
+        !['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'].includes((session.user as any).roleName as string)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 

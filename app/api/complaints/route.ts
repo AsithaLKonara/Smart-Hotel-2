@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     const where: any = {}
     if (userId) {
       where.userId = userId
-    } else if (!['SUPER_ADMIN', 'MANAGER'].includes(session.user.role)) {
+    } else if (!['SUPER_ADMIN', 'MANAGER'].includes((session.user as any).roleName as string)) {
       where.userId = session.user.id
     }
 
@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session || !['SUPER_ADMIN', 'MANAGER'].includes(session.user.role)) {
+    if (!session || !['SUPER_ADMIN', 'MANAGER'].includes((session.user as any).roleName as string)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 

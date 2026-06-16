@@ -1,5 +1,5 @@
 import prisma from '@/lib/db'
-import { Room, RoomType, FoodMenu, Staff } from '@prisma/client'
+import { Room, RoomType, FoodMenu, Employee } from '@prisma/client'
 import { getHotelContactInfo, getHotelSettings } from './settings'
 
 type RestaurantMenu = Record<string, Array<{ name: string; description?: string | null; price: number; image?: string | null }>>
@@ -56,7 +56,7 @@ async function loadHotelData(): Promise<HotelData> {
       take: 6,
     }),
     prisma.foodMenu.findMany(),
-    prisma.staff.findMany({ orderBy: { hireDate: 'asc' }, take: 6 }),
+    prisma.employee.findMany({ orderBy: { hireDate: 'asc' }, take: 6 }),
   ])
 
   const social: Record<string, string> = {
@@ -115,8 +115,8 @@ async function loadHotelData(): Promise<HotelData> {
     images: room.roomType.images?.length ? room.roomType.images : ['/images/hotel/room-deluxe.jpg'],
   }))
 
-  const staffProfiles = staff.map((member: Staff, index: number) => ({
-    name: member.name,
+  const staffProfiles = staff.map((member: Employee, index: number) => ({
+    name: `${member.firstName} ${member.lastName}`,
     position: member.position,
     department: member.department,
     bio: `A dedicated ${member.department.toLowerCase()} specialist committed to delivering unforgettable guest experiences.`,

@@ -180,7 +180,7 @@ export function ChatWidget({
     if (!isMounted) return null;
 
     return (
-        <div className="fixed bottom-6 right-6 z-[9999] font-sans selection:bg-white/20">
+        <div className="fixed bottom-6 right-6 z-[9999] font-sans selection:bg-white/20 hide-on-print">
             <AnimatePresence>
                 {isOpen ? (
                     <motion.div

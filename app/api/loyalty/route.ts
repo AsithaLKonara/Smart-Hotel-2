@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     const userId = searchParams.get('userId')
 
     // Users can only see their own loyalty points unless admin
-    const targetUserId = userId && ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'].includes(session.user.role)
+    const targetUserId = userId && ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'].includes((session.user as any).roleName as string)
       ? userId
       : session.user.id
 
