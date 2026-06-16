@@ -9,17 +9,17 @@ export const demoUsers = {
   },
   manager: {
     email: 'manager@smarthotel.com',
-    password: 'password123',
+    password: 'SmartHotel@2025!Manager',
     expectedRole: 'MANAGER',
   },
   receptionist: {
-    email: 'reception@smarthotel.com',
-    password: 'password123',
+    email: 'receptionist@smarthotel.com',
+    password: 'SmartHotel@2025!Reception',
     expectedRole: 'RECEPTIONIST',
   },
   kitchen: {
-    email: 'chef@smarthotel.com',
-    password: 'password123',
+    email: 'kitchen@smarthotel.com',
+    password: 'SmartHotel@2025!Kitchen',
     expectedRole: 'KITCHEN',
   },
   guest: {
@@ -97,12 +97,13 @@ export async function verifyDemoUsersSeeded() {
       if (key === 'guestb') continue // Skip dynamic test-only guest accounts during pre-flight seed validation
       const dbUser = await prisma.user.findFirst({
         where: { email: user.email },
+        include: { role: true },
       })
       if (!dbUser) {
         throw new Error(`Demo user check failed: User with email ${user.email} is not seeded in the database.`)
       }
-      if (dbUser.role !== user.expectedRole) {
-        throw new Error(`Demo user check failed: Email ${user.email} is expected to have role ${user.expectedRole} but has ${dbUser.role}.`)
+      if (dbUser.role?.name !== user.expectedRole) {
+        throw new Error(`Demo user check failed: Email ${user.email} is expected to have role ${user.expectedRole} but has ${dbUser.role?.name}.`)
       }
     }
     console.log('✅ Demo Governance: All primary demo accounts are active and role-validated.')

@@ -32,7 +32,7 @@ test.describe('🧬 Security Audit - Ownership & Cross-User Isolation', () => {
           email: 'guestb@example.com',
           password: hashedPassword,
           phone: '0987654321',
-          role: 'GUEST',
+          role: { connect: { name: 'GUEST' } },
           createdAt: new Date(),
           updatedAt: new Date()
         }

@@ -60,7 +60,7 @@ test.describe('🔒 Security Audit - API Direct Attack Prevention', () => {
   test('❌ GUEST must be BLOCKED from creating staff via POST /api/staff', async ({ page }) => {
     await loginAsUser(page, 'guest', BASE_URL)
 
-    const initialCount = await prisma.staff.count()
+    const initialCount = await prisma.employee.count()
 
     const response = await page.request.post(`${BASE_URL}/api/staff`, {
       data: {
@@ -78,14 +78,14 @@ test.describe('🔒 Security Audit - API Direct Attack Prevention', () => {
 
     expect([401, 403]).toContain(response.status())
 
-    const finalCount = await prisma.staff.count()
+    const finalCount = await prisma.employee.count()
     expect(finalCount).toBe(initialCount)
   })
 
   test('❌ KITCHEN must be BLOCKED from creating staff via POST /api/staff', async ({ page }) => {
     await loginAsUser(page, 'kitchen', BASE_URL)
 
-    const initialCount = await prisma.staff.count()
+    const initialCount = await prisma.employee.count()
 
     const response = await page.request.post(`${BASE_URL}/api/staff`, {
       data: {
@@ -103,7 +103,7 @@ test.describe('🔒 Security Audit - API Direct Attack Prevention', () => {
 
     expect([401, 403]).toContain(response.status())
 
-    const finalCount = await prisma.staff.count()
+    const finalCount = await prisma.employee.count()
     expect(finalCount).toBe(initialCount)
   })
 })

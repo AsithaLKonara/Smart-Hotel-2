@@ -45,8 +45,10 @@ test.describe('SmartHotel OS Final E2E Suite', () => {
         expect(url).toContain('/dashboard')
       } else if (role === 'admin' || role === 'manager') {
         expect(url).toContain('/admin')
+      } else if (role === 'kitchen') {
+        expect(url).toContain('/kitchen')
       } else {
-        expect(url).toMatch(/\/dashboard|\/admin/)
+        expect(url).toMatch(/\/dashboard|\/admin|\/kitchen/)
       }
 
       // Check RBAC isolation (Admin page for Guest should fail or redirect)

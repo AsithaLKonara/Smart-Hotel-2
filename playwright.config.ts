@@ -1,4 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
+import os from 'os';
+
+const isMac12 = os.platform() === 'darwin' && os.release().startsWith('21.');
 
 /**
  * Enterprise Playwright Configuration
@@ -7,6 +10,7 @@ import { defineConfig, devices } from '@playwright/test';
  */
 export default defineConfig({
   testDir: './tests',
+  globalSetup: require.resolve('./tests/e2e/global-setup'),
   timeout: 120 * 1000,
   expect: {
     timeout: 20000,
@@ -29,12 +33,16 @@ export default defineConfig({
     navigationTimeout: 90000,
   },
 
+  // Ensure screenshots folder exists before any test writes to it
+  outputDir: 'test-results',
+
   projects: [
     // ── Desktop Browsers ──────────────────────────────────────────
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
       testIgnore: ['**/responsive.spec.ts'],
+      // production-audit.spec.ts runs on chromium by default
     },
     {
       name: 'firefox',
@@ -42,21 +50,23 @@ export default defineConfig({
       // Only run smoke/core tests on Firefox to keep CI fast
       testMatch: ['**/comprehensive-production.spec.ts', '**/booking-flow.spec.ts', '**/accessibility-wcag.spec.ts'],
     },
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-      testMatch: ['**/comprehensive-production.spec.ts', '**/booking-flow.spec.ts', '**/accessibility-wcag.spec.ts'],
-    },
+    ...(!isMac12 ? [
+      {
+        name: 'webkit',
+        use: { ...devices['Desktop Safari'] },
+        testMatch: ['**/comprehensive-production.spec.ts', '**/booking-flow.spec.ts', '**/accessibility-wcag.spec.ts'],
+      },
+      {
+        name: 'Mobile Safari',
+        use: { ...devices['iPhone 13'] },
+        testMatch: ['**/responsive.spec.ts', '**/comprehensive-production.spec.ts'],
+      }
+    ] : []),
 
     // ── Mobile Devices ────────────────────────────────────────────
     {
       name: 'Mobile Chrome',
       use: { ...devices['Pixel 5'] },
-      testMatch: ['**/responsive.spec.ts', '**/comprehensive-production.spec.ts'],
-    },
-    {
-      name: 'Mobile Safari',
-      use: { ...devices['iPhone 13'] },
       testMatch: ['**/responsive.spec.ts', '**/comprehensive-production.spec.ts'],
     },
 

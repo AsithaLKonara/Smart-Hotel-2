@@ -18,7 +18,7 @@ export async function runSecurityAudit(page: Page, baseUrl: string): Promise<Sec
   const results: SecurityTestResult[] = [];
   // 1. Direct API Attack Audit (GUEST attempting admin mutations)
   try {
-    const initialStaffCount = await prisma.staff.count();
+    const initialStaffCount = await prisma.employee.count();
     
     // Perform unauthorized fetch direct payload invocation
     const response = await page.request.post(`${baseUrl}/api/staff`, {
@@ -34,7 +34,7 @@ export async function runSecurityAudit(page: Page, baseUrl: string): Promise<Sec
     });
 
     const isBlocked = [401, 403, 302].includes(response.status());
-    const finalStaffCount = await prisma.staff.count();
+    const finalStaffCount = await prisma.employee.count();
     const dbIntact = finalStaffCount === initialStaffCount;
 
     results.push({
