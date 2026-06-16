@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Enforce role-based visibility
-    if (session.user.role === 'GUEST') {
+    if ((session.user as any).roleName === 'GUEST') {
       whereClause.createdBy = session.user.id
     } else if (assignedTo) {
       whereClause.assignedTo = assignedTo
@@ -102,12 +102,12 @@ export async function POST(request: NextRequest) {
     const validatedData = taskSchema.parse(body)
 
     // Authorization logic
-    if (session.user.role === 'GUEST') {
+    if ((session.user as any).roleName === 'GUEST') {
       // Guests can only create GUEST_REQUEST or HOUSEKEEPING or MAINTENANCE
       if (!['GUEST_REQUEST', 'HOUSEKEEPING', 'MAINTENANCE'].includes(validatedData.type)) {
         return NextResponse.json({ error: 'Forbidden: Guests can only create service requests.' }, { status: 403 })
       }
-    } else if (!['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'].includes(session.user.role)) {
+    } else if (!['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'].includes((session.user as any).roleName as string)) {
        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 

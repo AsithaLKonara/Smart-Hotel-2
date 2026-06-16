@@ -3,10 +3,12 @@ import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: Request) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || !['SUPER_ADMIN', 'MANAGER', 'HOUSEKEEPER', 'RECEPTIONIST'].includes(session.user.role)) {
+    if (!session || !['SUPER_ADMIN', 'MANAGER', 'HOUSEKEEPER', 'RECEPTIONIST'].includes((session.user as any).roleName as string)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -31,7 +33,7 @@ export async function GET(req: Request) {
 export async function PUT(req: Request) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || !['SUPER_ADMIN', 'MANAGER', 'HOUSEKEEPER', 'RECEPTIONIST'].includes(session.user.role)) {
+    if (!session || !['SUPER_ADMIN', 'MANAGER', 'HOUSEKEEPER', 'RECEPTIONIST'].includes((session.user as any).roleName as string)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

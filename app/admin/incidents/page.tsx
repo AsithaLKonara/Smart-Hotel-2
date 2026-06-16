@@ -51,6 +51,7 @@ export default function IncidentCommandRoom() {
   const [loading, setLoading] = useState(true)
   const [incidents, setIncidents] = useState<Incident[]>([])
   const [activeIncident, setActiveIncident] = useState<Incident | null>(null)
+  const [departmentsPressure, setDepartmentsPressure] = useState<any[]>([])
   
   // Custom creator dialog state
   const [showCreateForm, setShowCreateForm] = useState(false)
@@ -81,6 +82,9 @@ export default function IncidentCommandRoom() {
       const res = await fetch('/api/incidents').then(r => r.json()).catch(() => null)
       if (res && res.incidents) {
         setIncidents(res.incidents)
+      }
+      if (res && res.pressure) {
+        setDepartmentsPressure(res.pressure)
       }
     } catch {
       toast.error('Failed to load active incident states.')
@@ -161,14 +165,6 @@ export default function IncidentCommandRoom() {
     )
   }
 
-  // Interactive Department pressure mock variables
-  const DEPARTMENTS_PRESSURE = [
-    { name: 'Reception / Front Desk', index: 38, workload: 'Normal Pacing', color: 'bg-emerald-500' },
-    { name: 'Housekeeping Desk', index: 84, workload: 'High Overload Risk', color: 'bg-amber-500 animate-pulse' },
-    { name: 'Kitchen / Dining SLA', index: 45, workload: 'Moderate Pacing', color: 'bg-emerald-500' },
-    { name: 'Maintenance HVAC', index: 92, workload: 'CRITICAL PRESSURE', color: 'bg-rose-500 animate-ping' }
-  ]
-
   return (
     <div className="min-h-screen bg-[#090514] text-slate-100 p-6 font-sans flex flex-col h-screen overflow-hidden">
       
@@ -198,7 +194,7 @@ export default function IncidentCommandRoom() {
 
       {/* 1. Department Pressure Heatmaps Panel */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 shrink-0">
-        {DEPARTMENTS_PRESSURE.map((dept, idx) => (
+        {departmentsPressure.map((dept, idx) => (
           <Card key={idx} className="bg-white/[0.01] border border-purple-950/40 p-4 rounded-none">
             <div className="flex justify-between items-center mb-2">
               <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400 truncate">{dept.name}</span>
