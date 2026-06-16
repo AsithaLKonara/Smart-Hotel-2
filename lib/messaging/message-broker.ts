@@ -1,4 +1,5 @@
-// Resilient message broker connection manager supporting dynamic Kafka/NATS drivers
+import { Redis } from '@upstash/redis'
+
 export interface PublishMessage {
   topic: string
   key: string
@@ -6,83 +7,97 @@ export interface PublishMessage {
   headers?: Record<string, string>
 }
 
-let KafkaClient: any
-try {
-  KafkaClient = require('kafkajs').Kafka
-} catch {
-  // In-memory Mock Queue stream for unit tests and local runs
-  KafkaClient = class MockKafka {
-    private static publishedMessages: PublishMessage[] = []
-
-    static clearAll() {
-      this.publishedMessages = []
-    }
-
-    static getPublishedMessages() {
-      return this.publishedMessages
-    }
-
-    producer() {
-      return {
-        connect: async () => {},
-        send: async (payload: { topic: string; messages: Array<{ key: string; value: string; headers?: any }> }) => {
-          for (const msg of payload.messages) {
-            MockKafka.publishedMessages.push({
-              topic: payload.topic,
-              key: msg.key,
-              value: msg.value,
-              headers: msg.headers
-            })
-          }
-        },
-        disconnect: async () => {}
-      }
-    }
-  }
+// Circuit Breaker States
+enum CircuitState {
+  CLOSED,
+  OPEN,
+  HALF_OPEN
 }
 
 export class MessageBroker {
-  private static kafka = new KafkaClient({
-    clientId: 'smarthotel-operations',
-    brokers: [process.env.KAFKA_BROKERS || 'localhost:9092']
-  })
-
-  private static producerInstance: any = null
-
-  static async getProducer() {
-    if (!this.producerInstance) {
-      this.producerInstance = this.kafka.producer()
-      await this.producerInstance.connect()
+  private static get redis(): Redis | null {
+    if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+      try {
+        return Redis.fromEnv()
+      } catch {
+        return null
+      }
     }
-    return this.producerInstance
+    return null
   }
+  
+  // Circuit Breaker configuration
+  private static state: CircuitState = CircuitState.CLOSED
+  private static failures: number = 0
+  private static readonly MAX_FAILURES = 3
+  private static readonly COOLDOWN_MS = 30000
+  private static nextAttemptTime: number = 0
+
+  // Fallback in-memory broker
+  private static memoryQueue: PublishMessage[] = []
 
   static async publish(message: PublishMessage): Promise<void> {
-    const producer = await this.getProducer()
-    await producer.send({
-      topic: message.topic,
-      messages: [
-        {
-          key: message.key,
-          value: message.value,
-          headers: message.headers
-        }
-      ]
-    })
+    const now = Date.now();
+
+    // Check circuit breaker state
+    if (this.state === CircuitState.OPEN) {
+      if (now > this.nextAttemptTime) {
+        this.state = CircuitState.HALF_OPEN;
+      } else {
+        return this.publishToMemory(message, 'CIRCUIT_OPEN');
+      }
+    }
+
+    try {
+      const r = this.redis;
+      if (!r) {
+        throw new Error("Redis not configured");
+      }
+      
+      // Attempt Redis publish
+      await r.publish(message.topic, {
+        key: message.key,
+        value: message.value,
+        headers: message.headers
+      });
+
+      // If successful, reset circuit breaker
+      if (this.state === CircuitState.HALF_OPEN) {
+        this.state = CircuitState.CLOSED;
+        this.failures = 0;
+        console.log('[MessageBroker] Circuit Breaker CLOSED (Redis restored)');
+      }
+    } catch (error) {
+      this.failures++;
+      console.error(`[MessageBroker] Redis publish failed (${this.failures}/${this.MAX_FAILURES}):`, error);
+
+      if (this.state === CircuitState.CLOSED && this.failures >= this.MAX_FAILURES) {
+        this.state = CircuitState.OPEN;
+        this.nextAttemptTime = now + this.COOLDOWN_MS;
+        console.warn(`[MessageBroker] Circuit Breaker OPEN. Falling back to MemoryBroker for ${this.COOLDOWN_MS}ms`);
+      } else if (this.state === CircuitState.HALF_OPEN) {
+        this.state = CircuitState.OPEN;
+        this.nextAttemptTime = now + this.COOLDOWN_MS;
+      }
+
+      // Fallback
+      return this.publishToMemory(message, 'REDIS_ERROR');
+    }
   }
 
-  // Helper for test assertions
+  private static publishToMemory(message: PublishMessage, reason: string): void {
+    this.memoryQueue.push(message);
+    // Log gracefully instead of failing
+    console.log(`[MessageBroker:MemoryFallback] Topic: ${message.topic} (Reason: ${reason})`);
+  }
+
+  // Helper for test assertions if needed
   static getMockPublished(): PublishMessage[] {
-    if (typeof KafkaClient.getPublishedMessages === 'function') {
-      return KafkaClient.getPublishedMessages()
-    }
-    return []
+    return this.memoryQueue
   }
 
   static clearMockPublished(): void {
-    if (typeof KafkaClient.clearAll === 'function') {
-      KafkaClient.clearAll()
-    }
+    this.memoryQueue = []
   }
 }
 

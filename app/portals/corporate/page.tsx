@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,25 +11,69 @@ export default function CorporatePortal() {
   const [accessCode, setAccessCode] = useState('')
   const [loggedIn, setLoggedIn] = useState(false)
   const [companyDetails, setCompanyDetails] = useState<any>(null)
+  const [recentBookings, setRecentBookings] = useState<any[]>([])
+  const [employeeName, setEmployeeName] = useState('')
+  const [checkIn, setCheckIn] = useState('')
+  const [checkOut, setCheckOut] = useState('')
+  const [error, setError] = useState<string | null>(null)
   const [bookingStatus, setBookingStatus] = useState<string | null>(null)
 
-  const handleLogin = () => {
-    // In a real system, this would authenticate against an API.
-    // We mock login for the portal demonstration.
-    if (companyId) {
-      setCompanyDetails({
-        name: 'Enterprise Client: ' + companyId,
-        rate: 20 // 20% discount mock
-      })
-      setLoggedIn(true)
+  const handleLogin = async () => {
+    setError(null)
+    if (companyId && accessCode) {
+      try {
+        const res = await fetch('/api/portals/corporate/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ companyId, accessCode })
+        })
+        const data = await res.json()
+        if (!res.ok) {
+          setError(data.error || 'Login failed')
+          return
+        }
+        setCompanyDetails({ name: data.name, rate: data.rate })
+        setRecentBookings(data.recentBookings || [])
+        setLoggedIn(true)
+      } catch (err) {
+        setError('Network error')
+      }
+    } else {
+      setError('Missing credentials')
     }
   }
 
-  const handleBook = () => {
+  const handleBook = async () => {
+    if (!employeeName || !checkIn || !checkOut) {
+      alert('Please fill in all fields')
+      return
+    }
     setBookingStatus('processing')
-    setTimeout(() => {
+    try {
+      const res = await fetch('/api/portals/b2b/book', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          companyId,
+          clientName: employeeName,
+          checkIn,
+          checkOut,
+          // Assuming a default room type id for demo purposes. 
+          // In reality, we'd have a dropdown to select roomTypeId.
+          roomTypeId: 'demo-room-type-id' 
+        })
+      })
+      
+      if (!res.ok) {
+        setBookingStatus('error')
+        alert('Booking failed')
+        return
+      }
+      
       setBookingStatus('success')
-    }, 1500)
+    } catch (err) {
+      setBookingStatus('error')
+    }
   }
 
   if (!loggedIn) {
@@ -65,7 +109,8 @@ export default function CorporatePortal() {
   }
 
   return (
-    <div className="min-h-screen bg-black p-8 text-white">
+    <Suspense fallback={<div className="min-h-screen bg-black flex items-center justify-center text-white">Loading Portal...</div>}>
+      <div className="min-h-screen bg-black p-8 text-white">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8 pb-4 border-b border-white/10">
           <div>
@@ -102,21 +147,26 @@ export default function CorporatePortal() {
 
           <div className="flex flex-col gap-4">
             <h2 className="text-xl font-bold mb-2">Recent Bookings</h2>
-            {[1, 2, 3].map(i => (
-              <div key={i} className="bg-[#1a1a1a] p-4 rounded-xl border border-white/10 flex justify-between items-center">
-                <div>
-                  <p className="font-bold">John Doe</p>
-                  <p className="text-sm text-white/50">Oct {10 + i} - Oct {12 + i}, 2026</p>
+            {recentBookings.length === 0 ? (
+              <div className="text-white/50 text-sm">No recent bookings found.</div>
+            ) : (
+              recentBookings.map((b: any) => (
+                <div key={b.id} className="bg-[#1a1a1a] p-4 rounded-xl border border-white/10 flex justify-between items-center">
+                  <div>
+                    <p className="font-bold">{b.guestName}</p>
+                    <p className="text-sm text-white/50">{new Date(b.checkIn).toLocaleDateString()} - {new Date(b.checkOut).toLocaleDateString()}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-green-400 font-bold">${b.totalAmount.toFixed(2)}</p>
+                    <p className="text-xs text-white/40">Corporate Rate Applied</p>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-green-400 font-bold">$199.00 <span className="text-xs text-white/40 line-through ml-1">$249.00</span></p>
-                  <p className="text-xs text-white/40">Corporate Rate Applied</p>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
+        </div>
       </div>
-    </div>
+    </Suspense>
   )
 }
