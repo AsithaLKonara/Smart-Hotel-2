@@ -4,11 +4,12 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Moon, Clock, TrendingUp, AlertTriangle } from 'lucide-react'
-import { toast } from '@/components/ui/use-toast'
+import { useToast } from '@/components/ui/use-toast'
 
 export default function NightAuditPage() {
   const [logs, setLogs] = useState([])
   const [running, setRunning] = useState(false)
+  const { success, error: toastError } = useToast()
 
   const fetchLogs = () => {
     fetch('/api/admin/accounting/night-audit')
@@ -29,18 +30,18 @@ export default function NightAuditPage() {
       .then(data => {
         setRunning(false)
         if (data.success) {
-          toast({
-            title: "Night Audit Completed",
-            description: `Processed ${data.auditLog.roomsProcessed} rooms. Revenue posted: $${data.auditLog.totalRevenue.toFixed(2)}`,
-          })
+          success(
+            "Night Audit Completed",
+            `Processed ${data.auditLog.roomsProcessed} rooms. Revenue posted: $${data.auditLog.totalRevenue.toFixed(2)}`
+          )
           fetchLogs()
         } else {
-          toast({ title: "Audit Failed", description: data.error, variant: "destructive" })
+          toastError("Audit Failed", data.error)
         }
       })
       .catch(() => {
         setRunning(false)
-        toast({ title: "Error", description: "Failed to run audit", variant: "destructive" })
+        toastError("Error", "Failed to run audit")
       })
   }
 

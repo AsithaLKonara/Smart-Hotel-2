@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface TraceSpan {
@@ -23,51 +23,21 @@ interface TraceRoute {
   spans: TraceSpan[];
 }
 
-const MOCK_TRACES: TraceRoute[] = [
-  {
-    id: "tr-booking-99a",
-    action: "POST /api/bookings",
-    timestamp: "2026-05-09T14:42:11.231Z",
-    durationMs: 142,
-    correlationId: "corr-8fd819a8",
-    causationId: "cause-7fa918b2",
-    spans: [
-      { id: "span-1", name: "Idempotency Verification", service: "API_GATE", durationMs: 12, status: "success", logs: ["Idempotency-Key validated: unique key confirmed."] },
-      { id: "span-2", name: "Acquire Concurrency Lock", service: "LOCK_ENGINE", durationMs: 25, status: "success", logs: ["Acquiring SETNX lock for room GP402", "Lock acquired successfully in 24ms."] },
-      { id: "span-3", name: "Execute Interactive Transaction", service: "PRISMA_DB", durationMs: 85, status: "success", dbQueries: ["SELECT * FROM Room WHERE id = 'GP402' LIMIT 1;", "INSERT INTO Booking (roomId, userId, totalAmount, status) VALUES ('GP402', 'u991', 450, 'PENDING');"], logs: ["Prisma overlap analysis: 0 overlaps found.", "Transaction atomic commit succeeded."] },
-      { id: "span-4", name: "Emit WebSocket Notifications", service: "SOCKET_IO", durationMs: 20, status: "success", logs: ["Broadcasting bookingCreated onto channel: admin", "Emit success."] }
-    ]
-  },
-  {
-    id: "tr-payment-40f",
-    action: "POST /api/payments",
-    timestamp: "2026-05-09T14:43:02.105Z",
-    durationMs: 312,
-    correlationId: "corr-4fa9280b",
-    causationId: "cause-tr-booking-99a",
-    spans: [
-      { id: "span-p1", name: "Stripe Signature Verification", service: "WEBHOOK_GATE", durationMs: 8, status: "success" },
-      { id: "span-p2", name: "Stripe API Intent Create", service: "EXTERNAL_STRIPE", durationMs: 220, status: "warning", logs: ["Simulated latency delay under moderate cluster overhead.", "Stripe returned PaymentIntent object (succeeded)"] },
-      { id: "span-p3", name: "Post Balanced Ledger Entries", service: "DOUBLE_ENTRY_LEDGER", durationMs: 44, status: "success", dbQueries: ["UPDATE Booking SET paymentStatus = 'PAID' WHERE id = 'b99a';", "INSERT INTO JournalEntry (debit, credit, accCode) VALUES (450, 450, '1010');"], logs: ["Debits ($450.00) match Credits ($450.00)", "Divergence check: 0.0000. Balance verified."] }
-    ]
-  },
-  {
-    id: "tr-ota-rec-12d",
-    action: "OTA Webhook Reconcile",
-    timestamp: "2026-05-09T14:44:55.990Z",
-    durationMs: 95,
-    correlationId: "corr-1cd198a2",
-    causationId: "cause-ota-bookingcom",
-    spans: [
-      { id: "span-o1", name: "Chronological Date Sanity Check", service: "OTA_ENGINE", durationMs: 5, status: "success" },
-      { id: "span-o2", name: "Availability Verification", service: "PMS_DB", durationMs: 15, status: "success", dbQueries: ["SELECT count(id) FROM Room WHERE type = 'SUITE' AND status = 'AVAILABLE';"] },
-      { id: "span-o3", name: "Verify Rate Parity Values", service: "OTA_RECONCILIATION", durationMs: 75, status: "error", logs: ["Overbooking conflict: Received rate parity deviation.", "Expected $500, received $430 from Booking.com.", "Triggering QUARANTINE workflow for administrative override."] }
-    ]
-  }
-];
-
 export default function TraceExplorerPage() {
-  const [selectedTrace, setSelectedTrace] = useState<TraceRoute | null>(MOCK_TRACES[0]);
+  const [traces, setTraces] = useState<TraceRoute[]>([]);
+  const [selectedTrace, setSelectedTrace] = useState<TraceRoute | null>(null);
+
+  useEffect(() => {
+    fetch('/api/admin/observability/traces')
+      .then(res => res.json())
+      .then(data => {
+        if (data.traces && data.traces.length > 0) {
+          setTraces(data.traces);
+          setSelectedTrace(data.traces[0]);
+        }
+      })
+      .catch(console.error);
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#09050D] text-[#FBFAF7] p-8 font-sans">
@@ -89,7 +59,9 @@ export default function TraceExplorerPage() {
           <div className="lg:col-span-5 space-y-4">
             <h3 className="text-xs uppercase tracking-[0.2em] text-[#8E8C94] font-medium px-1">Transaction Stream</h3>
             <div className="space-y-3">
-              {MOCK_TRACES.map((trace) => (
+              {traces.length === 0 ? (
+                <div className="text-sm text-[#8E8C94] p-4 text-center">No trace data available.</div>
+              ) : traces.map((trace) => (
                 <div
                   key={trace.id}
                   onClick={() => setSelectedTrace(trace)}

@@ -9,7 +9,7 @@ import { getRequestSession } from '@/lib/session';
 export async function GET(request: NextRequest) {
   try {
     const session = await getRequestSession(request);
-    if (!session || !['MANAGER', 'SUPER_ADMIN'].includes(session.user.role)) {
+    if (!session || !['MANAGER', 'SUPER_ADMIN'].includes((session.user as any).roleName as string)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const session = await getRequestSession(req);
-    if (!session || !['MANAGER', 'SUPER_ADMIN'].includes(session.user.role)) {
+    if (!session || !['MANAGER', 'SUPER_ADMIN'].includes((session.user as any).roleName as string)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
