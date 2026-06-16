@@ -121,6 +121,31 @@ export async function POST(request: NextRequest) {
           include: { room: { include: { roomType: true } }, guest: true }
         })
 
+        // Create Invoice and Line Item
+        const invoice = await tx.invoice.create({
+          data: {
+            invoiceNo: `INV-${confirmationCode}`,
+            bookingId: booking.id,
+            subtotal: totalAmount,
+            taxAmount: 0, // No tax
+            grandTotal: totalAmount,
+            status: 'DRAFT',
+            folioType: 'MASTER'
+          }
+        });
+
+        await tx.invoiceLineItem.create({
+          data: {
+            invoiceId: invoice.id,
+            description: `Room Charge (${nights} nights)`,
+            quantity: 1,
+            unitPrice: totalAmount,
+            totalPrice: totalAmount,
+            category: 'ROOM',
+            sourceModule: 'BOOKING_ENGINE'
+          }
+        });
+
         // 3. ATOMIC COMMIT: Advance room version and clear lock INSIDE TX
         await InventoryLockEngine.commitHold(hold, tx)
 
@@ -128,7 +153,11 @@ export async function POST(request: NextRequest) {
       })
 
       // 4. REAL-TIME EVENTS (Pusher) - AFTER SUCCESSFUL TX
-      await RealtimeEvents.emitBookingCreated(result)
+      try {
+        await RealtimeEvents.emitBookingCreated(result)
+      } catch (pusherErr) {
+        console.error('[REALTIME] Pusher event emit failed:', pusherErr)
+      }
 
       // 6. OTA SYNCHRONIZATION (Non-blocking but logged)
       try {
@@ -207,10 +236,32 @@ export async function GET(request: NextRequest) {
   
   const bookings = await prisma.booking.findMany({
     where: {
-      ...(session.user.role === 'GUEST' ? { primaryGuestId: session.user.id } : {}),
+      ...((session.user as any).roleName === 'GUEST' ? { primaryGuestId: session.user.id } : {}),
       ...(status ? { status } : {})
     },
-    include: { room: { include: { roomType: true } }, guest: true },
+    select: {
+      id: true,
+      checkIn: true,
+      checkOut: true,
+      status: true,
+      totalAmount: true,
+      guests: true,
+      confirmationCode: true,
+      createdAt: true,
+      paymentStatus: true,
+      room: {
+        select: {
+          id: true,
+          number: true,
+          roomType: {
+            select: { name: true, baseRate: true }
+          }
+        }
+      },
+      guest: {
+        select: { id: true, name: true, email: true }
+      }
+    },
     orderBy: { createdAt: 'desc' }
   })
 

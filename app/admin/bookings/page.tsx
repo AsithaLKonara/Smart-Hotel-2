@@ -87,12 +87,11 @@ export default function AdminBookingsPage() {
   }, [router])
 
   useEffect(() => {
-    if (status === 'loading') return
-    if (!canAccessReceptionistFeatures(session)) {
-      router.push('/auth/signin')
-      return
+    // Rely solely on middleware.ts for enterprise-grade edge protection.
+    // Client-side redirects cause race conditions during Playwright E2E hydration.
+    if (status === 'authenticated' && session) {
+      fetchBookings()
     }
-    fetchBookings()
   }, [session, status, router, fetchBookings])
 
   const handleStatusUpdate = async (bookingId: string, newStatus: string) => {

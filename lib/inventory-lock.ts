@@ -18,11 +18,22 @@ export interface InventoryHold {
  * Implements Redis-first locking with DB-pessimistic fallback.
  */
 export class InventoryLockEngine {
-  private static redis = Redis.fromEnv()
+  private static get redis(): Redis | null {
+    if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+      try {
+        return Redis.fromEnv()
+      } catch {
+        return null
+      }
+    }
+    return null
+  }
 
   private static async isRedisHealthy(): Promise<boolean> {
+    const r = this.redis;
+    if (!r) return false;
     try {
-      await this.redis.ping()
+      await r.ping()
       return true
     } catch {
       return false
@@ -32,8 +43,11 @@ export class InventoryLockEngine {
   static async getVersion(roomId: string): Promise<number> {
     const redisHealthy = await this.isRedisHealthy()
     if (redisHealthy) {
-      const version = await this.redis.get<number>(`room:version:${roomId}`)
-      if (version) return version
+      const r = this.redis;
+      if (r) {
+        const version = await r.get<number>(`room:version:${roomId}`)
+        if (version) return version
+      }
     }
     
     // Fallback to DB version
@@ -47,28 +61,31 @@ export class InventoryLockEngine {
     const expiresAt = new Date(now.getTime() + durationSec * 1000)
 
     if (redisHealthy) {
-      try {
-        const lockKey = `room:lock:${roomId}`
-        // Redis Lock with TTL
-        const acquired = await this.redis.set(lockKey, actor, { nx: true, ex: durationSec })
-        
-        if (acquired) {
-          const holdId = `hold-redis-${Date.now()}`
-          const hold: InventoryHold = {
-            id: holdId,
-            roomId,
-            roomNumber,
-            version: clientVersion,
-            expiresAt: expiresAt.toISOString(),
-            actor,
-            status: 'ACTIVE',
-            provider: 'REDIS'
+      const r = this.redis;
+      if (r) {
+        try {
+          const lockKey = `room:lock:${roomId}`
+          // Redis Lock with TTL
+          const acquired = await r.set(lockKey, actor, { nx: true, ex: durationSec })
+          
+          if (acquired) {
+            const holdId = `hold-redis-${Date.now()}`
+            const hold: InventoryHold = {
+              id: holdId,
+              roomId,
+              roomNumber,
+              version: clientVersion,
+              expiresAt: expiresAt.toISOString(),
+              actor,
+              status: 'ACTIVE',
+              provider: 'REDIS'
+            }
+            await r.set(`hold:${holdId}`, hold, { ex: durationSec })
+            return hold
           }
-          await this.redis.set(`hold:${holdId}`, hold, { ex: durationSec })
-          return hold
+        } catch (err) {
+          console.warn('[REDIS_FAIL_OVER] Falling back to Database atomic locking.', err)
         }
-      } catch (err) {
-        console.warn('[REDIS_FAIL_OVER] Falling back to Database atomic locking.', err)
       }
     }
 
@@ -133,11 +150,14 @@ export class InventoryLockEngine {
     })
 
     if (hold.provider === 'REDIS') {
-      const multi = this.redis.multi()
-      multi.set(`room:version:${hold.roomId}`, nextVersion)
-      multi.del(`room:lock:${hold.roomId}`)
-      multi.del(`hold:${hold.id}`)
-      await multi.exec()
+      const r = this.redis;
+      if (r) {
+        const multi = r.multi()
+        multi.set(`room:version:${hold.roomId}`, nextVersion)
+        multi.del(`room:lock:${hold.roomId}`)
+        multi.del(`hold:${hold.id}`)
+        await multi.exec()
+      }
     }
 
     eventBus.emit({
@@ -159,10 +179,13 @@ export class InventoryLockEngine {
     }).catch(() => {}) // Ignore if already cleared or changed
 
     if (hold.provider === 'REDIS') {
-      const multi = this.redis.multi()
-      multi.del(`room:lock:${hold.roomId}`)
-      multi.del(`hold:${hold.id}`)
-      await multi.exec()
+      const r = this.redis;
+      if (r) {
+        const multi = r.multi()
+        multi.del(`room:lock:${hold.roomId}`)
+        multi.del(`hold:${hold.id}`)
+        await multi.exec()
+      }
     }
 
     eventBus.emit({

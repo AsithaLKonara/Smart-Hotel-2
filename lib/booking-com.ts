@@ -1,8 +1,8 @@
 /**
  * Booking.com API Integration Service
  * 
- * This service handles communication with the Booking.com Connectivity/Demand APIs.
- * Note: Requires an active Partner account and API credentials.
+ * Abstraction layer for OTA Integration.
+ * Automatically switches to simulation mode if API credentials are not provided.
  */
 
 import logger from './logger';
@@ -22,26 +22,25 @@ export class BookingComService {
   private apiKey: string;
   private partnerId: string;
   private baseUrl: string = 'https://distribution-xml.booking.com/2.0';
+  private isSimulationMode: boolean;
 
   constructor() {
     this.apiKey = process.env.BOOKING_COM_API_KEY || '';
     this.partnerId = process.env.BOOKING_COM_PARTNER_ID || '';
+    this.isSimulationMode = !this.apiKey;
   }
 
   /**
    * Pushes availability and pricing updates to Booking.com
    */
   async updateAvailability(roomId: string, dates: { date: string; price: number; inventory: number }[]) {
-    if (!this.apiKey) {
-      logger.warn('Booking.com API key not configured. Skipping availability update.');
-      return null;
+    if (this.isSimulationMode) {
+      logger.info(`[SIMULATION] Pushing availability for roomType ${roomId} to Booking.com abstraction layer.`, { datesCount: dates.length });
+      return { status: 'success', simulated: true };
     }
 
     try {
-      logger.info(`Pushing availability for room ${roomId} to Booking.com`, { dates });
-      
-      // Mock API call
-      // In production, this would be an XML/JSON POST to /ota/OTA_HotelAvailNotif
+      logger.info(`Pushing availability for room ${roomId} to Booking.com API`);
       const response = await fetch(`${this.baseUrl}/ota/OTA_HotelAvailNotif`, {
         method: 'POST',
         headers: {
@@ -59,31 +58,42 @@ export class BookingComService {
   }
 
   /**
-   * Fetches new reservations from Booking.com
+   * Fetches new reservations from Booking.com or generates simulated ones
    */
   async fetchNewReservations(): Promise<BookingComReservation[]> {
-    if (!this.apiKey) {
-      logger.warn('Booking.com API key not configured. Skipping reservation fetch.');
-      return [];
-    }
-
-    try {
-      logger.info('Fetching new reservations from Booking.com');
+    if (this.isSimulationMode) {
+      logger.info('[SIMULATION] Fetching new reservations from Booking.com abstraction layer.');
       
-      // Mock API call to /ota/OTA_HotelResNotif
-      // This would typically be triggered by a webhook or a scheduled job
+      const inTwoDays = new Date();
+      inTwoDays.setDate(inTwoDays.getDate() + 2);
+      const inFiveDays = new Date();
+      inFiveDays.setDate(inFiveDays.getDate() + 5);
+
       return [
         {
-          id: 'BCOM-123456',
-          room_id: 'standard-double',
-          checkin: '2025-06-01',
-          checkout: '2025-06-05',
-          guest_name: 'John Doe',
-          total_price: 600,
+          id: `BCOM-${Math.floor(Math.random() * 100000)}`,
+          room_id: 'standard-double', // otaMappingId
+          checkin: inTwoDays.toISOString().split('T')[0],
+          checkout: inFiveDays.toISOString().split('T')[0],
+          guest_name: 'OTA Guest ' + Math.floor(Math.random() * 100),
+          total_price: 450,
           currency: 'USD',
           status: 'confirmed',
         }
       ];
+    }
+
+    try {
+      logger.info('Fetching new reservations from Booking.com API');
+      const response = await fetch(`${this.baseUrl}/ota/OTA_HotelResNotif`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Basic ${Buffer.from(`${this.partnerId}:${this.apiKey}`).toString('base64')}`
+        }
+      });
+      // Parse XML response to BookingComReservation format
+      // (Implementation depends on the XML parser used, returning empty for safety)
+      return [];
     } catch (error) {
       logger.error('Failed to fetch Booking.com reservations', { error });
       return [];
@@ -91,7 +101,6 @@ export class BookingComService {
   }
 
   private generateAvailNotifXml(roomId: string, dates: any[]) {
-    // Basic OTA XML generation logic
     return `<?xml version="1.0" encoding="UTF-8"?>
 <OTA_HotelAvailNotifRQ xmlns="http://www.opentravel.org/OTA/2003/05">
   <AvailStatusMessages HotelCode="${this.partnerId}">

@@ -51,7 +51,7 @@ export async function GET(
     }
 
     // Check if user has permission to view this booking
-    if (session.user.role === 'GUEST' && booking.primaryGuestId !== session.user.id) {
+    if ((session.user as any).roleName === 'GUEST' && booking.primaryGuestId !== session.user.id) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 403 }
@@ -97,7 +97,7 @@ export async function PATCH(
     const { id } = params
     const session = await getServerSession(authOptions)
     
-    if (!session || !['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'].includes(session.user.role)) {
+    if (!session || !['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'].includes((session.user as any).roleName as string)) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -129,15 +129,44 @@ export async function PATCH(
 
     const oldStatus = booking.status
     const oldPaymentStatus = booking.paymentStatus
+    const checkoutRequestId = body.checkoutRequestId || null;
 
     // ATOMIC STATE TRANSITION
-    const updatedBooking = await prisma.$transaction(async (tx: any) => {
+    let updatedBooking;
+    try {
+      updatedBooking = await prisma.$transaction(async (tx: any) => {
+      // Idempotency & Lock check for Checkout
+      if (validatedData.status === 'CHECKED_OUT') {
+        const currentBookingState = await tx.booking.findUnique({ where: { id } })
+        
+        // Idempotency return
+        if (checkoutRequestId && currentBookingState.checkoutRequestId === checkoutRequestId) {
+          // Instead of returning, we can just throw a specific exception to return 200 later,
+          // or we just skip side-effects. But wait, we'll throw a known error here.
+          throw new Error('IDEMPOTENCY_HIT');
+        }
+        
+        // Lock Check
+        if (currentBookingState.status === 'CHECKED_OUT') {
+          throw new Error('Already checked out');
+        }
+
+        // State Machine Strictness
+        if (currentBookingState.status !== 'CHECKED_IN') {
+          throw new Error('Booking must be CHECKED_IN to checkout');
+        }
+      }
+
       // 1. Update Booking
       const b = await tx.booking.update({
         where: { id },
         data: {
           ...validatedData,
           updatedAt: new Date(),
+          ...(validatedData.status === 'CHECKED_OUT' ? { 
+            checkoutRequestId: checkoutRequestId || undefined, 
+            checkoutFinalizedAt: new Date() 
+          } : {})
         },
         include: { room: { include: { roomType: true } }, guest: true }
       })
@@ -180,6 +209,19 @@ export async function PATCH(
 
       return b
     })
+    } catch (error: any) {
+      if (error.message === 'IDEMPOTENCY_HIT') {
+        // Safe return on idempotency replay
+        return NextResponse.json({ message: 'Checkout already processed successfully' })
+      }
+      if (error.message === 'Already checked out') {
+        return NextResponse.json({ error: 'Checkout Conflict: Booking already checked out' }, { status: 409 })
+      }
+      if (error.message === 'Booking must be CHECKED_IN to checkout') {
+        return NextResponse.json({ error: 'State Machine Error: Booking not checked in' }, { status: 422 })
+      }
+      throw error;
+    }
 
     // 3. EMIT REAL-TIME EVENTS
     const { RealtimeEvents } = await import('@/lib/realtime')
@@ -267,7 +309,7 @@ export async function DELETE(
     const { id } = params
     const session = await getServerSession(authOptions)
     
-    if (!session || session.user.role !== 'SUPER_ADMIN') {
+    if (!session || (session.user as any).roleName !== 'SUPER_ADMIN') {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
