@@ -36,7 +36,7 @@ export default function AdminSidebar() {
   const { isCollapsed, isMobileOpen, toggleSidebar, toggleMobileMenu, closeMobileMenu } = useSidebar()
 
   const getNavigation = () => {
-    const role = session?.user?.role
+    const role = session?.user?.roleName
     const items = [
       { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard, roles: ['SUPER_ADMIN', 'MANAGER'] },
       { name: 'Executive intelligence', href: '/admin/executive', icon: BarChart3, roles: ['SUPER_ADMIN', 'MANAGER'] },
@@ -94,7 +94,7 @@ export default function AdminSidebar() {
                 {session?.user?.name || 'Admin'}
               </p>
               <p className="text-[10px] text-white/40 truncate uppercase tracking-tighter">
-                {session?.user?.role || 'Administrator'}
+                {session?.user?.roleName || 'Administrator'}
               </p>
             </div>
           )}

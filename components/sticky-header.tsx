@@ -137,7 +137,7 @@ export default function StickyHeader() {
                       <Link href="/my-bookings">My Bookings</Link>
                     </Button>
                   </motion.div>
-                  {session.user.role !== 'GUEST' && (
+                  {session.user.roleName !== 'GUEST' && (
                     <motion.div whileHover={{ scale: 1.05 }}>
                       <Button 
                         variant="outline" 
@@ -240,7 +240,7 @@ export default function StickyHeader() {
                 <Button variant="outline" size="sm" className="w-full">
                   <Link href="/my-bookings">My Bookings</Link>
                 </Button>
-                {session.user.role !== 'GUEST' && (
+                {session.user.roleName !== 'GUEST' && (
                   <Button variant="outline" size="sm" className="w-full">
                     <Link href="/admin">Admin Panel</Link>
                   </Button>

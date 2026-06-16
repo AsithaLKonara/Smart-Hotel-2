@@ -30,6 +30,13 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const userRole = (session.user as any).roleName as string;
+    const allowedRoles = ['SUPER_ADMIN', 'MANAGER', 'HOUSEKEEPING', 'MAINTENANCE'];
+    
+    if (!allowedRoles.includes(userRole)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
     const body = await request.json()
     const validatedData = roomUpdateSchema.parse(body)
 
@@ -89,7 +96,7 @@ export async function PUT(
     const { id } = params
     const session = await getServerSession(authOptions)
     
-    if (!session || !['SUPER_ADMIN', 'MANAGER'].includes(session.user.role)) {
+    if (!session || !['SUPER_ADMIN', 'MANAGER'].includes((session.user as any).roleName as string)) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -163,7 +170,7 @@ export async function DELETE(
     const { id } = params
     const session = await getServerSession(authOptions)
     
-    if (!session || session.user.role !== 'SUPER_ADMIN') {
+    if (!session || (session.user as any).roleName !== 'SUPER_ADMIN') {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }

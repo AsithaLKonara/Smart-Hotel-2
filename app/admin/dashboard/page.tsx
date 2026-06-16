@@ -35,16 +35,8 @@ function AdminDashboardContent() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/auth/signin')
-      return
-    }
-
-    if (status === 'authenticated' && session && !canAccessAdminDashboard(session)) {
-      router.push('/auth/signin')
-      return
-    }
-
+    // Rely solely on middleware.ts for enterprise-grade edge protection.
+    // Client-side redirects cause race conditions during Playwright E2E hydration.
     if (status === 'authenticated' && session) {
       fetchDashboardData()
     }

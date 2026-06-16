@@ -1,7 +1,9 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, memo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
+import { useQuery } from "@tanstack/react-query"
+import { QueryKeys } from "@/lib/query-keys"
 import { 
   Clock, 
   CheckCircle, 
@@ -95,7 +97,7 @@ const priorityConfig = {
 }
 
 // Order card component
-function OrderCard({ 
+const OrderCard = memo(function OrderCard({ 
   order, 
   index, 
   onClick, 
@@ -296,7 +298,10 @@ function OrderCard({
       </div>
     </motion.div>
   )
-}
+}, (prevProps, nextProps) => {
+  return prevProps.order.updatedAt.getTime() === nextProps.order.updatedAt.getTime() && 
+         prevProps.order.status === nextProps.order.status
+})
 
 // Live Order Feed Component
 function LiveOrderFeedContent({ 
@@ -305,73 +310,49 @@ function LiveOrderFeedContent({
   autoRefresh = true, 
   refreshInterval = 5000 
 }: LiveOrderFeedProps) {
-  const [orders, setOrders] = useState<LiveOrder[]>([])
   const [selectedStatus, setSelectedStatus] = useState<string>('all')
-  const [isLive, setIsLive] = useState(true)
-  const [stats, setStats] = useState({
-    total: 0,
-    pending: 0,
-    preparing: 0,
-    ready: 0
+
+  const { data: rawOrders, refetch: fetchOrders } = useQuery({
+    queryKey: QueryKeys.orders.all,
+    queryFn: async () => {
+      const response = await fetch('/api/restaurant/orders')
+      if (!response.ok) throw new Error('Failed to fetch orders')
+      return await response.json()
+    },
+    refetchInterval: autoRefresh ? refreshInterval : false,
   })
 
-  // Fetch real orders from API
-  useEffect(() => {
-    fetchOrders()
+  const orders: LiveOrder[] = (Array.isArray(rawOrders) ? rawOrders : (rawOrders?.orders || [])).map((order: any) => {
+    const minutesOld = (Date.now() - new Date(order.createdAt).getTime()) / 1000 / 60
+    const priority = minutesOld > 30 ? 'urgent' : minutesOld > 15 ? 'high' : 'normal'
     
-    if (autoRefresh) {
-      const interval = setInterval(() => {
-        fetchOrders()
-      }, refreshInterval)
-      return () => clearInterval(interval)
+    return {
+      id: order.id,
+      roomNumber: order.roomNumber,
+      guestName: 'Guest',
+      items: order.items?.map((item: any) => ({
+        id: item.id,
+        name: item.menu?.name || 'Item',
+        quantity: item.quantity,
+        specialRequests: item.notes,
+        status: 'pending' as const
+      })) || [],
+      totalAmount: order.totalAmount,
+      status: order.status,
+      priority,
+      estimatedTime: order.deliveryTime ? 
+        Math.round((new Date(order.deliveryTime).getTime() - Date.now()) / 60000) : 20,
+      createdAt: new Date(order.createdAt),
+      updatedAt: new Date(order.updatedAt),
+      specialInstructions: order.specialRequests
     }
-  }, [autoRefresh, refreshInterval])
+  })
 
-  const fetchOrders = async () => {
-    try {
-      const response = await fetch('/api/restaurant/orders')
-      if (response.ok) {
-        const data = await response.json()
-        
-        const transformedOrders: LiveOrder[] = data.map((order: any) => {
-          const minutesOld = (Date.now() - new Date(order.createdAt).getTime()) / 1000 / 60
-          const priority = minutesOld > 30 ? 'urgent' : minutesOld > 15 ? 'high' : 'normal'
-          
-          return {
-            id: order.id,
-            roomNumber: order.roomNumber,
-            guestName: 'Guest',
-            items: order.items?.map((item: any) => ({
-              id: item.id,
-              name: item.menu?.name || 'Item',
-              quantity: item.quantity,
-              specialRequests: item.notes,
-              status: 'pending' as const
-            })) || [],
-            totalAmount: order.totalAmount,
-            status: order.status,
-            priority,
-            estimatedTime: order.deliveryTime ? 
-              Math.round((new Date(order.deliveryTime).getTime() - Date.now()) / 60000) : 20,
-            createdAt: new Date(order.createdAt),
-            updatedAt: new Date(order.updatedAt),
-            specialInstructions: order.specialRequests
-          }
-        })
-        
-        setOrders(transformedOrders)
-        
-        // Update stats
-        setStats({
-          total: transformedOrders.length,
-          pending: transformedOrders.filter(o => o.status === 'PENDING').length,
-          preparing: transformedOrders.filter(o => o.status === 'PREPARING').length,
-          ready: transformedOrders.filter(o => o.status === 'READY').length
-        })
-      }
-    } catch (error) {
-      console.error('Failed to fetch orders:', error)
-    }
+  const stats = {
+    total: orders.length,
+    pending: orders.filter(o => o.status === 'PENDING').length,
+    preparing: orders.filter(o => o.status === 'PREPARING').length,
+    ready: orders.filter(o => o.status === 'READY').length
   }
 
   // Remove duplicate stats - already handled in fetchOrders

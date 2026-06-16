@@ -90,7 +90,7 @@ export default function ProfilePage() {
 
             <div>
               <h3 className="text-2xl font-serif font-bold text-white">{session?.user?.name || 'Valued Guest'}</h3>
-              <p className="text-xs text-white/40 uppercase tracking-widest mt-1 font-black">{session?.user?.role || 'Guest'}</p>
+              <p className="text-xs text-white/40 uppercase tracking-widest mt-1 font-black">{session?.user?.roleName || 'Guest'}</p>
             </div>
 
             <div className="flex justify-center gap-3">

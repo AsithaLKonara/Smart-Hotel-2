@@ -59,7 +59,7 @@ export async function PUT(
     const { id } = await params
     const session = await getServerSession(authOptions)
     
-    if (!session || !['SUPER_ADMIN', 'MANAGER'].includes(session.user.role)) {
+    if (!session || !['SUPER_ADMIN', 'MANAGER'].includes((session.user as any).roleName as string)) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -120,7 +120,7 @@ export async function DELETE(
     const { id } = await params
     const session = await getServerSession(authOptions)
     
-    if (!session || !['SUPER_ADMIN', 'MANAGER'].includes(session.user.role)) {
+    if (!session || !['SUPER_ADMIN', 'MANAGER'].includes((session.user as any).roleName as string)) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }

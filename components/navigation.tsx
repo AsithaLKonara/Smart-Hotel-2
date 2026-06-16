@@ -64,7 +64,7 @@ export default function Navigation() {
                 <Button variant="outline" asChild>
                   <Link href="/my-bookings">My Bookings</Link>
                 </Button>
-                {session.user.role !== 'GUEST' && (
+                {session.user.roleName !== 'GUEST' && (
                   <Button variant="outline" asChild>
                     <Link href="/admin">Admin Panel</Link>
                   </Button>
@@ -125,7 +125,7 @@ export default function Navigation() {
                                   My Bookings
                                 </Button>
                               </Link>
-                              {session.user.role !== 'GUEST' && (
+                              {session.user.roleName !== 'GUEST' && (
                                 <Link href="/admin" className="w-full">
                                   <Button variant="outline" className="w-full">
                                     <User className="h-4 w-4 mr-2" />

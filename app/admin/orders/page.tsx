@@ -1,9 +1,11 @@
 "use client"
 
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { canAccessManagerFeatures } from '@/lib/rbac-helpers'
+import { QueryKeys } from '@/lib/query-keys'
 import { Search, Filter, Clock, CheckCircle, XCircle, AlertCircle, Loader2, Eye } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -33,41 +35,32 @@ interface FoodOrder {
 export default function AdminOrdersPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const [orders, setOrders] = useState<FoodOrder[]>([])
-  const [loading, setLoading] = useState(true)
+  const queryClient = useQueryClient()
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
   const [selectedOrder, setSelectedOrder] = useState<FoodOrder | null>(null)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
 
+  // Redirect if unauthorized
   useEffect(() => {
     if (status === 'loading') return
-    
     if (!canAccessManagerFeatures(session)) {
       router.push('/auth/signin')
-      return
     }
-
-    fetchOrders()
-    const interval = setInterval(fetchOrders, 30000) // Refresh every 30 seconds
-    return () => clearInterval(interval)
   }, [session, status, router])
 
-  const fetchOrders = async () => {
-    try {
+  const { data: rawOrders, isLoading: loading, refetch: fetchOrders } = useQuery({
+    queryKey: QueryKeys.orders.all,
+    queryFn: async () => {
       const response = await fetch('/api/restaurant/orders')
       if (!response.ok) throw new Error('Failed to fetch orders')
-      const data = await response.json()
-      // Ensure data is always an array
-      setOrders(Array.isArray(data) ? data : (data.orders || []))
-    } catch (error) {
-      console.error('Error fetching orders:', error)
-      toast.error('Failed to load orders')
-      setOrders([]) // Set empty array on error
-    } finally {
-      setLoading(false)
-    }
-  }
+      return await response.json()
+    },
+    refetchInterval: 30000,
+    enabled: status === 'authenticated' && canAccessManagerFeatures(session)
+  })
+
+  const orders = Array.isArray(rawOrders) ? rawOrders : (rawOrders?.orders || [])
 
   const handleStatusUpdate = async (orderId: string, newStatus: string) => {
     try {

@@ -93,7 +93,7 @@ export function useRealtimeUpdates() {
       userChannel = pusher.subscribe(`user-${session.user.id}`)
       userChannel.bind('notification.received', () => triggerUpdate([['notifications']]))
       
-      if (session.user.role !== 'GUEST') {
+      if (session.user.roleName !== 'GUEST') {
         const staffChannel = pusher.subscribe(`staff-${session.user.id}`)
         staffChannel.bind('task.assigned', (data: any) => {
           const result = TaskEventSchema.safeParse(data)

@@ -127,31 +127,47 @@ export function useRealtimeNotifications() {
 
     fetchNotifications()
 
-    // 1. Get Shared Pusher Client
-    const pusher = getPusherClient()
-    const userChannel = pusher.subscribe(`user-${session.user.id}`)
-    
-    setIsPollingActive(false)
-    
-    const handleNotification = (notif: any) => {
-      // Handle both raw notification objects and the new wrapped event payload
-      const typedNotif = notif.bookingId ? notif : notif
-      if (typedNotif && !toastedIds.current.has(typedNotif.id)) {
-        toastedIds.current.add(typedNotif.id)
-        setNotifications(prev => [typedNotif, ...prev])
-        setUnreadCount(c => c + 1)
-        triggerToast(typedNotif)
-      }
-    }
+    // Only set up Pusher if a valid key is configured
+    const pusherKey = process.env.NEXT_PUBLIC_PUSHER_KEY
+    if (!pusherKey) return
 
-    userChannel.bind('notification.received', handleNotification)
-    userChannel.bind('admin.alert.new_booking', handleNotification)
+    let channel: any = null
+    try {
+      // 1. Get Shared Pusher Client
+      const pusher = getPusherClient()
+      channel = pusher.subscribe(`user-${session.user.id}`)
+      
+      setIsPollingActive(false)
+      
+      const handleNotification = (notif: any) => {
+        // Handle both raw notification objects and the new wrapped event payload
+        const typedNotif = notif.bookingId ? notif : notif
+        if (typedNotif && !toastedIds.current.has(typedNotif.id)) {
+          toastedIds.current.add(typedNotif.id)
+          setNotifications(prev => [typedNotif, ...prev])
+          setUnreadCount(c => c + 1)
+          triggerToast(typedNotif)
+        }
+      }
+
+      channel.bind('notification.received', handleNotification)
+      channel.bind('admin.alert.new_booking', handleNotification)
+    } catch (err) {
+      console.warn('[Pusher] Could not establish realtime connection:', err)
+    }
 
     return () => {
-      userChannel.unbind_all()
-      pusher.unsubscribe(`user-${session.user.id}`)
+      if (channel) {
+        try {
+          channel.unbind_all()
+          getPusherClient().unsubscribe(`user-${session.user.id}`)
+        } catch (err) {
+          // Ignore cleanup errors
+        }
+      }
     }
   }, [session])
+
 
   return {
     notifications,

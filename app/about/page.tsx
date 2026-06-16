@@ -2,6 +2,13 @@ import Image from 'next/image'
 import { Calendar, Users, Award, Heart, Shield, Leaf, ChevronRight, Star } from 'lucide-react'
 import { getHotelAboutContent, getHotelContactInfo } from '@/lib/settings'
 
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Our Heritage & Philosophy | SmartHotel OS',
+  description: 'Learn about the legacy of excellence, our sustainable luxury philosophy, milestones, and curators behind the world-class hospitality of SmartHotel.',
+}
+
 export const dynamic = 'force-dynamic'
 
 export default async function AboutPage() {
@@ -152,23 +159,26 @@ export default async function AboutPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-            {staff.map((member, i) => (
-              <div key={member.id} className="group space-y-6">
-                <div className="relative aspect-[3/4] overflow-hidden grayscale group-hover:grayscale-0 transition-all duration-700">
-                  <Image 
-                    src={`https://images.unsplash.com/photo-${['1507003211169-0a1dd7228f2d', '1494790108377-be9c29b29330', '1500648767791-00dcc994a43e'][i % 3]}?auto=format&fit=crop&q=80&w=800`}
-                    alt={member.name}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-700"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-midnight via-transparent to-transparent opacity-60" />
+            {staff.map((member, i) => {
+              const fullName = member.name || `${member.firstName || ''} ${member.lastName || ''}`.trim() || 'Team Member'
+              return (
+                <div key={member.id} className="group space-y-6">
+                  <div className="relative aspect-[3/4] overflow-hidden grayscale group-hover:grayscale-0 transition-all duration-700">
+                    <Image 
+                      src={`https://images.unsplash.com/photo-${['1507003211169-0a1dd7228f2d', '1494790108377-be9c29b29330', '1500648767791-00dcc994a43e'][i % 3]}?auto=format&fit=crop&q=80&w=800`}
+                      alt={fullName}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-700"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-midnight via-transparent to-transparent opacity-60" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-luxury text-[10px] uppercase tracking-[0.2em] font-bold">{member.position}</p>
+                    <h3 className="text-2xl font-serif font-bold tracking-wide">{fullName}</h3>
+                  </div>
                 </div>
-                <div className="space-y-1">
-                  <p className="text-luxury text-[10px] uppercase tracking-[0.2em] font-bold">{member.position}</p>
-                  <h3 className="text-2xl font-serif font-bold tracking-wide">{member.name}</h3>
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       </section>

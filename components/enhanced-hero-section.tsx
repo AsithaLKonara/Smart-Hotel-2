@@ -41,7 +41,7 @@ export default function EnhancedHeroSection() {
   return (
     <section className="relative min-h-screen lg:h-screen lg:min-h-[700px] w-full overflow-hidden bg-transparent flex flex-col justify-center">
       {/* Background Image Slideshow with Smooth Crossfade and Scale Animation */}
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={currentSlide}
           initial={{ opacity: 0, scale: 1.06 }}

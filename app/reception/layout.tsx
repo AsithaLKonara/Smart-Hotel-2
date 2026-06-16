@@ -1,14 +1,13 @@
 'use client'
 
 import DashboardSidebar from '@/components/dashboard/dashboard-sidebar'
-
+import { SessionProvider } from 'next-auth/react'
 import { SidebarProvider, useSidebar } from '@/lib/sidebar-context'
 import { cn } from '@/lib/utils'
-import { CommandPalette } from '@/components/command-palette'
 
 export const dynamic = 'force-dynamic'
 
-function AdminLayoutContent({ children }: { children: React.ReactNode }) {
+function ReceptionLayoutContent({ children }: { children: React.ReactNode }) {
   const { isCollapsed } = useSidebar()
 
   return (
@@ -20,21 +19,22 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
       )}>
         {children}
       </main>
-      <CommandPalette />
     </div>
   )
 }
 
-export default function AdminLayout({
+export default function ReceptionLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
   return (
-    <SidebarProvider>
-      <AdminLayoutContent>
-        {children}
-      </AdminLayoutContent>
-    </SidebarProvider>
+    <SessionProvider>
+      <SidebarProvider>
+        <ReceptionLayoutContent>
+          {children}
+        </ReceptionLayoutContent>
+      </SidebarProvider>
+    </SessionProvider>
   )
 }

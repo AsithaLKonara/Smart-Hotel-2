@@ -23,7 +23,7 @@ export function DashboardHeader({
   firstName
 }: DashboardHeaderProps) {
   return (
-    <div className="bg-[#0c0c0c] rounded-[40px] p-8 lg:p-12 text-white relative overflow-hidden border border-white/[0.05] shadow-2xl shadow-black/50 mb-12 group">
+    <div className="bg-[#0c0c0c] rounded-[40px] p-8 lg:p-12 text-white relative overflow-hidden border border-white/[0.05] shadow-2xl shadow-black/50 mb-12 group hide-on-print">
       {/* Structural Accents */}
       <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
       <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-black/60 to-transparent opacity-50" />

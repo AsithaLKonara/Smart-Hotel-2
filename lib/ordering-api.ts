@@ -203,7 +203,7 @@ export function validateOrderData(data: Partial<OrderRequest>): string[] {
 export function formatOrderForDisplay(order: FoodOrder, items: Array<{ quantity: number; notes?: string; unitPrice: number }>): any {
   return {
     id: order.id,
-    roomNumber: order.roomNumber,
+    roomId: order.roomId,
     guestName: order.guestId, // This would be resolved from user data
     items: items.map(item => ({
       name: 'Menu Item', // Would be resolved from menuId

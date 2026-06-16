@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
@@ -23,7 +25,7 @@ export async function GET(request: NextRequest) {
         id: session.user.id,
         name: session.user.name,
         email: session.user.email,
-        role: session.user.role,
+        role: (session.user as any).roleName,
         // Note: User model doesn't have hotelId field in schema
       },
       session: {

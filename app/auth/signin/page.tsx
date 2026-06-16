@@ -13,12 +13,15 @@ export default function SignInPage() {
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const DEMO_CREDENTIALS = [
     { role: 'Admin', email: 'admin@smarthotel.com', password: 'SmartHotel@2025!Admin', color: 'from-purple-500/20 to-indigo-500/20 border-purple-500/30 text-purple-200' },
     { role: 'Manager', email: 'manager@smarthotel.com', password: 'SmartHotel@2025!Manager', color: 'from-blue-500/20 to-cyan-500/20 border-blue-500/30 text-blue-200' },
     { role: 'Receptionist', email: 'receptionist@smarthotel.com', password: 'SmartHotel@2025!Reception', color: 'from-emerald-500/20 to-teal-500/20 border-emerald-500/30 text-emerald-200' },
     { role: 'Kitchen', email: 'kitchen@smarthotel.com', password: 'SmartHotel@2025!Kitchen', color: 'from-orange-500/20 to-red-500/20 border-orange-500/30 text-orange-200' },
+    { role: 'Housekeeping', email: 'housekeeping@smarthotel.com', password: 'SmartHotel@2025!House', color: 'from-amber-500/20 to-yellow-500/20 border-amber-500/30 text-amber-200' },
+    { role: 'Maintenance', email: 'maintenance@smarthotel.com', password: 'SmartHotel@2025!Maint', color: 'from-sky-500/20 to-cyan-500/20 border-sky-500/30 text-sky-200' },
     { role: 'Guest', email: 'guest@example.com', password: 'SmartHotel@2025!Guest', color: 'from-gray-500/20 to-slate-500/20 border-gray-500/30 text-gray-200' }
   ]
 
@@ -35,28 +38,45 @@ export default function SignInPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+    setErrorMessage(null)
     try {
       const result = await signIn('credentials', { email, password, redirect: false })
       if (result?.error) {
+        const msg = 'Invalid email or password. Please try again.'
+        setErrorMessage(msg)
         toast.error('Invalid credentials')
         setIsLoading(false)
         return
       }
-      let session = await getSession()
-      if (session?.user?.role) {
+      // Poll for session with retries to handle JWT cookie write race condition
+      let session = null
+      for (let attempt = 0; attempt < 3; attempt++) {
+        await new Promise(r => setTimeout(r, 500))
+        session = await getSession()
+        if (session) break
+      }
+      
+      if (session) {
         toast.success('Welcome back to the sanctuary')
         
-        const role = session.user.role
-        let targetUrl = '/dashboard'
+        const rawUser = session.user as any;
+        const role = rawUser?.roleName || rawUser?.role?.name || (session as any)?.roleName || 'GUEST';
+        let targetUrl = '/dashboard';
         
-        if (role === 'SUPER_ADMIN' || role === 'MANAGER') targetUrl = '/admin/dashboard'
-        else if (role === 'RECEPTIONIST') targetUrl = '/admin/receptionist'
-        else if (role === 'KITCHEN') targetUrl = '/kitchen/dashboard'
-        else if (role === 'HOUSEKEEPING' || role === 'MAINTENANCE') targetUrl = '/admin/tasks'
+        if (role === 'SUPER_ADMIN' || role === 'MANAGER') targetUrl = '/admin/dashboard';
+        else if (role === 'RECEPTIONIST') targetUrl = '/admin/receptionist';
+        else if (role === 'KITCHEN') targetUrl = '/kitchen/dashboard';
+        else if (role === 'HOUSEKEEPING' || role === 'MAINTENANCE') targetUrl = '/admin/tasks';
         
-        window.location.href = targetUrl
+        window.location.href = targetUrl;
+      } else {
+        // If session is null right after signin due to cache, just fallback to redirect and let middleware route it.
+        window.location.href = '/dashboard';
       }
+
     } catch (error) {
+      const msg = 'Authentication failed. Please try again.'
+      setErrorMessage(msg)
       toast.error('Authentication failed')
     } finally {
       setIsLoading(false)
@@ -214,6 +234,17 @@ export default function SignInPage() {
                     </div>
                   </div>
                 </div>
+
+                {/* Inline error message (visible to test automation & screen readers) */}
+                {errorMessage && (
+                  <div
+                    role="alert"
+                    aria-live="polite"
+                    className="p-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-300 text-sm font-medium"
+                  >
+                    {errorMessage}
+                  </div>
+                )}
 
                 <Button 
                   type="submit" 

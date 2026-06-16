@@ -15,9 +15,21 @@ import { isDatabaseConfigured } from '@/lib/db-helpers'
 import prisma from '@/lib/db'
 import { Button } from '@/components/ui/button'
 import { formatPrice } from '@/lib/utils'
-import { TestimonialSection } from '@/components/landing/testimonial-section'
+import dynamic from 'next/dynamic'
 
-export const dynamic = 'force-dynamic'
+const TestimonialSection = dynamic(
+  () => import('@/components/landing/testimonial-section').then(mod => mod.TestimonialSection),
+  { ssr: true }
+)
+
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'SmartHotel OS — Luxury 5-Star Hotel Accommodations & Booking',
+  description: 'Experience unparalleled luxury at SmartHotel Grand Palace. Book direct for signature suites, world-class dining, royal spa, and bespoke guest experiences.',
+}
+
+export const revalidate = 60
 
 const defaultContact = {
   name: 'SmartHotel Grand Palace',
@@ -60,7 +72,10 @@ export default async function HomePage() {
 
   return (
     <div className="bg-transparent text-foreground font-sans">
+      {/* Visually-hidden H1 for SEO and accessibility — present in initial server-rendered HTML */}
+      <h1 className="sr-only">{contact.name} — {contact.tagline}</h1>
       <EnhancedHeroSection />
+
 
       {/* Our Story Section */}
       <section className="py-24 lg:py-32 overflow-hidden bg-black/30 backdrop-blur-md border-y border-white/5 relative">

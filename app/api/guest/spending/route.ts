@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
@@ -15,13 +17,28 @@ export async function GET(request: NextRequest) {
     // 1. Get room bookings and invoices
     const bookings = await prisma.booking.findMany({
       where: { primaryGuestId: userId },
-      include: { invoices: true }
+      select: {
+        id: true,
+        totalAmount: true,
+        paymentStatus: true,
+        checkIn: true,
+        checkOut: true,
+        createdAt: true,
+        invoices: { select: { taxAmount: true } }
+      }
     })
 
     // 2. Get food orders
     const foodOrders = await prisma.foodOrder.findMany({
       where: { guestId: userId },
-      include: { payments: true }
+      select: {
+        id: true,
+        totalAmount: true,
+        status: true,
+        roomNumber: true,
+        createdAt: true,
+        payments: { select: { status: true, amount: true } }
+      }
     })
 
     // 3. Aggregate spending

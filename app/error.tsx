@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import * as Sentry from '@sentry/nextjs'
+import { useRouter } from 'next/navigation'
 
 interface ErrorProps {
   error: Error & { digest?: string }
@@ -9,6 +10,8 @@ interface ErrorProps {
 }
 
 export default function Error({ error, reset }: ErrorProps) {
+  const router = useRouter()
+
   useEffect(() => {
     // Log error to Sentry directly
     Sentry.captureException(error, {
@@ -57,7 +60,7 @@ export default function Error({ error, reset }: ErrorProps) {
               Try again
             </button>
             <button
-              onClick={() => window.location.href = '/'}
+              onClick={() => router.push('/')}
               className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
             >
               Go to Home

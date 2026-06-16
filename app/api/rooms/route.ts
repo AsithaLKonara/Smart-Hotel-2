@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { isDatabaseConfigured, getDatabaseErrorMessage } from '@/lib/db-helpers'
 import { z } from 'zod'
+import { unstable_cache } from 'next/cache'
 import { injectChaosDelay } from '@/qa/chaos/chaos-engine'
 
 /**
@@ -31,24 +32,27 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status')
     const availableOnly = searchParams.get('available') === 'true'
 
-    const where: any = {}
-    if (typeId) where.roomTypeId = typeId
-    if (status) where.status = status
-    
-    // Complex availability logic would ideally use the Availability service, 
-    // but for simple listing we filter by room status
-    if (availableOnly) {
-      where.status = 'AVAILABLE'
-    }
+    const getCachedRooms = unstable_cache(
+      async (tId: string | null, stat: string | null, availOnly: boolean) => {
+        const whereClause: any = {}
+        if (tId) whereClause.roomTypeId = tId
+        if (stat) whereClause.status = stat
+        if (availOnly) whereClause.status = 'AVAILABLE'
 
-    const rooms = await prisma.room.findMany({
-      where,
-      include: {
-        roomType: true,
-        roomImages: true,
-      } as any,
-      orderBy: { number: 'asc' }
-    })
+        return prisma.room.findMany({
+          where: whereClause,
+          include: {
+            roomType: true,
+            roomImages: true,
+          } as any,
+          orderBy: { number: 'asc' }
+        })
+      },
+      ['public-rooms-list'],
+      { revalidate: 60 }
+    )
+
+    const rooms = await getCachedRooms(typeId, status, availableOnly)
 
     // Flatten for legacy frontend compatibility with strict null handling
     const serializedRooms = rooms.map((room: any) => {
@@ -89,7 +93,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session || !['SUPER_ADMIN', 'MANAGER'].includes(session.user.role)) {
+    if (!session || !['SUPER_ADMIN', 'MANAGER'].includes((session.user as any).roleName as string)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 

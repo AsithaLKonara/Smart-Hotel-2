@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
       return null
     })
     
-    if (!session || !['SUPER_ADMIN', 'MANAGER'].includes(session.user.role)) {
+    if (!session || !['SUPER_ADMIN', 'MANAGER'].includes((session.user as any).roleName as string)) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }

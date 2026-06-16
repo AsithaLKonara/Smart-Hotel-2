@@ -32,7 +32,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions)
   
-  if (!session || !['SUPER_ADMIN', 'MANAGER'].includes(session.user.role)) {
+  if (!session || !['SUPER_ADMIN', 'MANAGER'].includes((session.user as any).roleName as string)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   const session = await getServerSession(authOptions)
   
-  if (!session || !['SUPER_ADMIN', 'MANAGER'].includes(session.user.role)) {
+  if (!session || !['SUPER_ADMIN', 'MANAGER'].includes((session.user as any).roleName as string)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

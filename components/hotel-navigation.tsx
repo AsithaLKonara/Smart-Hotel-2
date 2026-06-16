@@ -37,16 +37,19 @@ export default function HotelNavigation() {
   const { data: session } = useSession()
   const pathname = usePathname()
 
+  const currentPath = pathname || (typeof window !== 'undefined' ? window.location.pathname : '')
+  
   // Hide navigation on dashboard/admin routes
-  const isDashboardRoute = pathname?.startsWith('/dashboard') || 
-                          pathname?.startsWith('/admin') || 
-                          pathname?.startsWith('/kitchen') ||
-                          pathname?.startsWith('/profile') ||
-                          pathname?.startsWith('/my-bookings')
+  const isDashboardRoute = currentPath.startsWith('/dashboard') ||
+    currentPath.startsWith('/admin') ||
+    currentPath.startsWith('/kitchen') ||
+    currentPath.startsWith('/reception') ||
+    currentPath.startsWith('/profile') ||
+    currentPath.startsWith('/my-bookings')
 
   const getDashboardUrl = () => {
     if (!session?.user) return '/auth/signin'
-    const role = session.user.role
+    const role = session.user.roleName
     if (role === 'SUPER_ADMIN' || role === 'MANAGER') return '/admin/dashboard'
     if (role === 'RECEPTIONIST') return '/admin/bookings'
     if (role === 'KITCHEN') return '/kitchen/dashboard'

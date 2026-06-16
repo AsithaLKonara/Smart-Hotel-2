@@ -16,7 +16,9 @@ import {
   CalendarCheck,
   History,
   ArrowRightCircle,
-  Clock as TimeIcon
+  Clock as TimeIcon,
+  FileText,
+  ShoppingCart
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -204,7 +206,7 @@ export function RoomActionDesk({
                       type="text" 
                       placeholder="Guest Name"
                       value={guestName}
-                      onChange={e => setGuestName(e.target.value)}
+                      onChange={(e: any) => setGuestName(e.target.value)}
                       className="w-full bg-white/5 border border-white/10 h-12 pl-12 pr-4 rounded-2xl text-sm focus:ring-2 focus:ring-primary/40 focus:outline-none transition-all"
                     />
                   </div>
@@ -214,7 +216,7 @@ export function RoomActionDesk({
                       type="email" 
                       placeholder="Guest Email (Optional)"
                       value={guestEmail}
-                      onChange={e => setGuestEmail(e.target.value)}
+                      onChange={(e: any) => setGuestEmail(e.target.value)}
                       className="w-full bg-white/5 border border-white/10 h-12 pl-12 pr-4 rounded-2xl text-sm focus:ring-2 focus:ring-primary/40 focus:outline-none transition-all"
                     />
                   </div>
@@ -227,7 +229,7 @@ export function RoomActionDesk({
                       type="text" 
                       placeholder="Contact / WhatsApp"
                       value={contact}
-                      onChange={e => setContact(e.target.value)}
+                      onChange={(e: any) => setContact(e.target.value)}
                       className="w-full bg-white/5 border border-white/10 h-12 pl-12 pr-4 rounded-2xl text-sm focus:ring-2 focus:ring-primary/40 focus:outline-none transition-all"
                     />
                   </div>
@@ -235,7 +237,7 @@ export function RoomActionDesk({
                     <CalendarDays className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
                     <select 
                       value={nights}
-                      onChange={e => setNights(e.target.value)}
+                      onChange={(e: any) => setNights(e.target.value)}
                       className="w-full bg-white/5 border border-white/10 h-12 pl-12 pr-4 rounded-2xl text-sm focus:ring-2 focus:ring-primary/40 focus:outline-none appearance-none transition-all"
                     >
                       {[1,2,3,4,5,7,10,14].map(n => <option key={n} value={n} className="bg-slate-900">{n} Night{n>1?'s':''}</option>)}
@@ -354,22 +356,19 @@ export function RoomActionDesk({
                 </div>
                 <textarea 
                   value={notes}
-                  onChange={e => onNotesChange(e.target.value)}
+                  onChange={(e: any) => onNotesChange(e.target.value)}
                   placeholder="Enter specific guest preferences, dietary alerts, or special housekeeping requests..."
                   className="w-full h-32 bg-white/[0.03] border border-white/10 text-sm text-white p-6 focus:outline-none focus:ring-2 focus:ring-primary/40 rounded-[32px] placeholder-white/10 resize-none transition-all leading-relaxed"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                 <Button variant="outline" className="h-14 rounded-2xl border-white/5 bg-white/5 text-white/40 hover:text-white">
-                    <MessageSquare className="w-4 h-4 mr-2" /> WhatsApp Guest
+                 <Button onClick={() => window.location.href='/admin/billing'} variant="outline" className="h-14 rounded-2xl border-white/5 bg-white/5 text-white/40 hover:text-white">
+                   <FileText className="w-5 h-5 mr-2" /> Guest Folio
                  </Button>
-                 <Button 
-                  onClick={onUpdateMetadata} 
-                  className="h-14 rounded-2xl bg-white/5 border border-white/10 text-white font-bold uppercase tracking-widest text-[10px] hover:bg-white/10"
-                >
-                  Sync Intel
-                </Button>
+                 <Button onClick={() => window.location.href='/admin/billing'} className="h-14 rounded-2xl bg-white/5 border border-white/10 text-white font-bold uppercase tracking-widest text-[10px] hover:bg-white/10">
+                   <ShoppingCart className="w-4 h-4 mr-2" /> Add POS Charge
+                 </Button>
               </div>
             </div>
           </div>

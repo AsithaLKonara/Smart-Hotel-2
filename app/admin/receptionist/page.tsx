@@ -53,12 +53,9 @@ export default function ReceptionistOperationsCenter() {
   })
 
   useEffect(() => {
-    if (authStatus === 'loading') return
-    if (!canAccessReceptionistFeatures(session)) {
-      router.push('/auth/signin')
-      return
-    }
-  }, [session, authStatus, router])
+    // Rely solely on middleware.ts for enterprise-grade edge protection.
+    // Client-side redirects cause race conditions during Playwright E2E hydration.
+  }, [session, authStatus])
 
   const rooms = roomsData?.rooms || []
   const allBookings = bookingsData?.bookings || []

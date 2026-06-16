@@ -15,6 +15,13 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'World-Class Luxury Facilities | SmartHotel OS',
+  description: 'Explore the Celestial Rooftop Infinity Pool, Elite Fitness Studio, Serenity Wellness Spa, and Executive Boardrooms of SmartHotel Grand Palace.',
+}
+
 export const dynamic = 'force-dynamic'
 
 const facilities = [

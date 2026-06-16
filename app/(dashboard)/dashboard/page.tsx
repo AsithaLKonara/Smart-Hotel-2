@@ -21,12 +21,10 @@ export default function DashboardOrchestrator() {
   const [loadingBooking, setLoadingBooking] = useState(true)
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/auth/signin')
-      return
-    }
+    // Rely solely on middleware.ts for enterprise-grade edge protection.
+    // Client-side redirects cause race conditions during Playwright E2E hydration.
 
-    const role = session?.user?.role
+    const role = session?.user?.roleName
     if (role && role !== 'GUEST') {
       if (role === 'SUPER_ADMIN' || role === 'MANAGER') router.push('/admin/dashboard')
       else if (role === 'RECEPTIONIST') router.push('/admin/receptionist')

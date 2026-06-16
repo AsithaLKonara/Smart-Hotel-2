@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     if (verified === 'true') where.verified = true
 
     // RBAC: Guests only see their own reviews
-    if (session && session.user.role === 'GUEST') {
+    if (session && (session.user as any).roleName === 'GUEST') {
       where.userId = session.user.id
     }
 
@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
 
     // Users can only create reviews for themselves
     if (validatedData.userId !== session.user.id && 
-        !['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'].includes(session.user.role)) {
+        !['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'].includes((session.user as any).roleName as string)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
