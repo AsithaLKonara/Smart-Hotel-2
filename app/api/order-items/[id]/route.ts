@@ -16,7 +16,7 @@ export async function PUT(
 ) {
   const session = await getRequestSession(request)
   
-  if (!session || !['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'].includes(session.user.role)) {
+  if (!session || !['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'].includes((session.user as any).roleName as string)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -67,7 +67,7 @@ export async function DELETE(
 ) {
   const session = await getRequestSession(request)
   
-  if (!session || !['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'].includes(session.user.role)) {
+  if (!session || !['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'].includes((session.user as any).roleName as string)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

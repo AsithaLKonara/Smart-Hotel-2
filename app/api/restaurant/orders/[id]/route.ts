@@ -42,7 +42,7 @@ export async function PATCH(
 
     if (
       !allowAnonymous &&
-      (!session || !['MANAGER', 'SUPER_ADMIN', 'RECEPTIONIST'].includes(session.user.role))
+      (!session || !['MANAGER', 'SUPER_ADMIN', 'RECEPTIONIST'].includes((session.user as any).roleName as string))
     ) {
       return NextResponse.json(
         { error: 'Unauthorized' },

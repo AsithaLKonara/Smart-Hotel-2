@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
     }
 
     // If user is not admin, only show their own orders
-    if (session.user.role === 'GUEST') {
+    if ((session.user as any).roleName === 'GUEST') {
       where.guestId = session.user.id
     }
 
@@ -190,7 +190,7 @@ export async function PATCH(request: NextRequest) {
 
     if (
       !allowAnonymous &&
-      (!session || !['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'KITCHEN'].includes(session.user.role))
+      (!session || !['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'KITCHEN'].includes((session.user as any).roleName as string))
     ) {
       return NextResponse.json(
         { error: 'Unauthorized' },

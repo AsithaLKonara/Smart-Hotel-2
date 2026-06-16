@@ -10,6 +10,7 @@ import {
   RefreshCw,
   AlertTriangle
 } from 'lucide-react'
+import { QueryKeys } from '@/lib/query-keys'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -57,49 +58,37 @@ interface KitchenData {
 
 import { AdminPageShell } from '@/components/dashboard/admin/admin-page-shell'
 
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+
 function KitchenDashboardContent() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const [kitchenData, setKitchenData] = useState<KitchenData | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const queryClient = useQueryClient()
   const [updatingOrder, setUpdatingOrder] = useState<string | null>(null)
 
-  const fetchKitchenData = useCallback(async () => {
-    try {
+  const { data: kitchenData, isLoading, refetch: fetchKitchenData } = useQuery<KitchenData>({
+    queryKey: QueryKeys.orders.kitchenToday,
+    queryFn: async () => {
       const response = await fetch('/api/kitchen/orders?today=true', { cache: 'no-store' })
-      const data = await response.json()
-
-      if (response.ok) {
-        setKitchenData({
-          orders: data.orders || [],
-          ordersByStatus: data.ordersByStatus || {
-            PENDING: [],
-            CONFIRMED: [],
-            PREPARING: [],
-            READY: [],
-            DELIVERED: []
-          }
-        })
-      } else if (response.status === 401) {
+      if (response.status === 401) {
         router.push('/auth/signin')
+        throw new Error('Unauthorized')
       }
-    } catch (error) {
-      console.error('Failed to fetch kitchen data:', error)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [router])
-
-  useEffect(() => {
-    if (status === 'loading') return
-    if (!canAccessKitchenFeatures(session)) {
-      router.push('/')
-      return
-    }
-    fetchKitchenData()
-    const interval = setInterval(fetchKitchenData, 10000)
-    return () => clearInterval(interval)
-  }, [session, status, router, fetchKitchenData])
+      const data = await response.json()
+      return {
+        orders: data.orders || [],
+        ordersByStatus: data.ordersByStatus || {
+          PENDING: [],
+          CONFIRMED: [],
+          PREPARING: [],
+          READY: [],
+          DELIVERED: []
+        }
+      }
+    },
+    refetchInterval: 10000,
+    enabled: status === 'authenticated'
+  })
 
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
     setUpdatingOrder(orderId)

@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const statusFilter = searchParams.get('status')
   
-  if (!session || !['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN', 'KITCHEN'].includes(session.user.role)) {
+  if (!session || !['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN', 'KITCHEN'].includes((session.user as any).roleName as string)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   const session = await getRequestSession(request)
-  if (!session || !['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN', 'KITCHEN'].includes(session.user.role)) {
+  if (!session || !['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN', 'KITCHEN'].includes((session.user as any).roleName as string)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
