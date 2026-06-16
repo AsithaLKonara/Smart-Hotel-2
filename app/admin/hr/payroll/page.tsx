@@ -22,6 +22,8 @@ export default function PayrollPage() {
     deductions: 0
   })
 
+  const [pagination, setPagination] = useState<any>(null)
+
   useEffect(() => {
     fetchData()
   }, [])
@@ -30,9 +32,13 @@ export default function PayrollPage() {
     try {
       const [payrollRes, empRes] = await Promise.all([
         fetch('/api/admin/hr/payroll'),
-        fetch('/api/admin/hr/employees')
+        fetch('/api/admin/hr/employees?compact=true')
       ])
-      if (payrollRes.ok) setPayrolls(await payrollRes.json())
+      if (payrollRes.ok) {
+        const data = await payrollRes.json()
+        setPayrolls(data.payrolls || [])
+        setPagination(data.pagination)
+      }
       if (empRes.ok) setEmployees(await empRes.json())
     } catch (e) {
       console.error(e)

@@ -27,17 +27,17 @@ export async function GET(request: NextRequest) {
     // Basic protection - allow department filters for operational hubs
     if (!session && !department) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const staff = await prisma.staff.findMany({
+    const staff = await prisma.employee.findMany({
       where: {
         ...(department ? { department: { equals: department, mode: 'insensitive' } } : {}),
-        ...(isActive ? { isActive: isActive === 'true' } : {})
+        ...(isActive ? { status: isActive === 'true' ? 'ACTIVE' : 'TERMINATED' } : {})
       },
       include: {
         _count: {
           select: { tasks: { where: { status: { in: ['PENDING', 'IN_PROGRESS'] } } } }
         }
       },
-      orderBy: { name: 'asc' }
+      orderBy: { firstName: 'asc' }
     })
 
     return NextResponse.json(staff.map((s: (typeof staff)[number]) => ({
@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const session = await getRequestSession(request)
-  if (!session || !['SUPER_ADMIN', 'MANAGER'].includes(session.user.role)) {
+  if (!session || !['SUPER_ADMIN', 'MANAGER'].includes((session.user as any).roleName as string)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -61,17 +61,20 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const validated = staffSchema.parse(body)
 
-    const staff = await prisma.staff.create({
+    const [firstName, ...rest] = validated.name.split(' ')
+    const lastName = rest.join(' ')
+
+    const staff = await prisma.employee.create({
       data: {
-        employeeId: validated.employeeId,
-        name: validated.name,
+        firstName,
+        lastName,
         email: validated.email,
         phone: validated.phone,
         position: validated.position,
         department: validated.department,
-        salary: validated.salary,
+        baseSalary: validated.salary,
         hireDate: new Date(validated.hireDate),
-        isActive: validated.isActive,
+        status: validated.isActive ? 'ACTIVE' : 'TERMINATED',
         user: {
           connectOrCreate: {
             where: { email: validated.email },
@@ -79,14 +82,14 @@ export async function POST(request: NextRequest) {
               email: validated.email,
               name: validated.name,
               password: await bcrypt.hash('SmartHotel@Staff2025', 12),
-              role: validated.department.toUpperCase() as any || 'RECEPTIONIST'
+              role: { connect: { name: validated.department.toUpperCase() } }
             }
           }
         }
       }
     })
 
-    await logAction(request, session.user.id, AUDIT_ACTIONS.STAFF_CREATE, 'Staff', staff.id, { name: staff.name })
+    await logAction(request, session.user.id, AUDIT_ACTIONS.STAFF_CREATE, 'Employee', staff.id, { name: `${staff.firstName} ${staff.lastName}` })
     return NextResponse.json(staff, { status: 201 })
   } catch (error: any) {
     if (error.code === 'P2002') {
