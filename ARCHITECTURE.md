@@ -5,7 +5,7 @@ SmartHotel OS is a distributed, event-driven Hotel Management System (HMS) desig
 
 ### Core Stack
 - **Framework**: Next.js 14 (App Router)
-- **Database**: MongoDB (Atlas) via Prisma ORM
+- **Database**: PostgreSQL via Prisma ORM
 - **Real-time**: Pusher (Distributed Pub/Sub)
 - **Caching**: Upstash Redis (Global Edge Cache)
 - **Security**: NextAuth.js + JWT + Middleware-level RBAC
@@ -39,7 +39,7 @@ The system uses a standardized event bus to synchronize state across multiple st
 
 ### Event Topology
 1. **Mutation**: A server action or API route executes a transaction.
-2. **Persistence**: Data is saved to MongoDB.
+2. **Persistence**: Data is saved to PostgreSQL.
 3. **Emission**: `RealtimeEvents` (Pusher) triggers an event to specific channels (`admin`, `global`, `room-{id}`).
 4. **Synchronization**: `useRealtimeUpdates` hook on the client receives the event and invalidates the TanStack Query cache.
 
