@@ -46,9 +46,12 @@ export async function logAction(
     }
     
     // Normalize audit entry for the Enterprise Schema
+    // Only link to userId if actor is a valid UUID to prevent foreign key constraints
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(actor);
+    
     const log = await prisma.auditLog.create({
       data: {
-        userId: actor,
+        userId: isUUID ? actor : null,
         actor,
         action,
         resource,

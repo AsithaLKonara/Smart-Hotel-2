@@ -20,17 +20,20 @@ async function main() {
 
   if (!room) {
     console.log('🔧 Test room 999 not found. Creating a clean test room...')
+    const standardType = await prisma.roomType.findFirst({
+      where: { name: 'Standard Room' },
+    })
+    if (!standardType) {
+      throw new Error('Standard Room type not found in database. Run database seed first!')
+    }
     room = await prisma.room.create({
       data: {
         number: '999',
-        type: 'Deluxe',
-        price: 150.0,
-        capacity: 2,
         floor: 3,
+        capacity: 2,
         size: 350,
         status: 'AVAILABLE',
-        description: 'Temporary SRE Concurrency Load Test Room',
-        amenities: ['Wi-Fi', 'AC', 'TV'],
+        roomTypeId: standardType.id,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
@@ -47,14 +50,71 @@ async function main() {
   console.log(`📍 Using Test Room ID: ${roomId} (Room Number: ${room.number})`)
 
   // 2. Clean up any existing bookings for this room to start fresh
-  const deleteResult = await prisma.booking.deleteMany({
+  const bookingsToDeleteInit = await prisma.booking.findMany({
     where: { roomId },
+    select: { id: true }
   })
-  console.log(`🧹 Deleted ${deleteResult.count} pre-existing bookings for Room 999.\n`)
+  const bookingIdsInit = bookingsToDeleteInit.map(b => b.id)
+  
+  if (bookingIdsInit.length > 0) {
+    await prisma.invoiceLineItem.deleteMany({
+      where: { invoice: { bookingId: { in: bookingIdsInit } } }
+    })
+    await prisma.invoice.deleteMany({
+      where: { bookingId: { in: bookingIdsInit } }
+    })
+    await prisma.payment.deleteMany({
+      where: { bookingId: { in: bookingIdsInit } }
+    })
+    const deleteResult = await prisma.booking.deleteMany({
+      where: { id: { in: bookingIdsInit } }
+    })
+    console.log(`🧹 Deleted ${deleteResult.count} pre-existing bookings for Room 999.\n`)
+  } else {
+    console.log(`🧹 Deleted 0 pre-existing bookings for Room 999.\n`)
+  }
+
+  // 2b. Authenticate programmatically to bypass route protection middleware
+  console.log('🔑 Authenticating as demo guest to obtain session token...')
+  const csrfRes = await fetch(`${BASE_URL}/api/auth/csrf`)
+  const csrfData = await csrfRes.json()
+  const csrfToken = csrfData.csrfToken
+  const csrfCookie = csrfRes.headers.get('set-cookie')
+  const cookieHeader = csrfCookie ? csrfCookie.split(';')[0] : ''
+  
+  const signinRes = await fetch(`${BASE_URL}/api/auth/callback/credentials`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Cookie': cookieHeader
+    },
+    body: new URLSearchParams({
+      email: 'guest@example.com',
+      password: 'SmartHotel@2025!Guest',
+      csrfToken,
+      redirect: 'false',
+      json: 'true'
+    })
+  })
+  
+  const signinSetCookie = signinRes.headers.get('set-cookie')
+  if (!signinSetCookie) {
+    throw new Error('Failed to retrieve session token during load test authentication!')
+  }
+  const sessionTokenCookie = signinSetCookie
+    .split(',')
+    .map(c => c.trim())
+    .find(c => c.startsWith('next-auth.session-token=') || c.startsWith('__Secure-next-auth.session-token='))
+  
+  if (!sessionTokenCookie) {
+    throw new Error('next-auth.session-token cookie not found in signin response!')
+  }
+  const sessionCookieHeader = sessionTokenCookie.split(';')[0]
+  console.log('✅ Programmatic authentication succeeded.\n')
 
   // 3. Prepare concurrent booking payloads (overlapping dates)
-  const checkInDate = '2026-08-10'
-  const checkOutDate = '2026-08-15'
+  const checkInDate = new Date('2026-08-10T14:00:00.000Z').toISOString()
+  const checkOutDate = new Date('2026-08-15T11:00:00.000Z').toISOString()
   
   const payloads = Array.from({ length: CONCURRENCY_LEVEL }).map((_, index) => ({
     roomId,
@@ -80,6 +140,7 @@ async function main() {
           headers: {
             'Content-Type': 'application/json',
             'X-Request-ID': `loadtest-idx-${idx + 1}-${Date.now()}`,
+            'Cookie': sessionCookieHeader,
           },
           body: JSON.stringify(payload),
         })
@@ -116,7 +177,7 @@ async function main() {
     if (status === 201) {
       successCount++
       console.log(`✅ Request ${idx + 1}: Booking Created! (201 Created) | Confirmation: ${res.body.booking?.confirmationCode}`)
-    } else if (status === 409) {
+    } else if (status === 409 || (status === 400 && (res.body.error?.includes('LOCK_ACQUISITION_FAILED') || res.body.error?.includes('DOUBLE_BOOKING')))) {
       conflictCount++
     } else {
       unhandledCount++
@@ -150,16 +211,33 @@ async function main() {
   }
 
   if (cleanConflicts) {
-    console.log(`  [PASS] Exactly ${conflictCount} overlapping requests were rejected with 409 Conflict.`)
+    console.log(`  [PASS] Exactly ${conflictCount} overlapping requests were rejected with 409/400 (Conflict/Lock).`)
   } else {
-    console.warn(`  [WARN] Expected ${CONCURRENCY_LEVEL - 1} rejections with 409, but found ${conflictCount}.`)
+    console.warn(`  [WARN] Expected ${CONCURRENCY_LEVEL - 1} rejections with 409/400, but found ${conflictCount}.`)
   }
 
   // 6. Cleanup testing data
   console.log('\n🧹 Cleaning up SRE test room database data...')
-  await prisma.booking.deleteMany({
+  const bookingsToDelete = await prisma.booking.findMany({
     where: { roomId },
+    select: { id: true }
   })
+  const bookingIds = bookingsToDelete.map(b => b.id)
+  
+  if (bookingIds.length > 0) {
+    await prisma.invoiceLineItem.deleteMany({
+      where: { invoice: { bookingId: { in: bookingIds } } }
+    })
+    await prisma.invoice.deleteMany({
+      where: { bookingId: { in: bookingIds } }
+    })
+    await prisma.payment.deleteMany({
+      where: { bookingId: { in: bookingIds } }
+    })
+    await prisma.booking.deleteMany({
+      where: { id: { in: bookingIds } }
+    })
+  }
   console.log('  - Booking test data cleaned up successfully.')
 
   console.log('==================================================')

@@ -5,28 +5,50 @@ import { getRequestSession } from '@/lib/session'
 
 export async function GET(request: NextRequest) {
   const session = await getRequestSession(request)
-  if (!session || !['SUPER_ADMIN'].includes(session.user.role)) {
+  if (!session || !['SUPER_ADMIN'].includes((session.user as any).roleName as string)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   try {
+    const routeStart = Date.now()
     const redis = Redis.fromEnv()
     
     // 1. Measure Redis Latency
-    const start = Date.now()
+    const redisStart = Date.now()
     await redis.ping()
-    const redisLatency = Date.now() - start
+    const redisLatency = Date.now() - redisStart
 
-    // 2. Outbox & Sync Health
+    // 2. Measure DB Response Time
+    const dbStart = Date.now()
+    await prisma.$queryRaw`SELECT 1`
+    const dbLatency = Date.now() - dbStart
+
+    // 3. Queue Latency (Outbox age)
     const pendingOutbox = await prisma.outbox.count({ where: { status: 'PENDING' } })
-    const failedSyncs = await prisma.syncLog.count({ 
-      where: { 
-        status: 'FAILED',
-        createdAt: { gte: new Date(Date.now() - 12 * 60 * 60 * 1000) } 
-      } 
+    const oldestOutbox = await prisma.outbox.findFirst({
+      where: { status: 'PENDING' },
+      orderBy: { createdAt: 'asc' }
     })
+    
+    let queueLatencyMs = 0
+    if (oldestOutbox) {
+      queueLatencyMs = Date.now() - oldestOutbox.createdAt.getTime()
+    }
 
-    // 3. Operational Lineage (Last 5 critical events)
+    // 4. Error Rate (Last hour)
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000)
+    const totalLogsHour = await prisma.auditLog.count({
+      where: { createdAt: { gte: oneHourAgo } }
+    })
+    const errorLogsHour = await prisma.auditLog.count({
+      where: { 
+        createdAt: { gte: oneHourAgo },
+        action: { contains: 'ERROR' }
+      }
+    })
+    const errorRate = totalLogsHour > 0 ? (errorLogsHour / totalLogsHour) * 100 : 0
+
+    // 5. Operational Lineage (Last 5 critical events)
     const lineage = await prisma.auditLog.findMany({
       take: 5,
       orderBy: { createdAt: 'desc' },
@@ -38,25 +60,29 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    // 4. Parity Scoring (Mocked logic for demo dashboard)
-    const otaParity = failedSyncs > 5 ? 88 : 99.8
+    const apiLatency = Date.now() - routeStart
 
     return NextResponse.json({
+      database: {
+        latency: dbLatency,
+        status: dbLatency < 100 ? 'HEALTHY' : 'DEGRADED'
+      },
       redis: {
         latency: redisLatency,
         status: redisLatency < 50 ? 'HEALTHY' : 'DEGRADED'
       },
-      ota: {
-        parity: otaParity,
-        status: otaParity > 95 ? 'HEALTHY' : 'DEGRADED'
+      api: {
+        latency: apiLatency,
+        status: apiLatency < 200 ? 'HEALTHY' : 'DEGRADED'
       },
-      outbox: {
+      errors: {
+        rate: Number(errorRate.toFixed(2)),
+        status: errorRate < 5 ? 'HEALTHY' : 'WARNING'
+      },
+      queue: {
         pending: pendingOutbox,
-        status: pendingOutbox < 50 ? 'HEALTHY' : 'WARNING'
-      },
-      locks: {
-        count: 0, // Would fetch from Redis SCAN in production
-        status: 'HEALTHY'
+        latencySeconds: Number((queueLatencyMs / 1000).toFixed(1)),
+        status: queueLatencyMs < 60000 ? 'HEALTHY' : 'WARNING'
       },
       lineage: lineage.map((l: any) => ({
         type: l.action,

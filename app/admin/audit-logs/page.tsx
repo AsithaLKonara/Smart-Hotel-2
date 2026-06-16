@@ -112,15 +112,17 @@ export default function ForensicAuditTimeline() {
   }
 
   const filteredLogs = logs.filter(log => {
-    const matchesSearch = log.actor.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          log.action.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          log.details.toLowerCase().includes(searchQuery.toLowerCase())
+    const actor = (log.actor || '').toLowerCase()
+    const action = (log.action || '').toLowerCase()
+    const details = (log.details || '').toLowerCase()
+    const query = searchQuery.toLowerCase()
+    const matchesSearch = actor.includes(query) || action.includes(query) || details.includes(query)
     const matchesAction = actionFilter === 'ALL' || log.action === actionFilter
     return matchesSearch && matchesAction
   })
 
   // Group unique action tags for sidebar filter selection
-  const uniqueActions = ['ALL', ...Array.from(new Set(logs.map(l => l.action)))]
+  const uniqueActions = ['ALL', ...Array.from(new Set(logs.map(l => l.action).filter(Boolean)))]
 
   if (status === 'loading' || loading) {
     return (

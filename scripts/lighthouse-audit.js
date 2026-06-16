@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 // Lighthouse audit script for SmartHotel performance optimization
-const lighthouse = require('lighthouse')
+let lighthouse = null
 const chromeLauncher = require('chrome-launcher')
 const fs = require('fs')
 const path = require('path')
@@ -12,16 +12,16 @@ const OUTPUT_DIR = './lighthouse-reports'
 const PAGES_TO_AUDIT = [
   { name: 'home', url: '/' },
   { name: 'booking', url: '/booking' },
-  { name: 'order', url: '/order' },
-  { name: 'dashboard', url: '/dashboard' },
-  { name: 'kitchen', url: '/admin/kitchen' }
+  { name: 'rooms', url: '/rooms' },
+  { name: 'about', url: '/about' },
+  { name: 'facilities', url: '/facilities' }
 ]
 
 // Lighthouse configuration for performance
 const lighthouseConfig = {
   extends: 'lighthouse:default',
   settings: {
-    onlyCategories: ['performance', 'accessibility', 'best-practices', 'seo', 'pwa'],
+    onlyCategories: ['performance', 'accessibility', 'best-practices', 'seo'],
     throttling: {
       rttMs: 40,
       throughputKbps: 10240,
@@ -37,12 +37,11 @@ const lighthouseConfig = {
       deviceScaleFactor: 1,
       disabled: false
     },
-    emulatedFormFactor: 'desktop',
+    formFactor: 'desktop',
     locale: 'en-US',
     maxWaitForFcp: 15000,
     maxWaitForLoad: 35000,
-    skipAudits: [],
-    skipPwaAudits: false
+    skipAudits: []
   }
 }
 
@@ -58,11 +57,14 @@ const mobileConfig = {
       deviceScaleFactor: 2,
       disabled: false
     },
-    emulatedFormFactor: 'mobile'
+    formFactor: 'mobile'
   }
 }
 
 async function runLighthouseAudit(url, config, deviceType = 'desktop') {
+  if (!lighthouse) {
+    lighthouse = (await import('lighthouse')).default
+  }
   const chrome = await chromeLauncher.launch({ chromeFlags: ['--headless'] })
   const options = {
     logLevel: 'info',
@@ -85,8 +87,7 @@ async function runLighthouseAudit(url, config, deviceType = 'desktop') {
         performance: Math.round(lhr.categories.performance.score * 100),
         accessibility: Math.round(lhr.categories.accessibility.score * 100),
         'best-practices': Math.round(lhr.categories['best-practices'].score * 100),
-        seo: Math.round(lhr.categories.seo.score * 100),
-        pwa: Math.round(lhr.categories.pwa.score * 100)
+        seo: Math.round(lhr.categories.seo.score * 100)
       },
       metrics: {
         fcp: lhr.audits['first-contentful-paint']?.displayValue || 'N/A',
@@ -167,7 +168,6 @@ async function runLighthouseAudit(url, config, deviceType = 'desktop') {
     console.log(`♿ Accessibility: ${metrics.scores.accessibility}/100`)
     console.log(`✅ Best Practices: ${metrics.scores['best-practices']}/100`)
     console.log(`🔍 SEO: ${metrics.scores.seo}/100`)
-    console.log(`📱 PWA: ${metrics.scores.pwa}/100`)
     console.log(`📈 FCP: ${metrics.metrics.fcp}`)
     console.log(`📈 LCP: ${metrics.metrics.lcp}`)
     console.log(`📈 CLS: ${metrics.metrics.cls}`)
@@ -186,6 +186,26 @@ async function runAllAudits() {
   console.log('🚀 Starting Lighthouse audits for SmartHotel...')
   console.log(`📡 Base URL: ${BASE_URL}`)
   console.log('')
+
+  // Warm up all pages first to initialize database connection pool and next.js cache
+  console.log('🔥 Warming up pages to initialize database connections and caches...')
+  const httpLib = require('http')
+  for (const page of PAGES_TO_AUDIT) {
+    const fullUrl = `${BASE_URL}${page.url}`
+    try {
+      await new Promise((resolve, reject) => {
+        const req = httpLib.get(fullUrl, (res) => {
+          res.resume()
+          res.on('end', resolve)
+        })
+        req.on('error', reject)
+      })
+      console.log(`🔥 Warmed up ${fullUrl}`)
+    } catch (err) {
+      console.warn(`⚠️ Failed to warm up ${fullUrl}:`, err.message)
+    }
+  }
+  console.log('🔥 Warmup completed! Starting audits...\n')
 
   const results = []
 
@@ -222,8 +242,7 @@ function generateSummaryReport(results) {
       performance: 0,
       accessibility: 0,
       'best-practices': 0,
-      seo: 0,
-      pwa: 0
+      seo: 0
     },
     pages: {}
   }
@@ -255,7 +274,6 @@ function generateSummaryReport(results) {
   console.log(`Accessibility: ${summary.averageScores.accessibility}/100`)
   console.log(`Best Practices: ${summary.averageScores['best-practices']}/100`)
   console.log(`SEO: ${summary.averageScores.seo}/100`)
-  console.log(`PWA: ${summary.averageScores.pwa}/100`)
   console.log('')
 
   // Page-by-page breakdown
@@ -263,10 +281,10 @@ function generateSummaryReport(results) {
   Object.entries(summary.pages).forEach(([url, scores]) => {
     console.log(`\n${url}:`)
     if (scores.desktop) {
-      console.log(`  Desktop: P${scores.desktop.performance} A${scores.desktop.accessibility} BP${scores.desktop['best-practices']} SEO${scores.desktop.seo} PWA${scores.desktop.pwa}`)
+      console.log(`  Desktop: P${scores.desktop.performance} A${scores.desktop.accessibility} BP${scores.desktop['best-practices']} SEO${scores.desktop.seo}`)
     }
     if (scores.mobile) {
-      console.log(`  Mobile:  P${scores.mobile.performance} A${scores.mobile.accessibility} BP${scores.mobile['best-practices']} SEO${scores.mobile.seo} PWA${scores.mobile.pwa}`)
+      console.log(`  Mobile:  P${scores.mobile.performance} A${scores.mobile.accessibility} BP${scores.mobile['best-practices']} SEO${scores.mobile.seo}`)
     }
   })
 

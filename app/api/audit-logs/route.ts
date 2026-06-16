@@ -4,33 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { isDatabaseConfigured } from '@/lib/db-helpers'
 
-// Simulated fallback cache of administrative audit events
-let SIMULATED_AUDIT_LOGS: any[] = [
-  {
-    id: "mock-log-1",
-    actor: "manager@smarthotel.com",
-    action: "CHAOS_TOGGLE",
-    details: JSON.stringify({ scenario: "DB_LATENCY", status: "ENABLED", trigger: "Manual Control" }),
-    ip: "127.0.0.1",
-    createdAt: new Date(Date.now() - 1000 * 60 * 15).toISOString()
-  },
-  {
-    id: "mock-log-2",
-    actor: "receptionist@smarthotel.com",
-    action: "ROOM_REASSIGNMENT",
-    details: JSON.stringify({ room: "401", guest: "Richard Branson", originalRoom: "302" }),
-    ip: "192.168.1.102",
-    createdAt: new Date(Date.now() - 1000 * 60 * 45).toISOString()
-  },
-  {
-    id: "mock-log-3",
-    actor: "chef@smarthotel.com",
-    action: "KITCHEN_ORDER_TRANSITION",
-    details: JSON.stringify({ orderId: "K102", state: "Preparing", elapsed: "12 mins" }),
-    ip: "192.168.1.150",
-    createdAt: new Date(Date.now() - 1000 * 60 * 120).toISOString()
-  }
-];
+// SIMULATED_AUDIT_LOGS removed to enforce production constraints.
 
 export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions)
@@ -43,15 +17,7 @@ export async function GET(request: NextRequest) {
   const action = searchParams.get('action') || undefined
 
   if (!isDatabaseConfigured()) {
-    let filtered = SIMULATED_AUDIT_LOGS;
-    if (action) {
-      filtered = filtered.filter(l => l.action === action);
-    }
-    return NextResponse.json({
-      logs: filtered.slice(0, limit),
-      isMock: true,
-      message: 'Utilizing local simulated memory stream due to connection status.'
-    })
+    return NextResponse.json({ error: 'Database not configured or missing connection.' }, { status: 501 })
   }
 
   try {
@@ -70,11 +36,9 @@ export async function GET(request: NextRequest) {
   } catch (error: any) {
     console.error('Error fetching audit logs:', error)
     return NextResponse.json({
-      logs: SIMULATED_AUDIT_LOGS,
-      isMock: true,
       error: error.message,
-      message: 'Fell back to simulated memory index.'
-    })
+      message: 'Failed to load audit logs.'
+    }, { status: 500 })
   }
 }
 
@@ -109,13 +73,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!isDatabaseConfigured()) {
-      const mockLogEntry = {
-        id: `mock-log-${Date.now()}`,
-        ...newLogData,
-        createdAt: new Date().toISOString()
-      }
-      SIMULATED_AUDIT_LOGS = [mockLogEntry, ...SIMULATED_AUDIT_LOGS]
-      return NextResponse.json({ log: mockLogEntry, isMock: true })
+      return NextResponse.json({ error: 'Database not configured.' }, { status: 501 })
     }
 
     const log = await prisma.auditLog.create({

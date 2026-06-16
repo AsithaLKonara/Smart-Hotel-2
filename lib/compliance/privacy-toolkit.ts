@@ -39,7 +39,7 @@ export class PrivacyToolkit {
       name: user.name || 'Unknown',
       email: user.email,
       phone: user.phone || 'N/A',
-      role: user.role,
+      role: user.roleName,
       createdAt: user.createdAt.toISOString(),
       preferences: user.guestPreferences || null,
       bookings: bookings.map((b: any) => ({
