@@ -82,12 +82,13 @@ test.describe('📥 Security Audit - Mutation & Database State Integrity', () =>
 
     // Fetch the newly created record directly from the database using Prisma
     const dbBooking = await prisma.booking.findUnique({
-      where: { id: createdBookingId! }
+      where: { id: createdBookingId! },
+      include: { roomAssignments: true }
     })
 
     // Assert absolute database-to-API state alignment
     expect(dbBooking).not.toBeNull()
-    expect(dbBooking!.roomId).toBe(targetRoom.id)
+    expect(dbBooking!.roomAssignments[0].roomId).toBe(targetRoom.id)
     expect(dbBooking!.primaryGuestId).toBe(guestUser.id)
     expect(dbBooking!.status).toBe('PENDING')
     expect(dbBooking!.paymentMethod).toBe('CASH') // pay_later resolves to CASH in schema

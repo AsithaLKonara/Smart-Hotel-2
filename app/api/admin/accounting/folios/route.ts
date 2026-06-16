@@ -17,10 +17,10 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'bookingId is required' }, { status: 400 });
     }
 
-    const folios = await prisma.invoice.findMany({
+    const folios = await prisma.folio.findMany({
       where: { bookingId },
       include: { lineItems: true },
-      orderBy: { issuedAt: 'asc' }
+      orderBy: { createdAt: 'asc' }
     });
 
     return NextResponse.json({ folios });
@@ -40,15 +40,11 @@ export async function POST(req: Request) {
     const data = await req.json();
     const { bookingId, folioType } = data;
 
-    const newFolio = await prisma.invoice.create({
+    const newFolio = await prisma.folio.create({
       data: {
         bookingId,
-        invoiceNo: `FOL-${Date.now()}`,
-        folioType: folioType || 'INCIDENTALS',
+        type: folioType || 'INCIDENTALS',
         status: 'OPEN',
-        subtotal: 0,
-        taxAmount: 0,
-        grandTotal: 0
       }
     });
 

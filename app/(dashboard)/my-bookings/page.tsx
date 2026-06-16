@@ -20,12 +20,21 @@ interface Booking {
   status: string
   paymentStatus: string
   specialRequests?: string
-  room: {
+  room?: {
     id: string
     number: string
     type: string
     price: number
   }
+  roomAssignments?: Array<{
+    roomId: string
+    room: {
+      number: string
+      roomType: {
+        name: string
+      }
+    }
+  }>
   invoice?: {
     id: string
     total: number
@@ -175,7 +184,9 @@ export default function MyBookingsPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <CardTitle className="text-lg font-serif">
-                        Room {booking.room.number} — {booking.room.type}
+                        {booking.roomAssignments && booking.roomAssignments.length > 0
+                          ? `Room ${booking.roomAssignments[0].room.number} — ${booking.roomAssignments[0].room.roomType.name}`
+                          : booking.room ? `Room ${booking.room.number} — ${booking.room.type}` : 'Room details pending'}
                       </CardTitle>
                       <p className="text-[10px] text-white/20 uppercase font-black tracking-widest mt-1">
                         ID: {booking.id}
@@ -272,7 +283,11 @@ export default function MyBookingsPage() {
                   <div className="grid grid-cols-2 gap-6">
                     <div>
                       <p className="text-[10px] uppercase font-black text-white/20 mb-1">Room</p>
-                      <p className="text-lg font-medium">{selectedBooking.room.number} — {selectedBooking.room.type}</p>
+                      <p className="text-lg font-medium">
+                        {selectedBooking.roomAssignments && selectedBooking.roomAssignments.length > 0
+                          ? `${selectedBooking.roomAssignments[0].room.number} — ${selectedBooking.roomAssignments[0].room.roomType.name}`
+                          : selectedBooking.room ? `${selectedBooking.room.number} — ${selectedBooking.room.type}` : 'Pending'}
+                      </p>
                     </div>
                     <div>
                       <p className="text-[10px] uppercase font-black text-white/20 mb-1">Booking ID</p>

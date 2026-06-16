@@ -1,6 +1,7 @@
 import { eventBus } from './event-bus'
 import { DoubleEntryLedger } from './double-entry-ledger'
 import { BusinessDateEngine } from './business-date-engine'
+import prisma from './db'
 
 
 export interface FolioTransaction {
@@ -41,6 +42,17 @@ export class FinancialEngine {
       status: 'OPEN'
     }
     this.folios.set(folio.id, folio)
+    
+    // Dual-write to DB
+    prisma.folio.create({
+      data: {
+        id: folio.id,
+        bookingId: bookingId,
+        type: 'GUEST',
+        status: 'OPEN'
+      }
+    }).catch((err: any) => console.error('[DDD_SYNC] Failed to create Folio:', err))
+
     return folio
   }
 
@@ -86,6 +98,17 @@ export class FinancialEngine {
     }
 
     folio.transactions.push(tx)
+
+    // Dual-write FolioLineItem to DB
+    prisma.folioLineItem.create({
+      data: {
+        id: tx.id,
+        folioId: folioId,
+        description: description,
+        amount: baseAmount + taxAmount,
+        category: category,
+      }
+    }).catch((err: any) => console.error('[DDD_SYNC] Failed to create FolioLineItem:', err))
 
     // Post to Double-Entry Accounting Ledger
     const ledgerLines: { accountId: string; debit: number; credit: number }[] = []

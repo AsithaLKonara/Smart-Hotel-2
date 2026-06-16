@@ -1,4 +1,5 @@
 import { eventBus } from './event-bus'
+import prisma from './db'
 
 export type TaskDomain =
   | 'HOUSEKEEPING'
@@ -62,7 +63,9 @@ export class TaskDispatchEngine {
     title: string,
     description: string,
     location: string,
-    slaMinutes: number
+    slaMinutes: number,
+    assetId?: string,
+    markOutOfOrder: boolean = false
   ): DispatchTask {
     const task: DispatchTask = {
       id,
@@ -79,6 +82,31 @@ export class TaskDispatchEngine {
     }
 
     this.tasks.set(id, task)
+
+    // Dual-Write to DDD Models (Fire and Forget)
+    if (domain === 'MAINTENANCE') {
+      prisma.maintenanceWorkOrder.create({
+        data: {
+          id: id,
+          issue: title + ' - ' + description,
+          status: 'OPEN',
+          roomId: location.startsWith('ROOM-') ? location.replace('ROOM-', '') : null,
+          assetId: assetId || null
+        }
+      }).catch((err: any) => console.error('[DDD_SYNC] Failed to create MaintenanceWorkOrder:', err))
+
+      if (markOutOfOrder && location.startsWith('ROOM-')) {
+        const roomId = location.replace('ROOM-', '')
+        prisma.outOfOrderRecord.create({
+          data: {
+            roomId,
+            reason: `Asset broken: ${title}`,
+            startDate: new Date(),
+            endDate: new Date(Date.now() + 86400000) // Default 24h Out of Order
+          }
+        }).catch((err: any) => console.error('[DDD_SYNC] Failed to create OutOfOrderRecord:', err))
+      }
+    }
 
     eventBus.emit({
       id: `task-create-${id}`,

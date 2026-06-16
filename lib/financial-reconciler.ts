@@ -88,6 +88,21 @@ export class FinancialReconciler {
     try {
       const report = await this.runGlobalAudit()
       
+      // Dual-write RevenuePosting for Phase 2 DDD Read Model
+      await prisma.revenuePosting.create({
+        data: {
+          businessDate: new Date(),
+          amount: report.totalBookings,
+          category: 'ROOM_REVENUE_RECONCILED',
+          details: {
+            totalPayments: report.totalPayments,
+            variance: report.variance,
+            discrepancyCount: report.discrepancies.length,
+            timestamp: report.timestamp
+          }
+        }
+      }).catch((err: any) => console.error('[DDD_SYNC] Failed to create RevenuePosting:', err))
+
       // Log audit results to AuditLog
       await prisma.auditLog.create({
         data: {

@@ -115,24 +115,33 @@ export default function RoomOccupancyTimelineMatrix() {
       if (dbBookings && Array.isArray(dbBookings.bookings)) {
         // Map real dates to timeline days (1-7 for current view)
         const today = new Date()
-        const mapped = dbBookings.bookings.map((b: any) => {
-          const checkIn = new Date(b.checkIn)
-          const checkOut = new Date(b.checkOut)
-          
-          // Simplified mapping for the 7-day demonstration matrix
-          // In a real prod environment, this would use absolute timestamps
-          const startDay = Math.max(1, Math.floor((checkIn.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)) + 1)
-          const endDay = Math.floor((checkOut.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)) + 1
+        const mapped: any[] = []
 
-          return {
-            id: b.id,
-            roomId: b.roomId,
-            guest: b.guestName || b.primaryGuest?.name || 'Valued Guest',
-            channel: b.source || 'DIRECT',
-            startDay,
-            endDay,
-            status: b.status
-          }
+        dbBookings.bookings.forEach((b: any) => {
+          // If migrated to DDD RoomAssignments, map each assignment separately for split-stays
+          const assignments = b.roomAssignments && b.roomAssignments.length > 0 
+            ? b.roomAssignments 
+            : [{ roomId: b.roomId, startDate: b.checkIn, endDate: b.checkOut }]
+
+          assignments.forEach((assignment: any) => {
+            const checkIn = new Date(assignment.startDate || b.checkIn)
+            const checkOut = new Date(assignment.endDate || b.checkOut)
+            
+            const startDay = Math.max(1, Math.floor((checkIn.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)) + 1)
+            const endDay = Math.floor((checkOut.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)) + 1
+
+            mapped.push({
+              id: `${b.id}-${assignment.roomId}`,
+              bookingId: b.id,
+              roomId: assignment.roomId,
+              guest: b.guestName || b.primaryGuest?.name || 'Valued Guest',
+              channel: b.source || 'DIRECT',
+              startDay,
+              endDay,
+              status: b.status,
+              isSplitStay: assignments.length > 1
+            })
+          })
         })
         setReservations(mapped)
       }

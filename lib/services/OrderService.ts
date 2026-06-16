@@ -5,7 +5,7 @@ import { z } from "zod";
 export const PlaceOrderSchema = z.object({
   guestId: z.string().uuid(),
   roomId: z.string().uuid().optional(),
-  invoiceId: z.string().uuid(),
+  folioId: z.string().uuid(),
   items: z.array(z.object({
     menuItemId: z.string().uuid(),
     quantity: z.number().int().positive(),
@@ -28,20 +28,20 @@ export class OrderService {
       // 1. Calculate Total
       const totalAmount = validatedData.items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
 
-      // 2. Verify Invoice exists and is open
-      const invoice = await tx.invoice.findUnique({
-        where: { id: validatedData.invoiceId },
+      // 2. Verify Folio exists and is open
+      const folio = await tx.folio.findUnique({
+        where: { id: validatedData.folioId },
       });
 
-      if (!invoice) throw new Error("Invoice not found.");
-      if (invoice.status === "PAID" || invoice.isLocked) throw new Error("Cannot add charges to a closed or locked invoice.");
+      if (!folio) throw new Error("Folio not found.");
+      if (folio.status === "PAID") throw new Error("Cannot add charges to a closed or locked folio.");
 
       // 3. Create FoodOrder
       const order = await tx.foodOrder.create({
         data: {
           guestId: validatedData.guestId,
           roomId: validatedData.roomId,
-          invoiceId: invoice.id,
+          folioId: folio.id,
           status: "PENDING",
           totalAmount,
           specialRequests: validatedData.specialRequests,
@@ -56,29 +56,19 @@ export class OrderService {
         },
       });
 
-      // 4. Create InvoiceLineItem
-      await tx.invoiceLineItem.create({
+      // 4. Create FolioLineItem
+      await tx.folioLineItem.create({
         data: {
-          invoiceId: invoice.id,
+          folioId: folio.id,
           description: `F&B Order #${order.id.slice(-6)}`,
-          quantity: 1,
-          unitPrice: totalAmount,
-          totalPrice: totalAmount,
+          amount: totalAmount,
           category: "FOOD_AND_BEVERAGE",
-          sourceModule: "POS",
-          createdByUserId: validatedData.userId,
+          isRoutingEnabled: false,
+          taxes: [],
         },
       });
 
-      // 5. Update Invoice Total
-      await tx.invoice.update({
-        where: { id: invoice.id },
-        data: {
-          subtotal: invoice.subtotal + totalAmount,
-          grandTotal: invoice.grandTotal + totalAmount,
-          status: "PARTIAL" // Status changes from PAID to PARTIAL if new charges are added
-        },
-      });
+      // Status updates for folio are not needed here since totals are dynamic
 
       return order;
     });

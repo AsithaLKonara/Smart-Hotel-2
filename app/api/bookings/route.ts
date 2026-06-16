@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
 
     try {
       // 2. ATOMIC DB TRANSACTION
-      const result = await prisma.$transaction(async (tx: any) => {
+      const txResult = await prisma.$transaction(async (tx: any) => {
         const room = await tx.room.findUnique({ 
           where: { id: validated.roomId },
           include: { roomType: true }
@@ -146,12 +146,53 @@ export async function POST(request: NextRequest) {
           }
         });
 
+        // ==========================================
+        // PHASE 2 DUAL-WRITE: RESERVATION & FOLIO DDD
+        // ==========================================
+        
+        await tx.roomAssignment.create({
+          data: {
+            bookingId: booking.id,
+            roomId: room.id,
+            startDate: checkIn,
+            endDate: checkOut,
+            status: 'ACTIVE'
+          }
+        });
+
+        await tx.stayEvent.create({
+          data: {
+            bookingId: booking.id,
+            type: 'BOOKED',
+            notes: 'Booking created via web'
+          }
+        });
+
+        const folio = await tx.folio.create({
+          data: {
+            bookingId: booking.id,
+            type: 'GUEST',
+            status: 'OPEN'
+          }
+        });
+
+        await tx.folioLineItem.create({
+          data: {
+            folioId: folio.id,
+            description: `Room Charge (${nights} nights)`,
+            amount: totalAmount,
+            category: 'ROOM',
+          }
+        });
+
         // 3. ATOMIC COMMIT: Advance room version and clear lock INSIDE TX
         await InventoryLockEngine.commitHold(hold, tx)
 
-        return booking
+        return { booking, folioId: folio.id }
       })
 
+      const result = txResult.booking
+      const folioId = txResult.folioId
       // 4. REAL-TIME EVENTS (Pusher) - AFTER SUCCESSFUL TX
       try {
         await RealtimeEvents.emitBookingCreated(result)
@@ -185,6 +226,7 @@ export async function POST(request: NextRequest) {
         await prisma.payment.create({
           data: {
             bookingId: result.id,
+            folioId: folioId, // DDD dual-write
             userId: result.primaryGuestId,
             amount: result.totalAmount,
             paymentMethod: 'card',
@@ -260,6 +302,16 @@ export async function GET(request: NextRequest) {
       },
       guest: {
         select: { id: true, name: true, email: true }
+      },
+      roomAssignments: {
+        include: {
+          room: {
+            select: { number: true, roomType: { select: { name: true, baseRate: true } } }
+          }
+        }
+      },
+      folios: {
+        include: { lineItems: true }
       }
     },
     orderBy: { createdAt: 'desc' }

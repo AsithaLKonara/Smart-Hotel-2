@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
         checkIn: true,
         checkOut: true,
         createdAt: true,
-        invoices: { select: { taxAmount: true } }
+        folios: { select: { type: true, status: true, lineItems: true } }
       }
     })
 
@@ -48,13 +48,22 @@ export async function GET(request: NextRequest) {
     let pendingPayments = 0
 
     bookings.forEach((b: any) => {
-      totalRoomCharges += b.totalAmount
-      if (b.paymentStatus !== 'completed') {
-        pendingPayments += b.totalAmount
-      }
-      b.invoices.forEach((inv: any) => {
-        totalTax += inv.taxAmount
+      // Calculate total from folio line items
+      let folioTotal = 0
+      b.folios?.forEach((folio: any) => {
+        folio.lineItems?.forEach((li: any) => {
+          folioTotal += Number(li.amount) || 0
+        })
       })
+
+      // Use folio total if available, otherwise fallback to booking total
+      const effectiveTotal = folioTotal > 0 ? folioTotal : b.totalAmount
+      
+      totalRoomCharges += effectiveTotal
+      if (b.paymentStatus !== 'completed') {
+        pendingPayments += effectiveTotal
+      }
+      // Note: Tax is not explicitly split in V2 FolioLineItem yet, so we omit totalTax aggregation for now
     })
 
     foodOrders.forEach((o: any) => {

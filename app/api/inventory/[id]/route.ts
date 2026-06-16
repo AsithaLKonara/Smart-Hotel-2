@@ -85,6 +85,38 @@ export async function PUT(
       data: validatedData
     })
 
+    // Dual-Write movement if quantity changed
+    if (validatedData.quantity !== undefined && validatedData.quantity !== Number(existingInventory.quantity)) {
+      try {
+        const qtyDiff = validatedData.quantity - Number(existingInventory.quantity)
+        const type = qtyDiff > 0 ? 'RECEIPT' : 'CONSUMPTION'
+        
+        // Ensure DDD InventoryItem exists before recording movement
+        await prisma.inventoryItem.upsert({
+          where: { id: inventory.id },
+          update: { name: inventory.name },
+          create: {
+            id: inventory.id,
+            name: inventory.name,
+            category: inventory.category,
+            unit: inventory.unit,
+            unitPrice: 0,
+          }
+        })
+
+        await prisma.inventoryMovement.create({
+          data: {
+            itemId: inventory.id,
+            type: type,
+            quantity: Math.abs(qtyDiff),
+            notes: 'Legacy API update dual-write'
+          }
+        })
+      } catch (err) {
+        console.error('Dual write movement failed', err)
+      }
+    }
+
     // Log the action
     await logAction(
       request,

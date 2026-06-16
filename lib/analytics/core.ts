@@ -137,7 +137,7 @@ export async function computeAnalytics(range: AnalyticsRange, referenceDate = ne
   const { startDate, endDate, previousStart, previousEnd, rangeDays } = getAnalyticsWindow(range, referenceDate)
 
   // Queries: Get Rooms, Bookings, and real Invoices for the date range
-  const [rooms, bookingsCurrent, bookingsPrevious, invoicesAll] =
+  const [rooms, bookingsCurrent, bookingsPrevious, invoicesAll, assignmentsAll] =
     await Promise.all([
       prisma.room.findMany(),
       prisma.booking.findMany({
@@ -159,20 +159,26 @@ export async function computeAnalytics(range: AnalyticsRange, referenceDate = ne
         },
         // Note: Booking model doesn't have room or invoice relations defined in schema
       }),
-      prisma.invoice.findMany({
+      prisma.folio.findMany({
           where: {
-              status: { in: ['PAID', 'PENDING'] }
-          }
+              status: { in: ['PAID', 'PENDING', 'OPEN'] }
+          },
+          include: { lineItems: true }
+      }),
+      prisma.roomAssignment.findMany({
+        where: {
+          status: 'ACTIVE'
+        }
       })
     ])
   
-  const invoicesCurrent = invoicesAll.filter((invoice: any) => {
-    const date = new Date(invoice.createdAt)
+  const foliosCurrent = invoicesAll.filter((folio: any) => {
+    const date = new Date(folio.createdAt)
     return date >= startDate && date <= endDate
   })
   
-  const invoicesPrevious = invoicesAll.filter((invoice: any) => {
-    const date = new Date(invoice.createdAt)
+  const foliosPrevious = invoicesAll.filter((folio: any) => {
+    const date = new Date(folio.createdAt)
     return date >= previousStart && date <= previousEnd
   })
 
@@ -181,22 +187,25 @@ export async function computeAnalytics(range: AnalyticsRange, referenceDate = ne
   const availableRooms = rooms.filter((room: Room) => room.status === 'AVAILABLE').length
   const maintenanceRooms = rooms.filter((room: Room) => room.status === 'MAINTENANCE').length
 
-  const invoicesById = new Map<string, any>(invoicesAll.map((invoice: any) => [invoice.bookingId, invoice] as [string, any]))
+  const foliosById = new Map<string, any>(invoicesAll.map((folio: any) => [folio.bookingId, folio] as [string, any]))
   const now = referenceDate
 
-  const sumInvoiceTotals = <T extends { total: number | null | undefined }>(items: T[]) =>
-    items.reduce((sum, invoice) => sum + (invoice.total ?? 0), 0)
+  const sumFolioTotals = (items: any[]) =>
+    items.reduce((sum, folio) => {
+      const folioTotal = folio.lineItems?.reduce((s: number, li: any) => s + (Number(li.amount) || 0), 0) || 0;
+      return sum + folioTotal;
+    }, 0)
 
-  const filterInvoicesInRange = (items: any[], start: Date, end: Date) =>
-    items.filter((invoice: any) => {
-      const invoiceDate = new Date(invoice.createdAt)
-      return invoiceDate >= start && invoiceDate <= end
+  const filterFoliosInRange = (items: any[], start: Date, end: Date) =>
+    items.filter((folio: any) => {
+      const folioDate = new Date(folio.createdAt)
+      return folioDate >= start && folioDate <= end
     })
 
-  const todayRevenue = sumInvoiceTotals(filterInvoicesInRange(invoicesCurrent, startOfDay(now), endOfDay(now)))
-  const thisWeekRevenue = sumInvoiceTotals(filterInvoicesInRange(invoicesCurrent, startOfWeek(now), endOfWeek(now)))
-  const thisMonthRevenue = sumInvoiceTotals(filterInvoicesInRange(invoicesCurrent, startOfMonth(now), endOfMonth(now)))
-  const totalRevenue = sumInvoiceTotals(invoicesAll)
+  const todayRevenue = sumFolioTotals(filterFoliosInRange(foliosCurrent, startOfDay(now), endOfDay(now)))
+  const thisWeekRevenue = sumFolioTotals(filterFoliosInRange(foliosCurrent, startOfWeek(now), endOfWeek(now)))
+  const thisMonthRevenue = sumFolioTotals(filterFoliosInRange(foliosCurrent, startOfMonth(now), endOfMonth(now)))
+  const totalRevenue = sumFolioTotals(invoicesAll)
 
   const totalBookings = bookingsCurrent.length
   const confirmedBookings = bookingsCurrent.filter((booking: Booking) => booking.status === 'CONFIRMED').length
@@ -205,10 +214,14 @@ export async function computeAnalytics(range: AnalyticsRange, referenceDate = ne
 
   const roomPerformance: RoomPerformanceEntry[] = rooms
     .map((room: Room) => {
-      const roomBookings = bookingsCurrent.filter((booking: Booking) => booking.roomId === room.id)
+      const roomAssignments = assignmentsAll.filter((a: any) => a.roomId === room.id)
+      const roomBookingIds = new Set(roomAssignments.map((a: any) => a.bookingId))
+      const roomBookings = bookingsCurrent.filter((booking: Booking) => roomBookingIds.has(booking.id))
+      
       const roomRevenue = roomBookings.reduce((sum: number, booking: Booking) => {
-        const invoice = invoicesById.get(booking.id)
-        return sum + (invoice?.total ?? 0)
+        const folio = foliosById.get(booking.id)
+        const folioTotal = folio?.lineItems?.reduce((s: number, li: any) => s + (Number(li.amount) || 0), 0) || 0;
+        return sum + folioTotal
       }, 0)
 
       const occupancyRate = totalBookings > 0 && roomBookings.length > 0
@@ -227,7 +240,7 @@ export async function computeAnalytics(range: AnalyticsRange, referenceDate = ne
     .slice(0, 10)
 
   const dailyRevenue: RevenueSeriesEntry[] = eachDayOfInterval({ start: startDate, end: endDate }).map(date => {
-    const revenue = sumInvoiceTotals(filterInvoicesInRange(invoicesCurrent, startOfDay(date), endOfDay(date)))
+    const revenue = sumFolioTotals(filterFoliosInRange(foliosCurrent, startOfDay(date), endOfDay(date)))
     const bookingsCount = bookingsCurrent.filter((booking: Booking) => {
       const checkIn = new Date(booking.checkIn)
       const checkOut = new Date(booking.checkOut)
@@ -250,7 +263,7 @@ export async function computeAnalytics(range: AnalyticsRange, referenceDate = ne
 
     const occupied = totalRooms > 0 ? Math.min(totalRooms, activeBookings.length) : 0
     const rate = totalRooms > 0 ? Math.round((occupied / totalRooms) * 100) : 0
-    const revenue = sumInvoiceTotals(filterInvoicesInRange(invoicesCurrent, startOfDay(date), endOfDay(date)))
+    const revenue = sumFolioTotals(filterFoliosInRange(foliosCurrent, startOfDay(date), endOfDay(date)))
 
     return {
       date: format(date, 'yyyy-MM-dd'),
@@ -264,8 +277,8 @@ export async function computeAnalytics(range: AnalyticsRange, referenceDate = ne
     start: subMonths(now, 11),
     end: now,
   }).map(date => {
-    const monthInvoices = invoicesAll.filter((invoice: any) => {
-      const createdAt = new Date(invoice.createdAt)
+    const monthInvoices = invoicesAll.filter((folio: any) => {
+      const createdAt = new Date(folio.createdAt)
       return createdAt >= startOfMonth(date) && createdAt <= endOfMonth(date)
     })
 
@@ -289,7 +302,7 @@ export async function computeAnalytics(range: AnalyticsRange, referenceDate = ne
 
     return {
       month: format(date, 'MMM yyyy'),
-      revenue: Number(sumInvoiceTotals(monthInvoices).toFixed(2)),
+      revenue: Number(sumFolioTotals(monthInvoices).toFixed(2)),
       bookings: monthBookings.length,
       occupancy,
     }
@@ -348,8 +361,8 @@ export async function computeAnalytics(range: AnalyticsRange, referenceDate = ne
       thisMonth: Number(thisMonthRevenue.toFixed(2)),
       total: Number(totalRevenue.toFixed(2)),
       period: {
-        current: Number(sumInvoiceTotals(invoicesCurrent).toFixed(2)),
-        previous: Number(sumInvoiceTotals(invoicesPrevious).toFixed(2)),
+        current: Number(sumFolioTotals(foliosCurrent).toFixed(2)),
+        previous: Number(sumFolioTotals(foliosPrevious).toFixed(2)),
       },
     },
     occupancy: {

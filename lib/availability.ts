@@ -10,41 +10,41 @@ export async function checkRoomAvailability(
   excludeBookingId?: string
 ): Promise<boolean> {
   try {
-    // Find conflicting bookings
-    const conflictingBookings = await prisma.booking.findMany({
+    // Find conflicting assignments
+    const conflictingAssignments = await prisma.roomAssignment.findMany({
       where: {
         roomId,
         status: {
-          in: ['PENDING', 'CONFIRMED', 'CHECKED_IN']
+          in: ['ACTIVE']
         },
-        id: excludeBookingId ? { not: excludeBookingId } : undefined,
+        bookingId: excludeBookingId ? { not: excludeBookingId } : undefined,
         OR: [
-          // Booking starts during the period
+          // Assignment starts during the period
           {
             AND: [
-              { checkIn: { gte: checkIn } },
-              { checkIn: { lt: checkOut } }
+              { startDate: { gte: checkIn } },
+              { startDate: { lt: checkOut } }
             ]
           },
-          // Booking ends during the period
+          // Assignment ends during the period
           {
             AND: [
-              { checkOut: { gt: checkIn } },
-              { checkOut: { lte: checkOut } }
+              { endDate: { gt: checkIn } },
+              { endDate: { lte: checkOut } }
             ]
           },
-          // Booking encompasses the entire period
+          // Assignment encompasses the entire period
           {
             AND: [
-              { checkIn: { lte: checkIn } },
-              { checkOut: { gte: checkOut } }
+              { startDate: { lte: checkIn } },
+              { endDate: { gte: checkOut } }
             ]
           }
         ]
       }
     })
 
-    return conflictingBookings.length === 0
+    return conflictingAssignments.length === 0
   } catch (error) {
     console.error('Error checking room availability:', error)
     return false
@@ -69,27 +69,27 @@ export async function getAvailableRooms(
       // Note: Room model doesn't have bookings relation defined in schema
     })
 
-    // Fetch bookings separately to check availability
-    const conflictingBookings = await prisma.booking.findMany({
+    // Fetch assignments separately to check availability
+    const conflictingAssignments = await prisma.roomAssignment.findMany({
       where: {
-        status: { in: ['PENDING', 'CONFIRMED', 'CHECKED_IN'] },
+        status: { in: ['ACTIVE'] },
         OR: [
           {
             AND: [
-              { checkIn: { gte: checkIn } },
-              { checkIn: { lt: checkOut } }
+              { startDate: { gte: checkIn } },
+              { startDate: { lt: checkOut } }
             ]
           },
           {
             AND: [
-              { checkOut: { gt: checkIn } },
-              { checkOut: { lte: checkOut } }
+              { endDate: { gt: checkIn } },
+              { endDate: { lte: checkOut } }
             ]
           },
           {
             AND: [
-              { checkIn: { lte: checkIn } },
-              { checkOut: { gte: checkOut } }
+              { startDate: { lte: checkIn } },
+              { endDate: { gte: checkOut } }
             ]
           }
         ]
@@ -97,7 +97,7 @@ export async function getAvailableRooms(
       select: { roomId: true }
     })
 
-    const bookedRoomIds = new Set(conflictingBookings.map((b: any) => b.roomId))
+    const bookedRoomIds = new Set(conflictingAssignments.map((a: any) => a.roomId))
     const availableRooms = allRooms.filter((room: any) => !bookedRoomIds.has(room.id))
 
     // Convert BigInt fields to Number for JSON serialization
@@ -127,26 +127,26 @@ export async function getOccupancyRate(
 
     if (totalRooms === 0) return 0
 
-    const occupiedRooms = await prisma.booking.count({
+    const occupiedRooms = await prisma.roomAssignment.count({
       where: {
-        status: { in: ['CONFIRMED', 'CHECKED_IN'] },
+        status: { in: ['ACTIVE'] },
         OR: [
           {
             AND: [
-              { checkIn: { gte: startDate } },
-              { checkIn: { lt: endDate } }
+              { startDate: { gte: startDate } },
+              { startDate: { lt: endDate } }
             ]
           },
           {
             AND: [
-              { checkOut: { gt: startDate } },
-              { checkOut: { lte: endDate } }
+              { endDate: { gt: startDate } },
+              { endDate: { lte: endDate } }
             ]
           },
           {
             AND: [
-              { checkIn: { lte: startDate } },
-              { checkOut: { gte: endDate } }
+              { startDate: { lte: startDate } },
+              { endDate: { gte: endDate } }
             ]
           }
         ]
@@ -173,17 +173,17 @@ export async function getAvailabilityCalendar(
       // Note: Room model doesn't have bookings relation defined in schema
     })
 
-    // Fetch bookings separately
-    const bookings = await prisma.booking.findMany({
+    // Fetch assignments separately
+    const assignments = await prisma.roomAssignment.findMany({
       where: {
-        status: { in: ['PENDING', 'CONFIRMED', 'CHECKED_IN'] },
+        status: { in: ['ACTIVE'] },
         OR: [
-          { checkIn: { gte: startDate, lte: endDate } },
-          { checkOut: { gte: startDate, lte: endDate } },
+          { startDate: { gte: startDate, lte: endDate } },
+          { endDate: { gte: startDate, lte: endDate } },
           {
             AND: [
-              { checkIn: { lte: startDate } },
-              { checkOut: { gte: endDate } }
+              { startDate: { lte: startDate } },
+              { endDate: { gte: endDate } }
             ]
           }
         ]
@@ -191,23 +191,31 @@ export async function getAvailabilityCalendar(
       select: {
         id: true,
         roomId: true,
-        checkIn: true,
-        checkOut: true,
+        startDate: true,
+        endDate: true,
         status: true,
+        booking: {
+          select: {
+            id: true,
+            status: true,
+            checkIn: true,
+            checkOut: true
+          }
+        }
       }
     })
 
-    const bookingsByRoomId = new Map<string, typeof bookings>()
-    bookings.forEach((booking: any) => {
-      const roomBookings = bookingsByRoomId.get(booking.roomId) || []
-      roomBookings.push(booking)
-      bookingsByRoomId.set(booking.roomId, roomBookings)
+    const assignmentsByRoomId = new Map<string, typeof assignments>()
+    assignments.forEach((assignment: any) => {
+      const roomAssignments = assignmentsByRoomId.get(assignment.roomId) || []
+      roomAssignments.push(assignment)
+      assignmentsByRoomId.set(assignment.roomId, roomAssignments)
     })
 
     return rooms.map((room: any) => ({
       ...room,
-      bookings: bookingsByRoomId.get(room.id) || [],
-      isAvailable: !bookingsByRoomId.has(room.id)
+      assignments: assignmentsByRoomId.get(room.id) || [],
+      isAvailable: !assignmentsByRoomId.has(room.id)
     }))
   } catch (error) {
     console.error('Error getting availability calendar:', error)

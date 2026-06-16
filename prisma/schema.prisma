@@ -49,13 +49,15 @@ model Room {
   updatedAt          DateTime   @updatedAt
 
   roomType      RoomType            @relation(fields: [roomTypeId], references: [id])
-  bookings      Booking[]
   tasks         Task[]
   statusHistory RoomStatusHistory[]
   roomImages    RoomImage[]
   reviews       RoomReview[]
   foodOrders    FoodOrder[]
   stays         Stay[]
+  roomAssignments RoomAssignment[]
+  maintenanceWorkOrders MaintenanceWorkOrder[]
+  outOfOrderRecords OutOfOrderRecord[]
 
   @@index([status])
   @@index([roomTypeId])
@@ -130,7 +132,6 @@ model Booking {
   source           BookingSource @default(WEBSITE)
   otaReference     String?
 
-  roomId         String
   primaryGuestId String
 
   guests          Int           @default(1)
@@ -146,21 +147,21 @@ model Booking {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
-  room             Room           @relation(fields: [roomId], references: [id])
   guest            User           @relation("PrimaryGuest", fields: [primaryGuestId], references: [id])
   additionalGuests BookingGuest[]
-  invoices         Invoice[]
   payments         Payment[]
   tasks            Task[]
   roomReviews      RoomReview[]
   complaints       Complaint[]
   stay             Stay?
+  roomAssignments  RoomAssignment[]
+  stayEvents       StayEvent[]
+  folios           Folio[]
 
   @@index([checkIn, checkOut])
   @@index([status])
   @@index([createdAt])
   @@index([status, createdAt])
-  @@index([roomId, status])
   @@index([primaryGuestId, paymentStatus])
 }
 
@@ -219,47 +220,39 @@ enum BookingSource {
   EXPEDIA
 }
 
+model RoomAssignment {
+  id        String   @id @default(uuid())
+  bookingId String
+  roomId    String
+  startDate DateTime @db.Date
+  endDate   DateTime @db.Date
+  status    String   @default("ACTIVE") // ACTIVE, MOVED, COMPLETED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  booking   Booking  @relation(fields: [bookingId], references: [id])
+  room      Room     @relation(fields: [roomId], references: [id])
+  
+  @@index([bookingId])
+  @@index([roomId])
+}
+
+model StayEvent {
+  id        String   @id @default(uuid())
+  bookingId String
+  type      String   // CHECK_IN, CHECK_OUT, ROOM_MOVE, EXTENSION
+  timestamp DateTime @default(now())
+  notes     String?
+  actorId   String?
+
+  booking   Booking  @relation(fields: [bookingId], references: [id])
+  
+  @@index([bookingId])
+}
+
 // ==========================================
 // FINANCIALS
 // ==========================================
-
-model Invoice {
-  id           String    @id @default(uuid())
-  version      Int       @default(1)
-  invoiceNo    String    @unique
-  bookingId    String
-  subtotal     Float
-  taxAmount    Float
-  grandTotal   Float
-  status       String
-  deletedAt    DateTime?
-  folioType    String    @default("MASTER")
-  routingRules Json?
-  isLocked     Boolean   @default(false)
-  issuedAt     DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-
-  booking    Booking           @relation(fields: [bookingId], references: [id])
-  lineItems  InvoiceLineItem[]
-  posOrders  POSOrder[]
-  foodOrders FoodOrder[]
-  payments   Payment[]
-}
-
-model InvoiceLineItem {
-  id              String  @id @default(uuid())
-  invoiceId       String
-  description     String
-  quantity        Int
-  unitPrice       Float
-  totalPrice      Float
-  category        String
-  sourceModule    String  @default("MANUAL")
-  createdByUserId String?
-
-  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Restrict)
-  createdBy User?   @relation(fields: [createdByUserId], references: [id])
-}
 
 model JournalEntry {
   id            String   @id @default(uuid())
@@ -283,6 +276,7 @@ model NightAuditLog {
   createdAt      DateTime @default(now())
 
   user User? @relation(fields: [runByUserId], references: [id])
+  revenuePostings RevenuePosting[]
 }
 
 model Payment {
@@ -290,7 +284,7 @@ model Payment {
   version         Int           @default(1)
   bookingId       String?
   orderId         String?
-  invoiceId       String?
+  folioId         String?
   userId          String?
   amount          Float
   currency        String        @default("LKR")
@@ -306,14 +300,13 @@ model Payment {
 
   booking     Booking?              @relation(fields: [bookingId], references: [id])
   order       FoodOrder?            @relation(fields: [orderId], references: [id])
-  invoice     Invoice?              @relation(fields: [invoiceId], references: [id])
+  folio       Folio?                @relation(fields: [folioId], references: [id])
   user        User?                 @relation(fields: [userId], references: [id])
   adjustments FinancialAdjustment[]
 
   @@index([createdAt])
   @@index([status])
   @@index([orderId])
-  @@index([invoiceId])
 }
 
 model FinancialAdjustment {
@@ -342,6 +335,58 @@ enum PaymentMethod {
   bank_transfer
   crypto
   other
+}
+
+model Folio {
+  id        String   @id @default(uuid())
+  bookingId String?
+  type      String   @default("GUEST") // MASTER, GUEST, ROUTING
+  status    String   @default("OPEN") // OPEN, CLOSED, LOCKED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  booking   Booking? @relation(fields: [bookingId], references: [id])
+  lineItems FolioLineItem[]
+  payments  Payment[]
+  routingRulesSource RoutingRule[] @relation("SourceFolio")
+  routingRulesTarget RoutingRule[] @relation("TargetFolio")
+  
+  @@index([bookingId])
+}
+
+model FolioLineItem {
+  id          String   @id @default(uuid())
+  folioId     String
+  description String
+  amount      Float
+  category    String
+  isRouted    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  folio       Folio    @relation(fields: [folioId], references: [id])
+  
+  @@index([folioId])
+}
+
+model RoutingRule {
+  id            String   @id @default(uuid())
+  sourceFolioId String
+  targetFolioId String
+  criteria      Json     // e.g. { category: "ROOM_CHARGE" }
+  createdAt     DateTime @default(now())
+
+  sourceFolio   Folio    @relation("SourceFolio", fields: [sourceFolioId], references: [id])
+  targetFolio   Folio    @relation("TargetFolio", fields: [targetFolioId], references: [id])
+}
+
+model RevenuePosting {
+  id              String   @id @default(uuid())
+  nightAuditLogId String
+  category        String
+  amount          Float
+  createdAt       DateTime @default(now())
+
+  nightAuditLog   NightAuditLog @relation(fields: [nightAuditLogId], references: [id])
 }
 
 // ==========================================
@@ -411,7 +456,6 @@ model FoodOrder {
   id              String    @id @default(uuid())
   guestId         String
   roomId          String?
-  invoiceId       String?
   idempotencyKey  String?   @unique
   status          String
   totalAmount     Float
@@ -424,10 +468,8 @@ model FoodOrder {
   payments Payment[]
   guest    User        @relation("GuestOrders", fields: [guestId], references: [id])
   room     Room?       @relation(fields: [roomId], references: [id])
-  invoice  Invoice?    @relation(fields: [invoiceId], references: [id])
 
   @@index([guestId])
-  @@index([invoiceId])
 }
 
 model OrderItem {
@@ -492,7 +534,6 @@ model POSProduct {
 model POSOrder {
   id          String   @id @default(uuid())
   outletId    String
-  invoiceId   String? // If charged to room
   status      String // PENDING, COMPLETED, CANCELLED
   totalAmount Float
   paymentType String // CASH, CARD, ROOM_CHARGE
@@ -500,13 +541,12 @@ model POSOrder {
   updatedAt   DateTime @updatedAt
 
   outlet  POSOutlet      @relation(fields: [outletId], references: [id])
-  invoice Invoice?       @relation(fields: [invoiceId], references: [id])
   items   POSOrderItem[]
 }
 
 model POSOrderItem {
   id        String @id @default(uuid())
-  orderId   String
+  orderId    String
   productId String
   quantity  Int
   price     Float
@@ -629,9 +669,9 @@ model User {
   nightAuditsRun     NightAuditLog[]
   employee           Employee?
   role               Role?               @relation(fields: [roleId], references: [id])
-  invoiceLineItems   InvoiceLineItem[]
   guestConversations GuestConversation[]
   resortBookings     ResortBooking[]
+  guestProfile       GuestProfile?
 }
 
 model GuestPreference {
@@ -641,6 +681,16 @@ model GuestPreference {
   allergies           String[]
   roomPreferences     String[]
   user                User     @relation(fields: [userId], references: [id])
+}
+
+model GuestProfile {
+  id            String   @id @default(uuid())
+  userAccountId String   @unique
+  preferences   Json?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  user          User     @relation(fields: [userAccountId], references: [id])
 }
 
 model CorporateAccount {
@@ -887,7 +937,6 @@ model Inventory {
   name        String
   description String?
   category    String
-  quantity    BigInt   @default(0)
   unit        String
   minQuantity BigInt   @default(0)
   status      String   @default("IN_STOCK")
@@ -1111,6 +1160,7 @@ model InventoryItem {
   vendor        Vendor?             @relation(fields: [vendorId], references: [id])
   stocks        InventoryStock[]
   purchaseItems PurchaseOrderItem[]
+  movements     InventoryMovement[]
 }
 
 model InventoryStock {
@@ -1140,6 +1190,8 @@ model PurchaseOrder {
 
   vendor Vendor              @relation(fields: [vendorId], references: [id])
   items  PurchaseOrderItem[]
+  goodsReceipts GoodsReceipt[]
+  vendorInvoices VendorInvoice[]
 }
 
 model PurchaseOrderItem {
@@ -1154,6 +1206,36 @@ model PurchaseOrderItem {
 
   purchaseOrder PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
   item          InventoryItem @relation(fields: [itemId], references: [id])
+}
+
+model InventoryMovement {
+  id          String   @id @default(uuid())
+  itemId      String
+  type        String   // RECEIPT, CONSUMPTION, TRANSFER, ADJUSTMENT
+  quantity    Int
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  item        InventoryItem @relation(fields: [itemId], references: [id])
+}
+
+model GoodsReceipt {
+  id              String   @id @default(uuid())
+  purchaseOrderId String
+  receivedDate    DateTime @default(now())
+  notes           String?
+
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+}
+
+model VendorInvoice {
+  id              String   @id @default(uuid())
+  purchaseOrderId String
+  invoiceNumber   String
+  amount          Float
+  receivedDate    DateTime @default(now())
+
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
 }
 
 // ==========================================
@@ -1290,6 +1372,7 @@ model Asset {
 
   schedules   MaintenanceSchedule[]
   inspections InspectionLog[]
+  maintenanceWorkOrders MaintenanceWorkOrder[]
 }
 
 model MaintenanceSchedule {
@@ -1318,6 +1401,30 @@ model InspectionLog {
   updatedAt      DateTime @updatedAt
 
   asset Asset @relation(fields: [assetId], references: [id])
+}
+
+model MaintenanceWorkOrder {
+  id          String   @id @default(uuid())
+  roomId      String?
+  assetId     String?
+  issue       String
+  status      String   @default("OPEN")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  room        Room?    @relation(fields: [roomId], references: [id])
+  asset       Asset?   @relation(fields: [assetId], references: [id])
+}
+
+model OutOfOrderRecord {
+  id          String   @id @default(uuid())
+  roomId      String
+  reason      String
+  startDate   DateTime @db.Date
+  endDate     DateTime @db.Date
+  createdAt   DateTime @default(now())
+
+  room        Room     @relation(fields: [roomId], references: [id])
 }
 
 // ==========================================
@@ -1389,6 +1496,30 @@ model WebhookEndpoint {
   secret    String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  
+  deliveries WebhookDelivery[]
+  subscriptions WebhookSubscription[]
+}
+
+model WebhookDelivery {
+  id                String   @id @default(uuid())
+  webhookEndpointId String
+  payload           Json
+  status            String   @default("PENDING")
+  statusCode        Int?
+  attempts          Int      @default(0)
+  createdAt         DateTime @default(now())
+
+  webhookEndpoint   WebhookEndpoint @relation(fields: [webhookEndpointId], references: [id])
+}
+
+model WebhookSubscription {
+  id                String   @id @default(uuid())
+  webhookEndpointId String
+  eventTypes        String[] // Array of strings like "GUEST_CHECKIN"
+  createdAt         DateTime @default(now())
+
+  webhookEndpoint   WebhookEndpoint @relation(fields: [webhookEndpointId], references: [id])
 }
 
 // ==========================================

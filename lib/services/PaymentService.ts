@@ -3,7 +3,7 @@ import { Prisma } from "@prisma/client";
 import { z } from "zod";
 
 export const ProcessPaymentSchema = z.object({
-  invoiceId: z.string().uuid(),
+  folioId: z.string().uuid(),
   amount: z.number().positive(),
   method: z.enum(["cash", "card", "bank_transfer", "other"]),
   userId: z.string().uuid().optional(),
@@ -13,24 +13,26 @@ export type ProcessPaymentDTO = z.infer<typeof ProcessPaymentSchema>;
 
 export class PaymentService {
   /**
-   * Processes a payment and updates the corresponding Invoice balance in a transaction.
+   * Processes a payment and updates the corresponding Folio balance in a transaction.
    * Eliminates the risk of orphan payments or double settlements.
    */
   static async processPayment(data: ProcessPaymentDTO) {
     const validatedData = ProcessPaymentSchema.parse(data);
 
     return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-      // 1. Lock and retrieve Invoice
-      const invoice = await tx.invoice.findUnique({
-        where: { id: validatedData.invoiceId },
-        select: { id: true, totalAmount: true, paidAmount: true, status: true },
+      // 1. Lock and retrieve Folio
+      const folio = await tx.folio.findUnique({
+        where: { id: validatedData.folioId },
+        include: { lineItems: true, payments: true },
       });
 
-      if (!invoice) {
-        throw new Error("Invoice not found");
+      if (!folio) {
+        throw new Error("Folio not found");
       }
 
-      const balanceDue = invoice.totalAmount - invoice.paidAmount;
+      const totalAmount = folio.lineItems?.reduce((sum: number, item: any) => sum + (Number(item.amount) || 0), 0) || 0;
+      const paidAmount = folio.payments?.reduce((sum: number, p: any) => sum + (Number(p.amount) || 0), 0) || 0;
+      const balanceDue = totalAmount - paidAmount;
 
       if (validatedData.amount > balanceDue) {
         throw new Error(`Payment exceeds balance due. Balance is ${balanceDue}`);
@@ -39,7 +41,7 @@ export class PaymentService {
       // 2. Create Payment Record
       const payment = await tx.payment.create({
         data: {
-          invoiceId: invoice.id,
+          folioId: folio.id,
           amount: validatedData.amount,
           method: validatedData.method,
           status: "completed",
@@ -47,14 +49,13 @@ export class PaymentService {
         },
       });
 
-      // 3. Update Invoice State
-      const newPaidAmount = invoice.paidAmount + validatedData.amount;
-      const newStatus = newPaidAmount >= invoice.totalAmount ? "PAID" : "PARTIAL";
+      // 3. Update Folio State
+      const newPaidAmount = paidAmount + validatedData.amount;
+      const newStatus = newPaidAmount >= totalAmount ? "PAID" : "PARTIAL";
 
-      await tx.invoice.update({
-        where: { id: invoice.id },
+      await tx.folio.update({
+        where: { id: folio.id },
         data: {
-          paidAmount: newPaidAmount,
           status: newStatus,
         },
       });

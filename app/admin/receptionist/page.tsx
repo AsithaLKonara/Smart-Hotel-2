@@ -60,6 +60,14 @@ export default function ReceptionistOperationsCenter() {
   const rooms = roomsData?.rooms || []
   const allBookings = bookingsData?.bookings || []
 
+  // Helper to check if a booking occupies a specific room (handles DDD split-stays)
+  const isRoomAssigned = (booking: any, targetRoomId: string) => {
+    if (booking.roomAssignments && booking.roomAssignments.length > 0) {
+      return booking.roomAssignments.some((a: any) => a.roomId === targetRoomId && a.status !== 'MOVED');
+    }
+    return booking.roomId === targetRoomId; // Legacy fallback
+  }
+
   // Simple mutations for status updates
   const updateBookingMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string, status: string }) => {
@@ -95,7 +103,7 @@ export default function ReceptionistOperationsCenter() {
   const handleCheckIn = async (roomNumber: string) => {
     const room = rooms.find((r: any) => r.number === roomNumber)
     if (!room) return
-    const booking = allBookings.find((b: any) => b.roomId === room.id && (b.status === 'CONFIRMED' || b.status === 'PENDING'))
+    const booking = allBookings.find((b: any) => isRoomAssigned(b, room.id) && (b.status === 'CONFIRMED' || b.status === 'PENDING'))
     if (!booking) {
       toast.error('No pending/confirmed booking found for this room.')
       return
@@ -107,7 +115,7 @@ export default function ReceptionistOperationsCenter() {
   const handleCheckOut = async (roomNumber: string) => {
     const room = rooms.find((r: any) => r.number === roomNumber)
     if (!room) return
-    const booking = allBookings.find((b: any) => b.roomId === room.id && b.status === 'CHECKED_IN')
+    const booking = allBookings.find((b: any) => isRoomAssigned(b, room.id) && b.status === 'CHECKED_IN')
     if (!booking) {
       toast.error('No active resident found in this room.')
       return
@@ -205,7 +213,7 @@ export default function ReceptionistOperationsCenter() {
               <RoomActionDesk 
                 room={selectedRoom}
                 onStatusTransition={handleStatusTransition}
-                roomBookings={allBookings.filter((b: any) => b.roomId === selectedRoom?.id)}
+                roomBookings={allBookings.filter((b: any) => isRoomAssigned(b, selectedRoom?.id))}
                 onClose={() => setSelectedRoom(null)}
                 isVip={false}
                 onToggleVip={() => {}}

@@ -48,19 +48,30 @@ export async function GET(request: NextRequest) {
       whereClause.status = status
     }
 
-    const inventory = await prisma.inventory.findMany({
+    const items = await prisma.inventoryItem.findMany({
       where: whereClause,
+      include: {
+        movements: true
+      },
       orderBy: {
         name: 'asc'
       }
     })
 
-    // Convert BigInt values to numbers for JSON serialization
-    const serializedInventory = inventory.map((item: any) => ({
-      ...item,
-      quantity: Number(item.quantity),
-      minQuantity: Number(item.minQuantity),
-    }))
+    // Compute balance from movements
+    const serializedInventory = items.map((item: any) => {
+      let balance = 0;
+      item.movements.forEach((m: any) => {
+        if (m.type === 'RECEIPT') balance += m.quantity;
+        else if (m.type === 'CONSUMPTION') balance -= m.quantity;
+      });
+      return {
+        ...item,
+        quantity: balance,
+        minQuantity: item.parLevel || 0, // Fallback to parLevel
+        status: balance > (item.parLevel || 0) ? 'IN_STOCK' : (balance > 0 ? 'LOW_STOCK' : 'OUT_OF_STOCK')
+      }
+    })
 
     return NextResponse.json({ items: serializedInventory })
   } catch (error) {
@@ -110,6 +121,29 @@ export async function POST(request: NextRequest) {
         updatedAt: new Date(),
       }
     })
+
+    // Dual-Write: Create new DDD InventoryItem and initial InventoryMovement
+    try {
+      await prisma.inventoryItem.create({
+        data: {
+          id: inventory.id, // map 1:1 with legacy ID
+          name: inventory.name,
+          category: inventory.category,
+          unit: inventory.unit,
+          unitPrice: 0, // Default required field
+        }
+      })
+      await prisma.inventoryMovement.create({
+        data: {
+          itemId: inventory.id,
+          type: 'RECEIPT',
+          quantity: Number(inventory.quantity),
+          notes: 'Initial stock dual-write'
+        }
+      })
+    } catch (dualWriteErr) {
+      console.error('Dual write to new DDD inventory failed:', dualWriteErr)
+    }
 
     // Log the action (non-blocking)
     try {

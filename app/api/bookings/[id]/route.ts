@@ -230,6 +230,26 @@ export async function PATCH(
       await RealtimeEvents.emitRoomStatusChanged(updatedBooking.room)
     }
     
+    // 4. CQRS PROJECTIONS
+    if (validatedData.status === 'CHECKED_OUT' && oldStatus !== 'CHECKED_OUT') {
+      try {
+        const { processGuestHistoryProjection } = await import('@/lib/projections/guest-history')
+        await processGuestHistoryProjection({
+          eventId: 'evt-' + Date.now(),
+          eventType: 'CheckOutCompleted',
+          aggregateId: updatedBooking.id,
+          payload: {
+            bookingId: updatedBooking.id,
+            checkInDate: updatedBooking.checkIn.toISOString(),
+            checkOutDate: updatedBooking.checkOut.toISOString(),
+          },
+          occurredAt: new Date()
+        })
+      } catch (projErr) {
+        console.error('Failed to run GuestHistory projection:', projErr)
+      }
+    }
+    
     // Return booking with related data
     const bookingWithRelations = {
       ...updatedBooking,

@@ -1,5 +1,7 @@
 import { PoolClient } from 'pg'
 import { MessageBroker } from './message-broker'
+import prisma from '../db'
+import { DomainEventType } from './domain-events'
 
 export interface OutboxMessage {
   outboxId: string
@@ -52,6 +54,31 @@ export class OutboxPublisher {
           value: JSON.stringify({ eventType, payload, metadata }),
           headers: { correlationId: metadata.correlationId || '' }
         })
+
+        // 2.5 Stage Webhook Deliveries
+        try {
+          const subscriptions = await prisma.webhookSubscription.findMany({
+            where: {
+              // We check if the array contains this specific eventType
+              eventTypes: { has: eventType }
+            }
+          })
+
+          if (subscriptions.length > 0) {
+            const deliveries = subscriptions.map((sub: any) => ({
+              webhookEndpointId: sub.webhookEndpointId,
+              payload: { eventType, payload, metadata },
+              status: 'PENDING',
+              attempts: 0
+            }))
+
+            await prisma.webhookDelivery.createMany({
+              data: deliveries
+            })
+          }
+        } catch (webhookErr) {
+          console.error(`Failed to stage webhooks for event ${eventType}:`, webhookErr)
+        }
 
         // 3. Mark outbox entry completed
         await client.query(`
