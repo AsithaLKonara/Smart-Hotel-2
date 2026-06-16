@@ -6,7 +6,17 @@ import { Redis } from '@upstash/redis'
 import { RealtimeEvents } from '@/lib/realtime'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2023-10-16' })
-const redis = Redis.fromEnv()
+
+function getRedisClient(): Redis | null {
+  if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+    try {
+      return Redis.fromEnv()
+    } catch {
+      return null
+    }
+  }
+  return null
+}
 
 export async function POST(request: NextRequest) {
   const body = await request.text()
@@ -22,8 +32,12 @@ export async function POST(request: NextRequest) {
 
   // 1. DISTRIBUTED IDEMPOTENCY (Redis)
   const eventKey = `stripe:event:${event.id}`
-  const isProcessed = await redis.set(eventKey, 'processed', { nx: true, ex: 86400 })
-  if (!isProcessed) return NextResponse.json({ received: true, duplicate: true })
+  const redis = getRedisClient()
+  
+  if (redis) {
+    const isProcessed = await redis.set(eventKey, 'processed', { nx: true, ex: 86400 })
+    if (!isProcessed) return NextResponse.json({ received: true, duplicate: true })
+  }
 
   try {
     switch (event.type) {
@@ -97,7 +111,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ received: true })
   } catch (err: any) {
-    await redis.del(eventKey) // Allow retry
+    if (redis) await redis.del(eventKey) // Allow retry
     console.error('[STRIPE_WEBHOOK_ERROR]', err)
     return NextResponse.json({ error: 'Webhook processing failed' }, { status: 500 })
   }

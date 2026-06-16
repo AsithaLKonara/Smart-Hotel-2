@@ -6,7 +6,7 @@ import { authOptions } from '@/lib/auth';
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || !['SUPER_ADMIN', 'MANAGER'].includes(session.user.role)) {
+    if (!session || !['SUPER_ADMIN', 'MANAGER'].includes((session.user as any).roleName as string)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -38,7 +38,7 @@ export async function POST(req: Request) {
       }
 
       const rate = booking.room.roomType.baseRate;
-      const tax = rate * 0.10; // 10% tax example
+      const tax = 0; // Tax removed
 
       await prisma.invoiceLineItem.create({
         data: {
@@ -91,7 +91,7 @@ export async function POST(req: Request) {
 export async function GET(req: Request) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || !['SUPER_ADMIN', 'MANAGER'].includes(session.user.role)) {
+    if (!session || !['SUPER_ADMIN', 'MANAGER'].includes((session.user as any).roleName as string)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
