@@ -1,6 +1,4 @@
 import NextAuth from 'next-auth'
-// Note: UserRole enum doesn't exist in Prisma schema - define locally
-type UserRole = 'SUPER_ADMIN' | 'MANAGER' | 'RECEPTIONIST' | 'HOUSEKEEPING' | 'MAINTENANCE' | 'KITCHEN' | 'GUEST'
 
 declare module 'next-auth' {
   interface Session {
@@ -8,7 +6,9 @@ declare module 'next-auth' {
       id: string
       email: string
       name?: string | null
-      role: UserRole
+      roleId?: string | null
+      roleName?: string
+      permissions: string[]
       hotelId?: string | null
     }
   }
@@ -17,7 +17,9 @@ declare module 'next-auth' {
     id: string
     email: string
     name?: string | null
-    role: UserRole
+    roleId?: string | null
+    roleName?: string
+    permissions: string[]
     hotelId?: string | null
   }
 }
@@ -25,7 +27,9 @@ declare module 'next-auth' {
 declare module 'next-auth/jwt' {
   interface JWT {
     id: string
-    role: UserRole
+    roleId?: string | null
+    roleName?: string
+    permissions: string[]
     hotelId?: string | null
   }
-} 
+}

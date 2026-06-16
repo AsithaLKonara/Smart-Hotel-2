@@ -3,36 +3,81 @@ import { getToken } from 'next-auth/jwt'
 
 // Centralized Route Protection Matrix
 const PROTECTED_ROUTES = [
-  { prefix: '/admin/settings', roles: ['SUPER_ADMIN'] },
+  // 👑 SUPER ADMIN ONLY (SRE, Platform, Global)
+  { prefix: '/admin/chaos', roles: ['SUPER_ADMIN'] },
+  { prefix: '/api/chaos', roles: ['SUPER_ADMIN'] },
+  { prefix: '/admin/roles', roles: ['SUPER_ADMIN'] },
   { prefix: '/admin/audit-logs', roles: ['SUPER_ADMIN'] },
-  { prefix: '/admin/staff', roles: ['SUPER_ADMIN', 'MANAGER'] },
-  { prefix: '/api/staff', roles: ['SUPER_ADMIN', 'MANAGER'] },
+  { prefix: '/admin/corporate', roles: ['SUPER_ADMIN'] }, // Global properties, Loyalty
+  { prefix: '/admin/settings/integrations', roles: ['SUPER_ADMIN'] },
+
+  // 🔴 MANAGER & SUPER ADMIN (Business Operations, HR, Finance)
+  { prefix: '/admin/hr', roles: ['SUPER_ADMIN', 'MANAGER'] },
+  { prefix: '/admin/procurement', roles: ['SUPER_ADMIN', 'MANAGER'] },
+  { prefix: '/admin/analytics', roles: ['SUPER_ADMIN', 'MANAGER'] },
+  { prefix: '/admin/manager', roles: ['SUPER_ADMIN', 'MANAGER'] },
+  { prefix: '/admin/yield', roles: ['SUPER_ADMIN', 'MANAGER'] },
+  { prefix: '/admin/events', roles: ['SUPER_ADMIN', 'MANAGER'] },
+  { prefix: '/admin/crm/corporate', roles: ['SUPER_ADMIN', 'MANAGER'] },
+  { prefix: '/admin/crm/travel-agents', roles: ['SUPER_ADMIN', 'MANAGER'] },
+  { prefix: '/admin/ota', roles: ['SUPER_ADMIN', 'MANAGER'] },
+  { prefix: '/admin/accounting/night-audit', roles: ['SUPER_ADMIN', 'MANAGER'] },
+  { prefix: '/admin/settings', roles: ['SUPER_ADMIN', 'MANAGER'] }, // General system settings
+
+  // 🔵 RECEPTIONIST (Front Office, Reservations, Billing, CRM)
   { prefix: '/admin/receptionist', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'] },
-  { prefix: '/api/chaos', roles: ['SUPER_ADMIN', 'MANAGER'] },
-  { prefix: '/api/admin', roles: ['SUPER_ADMIN', 'MANAGER'] },
-  { prefix: '/admin/tasks', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'HOUSEKEEPING', 'MAINTENANCE'] },
-  { prefix: '/api/tasks', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'HOUSEKEEPING', 'MAINTENANCE'] },
+  { prefix: '/admin/bookings', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'] },
+  { prefix: '/admin/pos', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'] },
+  { prefix: '/admin/accounting', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'] }, // Folios
+  { prefix: '/admin/resort', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'] },
+  { prefix: '/admin/crm', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'] }, // Guest CRM
+
+  // 🧹 HOUSEKEEPING
   { prefix: '/admin/housekeeping', roles: ['SUPER_ADMIN', 'MANAGER', 'HOUSEKEEPING'] },
-  { prefix: '/admin/bookings', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'] }, 
-  { prefix: '/api/bookings', roles: ['GUEST', 'SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'] },
+
+  // 🔧 MAINTENANCE
+  { prefix: '/admin/maintenance', roles: ['SUPER_ADMIN', 'MANAGER', 'MAINTENANCE'] },
+
+  // 🟠 KITCHEN
   { prefix: '/kitchen', roles: ['SUPER_ADMIN', 'MANAGER', 'KITCHEN'] },
   { prefix: '/api/kitchen', roles: ['SUPER_ADMIN', 'MANAGER', 'KITCHEN'] },
-  { prefix: '/dashboard', roles: ['GUEST', 'SUPER_ADMIN', 'MANAGER'] },
+
+  // SHARED & APIs
+  { prefix: '/admin/tasks', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'HOUSEKEEPING', 'MAINTENANCE'] },
+  { prefix: '/api/tasks', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'HOUSEKEEPING', 'MAINTENANCE'] },
+  { prefix: '/api/admin', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'HOUSEKEEPING', 'MAINTENANCE'] },
+  { prefix: '/api/bookings', roles: ['GUEST', 'SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'] },
   { prefix: '/api/restaurant', roles: ['GUEST', 'SUPER_ADMIN', 'MANAGER', 'KITCHEN', 'RECEPTIONIST'] },
+
+  // 🟢 GUEST SUITE & FALLBACKS
+  { prefix: '/dashboard', roles: ['GUEST', 'SUPER_ADMIN', 'MANAGER'] },
   { prefix: '/order', roles: ['GUEST', 'SUPER_ADMIN', 'MANAGER'] },
   { prefix: '/dining', roles: ['GUEST', 'SUPER_ADMIN', 'MANAGER'] },
-  { prefix: '/profile', roles: ['GUEST', 'SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'KITCHEN', 'HOUSEKEEPING', 'MAINTENANCE'] },
   { prefix: '/my-bookings', roles: ['GUEST', 'SUPER_ADMIN', 'MANAGER'] },
+  { prefix: '/profile', roles: ['GUEST', 'SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'KITCHEN', 'HOUSEKEEPING', 'MAINTENANCE'] },
+
+  // GENERIC ADMIN FALLBACK (Blocks GUESTS/KITCHEN from randomly probing /admin/*)
+  { prefix: '/admin', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'HOUSEKEEPING', 'MAINTENANCE'] },
 ]
 
 export async function middleware(request: NextRequest) {
+  // 0. Reject WebSocket upgrades to mitigate SSRF (CVE-2026-44578)
+  const upgradeHeader = request.headers.get('upgrade')
+  const connectionHeader = request.headers.get('connection')
+  if (
+    (upgradeHeader && upgradeHeader.toLowerCase() === 'websocket') ||
+    (connectionHeader && connectionHeader.toLowerCase().includes('upgrade'))
+  ) {
+    return new NextResponse('WebSocket upgrades not allowed', { status: 400 })
+  }
+
   const url = request.nextUrl
   const path = url.pathname
 
   // 1. Bypass Public Assets & Public APIs
   if (
-    path.startsWith('/_next') || 
-    path.startsWith('/images') || 
+    path.startsWith('/_next') ||
+    path.startsWith('/images') ||
     path.startsWith('/favicon') ||
     PUBLIC_API_PREFIXES.some(p => path.startsWith(p))
   ) {
@@ -40,10 +85,18 @@ export async function middleware(request: NextRequest) {
   }
 
   // 2. Resolve Session
-  const token = await getToken({ 
-    req: request, 
-    secret: process.env.NEXTAUTH_SECRET 
+  let token = await getToken({
+    req: request,
+    secret: process.env.NEXTAUTH_SECRET,
+    cookieName: 'next-auth.session-token'
   })
+  if (!token && process.env.NODE_ENV === 'production') {
+    token = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET,
+      cookieName: '__Secure-next-auth.session-token'
+    })
+  }
 
   // 3. Enforce Authentication for ALL remaining /api routes (Default Deny)
   if (path.startsWith('/api') && !token) {
@@ -60,13 +113,22 @@ export async function middleware(request: NextRequest) {
     }
 
     // Check Authorization
-    const userRole = token.role as string
+    const userRole = (token.roleName || token.role || 'GUEST') as string
+
+    // Intelligent Routing: If staff hits guest dashboard, redirect them correctly
+    if (path === '/dashboard' || path === '/dashboard/') {
+      if (userRole === 'RECEPTIONIST') return NextResponse.redirect(new URL('/admin/receptionist', request.url))
+      if (userRole === 'KITCHEN') return NextResponse.redirect(new URL('/kitchen/dashboard', request.url))
+      if (userRole === 'HOUSEKEEPING' || userRole === 'MAINTENANCE') return NextResponse.redirect(new URL('/admin/tasks', request.url))
+      if (userRole === 'MANAGER' || userRole === 'SUPER_ADMIN') return NextResponse.redirect(new URL('/admin/dashboard', request.url))
+    }
+
     if (!rule.roles.includes(userRole)) {
       const isApi = path.startsWith('/api')
       if (isApi) {
-        return NextResponse.json({ 
-          error: 'Forbidden', 
-          message: `Role [${userRole}] does not have permission to access this resource.` 
+        return NextResponse.json({
+          error: 'Forbidden',
+          message: `Role [${userRole}] does not have permission to access this resource.`
         }, { status: 403 })
       }
       return NextResponse.redirect(new URL('/', request.url))
@@ -78,12 +140,7 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/admin/:path*',
-    '/kitchen/:path*',
-    '/dashboard/:path*',
-    '/api/:path*',
-    '/profile',
-    '/my-bookings',
+    '/((?!_next/static|_next/image|images|favicon.ico).*)',
   ],
 }
 
