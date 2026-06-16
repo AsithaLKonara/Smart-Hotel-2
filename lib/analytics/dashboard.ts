@@ -118,8 +118,8 @@ export async function computeDashboardAnalytics(referenceDate = new Date()): Pro
       take: 5,
       include: { room: { include: { roomType: true } }, guest: true }
     }),
-    prisma.user.groupBy({ by: ['role'], _count: { id: true } }),
-    prisma.staff.count()
+    prisma.user.findMany({ select: { id: true, role: { select: { name: true } } } }),
+    prisma.user.count({ where: { role: { name: { in: ['RECEPTIONIST', 'HOUSEKEEPING', 'HOUSEKEEPER', 'MAINTENANCE', 'KITCHEN'] } } } })
   ])
 
   // 2. Summary Calculations (Room + Dining)
@@ -214,7 +214,7 @@ export async function computeDashboardAnalytics(referenceDate = new Date()): Pro
   }))
 
   // 6. Guest Stats
-  const getRoleCount = (role: string) => userStats.find((s: any) => s.role === role)?._count.id || 0
+  const getRoleCount = (roleName: string) => userStats.filter((u: any) => u.role?.name === roleName).length
   const guestStats = {
     totalGuests: getRoleCount('GUEST'),
     totalStaff: staffCount,

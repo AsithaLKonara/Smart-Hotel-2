@@ -6,6 +6,16 @@ import { enhancedRateLimit, createEnhancedRateLimitResponse } from '@/lib/rate-l
 
 export const dynamic = 'force-dynamic'
 
+import { unstable_cache } from 'next/cache'
+
+const getCachedDashboardAnalytics = unstable_cache(
+  async () => {
+    return await computeDashboardAnalytics()
+  },
+  ['admin-dashboard-analytics'],
+  { revalidate: 300, tags: ['dashboard'] }
+)
+
 export async function GET(request: NextRequest) {
   try {
     const rateLimitResult = await enhancedRateLimit(request, 'api')
@@ -15,12 +25,12 @@ export async function GET(request: NextRequest) {
 
     const session = await getServerSession(authOptions)
 
-    if (!session || !userHasDashboardAccess(session.user?.role)) {
+    if (!session || !userHasDashboardAccess(session.user?.roleName)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     try {
-      const analytics = await computeDashboardAnalytics()
+      const analytics = await getCachedDashboardAnalytics()
       return NextResponse.json(analytics)
     } catch (error: any) {
       console.error('Error computing dashboard analytics:', error)
