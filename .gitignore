@@ -7,6 +7,7 @@
 /coverage
 /playwright-report
 /test-results
+/lighthouse-reports
 
 # production
 /build
@@ -52,3 +53,9 @@ prisma/schema.prisma.backup.mongodb
 .env*.local
 config.bat
 .env
+
+# runtime / generated
+server.pid
+tsconfig.tsbuildinfo
+test-analytics.ts
+refactor_schema.js
