@@ -46,20 +46,6 @@ const nextConfig = {
     ],
   },
 
-  // 1. Externalize server-only runtime packages
-  serverExternalPackages: [
-    '@prisma/client',
-    'prisma',
-    '@sentry/nextjs',
-    '@sentry/node',
-    '@opentelemetry/api',
-    '@opentelemetry/sdk-node',
-    '@opentelemetry/instrumentation',
-    'require-in-the-middle',
-    'import-in-the-middle',
-    'pdfkit',
-    'fontkit',
-  ],
   experimental: {
     optimizePackageImports: ['lucide-react'],
   },

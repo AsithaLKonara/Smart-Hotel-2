@@ -55,6 +55,13 @@ export function validateEnv(): Env {
 
   if (!parsed.success) {
     console.error('❌ Invalid environment variables:', JSON.stringify(parsed.error.format(), null, 2))
+    // DO NOT THROW in production to prevent Edge Runtime crashes (MIDDLEWARE_INVOCATION_FAILED)
+    // when Vercel environment is missing new variables like Pusher/Redis.
+    // Instead, return the unvalidated process.env to keep the app alive.
+    if (process.env.NODE_ENV === 'production') {
+      _env = process.env as unknown as Env
+      return _env
+    }
     throw new Error('Invalid environment variables')
   }
 
