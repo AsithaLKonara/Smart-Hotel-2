@@ -26,6 +26,20 @@ export async function GET(req: Request) {
   }
 }
 
+import { z } from 'zod';
+
+const corporateAccountSchema = z.object({
+  companyName: z.string().min(1, 'Company name is required'),
+  contactName: z.string().min(1, 'Contact name is required'),
+  contactEmail: z.string().email('Invalid email address'),
+  contactPhone: z.string().min(5, 'Phone number is required'),
+  negotiatedRate: z.union([z.string(), z.number()]).transform((val) => {
+    const num = typeof val === 'string' ? parseFloat(val) : val;
+    if (isNaN(num)) throw new Error('Invalid negotiated rate');
+    return num;
+  }),
+});
+
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
@@ -34,20 +48,23 @@ export async function POST(req: Request) {
     }
 
     const data = await req.json();
-    const { companyName, contactName, contactEmail, contactPhone, negotiatedRate } = data;
+    const validatedData = corporateAccountSchema.parse(data);
 
     const account = await prisma.corporateAccount.create({
       data: {
-        companyName,
-        contactName,
-        contactEmail,
-        contactPhone,
-        negotiatedRate: parseFloat(negotiatedRate)
+        companyName: validatedData.companyName,
+        contactName: validatedData.contactName,
+        contactEmail: validatedData.contactEmail,
+        contactPhone: validatedData.contactPhone,
+        negotiatedRate: validatedData.negotiatedRate
       }
     });
 
     return NextResponse.json({ success: true, account });
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: 'Validation error', details: error.errors }, { status: 400 });
+    }
     console.error('Failed to create corporate account:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }

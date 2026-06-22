@@ -1,5 +1,9 @@
 import { defineConfig, devices } from '@playwright/test';
 import os from 'os';
+import * as dotenv from 'dotenv';
+
+dotenv.config({ path: '.env' });
+dotenv.config({ path: '.env.local', override: true });
 
 const isMac12 = os.platform() === 'darwin' && os.release().startsWith('21.');
 

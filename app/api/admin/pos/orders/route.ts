@@ -17,7 +17,7 @@ export async function POST(req: Request) {
 
     const totalAmount = items.reduce((acc: number, item: any) => acc + (item.price * item.quantity), 0);
 
-    let invoiceId = null;
+    let folioId = null;
 
     if (paymentType === 'ROOM_CHARGE' && roomNumber) {
       const room = await prisma.room.findUnique({
@@ -25,7 +25,7 @@ export async function POST(req: Request) {
         include: {
           bookings: {
             where: { status: 'CHECKED_IN' },
-            include: { invoices: { where: { folioType: 'MASTER' } } }
+            include: { folios: { where: { folioType: 'MASTER' } } }
           }
         }
       });
@@ -35,20 +35,20 @@ export async function POST(req: Request) {
       }
 
       const activeBooking = room.bookings[0];
-      const masterInvoice = activeBooking.invoices[0];
+      const masterFolio = activeBooking.folios[0];
 
-      if (!masterInvoice) {
+      if (!masterFolio) {
         return NextResponse.json({ error: 'No open master folio (invoice) found for the guest' }, { status: 404 });
       }
 
-      invoiceId = masterInvoice.id;
+      folioId = masterFolio.id;
 
       const outlet = await prisma.pOSOutlet.findUnique({ where: { id: outletId } });
       const description = `POS Charge: ${outlet?.name || 'Outlet'}`;
 
-      await prisma.invoiceLineItem.create({
+      await prisma.folioLineItem.create({
         data: {
-          invoiceId,
+          folioId,
           description,
           quantity: 1,
           unitPrice: totalAmount,
@@ -57,11 +57,11 @@ export async function POST(req: Request) {
         }
       });
       
-      await prisma.invoice.update({
-        where: { id: invoiceId },
+      await prisma.folio.update({
+        where: { id: folioId },
         data: { 
-            subtotal: masterInvoice.subtotal + totalAmount,
-            grandTotal: masterInvoice.grandTotal + totalAmount 
+            subtotal: masterFolio.subtotal + totalAmount,
+            grandTotal: masterFolio.grandTotal + totalAmount 
         }
       });
     }
@@ -69,7 +69,7 @@ export async function POST(req: Request) {
     const order = await prisma.pOSOrder.create({
       data: {
         outletId,
-        invoiceId,
+        folioId,
         paymentType,
         status: 'COMPLETED',
         totalAmount,

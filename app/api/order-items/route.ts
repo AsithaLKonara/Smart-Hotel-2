@@ -82,30 +82,34 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Menu item not found' }, { status: 404 })
     }
 
-    const item = await prisma.orderItem.create({
-      data: {
-        orderId: validatedData.orderId,
-        menuItemId: validatedData.menuItemId,
-        quantity: validatedData.quantity,
-        price: validatedData.price,
-        subtotal: validatedData.subtotal,
-        notes: validatedData.notes,
-      },
-      include: {
-        menuItem: true,
-      },
-    })
+    const item = await prisma.$transaction(async (tx: any) => {
+      const createdItem = await tx.orderItem.create({
+        data: {
+          orderId: validatedData.orderId,
+          menuItemId: validatedData.menuItemId,
+          quantity: validatedData.quantity,
+          price: validatedData.price,
+          subtotal: validatedData.subtotal,
+          notes: validatedData.notes,
+        },
+        include: {
+          menuItem: true,
+        },
+      })
 
-    // Update order total
-    const orderItems = await prisma.orderItem.findMany({
-      where: { orderId: validatedData.orderId },
-    })
+      // Update order total
+      const orderItems = await tx.orderItem.findMany({
+        where: { orderId: validatedData.orderId },
+      })
 
-    const newTotal = orderItems.reduce((sum: number, item: any) => sum + item.subtotal, 0)
+      const newTotal = orderItems.reduce((sum: number, item: any) => sum + item.subtotal, 0)
 
-    await prisma.foodOrder.update({
-      where: { id: validatedData.orderId },
-      data: { totalAmount: newTotal },
+      await tx.foodOrder.update({
+        where: { id: validatedData.orderId },
+        data: { totalAmount: newTotal },
+      })
+
+      return createdItem
     })
 
     return NextResponse.json(item, { status: 201 })

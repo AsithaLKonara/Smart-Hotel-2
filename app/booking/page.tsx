@@ -100,7 +100,7 @@ function BookingPageContent() {
 
   const createBooking = async () => {
     if (!selectedRoom) return
-    if (status === 'unauthenticated') {
+    if (!session?.user) {
       toast.error('Authentication required to book. Redirecting to login...')
       handleAuthRedirect()
       return
@@ -108,7 +108,9 @@ function BookingPageContent() {
     setIsLoading(true)
     try {
       const payload = {
-        roomId: selectedRoom.id, checkIn: searchData.checkIn, checkOut: searchData.checkOut,
+        roomId: selectedRoom.id, 
+        checkIn: new Date(searchData.checkIn).toISOString(), 
+        checkOut: new Date(searchData.checkOut).toISOString(),
         guests: searchData.guests, totalAmount, specialRequests: bookingData.specialRequests,
         paymentMethod: bookingData.paymentMethod,
         ...(session ? {} : { guestName: bookingData.guestName, guestEmail: bookingData.guestEmail, guestPhone: bookingData.guestPhone })
@@ -174,7 +176,7 @@ function BookingPageContent() {
                 <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
               </div>
-              <div className="lg:col-span-6 space-y-8">
+              <div className="lg:col-span-6 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-8 lg:p-12 shadow-2xl space-y-8">
                 <div className="space-y-3">
                   <h2 className="text-3xl font-serif font-bold text-white">Plan Your Arrival</h2>
                   <p className="text-white/40 font-light text-sm">Select your preferred dates and guest count to view available luxury accommodations.</p>
@@ -298,13 +300,13 @@ function BookingPageContent() {
               <div className="lg:col-span-8 space-y-10">
 
                 {/* Auth guard */}
-                {status === 'unauthenticated' && (
+                {!session?.user && (
                   <div className="bg-primary/10 border border-primary/20 rounded-2xl p-8 space-y-4">
                     <div className="flex items-center gap-3">
                       <LogIn className="w-5 h-5 text-primary" />
-                      <h3 className="text-lg font-serif font-bold text-white">Sign In for Faster Booking</h3>
+                      <h3 className="text-lg font-serif font-bold text-white">Authentication Required</h3>
                     </div>
-                    <p className="text-white/50 text-sm font-light">Sign in to pre-fill your details and access member benefits. Or continue as a guest below.</p>
+                    <p className="text-white/50 text-sm font-light">You must sign in or create an account to finalize your reservation. Your selected dates and suite will be saved.</p>
                     <Button onClick={handleAuthRedirect} className="bg-gold-gradient text-white rounded-xl px-8 h-12 uppercase tracking-widest text-xs font-bold border-none shadow-luxury">
                       Sign In to Book
                     </Button>
@@ -318,17 +320,17 @@ function BookingPageContent() {
                     <div className="space-y-2">
                       <label className={labelClass}>Full Name</label>
                       <input type="text" className={inputClass} placeholder={session?.user?.name || 'Your full name'}
-                        value={session ? (session.user?.name || '') : bookingData.guestName}
-                        onChange={e => !session && setBookingData({...bookingData, guestName: e.target.value})}
-                        readOnly={!!session}
+                        value={session?.user?.name || bookingData.guestName}
+                        onChange={e => setBookingData({...bookingData, guestName: e.target.value})}
+                        readOnly={!!session?.user?.name}
                       />
                     </div>
                     <div className="space-y-2">
                       <label className={labelClass}>Email Address</label>
                       <input type="email" className={inputClass} placeholder={session?.user?.email || 'your@email.com'}
-                        value={session ? (session.user?.email || '') : bookingData.guestEmail}
-                        onChange={e => !session && setBookingData({...bookingData, guestEmail: e.target.value})}
-                        readOnly={!!session}
+                        value={session?.user?.email || bookingData.guestEmail}
+                        onChange={e => setBookingData({...bookingData, guestEmail: e.target.value})}
+                        readOnly={!!session?.user?.email}
                       />
                     </div>
                     <div className="space-y-2 md:col-span-2">
@@ -388,7 +390,7 @@ function BookingPageContent() {
                       <span className="text-3xl font-serif font-bold text-primary">{formatPrice(totalAmount)}</span>
                     </div>
                     <Button onClick={createBooking} disabled={isLoading} className="w-full bg-gold-gradient text-white h-14 rounded-xl uppercase tracking-[0.2em] text-xs font-bold border-none shadow-luxury hover:opacity-90">
-                      {isLoading ? 'Processing...' : 'Confirm Reservation'}
+                      {isLoading ? 'Processing...' : (!session?.user ? 'Sign In to Confirm' : 'Confirm Reservation')}
                     </Button>
                     <div className="flex items-center gap-2 text-[9px] text-white/20 uppercase tracking-widest justify-center">
                       <Shield className="w-3 h-3" /><span>Secure SSL Encryption</span>

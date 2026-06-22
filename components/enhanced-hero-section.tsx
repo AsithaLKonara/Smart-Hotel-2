@@ -40,29 +40,22 @@ export default function EnhancedHeroSection() {
 
   return (
     <section className="relative min-h-screen lg:h-screen lg:min-h-[700px] w-full overflow-hidden bg-transparent flex flex-col justify-center">
-      {/* Background Image Slideshow with Smooth Crossfade and Scale Animation */}
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.div
-          key={currentSlide}
-          initial={{ opacity: 0, scale: 1.06 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.96 }}
-          transition={{ duration: 1.2, ease: "easeInOut" }}
-          className="absolute inset-0 -z-10 overflow-hidden"
+      {/* Background Video */}
+      <div className="absolute inset-0 -z-10 overflow-hidden">
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="object-cover w-full h-full"
         >
-          <Image
-            src={slides[currentSlide].image}
-            alt={slides[currentSlide].title}
-            fill
-            priority
-            className="object-cover origin-center"
-          />
-          {/* Multi-layered premium gradient overlays and vignette */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/25 to-black/65" />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-black/35" />
-          <div className="absolute inset-0 backdrop-blur-[1px]" />
-        </motion.div>
-      </AnimatePresence>
+          <source src="/videos/snaptik_7544319300136471815_v3.mp4" type="video/mp4" />
+        </video>
+        {/* Multi-layered premium gradient overlays and vignette */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/25 to-black/65" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-black/35" />
+        <div className="absolute inset-0 backdrop-blur-[1px]" />
+      </div>
 
       <div className="relative z-10 w-full container mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-0 flex flex-col items-center justify-center text-center">
         <div className="max-w-4xl mx-auto space-y-8 flex flex-col items-center">

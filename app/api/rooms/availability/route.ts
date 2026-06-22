@@ -68,10 +68,16 @@ export async function GET(request: NextRequest) {
           { checkIn: { lte: checkInDate }, checkOut: { gte: checkOutDate } }
         ]
       },
-      select: { roomId: true }
+      select: { 
+        roomAssignments: {
+          select: { roomId: true }
+        }
+      }
     })
 
-    const bookedRoomIds = new Set(conflictingBookings.map((b: any) => b.roomId))
+    const bookedRoomIds = new Set(
+      conflictingBookings.flatMap((b: any) => b.roomAssignments.map((ra: any) => ra.roomId))
+    )
 
     // 3. Filter and enrich available rooms
     const nights = getNightCount(checkInDate, checkOutDate)

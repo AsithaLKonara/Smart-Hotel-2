@@ -61,12 +61,12 @@ export async function POST(request: NextRequest) {
           where: { id: validated.roomId },
           include: { roomType: true }
         })
-        if (!room || room.status !== 'AVAILABLE') throw new Error('ROOM_UNAVAILABLE')
+        if (!room || room.status === 'MAINTENANCE' || room.status === 'OUT_OF_ORDER') throw new Error('ROOM_UNAVAILABLE')
 
         // Double check conflicts
         const conflict = await tx.booking.findFirst({
           where: {
-            roomId: validated.roomId,
+            roomAssignments: { some: { roomId: validated.roomId } },
             status: { in: ['CONFIRMED', 'CHECKED_IN'] },
             NOT: { status: 'CANCELLED' },
             OR: [
@@ -76,18 +76,18 @@ export async function POST(request: NextRequest) {
         })
         if (conflict) throw new Error('DOUBLE_BOOKING')
 
-        // Resolve Guest
         let guestId = session?.user?.id
         if (!guestId && validated.guestEmail) {
           const existing = await tx.user.findUnique({ where: { email: validated.guestEmail } })
           if (existing) { guestId = existing.id }
           else {
+            const guestRole = await tx.role.findUnique({ where: { name: 'GUEST' } })
             const newUser = await tx.user.create({
               data: {
                 email: validated.guestEmail,
                 name: validated.guestName || 'Guest',
                 password: '', // Passwordless guest
-                role: 'GUEST',
+                roleId: guestRole?.id,
                 createdAt: new Date(),
                 updatedAt: new Date()
               }
@@ -121,30 +121,6 @@ export async function POST(request: NextRequest) {
           include: { room: { include: { roomType: true } }, guest: true }
         })
 
-        // Create Invoice and Line Item
-        const invoice = await tx.invoice.create({
-          data: {
-            invoiceNo: `INV-${confirmationCode}`,
-            bookingId: booking.id,
-            subtotal: totalAmount,
-            taxAmount: 0, // No tax
-            grandTotal: totalAmount,
-            status: 'DRAFT',
-            folioType: 'MASTER'
-          }
-        });
-
-        await tx.invoiceLineItem.create({
-          data: {
-            invoiceId: invoice.id,
-            description: `Room Charge (${nights} nights)`,
-            quantity: 1,
-            unitPrice: totalAmount,
-            totalPrice: totalAmount,
-            category: 'ROOM',
-            sourceModule: 'BOOKING_ENGINE'
-          }
-        });
 
         // ==========================================
         // PHASE 2 DUAL-WRITE: RESERVATION & FOLIO DDD

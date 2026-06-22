@@ -259,7 +259,7 @@ export default async function HomePage() {
 
             <div className="relative aspect-video lg:aspect-square bg-gray-900 rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
               <Image 
-                src="https://images.unsplash.com/photo-1449156001533-cb39c771585b?auto=format&fit=crop&q=80&w=1000" 
+                src="https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&q=80&w=1000" 
                 alt="City Map View" 
                 fill 
                 className="object-cover opacity-60"

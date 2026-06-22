@@ -113,7 +113,6 @@ jest.mock('@sentry/nextjs', () => ({
 
 // Mock environment variables for testing
 process.env.NODE_ENV = 'test'
-process.env.DATABASE_URL = 'mongodb://localhost:27017/smarthotel_test'
 process.env.NEXTAUTH_URL = 'http://localhost:3000'
 process.env.NEXTAUTH_SECRET = 'test-secret-key-for-testing-only'
 process.env.STRIPE_SECRET_KEY = 'sk_test_51234567890abcdef'

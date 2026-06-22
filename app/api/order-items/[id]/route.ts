@@ -25,24 +25,28 @@ export async function PUT(
     const body = await request.json()
     const validatedData = updateOrderItemSchema.parse(body)
 
-    const item = await prisma.orderItem.update({
-      where: { id },
-      data: validatedData,
-      include: {
-        menuItem: true,
-      },
-    })
+    const item = await prisma.$transaction(async (tx: any) => {
+      const updatedItem = await tx.orderItem.update({
+        where: { id },
+        data: validatedData,
+        include: {
+          menuItem: true,
+        },
+      })
 
-    // Recalculate order total
-    const orderItems = await prisma.orderItem.findMany({
-      where: { orderId: item.orderId },
-    })
+      // Recalculate order total
+      const orderItems = await tx.orderItem.findMany({
+        where: { orderId: updatedItem.orderId },
+      })
 
-    const newTotal = orderItems.reduce((sum: number, item: any) => sum + item.subtotal, 0)
+      const newTotal = orderItems.reduce((sum: number, item: any) => sum + item.subtotal, 0)
 
-    await prisma.foodOrder.update({
-      where: { id: item.orderId },
-      data: { totalAmount: newTotal },
+      await tx.foodOrder.update({
+        where: { id: updatedItem.orderId },
+        data: { totalAmount: newTotal },
+      })
+
+      return updatedItem
     })
 
     return NextResponse.json(item)
@@ -83,20 +87,22 @@ export async function DELETE(
       return NextResponse.json({ error: 'Order item not found' }, { status: 404 })
     }
 
-    await prisma.orderItem.delete({
-      where: { id },
-    })
+    await prisma.$transaction(async (tx: any) => {
+      await tx.orderItem.delete({
+        where: { id },
+      })
 
-    // Recalculate order total
-    const orderItems = await prisma.orderItem.findMany({
-      where: { orderId: item.orderId },
-    })
+      // Recalculate order total
+      const orderItems = await tx.orderItem.findMany({
+        where: { orderId: item.orderId },
+      })
 
-    const newTotal = orderItems.reduce((sum: number, item: any) => sum + item.subtotal, 0)
+      const newTotal = orderItems.reduce((sum: number, item: any) => sum + item.subtotal, 0)
 
-    await prisma.foodOrder.update({
-      where: { id: item.orderId },
-      data: { totalAmount: newTotal },
+      await tx.foodOrder.update({
+        where: { id: item.orderId },
+        data: { totalAmount: newTotal },
+      })
     })
 
     return NextResponse.json({ message: 'Order item deleted successfully' })

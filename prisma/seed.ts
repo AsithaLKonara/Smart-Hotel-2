@@ -182,7 +182,7 @@ async function main() {
       checkOut: addDays(today, 2),
       status: BookingStatus.CHECKED_IN,
       source: BookingSource.WEBSITE,
-      roomId: createdRooms['102'].id,
+      roomAssignments: { create: { roomId: createdRooms['102'].id, startDate: subDays(today, 1), endDate: addDays(today, 2) } },
       primaryGuestId: createdUsers['guest@example.com'].id,
       guests: 2,
       totalAmount: 450.0,
@@ -194,16 +194,13 @@ async function main() {
           checkInTime: subDays(today, 1)
         }
       },
-      invoices: {
+      folios: {
         create: {
-          invoiceNo: 'INV-CUR-001',
-          subtotal: 450.0,
-          taxAmount: 45.0,
-          grandTotal: 495.0,
+          type: 'GUEST',
           status: 'OPEN',
           lineItems: {
             create: [
-              { description: 'Room Charge (3 nights)', quantity: 1, unitPrice: 450.0, totalPrice: 450.0, category: 'ROOM' }
+              { description: 'Room Charge (3 nights)', amount: 450.0, category: 'ROOM' }
             ]
           }
         }
@@ -219,21 +216,18 @@ async function main() {
       checkOut: addDays(today, 8),
       status: BookingStatus.CONFIRMED,
       source: BookingSource.EXPEDIA,
-      roomId: createdRooms['201'].id,
+      roomAssignments: { create: { roomId: createdRooms['201'].id, startDate: addDays(today, 5), endDate: addDays(today, 8) } },
       primaryGuestId: createdUsers['guestb@example.com'].id,
       guests: 2,
       totalAmount: 750.0,
       paymentStatus: PaymentStatus.unpaid,
-      invoices: {
+      folios: {
         create: {
-          invoiceNo: 'INV-FUT-002',
-          subtotal: 750.0,
-          taxAmount: 75.0,
-          grandTotal: 825.0,
-          status: 'DRAFT',
+          type: 'GUEST',
+          status: 'OPEN',
           lineItems: {
             create: [
-              { description: 'Room Charge (3 nights)', quantity: 1, unitPrice: 750.0, totalPrice: 750.0, category: 'ROOM' }
+              { description: 'Room Charge (3 nights)', amount: 750.0, category: 'ROOM' }
             ]
           }
         }

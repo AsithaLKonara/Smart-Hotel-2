@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, ReactNode } from 'react'
+import { useEffect, ReactNode, useRef } from 'react'
 import { X } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -33,29 +33,61 @@ export function Modal({
   maxWidth = '2xl',
   showCloseButton = true,
 }: ModalProps) {
-  // Handle ESC key press
+  const modalRef = useRef<HTMLDivElement>(null)
+
+  // Handle ESC key press and focus trap
   useEffect(() => {
     if (!open) return
 
-    const handleEscape = (e: KeyboardEvent) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         onClose()
+        return
+      }
+
+      if (e.key === 'Tab' && modalRef.current) {
+        const focusableElements = modalRef.current.querySelectorAll(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        )
+        
+        const firstElement = focusableElements[0] as HTMLElement
+        const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement
+
+        if (e.shiftKey) {
+          if (document.activeElement === firstElement) {
+            lastElement?.focus()
+            e.preventDefault()
+          }
+        } else {
+          if (document.activeElement === lastElement) {
+            firstElement?.focus()
+            e.preventDefault()
+          }
+        }
       }
     }
 
-    document.addEventListener('keydown', handleEscape)
+    document.addEventListener('keydown', handleKeyDown)
     // Prevent body scroll when modal is open
     document.body.style.overflow = 'hidden'
 
+    // Focus the first element initially
+    setTimeout(() => {
+      if (modalRef.current) {
+        const firstElement = modalRef.current.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])') as HTMLElement
+        if (firstElement) firstElement.focus()
+      }
+    }, 10)
+
     return () => {
-      document.removeEventListener('keydown', handleEscape)
+      document.removeEventListener('keydown', handleKeyDown)
       document.body.style.overflow = 'unset'
     }
   }, [open, onClose])
 
-  if (!open) return null
-
   // Handle backdrop click
+  if (!open) return null;
+
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
       onClose()
@@ -64,6 +96,7 @@ export function Modal({
 
   return (
     <div
+      ref={modalRef}
       className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
       onClick={handleBackdropClick}
       role="dialog"

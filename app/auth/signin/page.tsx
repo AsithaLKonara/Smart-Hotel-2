@@ -61,17 +61,22 @@ export default function SignInPage() {
         
         const rawUser = session.user as any;
         const role = rawUser?.roleName || rawUser?.role?.name || (session as any)?.roleName || 'GUEST';
-        let targetUrl = '/dashboard';
         
-        if (role === 'SUPER_ADMIN' || role === 'MANAGER') targetUrl = '/admin/dashboard';
-        else if (role === 'RECEPTIONIST') targetUrl = '/admin/receptionist';
-        else if (role === 'KITCHEN') targetUrl = '/kitchen/dashboard';
-        else if (role === 'HOUSEKEEPING' || role === 'MAINTENANCE') targetUrl = '/admin/tasks';
+        const callbackUrl = new URLSearchParams(window.location.search).get('callbackUrl');
+        let targetUrl = callbackUrl || '/dashboard';
+        
+        if (!callbackUrl) {
+          if (role === 'SUPER_ADMIN' || role === 'MANAGER') targetUrl = '/admin/dashboard';
+          else if (role === 'RECEPTIONIST') targetUrl = '/admin/receptionist';
+          else if (role === 'KITCHEN') targetUrl = '/kitchen/dashboard';
+          else if (role === 'HOUSEKEEPING' || role === 'MAINTENANCE') targetUrl = '/admin/tasks';
+        }
         
         window.location.href = targetUrl;
       } else {
         // If session is null right after signin due to cache, just fallback to redirect and let middleware route it.
-        window.location.href = '/dashboard';
+        const callbackUrl = new URLSearchParams(window.location.search).get('callbackUrl');
+        window.location.href = callbackUrl || '/dashboard';
       }
 
     } catch (error) {
@@ -269,7 +274,7 @@ export default function SignInPage() {
               </form>
 
               <p className="text-center text-sm text-white/30 font-light">
-                Not part of the sanctuary yet? <Link href="/auth/signup" className="text-primary font-bold hover:underline">Apply for Access</Link>
+                Not part of the sanctuary yet? <a href="#" onClick={(e) => { e.preventDefault(); const cb = new URLSearchParams(window.location.search).get('callbackUrl'); window.location.href = cb ? `/auth/signup?callbackUrl=${encodeURIComponent(cb)}` : '/auth/signup'; }} className="text-primary font-bold hover:underline">Apply for Access</a>
               </p>
             </div>
           </div>

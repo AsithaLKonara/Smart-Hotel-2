@@ -77,7 +77,7 @@ export const CinematicHero: React.FC<CinematicHeroProps> = ({
         <Image
           src={fallbackImageUrl}
           alt="Luxury Backdrop"
-          fill
+          fill priority
           className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out ${
             isLoaded ? 'opacity-0' : 'opacity-100'
           }`}

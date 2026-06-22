@@ -3,8 +3,10 @@
 import { motion, AnimatePresence } from "framer-motion"
 import { TrendingUp, TrendingDown, Minus, AlertCircle, Sparkles, ArrowRight } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { Area, AreaChart, ResponsiveContainer } from 'recharts'
+import dynamic from 'next/dynamic';
 import { Card } from '@/components/ui/card'
+
+const DynamicSparkline = dynamic(() => import('./sparkline-chart'), { ssr: false });
 
 interface KpiCardProps {
   title: string
@@ -56,10 +58,10 @@ export function KpiCard({
   }
 
   const getTrendColor = () => {
-    if (delta === undefined) return 'text-white/20'
+    if (delta === undefined) return 'text-white/50'
     if (delta > 0) return 'text-emerald-400'
     if (delta < 0) return 'text-rose-400'
-    return 'text-white/20'
+    return 'text-white/50'
   }
 
   const getThemeColors = () => {
@@ -74,16 +76,28 @@ export function KpiCard({
   }
 
   const theme = getThemeColors()
+  const gradientId = `gradient-${title.replace(/\s+/g, '-')}`
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (onClick && (e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault()
+      onClick()
+    }
+  }
 
   return (
     <Card 
       className={cn(
         "relative overflow-hidden group transition-all duration-300",
         isAnomaly && "border-rose-500/50 ring-1 ring-rose-500/20",
-        onClick && "cursor-pointer hover:border-white/20 active:scale-[0.98]",
+        onClick && "cursor-pointer hover:border-white/20 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
         className
       )}
       onClick={onClick}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={handleKeyDown}
+      aria-label={`${title}: ${value} ${subtitle || ''}`}
     >
       {/* Anomaly Pulse */}
       {isAnomaly && (
@@ -93,25 +107,7 @@ export function KpiCard({
       {/* Sparkline Overlay */}
       {sparklineData && sparklineData.length > 0 && (
         <div className="absolute inset-x-0 bottom-0 h-16 opacity-20 pointer-events-none group-hover:opacity-40 transition-opacity">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={sparklineData}>
-              <defs>
-                <linearGradient id={`gradient-${title.replace(/\s+/g, '-')}`} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="currentColor" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="currentColor" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <Area
-                type="monotone"
-                dataKey="value"
-                stroke="currentColor"
-                strokeWidth={1.5}
-                fill={`url(#gradient-${title.replace(/\s+/g, '-')})`}
-                className={theme.text}
-                isAnimationActive={true}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
+          <DynamicSparkline data={sparklineData} themeText={theme.text} gradientId={gradientId} />
         </div>
       )}
 
@@ -123,7 +119,7 @@ export function KpiCard({
                 {icon}
               </div>
             )}
-            <h3 className="text-[10px] font-black text-white/40 uppercase tracking-[0.15em]">
+            <h3 className="text-[10px] font-black text-white/70 uppercase tracking-[0.15em]">
               {title}
             </h3>
           </div>
@@ -149,7 +145,7 @@ export function KpiCard({
               {formatValue(value)}
             </span>
             {comparativeValue && (
-              <span className="text-[10px] text-white/20 font-medium">
+              <span className="text-[10px] text-white/50 font-medium">
                 / {comparativeValue}
               </span>
             )}
@@ -164,7 +160,7 @@ export function KpiCard({
                 </p>
               </div>
             ) : (subtitle || deltaLabel) && (
-              <div className="text-[10px] text-white/30 uppercase tracking-widest font-black">
+              <div className="text-[10px] text-white/60 uppercase tracking-widest font-black">
                 {subtitle || deltaLabel}
               </div>
             )}
@@ -173,8 +169,8 @@ export function KpiCard({
 
         {actionLabel && (
           <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between group/action">
-            <span className="text-[9px] font-black text-white/40 uppercase tracking-wider">{actionLabel}</span>
-            <ArrowRight className="w-3 h-3 text-white/20 group-hover/action:text-primary transition-colors group-hover/action:translate-x-1 duration-300" />
+            <span className="text-[9px] font-black text-white/70 uppercase tracking-wider">{actionLabel}</span>
+            <ArrowRight className="w-3 h-3 text-white/50 group-hover/action:text-primary transition-colors group-hover/action:translate-x-1 duration-300" />
           </div>
         )}
       </div>

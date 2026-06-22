@@ -2,6 +2,7 @@
 
 import React from 'react'
 import * as Sentry from '@sentry/nextjs'
+import { logger } from '@/lib/logger'
 
 /**
  * Safely extracts a message and stack trace from any thrown error value (standard or non-standard).
@@ -77,10 +78,8 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
       },
     })
     
-    // Log to console for debugging
-    console.error('ErrorBoundary caught an error:', {
-      message,
-      stack: stack || normalizedError.stack,
+    // Log to structured JSON logger
+    logger.error('ErrorBoundary caught an error', normalizedError, {
       componentStack: errorInfo.componentStack,
     })
   }

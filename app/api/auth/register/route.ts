@@ -55,7 +55,6 @@ export async function POST(request: NextRequest) {
         email: validatedData.email,
         password: hashedPassword,
         phone: validatedData.phone || '',
-        role: 'GUEST', // Default role for new registrations
         createdAt: new Date(),
         updatedAt: new Date(),
       },
@@ -63,7 +62,6 @@ export async function POST(request: NextRequest) {
         id: true,
         name: true,
         email: true,
-        role: true,
         createdAt: true,
       }
     })

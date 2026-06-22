@@ -117,14 +117,18 @@ export async function getHotelAboutContent() {
   }
 
     let staff: any[] = []
-    try {
-      staff = await (prisma as any).employee.findMany({
-        orderBy: { createdAt: 'asc' },
-        take: 6,
-      })
-    } catch (error) {
-      console.error('Error fetching staff:', error)
-      staff = []
+    if (isDatabaseConfigured()) {
+      try {
+        staff = await (prisma as any).employee.findMany({
+          orderBy: { createdAt: 'asc' },
+          take: 6,
+        })
+      } catch (error) {
+        console.error('Error fetching staff:', error)
+        staff = []
+      }
+    } else {
+      console.warn('DATABASE_URL not configured - skipping employee fetch for about page')
     }
 
   return {

@@ -47,7 +47,8 @@ export default function SignUpPage() {
 
       if (response.ok) {
         toast.success('Sanctuary account created')
-        router.push('/auth/signin')
+        const cb = new URLSearchParams(window.location.search).get('callbackUrl');
+        router.push(cb ? `/auth/signin?callbackUrl=${encodeURIComponent(cb)}` : '/auth/signin')
       } else {
         const data = await response.json()
         toast.error(data.error || 'Registration failed')
@@ -173,7 +174,7 @@ export default function SignUpPage() {
 
           <div className="pt-8 border-t border-white/10 flex flex-col items-center space-y-4">
              <p className="text-sm text-white/40 font-light">
-               Already a member? <Link href="/auth/signin" className="text-primary font-bold italic">Sign in</Link>
+               Already a member? <a href="#" onClick={(e) => { e.preventDefault(); const cb = new URLSearchParams(window.location.search).get('callbackUrl'); window.location.href = cb ? `/auth/signin?callbackUrl=${encodeURIComponent(cb)}` : '/auth/signin'; }} className="text-primary font-bold italic">Sign in</a>
              </p>
              <div className="flex items-center space-x-2 text-[10px] text-white/20 uppercase tracking-widest font-bold">
                <ShieldCheck className="w-3 h-3" />
