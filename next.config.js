@@ -46,6 +46,17 @@ const nextConfig = {
     ],
   },
 
+  // 1. Externalize server-only runtime packages
+  // EXTREMELY IMPORTANT: DO NOT add @sentry/nextjs or @sentry/node here!
+  // Doing so will crash the Vercel Edge Runtime (MIDDLEWARE_INVOCATION_FAILED)
+  serverExternalPackages: [
+    '@prisma/client',
+    'prisma',
+    'require-in-the-middle',
+    'import-in-the-middle',
+    'pdfkit',
+    'fontkit',
+  ],
   experimental: {
     optimizePackageImports: ['lucide-react'],
   },
