@@ -57,6 +57,8 @@ const nextConfig = {
     '@opentelemetry/instrumentation',
     'require-in-the-middle',
     'import-in-the-middle',
+    'pdfkit',
+    'fontkit',
   ],
   experimental: {
     optimizePackageImports: ['lucide-react'],

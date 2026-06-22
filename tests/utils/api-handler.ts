@@ -43,5 +43,5 @@ export function createNextRequest(
     init.body = JSON.stringify(body);
   }
 
-  return new NextRequest(url, init);
+  return new NextRequest(url, init as any);
 }

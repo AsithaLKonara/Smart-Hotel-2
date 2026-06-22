@@ -114,7 +114,7 @@ export async function POST(req: Request) {
     });
 
   } catch (error) {
-    logger.error('Booking.com sync failed', { error });
+    logger.error('Booking.com sync failed', error instanceof Error ? error : new Error(String(error)));
     return NextResponse.json({ error: 'Synchronization failed' }, { status: 500 });
   }
 }

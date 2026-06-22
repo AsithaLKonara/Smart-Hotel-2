@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
     }, { status: 200 });
 
   } catch (error: any) {
-    log.error('Webhook Endpoint Error', { error: error.message });
+    log.error('Webhook Endpoint Error', error instanceof Error ? error : new Error(String(error)));
     
     // Even on error, we might want to return 200 if we've logged it,
     // to prevent the OTA from retrying indefinitely if it's a logic error.

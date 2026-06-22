@@ -40,8 +40,17 @@ class Logger {
     console.warn(this.formatMessage('warn', message, context));
   }
 
-  error(message: string, error?: Error, context?: LogContext) {
-    console.error(this.formatMessage('error', message, context, error));
+  error(message: string, errorOrContext?: Error | unknown, context?: LogContext) {
+    let errorObj: Error | undefined;
+    let contextObj: LogContext | undefined = context;
+
+    if (errorOrContext instanceof Error) {
+      errorObj = errorOrContext;
+    } else if (errorOrContext) {
+      contextObj = { ...(errorOrContext as object), ...context };
+    }
+
+    console.error(this.formatMessage('error', message, contextObj, errorObj));
   }
 
   debug(message: string, context?: LogContext) {
@@ -52,3 +61,5 @@ class Logger {
 }
 
 export const logger = new Logger();
+export const log = logger;
+export default logger;

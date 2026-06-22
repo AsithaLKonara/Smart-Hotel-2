@@ -44,7 +44,7 @@ export async function POST(req: Request) {
     });
 
   } catch (error) {
-    logger.error('Booking.com webhook processing failed', { error });
+    logger.error('Booking.com webhook processing failed', error instanceof Error ? error : new Error(String(error)));
     
     // Even on error, we should return a valid OTA Error response if possible
     return new Response('Internal Server Error', { status: 500 });
