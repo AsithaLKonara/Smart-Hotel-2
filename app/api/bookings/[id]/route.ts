@@ -168,7 +168,7 @@ export async function PATCH(
             checkoutFinalizedAt: new Date() 
           } : {})
         },
-        include: { room: { include: { roomType: true } }, guest: true }
+        include: { roomAssignments: { include: { room: { include: { roomType: true } } } }, guest: true }
       })
 
       // 2. Resolve Side Effects (Room Status & Tasks)
@@ -185,9 +185,10 @@ export async function PATCH(
           })
 
           // Create automatic housekeeping task
+          const assignment = b.roomAssignments?.[0]
           await tx.task.create({
             data: {
-              title: `Clean Room ${b.room.number}`,
+              title: `Clean Room ${assignment?.room?.number || 'TBD'}`,
               description: `Checkout cleaning for ${b.confirmationCode}.`,
               type: 'HOUSEKEEPING',
               priority: 'HIGH',
@@ -226,8 +227,9 @@ export async function PATCH(
     // 3. EMIT REAL-TIME EVENTS
     const { RealtimeEvents } = await import('@/lib/realtime')
     await RealtimeEvents.emitBookingUpdated(updatedBooking)
-    if (updatedBooking.room) {
-      await RealtimeEvents.emitRoomStatusChanged(updatedBooking.room)
+    const assignment = updatedBooking.roomAssignments?.[0]
+    if (assignment?.room) {
+      await RealtimeEvents.emitRoomStatusChanged(assignment.room)
     }
     
     // 4. CQRS PROJECTIONS
@@ -260,14 +262,14 @@ export async function PATCH(
         email: updatedBooking.guest.email,
         phone: updatedBooking.guest.phone,
       } : null,
-      room: updatedBooking.room ? {
-        id: updatedBooking.room.id,
-        number: updatedBooking.room.number,
-        type: updatedBooking.room.roomType.name,
-        price: updatedBooking.room.roomType.baseRate,
-        capacity: Number(updatedBooking.room.roomType.capacity),
-        floor: Number(updatedBooking.room.floor),
-        size: Number(updatedBooking.room.size),
+      room: assignment?.room ? {
+        id: assignment.room.id,
+        number: assignment.room.number,
+        type: assignment.room.roomType.name,
+        price: assignment.room.roomType.baseRate,
+        capacity: Number(assignment.room.roomType.capacity),
+        floor: Number(assignment.room.floor),
+        size: Number(assignment.room.size),
       } : null,
     }
 

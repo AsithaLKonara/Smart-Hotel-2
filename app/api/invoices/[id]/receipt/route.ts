@@ -81,7 +81,7 @@ async function generateInvoicePdf(invoice: any, securitySignature: string): Prom
 
     doc.fontSize(10)
       .fillColor(TEXT_DARK)
-      .text(`Room: ${invoice.booking.room.roomNumber} (${invoice.booking.room.roomType.name})`, 300, 165)
+      .text(`Room: ${invoice.booking.roomAssignments?.[0]?.room?.number || 'TBD'} (${invoice.booking.roomAssignments?.[0]?.room?.roomType?.name || 'Standard'})`, 300, 165)
       .fillColor(TEXT_MUTED)
       .text(`Check-In: ${format(new Date(invoice.booking.checkIn), 'MMM d, yyyy')}`, 300, 180)
       .text(`Check-Out: ${format(new Date(invoice.booking.checkOut), 'MMM d, yyyy')}`, 300, 195)
@@ -224,9 +224,13 @@ export async function GET(
       include: {
         booking: {
           include: {
-            room: {
+            roomAssignments: {
               include: {
-                roomType: true
+                room: {
+                  include: {
+                    roomType: true
+                  }
+                }
               }
             },
             guest: true

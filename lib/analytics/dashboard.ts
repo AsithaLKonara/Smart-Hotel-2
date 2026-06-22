@@ -105,7 +105,7 @@ export async function computeDashboardAnalytics(referenceDate = new Date()): Pro
           { checkIn: { lte: todayEnd }, checkOut: { gte: thirtyDaysAgo } }
         ]
       },
-      include: { room: { include: { roomType: true } }, guest: true }
+      include: { roomAssignments: { include: { room: { include: { roomType: true } } } }, guest: true }
     }),
     prisma.foodOrder.findMany({
       where: { createdAt: { gte: previousMonthStart }, status: 'DELIVERED' }
@@ -116,7 +116,7 @@ export async function computeDashboardAnalytics(referenceDate = new Date()): Pro
     prisma.booking.findMany({
       orderBy: { createdAt: 'desc' },
       take: 5,
-      include: { room: { include: { roomType: true } }, guest: true }
+      include: { roomAssignments: { include: { room: { include: { roomType: true } } } }, guest: true }
     }),
     prisma.user.findMany({ select: { id: true, role: { select: { name: true } } } }),
     prisma.user.count({ where: { role: { name: { in: ['RECEPTIONIST', 'HOUSEKEEPING', 'HOUSEKEEPER', 'MAINTENANCE', 'KITCHEN'] } } } })
@@ -174,11 +174,12 @@ export async function computeDashboardAnalytics(referenceDate = new Date()): Pro
   // 4. Performance Leaderboard (Top Rooms)
   const roomPerformanceMap = new Map<string, { number: string; type: string; count: number; revenue: number }>()
   bookingsLast30Days.forEach((b: any) => {
-    if (!b.room) return
-    const roomId = b.roomId
+    const assignment = b.roomAssignments?.[0]
+    if (!assignment?.room) return
+    const roomId = assignment.roomId
     const existing = roomPerformanceMap.get(roomId) || { 
-      number: b.room.number, 
-      type: b.room.roomType.name, 
+      number: assignment.room.number, 
+      type: assignment.room.roomType.name, 
       count: 0, 
       revenue: 0 
     }
@@ -201,17 +202,20 @@ export async function computeDashboardAnalytics(referenceDate = new Date()): Pro
     }))
 
   // 5. Activity Transformation
-  const recentActivityBookings = recentBookings.map((b: any) => ({
-    id: b.id,
-    guestName: b.guest?.name || 'Guest',
-    roomNumber: b.room?.number || 'N/A',
-    roomType: b.room?.roomType?.name || 'Standard',
-    checkIn: b.checkIn.toISOString(),
-    checkOut: b.checkOut.toISOString(),
-    totalAmount: b.totalAmount || 0,
-    status: b.status,
-    createdAt: b.createdAt.toISOString()
-  }))
+  const recentActivityBookings = recentBookings.map((b: any) => {
+    const assignment = b.roomAssignments?.[0]
+    return {
+      id: b.id,
+      guestName: b.guest?.name || 'Guest',
+      roomNumber: assignment?.room?.number || 'N/A',
+      roomType: assignment?.room?.roomType?.name || 'Standard',
+      checkIn: b.checkIn.toISOString(),
+      checkOut: b.checkOut.toISOString(),
+      totalAmount: b.totalAmount || 0,
+      status: b.status,
+      createdAt: b.createdAt.toISOString()
+    }
+  })
 
   // 6. Guest Stats
   const getRoleCount = (roleName: string) => userStats.filter((u: any) => u.role?.name === roleName).length

@@ -13,7 +13,7 @@ export async function POST(req: Request) {
     // 1. Get all CHECKED_IN bookings
     const activeBookings = await prisma.booking.findMany({
       where: { status: 'CHECKED_IN' },
-      include: { room: { include: { roomType: true } } }
+      include: { roomAssignments: { include: { room: { include: { roomType: true } } } } }
     });
 
     let totalRevenue = 0;
@@ -37,13 +37,14 @@ export async function POST(req: Request) {
         });
       }
 
-      const rate = booking.room.roomType.baseRate;
+      const assignment = booking.roomAssignments?.[0]
+      const rate = assignment?.room?.roomType?.baseRate || 0;
       const tax = 0; // Tax removed
 
       await prisma.invoiceLineItem.create({
         data: {
           invoiceId: folio.id,
-          description: `Room Charge - ${booking.room.number}`,
+          description: `Room Charge - ${assignment?.room?.number || 'TBD'}`,
           category: 'ROOM',
           quantity: 1,
           unitPrice: rate,

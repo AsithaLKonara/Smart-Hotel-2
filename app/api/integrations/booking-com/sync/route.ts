@@ -61,10 +61,17 @@ export async function POST(req: Request) {
           source: 'BOOKING_COM',
           checkIn: new Date(res.checkin),
           checkOut: new Date(res.checkout),
-          roomId: availableRoom.id,
           primaryGuestId: user.id,
           totalAmount: res.total_price,
           status: res.status === 'confirmed' ? 'CONFIRMED' : (res.status === 'cancelled' ? 'CANCELLED' : 'CONFIRMED'),
+          roomAssignments: {
+            create: {
+              roomId: availableRoom.id,
+              startDate: new Date(res.checkin),
+              endDate: new Date(res.checkout),
+              status: 'ACTIVE'
+            }
+          }
         },
         update: {
           status: res.status === 'confirmed' ? 'CONFIRMED' : (res.status === 'cancelled' ? 'CANCELLED' : 'CONFIRMED'),
@@ -86,7 +93,7 @@ export async function POST(req: Request) {
         
         const activeBookings = await prisma.booking.count({
            where: {
-             room: { roomTypeId: rt.id },
+             roomAssignments: { some: { room: { roomTypeId: rt.id } } },
              status: { notIn: ['CANCELLED', 'NO_SHOW'] },
              checkIn: { lte: targetDate },
              checkOut: { gt: targetDate }

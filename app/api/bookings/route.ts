@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
             updatedAt: new Date(),
             source: 'WEBSITE'
           },
-          include: { room: { include: { roomType: true } }, guest: true }
+          include: { roomAssignments: { include: { room: { include: { roomType: true } } } }, guest: true }
         })
 
 
@@ -178,13 +178,16 @@ export async function POST(request: NextRequest) {
 
       // 6. OTA SYNCHRONIZATION (Non-blocking but logged)
       try {
-        const availableCount = await prisma.room.count({ where: { roomTypeId: result.room.roomTypeId, status: 'AVAILABLE' } })
-        await pushAvailabilityToOTA({
-          roomTypeId: result.room.roomTypeId,
-          date: checkIn.toISOString().split('T')[0],
-          availability: availableCount,
-          rate: result.room.roomType.baseRate
-        })
+        const assignment = result.roomAssignments?.[0]
+        if (assignment && assignment.room) {
+          const availableCount = await prisma.room.count({ where: { roomTypeId: assignment.room.roomTypeId, status: 'AVAILABLE' } })
+          await pushAvailabilityToOTA({
+            roomTypeId: assignment.room.roomTypeId,
+            date: checkIn.toISOString().split('T')[0],
+            availability: availableCount,
+            rate: assignment.room.roomType.baseRate
+          })
+        }
       } catch (otaErr) {
         console.error('[OTA] Sync Failed during booking creation:', otaErr)
       }
@@ -218,8 +221,8 @@ export async function POST(request: NextRequest) {
       await sendBookingConfirmation({
         guestName: result.guest.name,
         guestEmail: result.guest.email,
-        roomNumber: result.room.number,
-        roomType: result.room.roomType.name,
+        roomNumber: result.roomAssignments?.[0]?.room?.number || 'TBD',
+        roomType: result.roomAssignments?.[0]?.room?.roomType?.name || 'Standard',
         checkIn,
         checkOut,
         guests: validated.guests,
@@ -267,15 +270,7 @@ export async function GET(request: NextRequest) {
       confirmationCode: true,
       createdAt: true,
       paymentStatus: true,
-      room: {
-        select: {
-          id: true,
-          number: true,
-          roomType: {
-            select: { name: true, baseRate: true }
-          }
-        }
-      },
+
       guest: {
         select: { id: true, name: true, email: true }
       },
