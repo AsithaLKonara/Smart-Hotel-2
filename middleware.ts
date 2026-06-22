@@ -1,33 +1,11 @@
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
-import { enhancedRateLimit, createEnhancedRateLimitResponse } from "@/lib/rate-limit-enhanced";
 
 export default withAuth(
   async function middleware(req) {
     const token = req.nextauth.token;
     const path = req.nextUrl.pathname;
-
-    // Apply rate limiting for sensitive routes like auth and payments
-    if (path.startsWith("/api/auth") || path.startsWith("/auth")) {
-      const rateLimitResult = await enhancedRateLimit(req, 'auth');
-      if (!rateLimitResult.allowed) {
-        return createEnhancedRateLimitResponse(rateLimitResult);
-      }
-    }
-
-    if (path.startsWith("/api/webhooks/stripe") || path.includes("/payment")) {
-      const rateLimitResult = await enhancedRateLimit(req, 'payment');
-      if (!rateLimitResult.allowed) {
-        return createEnhancedRateLimitResponse(rateLimitResult);
-      }
-    } else if (path.startsWith("/api/")) {
-      // General API Rate Limiting for all other /api/* routes
-      const rateLimitResult = await enhancedRateLimit(req, 'api');
-      if (!rateLimitResult.allowed) {
-        return createEnhancedRateLimitResponse(rateLimitResult);
-      }
-    }
-
+    
     // Example of top-level role enforcement if needed:
     // If a guest tries to access admin routes, redirect them
     if (path.startsWith("/admin") && token?.roleName === "GUEST") {

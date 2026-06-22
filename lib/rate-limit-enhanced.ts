@@ -241,11 +241,7 @@ export function getClientIdentifier(req: NextRequest): string {
   const realIp = req.headers.get('x-real-ip')
   const ip = forwarded ? forwarded.split(',')[0].trim() : realIp || 'unknown'
   
-  const userAgent = req.headers.get('user-agent') || ''
-  const userAgentHash = userAgent.length > 0 ? 
-    btoa(userAgent).slice(0, 8) : ''
-  
-  return `${ip}:${userAgentHash}`
+  return ip
 }
 
 export function getTenantIdentifier(req: NextRequest): string {
