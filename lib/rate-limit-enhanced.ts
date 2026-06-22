@@ -234,17 +234,7 @@ const paymentLimiter = new EnhancedRateLimiter('payment', {
   blockDuration: 10 * 60 * 1000 // Block for 10 minutes
 })
 
-// Cleanup expired in-memory records every 5 minutes
-const cleanupInterval = setInterval(() => {
-  authLimiter.cleanup()
-  bookingLimiter.cleanup()
-  apiLimiter.cleanup()
-  paymentLimiter.cleanup()
-}, 5 * 60 * 1000)
 
-if (typeof cleanupInterval.unref === 'function') {
-  cleanupInterval.unref()
-}
 
 export function getClientIdentifier(req: NextRequest): string {
   const forwarded = req.headers.get('x-forwarded-for')
@@ -253,7 +243,7 @@ export function getClientIdentifier(req: NextRequest): string {
   
   const userAgent = req.headers.get('user-agent') || ''
   const userAgentHash = userAgent.length > 0 ? 
-    Buffer.from(userAgent).toString('base64').slice(0, 8) : ''
+    btoa(userAgent).slice(0, 8) : ''
   
   return `${ip}:${userAgentHash}`
 }
