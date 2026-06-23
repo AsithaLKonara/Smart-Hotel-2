@@ -131,7 +131,7 @@ export default function CheckInCheckOutPage() {
     return (
       booking.guest?.name?.toLowerCase().includes(searchLower) ||
       booking.guest?.email?.toLowerCase().includes(searchLower) ||
-      booking.room?.number?.toLowerCase().includes(searchLower)
+      booking.roomAssignments?.[0]?.room?.number?.toLowerCase().includes(searchLower)
     )
   })
 
@@ -226,7 +226,7 @@ export default function CheckInCheckOutPage() {
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">{booking.guest.name}</CardTitle>
-                <Badge>Room {booking.room.number}</Badge>
+                <Badge>Room {booking.roomAssignments?.[0]?.room?.number || 'TBD'}</Badge>
               </div>
             </CardHeader>
             <CardContent>
@@ -241,7 +241,7 @@ export default function CheckInCheckOutPage() {
                     </p>
                   )}
                   <p className="text-gray-600 dark:text-gray-400">
-                    <span className="font-medium">Room Type:</span> {booking.room.type}
+                    <span className="font-medium">Room Type:</span> {booking.roomAssignments?.[0]?.room?.roomType?.name || 'TBD'}
                   </p>
                   <p className="text-gray-600 dark:text-gray-400">
                     <span className="font-medium">Guests:</span> {booking.guests}

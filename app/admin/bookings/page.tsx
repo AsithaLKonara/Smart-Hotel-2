@@ -113,7 +113,7 @@ export default function AdminBookingsPage() {
 
   const filteredBookings = (Array.isArray(bookings) ? bookings : []).filter(booking => {
     const matchesSearch = booking.confirmationCode?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         booking.room?.number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         booking.roomAssignments?.[0]?.room?.number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          booking.guest?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          booking.guest?.email?.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = filterStatus === 'all' || booking.status === filterStatus
@@ -276,8 +276,8 @@ export default function AdminBookingsPage() {
                     <div className="text-[10px] text-white/40">{booking.guest.email}</div>
                   </td>
                   <td className="px-8 py-6">
-                    <div className="text-sm font-bold text-white">ROOM {booking.room.number}</div>
-                    <div className="text-[10px] text-white/40 uppercase font-black">{booking.room.type}</div>
+                    <div className="text-sm font-bold text-white">ROOM {booking.roomAssignments?.[0]?.room?.number || 'TBD'}</div>
+                    <div className="text-[10px] text-white/40 uppercase font-black">{booking.roomAssignments?.[0]?.room?.roomType?.name || 'TBD'}</div>
                   </td>
                   <td className="px-8 py-6">
                     <div className="text-xs text-white">{formatDate(booking.checkIn)}</div>
