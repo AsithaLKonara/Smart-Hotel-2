@@ -107,7 +107,7 @@ export default function UnifiedPOS({ role }: { role: string }) {
     });
 
     if (res.ok) {
-      toast.success(`Charged $${cartSubtotal.toFixed(2)} to Room ${selectedBooking.room.number}`)
+      toast.success(`Charged $${cartSubtotal.toFixed(2)} to Room ${selectedBooking.roomAssignments?.[0]?.room?.number || 'TBD'}`)
       setPosCart([])
       queryClient.invalidateQueries({ queryKey: ['folios', selectedBooking.id] })
     } else {
@@ -162,23 +162,29 @@ export default function UnifiedPOS({ role }: { role: string }) {
           ) : bookings.length === 0 ? (
             <div className="text-center text-white/30 text-sm mt-4">No active check-ins.</div>
           ) : (
-            bookings.map((booking: any) => (
-              <Card 
-                key={booking.id} 
-                className={`bg-[#1a1a1a] border ${selectedBooking?.id === booking.id ? 'border-primary' : 'border-white/10'} hover:border-primary/50 cursor-pointer transition-colors`}
-                onClick={() => setSelectedBooking(booking)}
-              >
-                <CardContent className="p-4 flex flex-col gap-1">
-                  <div className="flex justify-between items-center">
-                    <span className="font-bold text-lg">{booking.room.number}</span>
-                    <Badge variant="outline" className="text-[10px] text-white/50 border-white/10">{booking.room.roomType.name}</Badge>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-white/80">
-                    <User className="w-3 h-3 text-white/40" /> {booking.guest.name}
-                  </div>
-                </CardContent>
-              </Card>
-            ))
+            bookings.map((booking: any) => {
+              const assignment = booking.roomAssignments?.[0]
+              const roomNumber = assignment?.room?.number || 'N/A'
+              const roomTypeName = assignment?.room?.roomType?.name || 'Standard'
+              
+              return (
+                <Card 
+                  key={booking.id} 
+                  className={`bg-[#1a1a1a] border ${selectedBooking?.id === booking.id ? 'border-primary' : 'border-white/10'} hover:border-primary/50 cursor-pointer transition-colors`}
+                  onClick={() => setSelectedBooking(booking)}
+                >
+                  <CardContent className="p-4 flex flex-col gap-1">
+                    <div className="flex justify-between items-center">
+                      <span className="font-bold text-lg">{roomNumber}</span>
+                      <Badge variant="outline" className="text-[10px] text-white/50 border-white/10">{roomTypeName}</Badge>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-white/80">
+                      <User className="w-3 h-3 text-white/40" /> {booking.guest?.name || 'Guest'}
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })
           )}
         </div>
         <div className="p-4 border-t border-white/10">
@@ -260,8 +266,8 @@ export default function UnifiedPOS({ role }: { role: string }) {
             <p className="text-sm text-gray-500 mb-4">{role === 'KITCHEN' ? 'Kitchen Order Ticket' : 'Official Tax Receipt'}</p>
             {selectedBooking ? (
               <div className="text-left text-sm border-y border-dashed border-gray-300 py-2 mb-4 text-black">
-                <p><strong>Guest:</strong> {selectedBooking.guest.name}</p>
-                <p><strong>Room:</strong> {selectedBooking.room.number}</p>
+                <p><strong>Guest:</strong> {selectedBooking.guest?.name || 'Guest'}</p>
+                <p><strong>Room:</strong> {selectedBooking.roomAssignments?.[0]?.room?.number || 'TBD'}</p>
                 <p><strong>Date:</strong> <span suppressHydrationWarning>{new Date().toLocaleDateString()}</span></p>
               </div>
             ) : (
@@ -347,7 +353,7 @@ export default function UnifiedPOS({ role }: { role: string }) {
                 onClick={handleChargeToRoom}
                 className="w-full bg-white/10 hover:bg-white/20 text-white"
               >
-                Charge to Room {selectedBooking.room.number}
+                Charge to Room {selectedBooking.roomAssignments?.[0]?.room?.number || 'TBD'}
               </Button>
             )}
             

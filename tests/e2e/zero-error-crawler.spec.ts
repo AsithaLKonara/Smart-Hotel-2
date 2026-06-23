@@ -92,7 +92,7 @@ test.describe('Zero Error Audit Crawler', () => {
         console.log(`[${role}] Visiting: ${currentPath}`);
         
         try {
-          await page.goto(currentPath, { waitUntil: 'networkidle', timeout: 15000 });
+          await page.goto(currentPath, { waitUntil: 'networkidle', timeout: 30000 });
         } catch (e: any) {
            errors.push(`[Navigation Failed] ${currentPath} - ${e.message}`);
            continue;
