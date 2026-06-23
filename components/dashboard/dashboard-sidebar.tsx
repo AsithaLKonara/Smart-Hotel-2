@@ -50,7 +50,9 @@ export default function DashboardSidebar() {
       // 🌐 UNIFIED DASHBOARD LINKS (NO GROUP)
       { name: 'Dashboard', href: '/dashboard', icon: Home, roles: ['GUEST'] },
       { name: 'Dashboard', href: '/kitchen/dashboard', icon: UtensilsCrossed, roles: ['KITCHEN'] },
-      { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard, roles: ['RECEPTIONIST', 'HOUSEKEEPING', 'MAINTENANCE', 'MANAGER', 'SUPER_ADMIN'] },
+      { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard, roles: ['MANAGER', 'SUPER_ADMIN'] },
+      { name: 'Dashboard', href: '/admin/receptionist', icon: LayoutDashboard, roles: ['RECEPTIONIST'] },
+      { name: 'Dashboard', href: '/admin/tasks', icon: LayoutDashboard, roles: ['HOUSEKEEPING', 'MAINTENANCE'] },
 
       // 🟢 GUEST SUITE (NO GROUP)
       { name: 'Dining Hub', href: '/dashboard/dining', icon: UtensilsCrossed, roles: ['GUEST'] },

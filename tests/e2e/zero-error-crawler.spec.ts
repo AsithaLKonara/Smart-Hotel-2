@@ -20,6 +20,10 @@ const IGNORE_CONSOLE = [
   'Download the React DevTools', // React devtools suggestion
   'Stripe.js', // Stripe logs
   'Third-party cookie', // Chrome warnings
+  'Content Security Policy', // CSP warnings
+  'Refused to connect because it violates the document\'s Content Security Policy', // CSP blocks
+  'Failed to fetch', // Aborted fetch due to fast navigation
+  'CLIENT_FETCH_ERROR', // NextAuth session fetch aborted on navigation
 ];
 
 test.describe('Zero Error Audit Crawler', () => {

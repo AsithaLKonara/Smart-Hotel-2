@@ -12,6 +12,7 @@ const PROTECTED_ROUTES = [
   { prefix: '/admin/settings/integrations', roles: ['SUPER_ADMIN'] },
 
   // 🔴 MANAGER & SUPER ADMIN (Business Operations, HR, Finance)
+  { prefix: '/admin/dashboard', roles: ['SUPER_ADMIN', 'MANAGER'] },
   { prefix: '/admin/hr', roles: ['SUPER_ADMIN', 'MANAGER'] },
   { prefix: '/admin/procurement', roles: ['SUPER_ADMIN', 'MANAGER'] },
   { prefix: '/admin/analytics', roles: ['SUPER_ADMIN', 'MANAGER'] },
@@ -46,7 +47,7 @@ const PROTECTED_ROUTES = [
   { prefix: '/admin/tasks', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'HOUSEKEEPING', 'MAINTENANCE'] },
   { prefix: '/api/tasks', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'HOUSEKEEPING', 'MAINTENANCE'] },
   { prefix: '/api/admin', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'HOUSEKEEPING', 'MAINTENANCE'] },
-  { prefix: '/api/bookings', roles: ['GUEST', 'SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'] },
+  { prefix: '/api/bookings', roles: ['GUEST', 'SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'KITCHEN'] },
   { prefix: '/api/restaurant', roles: ['GUEST', 'SUPER_ADMIN', 'MANAGER', 'KITCHEN', 'RECEPTIONIST'] },
 
   // 🟢 GUEST SUITE & FALLBACKS
