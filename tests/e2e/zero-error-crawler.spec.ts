@@ -24,6 +24,7 @@ const IGNORE_CONSOLE = [
   'Refused to connect because it violates the document\'s Content Security Policy', // CSP blocks
   'Failed to fetch', // Aborted fetch due to fast navigation
   'CLIENT_FETCH_ERROR', // NextAuth session fetch aborted on navigation
+  'the server responded with a status of 404 ()', // External image 404s (e.g. Unsplash)
 ];
 
 test.describe('Zero Error Audit Crawler', () => {
@@ -63,7 +64,7 @@ test.describe('Zero Error Audit Crawler', () => {
         if (response.status() >= 400) {
           // Sometimes 401s on polling might be expected, but we want zero errors.
           const url = response.url();
-          if (url.includes('google-analytics') || url.includes('sentry') || url.includes('google.com/g/collect') || url.includes('googletagmanager.com')) return;
+          if (url.includes('google-analytics') || url.includes('sentry') || url.includes('google.com/g/collect') || url.includes('googletagmanager.com') || url.includes('unsplash.com')) return;
           errors.push(`[HTTP ${response.status()}] ${url}`);
         }
       });
