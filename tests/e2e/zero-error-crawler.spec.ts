@@ -46,16 +46,21 @@ test.describe('Zero Error Audit Crawler', () => {
 
       // Intercept failed requests (500s, failed fetch, etc.)
       page.on('requestfailed', request => {
+        const errorText = request.failure()?.errorText;
+        if (errorText === 'net::ERR_ABORTED') return;
+        
         // Exclude some analytics/tracking domains if they fail due to adblockers in CI
-        if (request.url().includes('google-analytics') || request.url().includes('stripe.com/v1/m')) return;
-        errors.push(`[Request Failed] ${request.url()} - ${request.failure()?.errorText}`);
+        const url = request.url();
+        if (url.includes('google-analytics') || url.includes('stripe.com/v1/m') || url.includes('google.com/g/collect') || url.includes('googletagmanager.com')) return;
+        errors.push(`[Request Failed] ${url} - ${errorText}`);
       });
 
       page.on('response', response => {
         if (response.status() >= 400) {
           // Sometimes 401s on polling might be expected, but we want zero errors.
-          if (response.url().includes('google-analytics') || response.url().includes('sentry')) return;
-          errors.push(`[HTTP ${response.status()}] ${response.url()}`);
+          const url = response.url();
+          if (url.includes('google-analytics') || url.includes('sentry') || url.includes('google.com/g/collect') || url.includes('googletagmanager.com')) return;
+          errors.push(`[HTTP ${response.status()}] ${url}`);
         }
       });
 

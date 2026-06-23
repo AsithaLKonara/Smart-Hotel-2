@@ -159,4 +159,5 @@ const PUBLIC_API_PREFIXES = [
   '/api/footer-links',
   '/api/chat/messages',
   '/api/performance/metrics',
+  '/api/navigation',
 ]
