@@ -27,12 +27,14 @@ interface Booking {
     name: string
     email: string
   }
-  room: {
-    id: string
-    number: string
-    type: string
-    price: number
-  }
+  roomAssignments?: Array<{
+    room: {
+      id: string
+      number: string
+      type: string
+      price: number
+    }
+  }>
 }
 
 import { AdminPageShell } from '@/components/dashboard/admin/admin-page-shell'
@@ -277,7 +279,7 @@ export default function AdminBookingsPage() {
                   </td>
                   <td className="px-8 py-6">
                     <div className="text-sm font-bold text-white">ROOM {booking.roomAssignments?.[0]?.room?.number || 'TBD'}</div>
-                    <div className="text-[10px] text-white/40 uppercase font-black">{booking.roomAssignments?.[0]?.room?.roomType?.name || 'TBD'}</div>
+                    <div className="text-[10px] text-white/40 uppercase font-black">{booking.roomAssignments?.[0]?.room?.type || 'TBD'}</div>
                   </td>
                   <td className="px-8 py-6">
                     <div className="text-xs text-white">{formatDate(booking.checkIn)}</div>

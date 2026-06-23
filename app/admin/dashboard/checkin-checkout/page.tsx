@@ -23,11 +23,13 @@ interface Booking {
     email: string
     phone?: string
   }
-  room: {
-    id: string
-    number: string
-    type: string
-  }
+  roomAssignments?: Array<{
+    room: {
+      id: string
+      number: string
+      type: string
+    }
+  }>
 }
 
 export default function CheckInCheckOutPage() {
@@ -241,7 +243,7 @@ export default function CheckInCheckOutPage() {
                     </p>
                   )}
                   <p className="text-gray-600 dark:text-gray-400">
-                    <span className="font-medium">Room Type:</span> {booking.roomAssignments?.[0]?.room?.roomType?.name || 'TBD'}
+                    <span className="font-medium">Room Type:</span> {booking.roomAssignments?.[0]?.room?.type || 'TBD'}
                   </p>
                   <p className="text-gray-600 dark:text-gray-400">
                     <span className="font-medium">Guests:</span> {booking.guests}
