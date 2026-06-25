@@ -1,8 +1,8 @@
 import { GET } from '@/app/api/admin/analytics/bi/route';
-import { cleanDatabase } from '../../utils/clean-db';
+import { cleanDatabase } from '@/tests/utils/clean-db';
 import prisma from '@/lib/prisma';
-import { RoomFactory } from '../../factories/room.factory';
-import { UserFactory } from '../../factories/user.factory';
+import { RoomFactory } from '@/tests/factories/room.factory';
+import { UserFactory } from '@/tests/factories/user.factory';
 
 describe('Advanced Integration: BI Analytics Engine', () => {
   beforeEach(async () => {

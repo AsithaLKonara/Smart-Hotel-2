@@ -1,5 +1,5 @@
 import { POST } from '@/app/api/admin/hr/leaves/route';
-import { cleanDatabase } from '../../utils/clean-db';
+import { cleanDatabase } from '@/tests/utils/clean-db';
 import prisma from '@/lib/prisma';
 import { createNextRequest } from '../../utils/api-handler';
 

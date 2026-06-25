@@ -1,6 +1,6 @@
 import { GET, POST } from '@/app/api/bookings/route';
-import { BookingFactory, UserFactory, RoomFactory } from '../../factories/index';
-import { cleanDatabase } from '../../utils/clean-db';
+import { BookingFactory, UserFactory, RoomFactory } from '@/tests/factories/index';
+import { cleanDatabase } from '@/tests/utils/clean-db';
 import { createNextRequest } from '../../utils/api-handler';
 import prisma from '@/lib/prisma';
 

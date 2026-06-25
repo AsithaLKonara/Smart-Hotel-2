@@ -1,9 +1,9 @@
 import { POST } from '@/app/api/admin/pos/orders/route';
-import { cleanDatabase } from '../../utils/clean-db';
+import { cleanDatabase } from '@/tests/utils/clean-db';
 import prisma from '@/lib/prisma';
 import { createNextRequest } from '../../utils/api-handler';
-import { RoomFactory } from '../../factories/room.factory';
-import { UserFactory } from '../../factories/user.factory';
+import { RoomFactory } from '@/tests/factories/room.factory';
+import { UserFactory } from '@/tests/factories/user.factory';
 
 jest.mock('next-auth', () => ({
   getServerSession: jest.fn().mockResolvedValue({ user: { roleName: 'MANAGER' } }),

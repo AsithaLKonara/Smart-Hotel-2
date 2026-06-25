@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { encode } from 'next-auth/jwt';
-import { cleanDatabase } from '../../utils/clean-db';
-import { RoomFactory } from '../../factories/room.factory';
+import { cleanDatabase } from '@/tests/utils/clean-db';
+import { RoomFactory } from '@/tests/factories/room.factory';
 import prisma from '@/lib/prisma';
 
 test.describe('Admin Room Rack Workflow (Database Seeded)', () => {

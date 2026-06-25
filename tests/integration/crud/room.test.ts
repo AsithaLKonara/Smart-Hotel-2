@@ -1,7 +1,7 @@
 import { GET, POST } from '@/app/api/rooms/route';
 import { PUT, DELETE } from '@/app/api/rooms/[id]/route';
-import { RoomFactory } from '../../factories/room.factory';
-import { cleanDatabase } from '../../utils/clean-db';
+import { RoomFactory } from '@/tests/factories/room.factory';
+import { cleanDatabase } from '@/tests/utils/clean-db';
 import { createNextRequest } from '../../utils/api-handler';
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
