@@ -135,6 +135,12 @@ export async function middleware(request: NextRequest) {
       }
       return NextResponse.redirect(new URL('/', request.url))
     }
+  } else {
+    // FAIL CLOSED: Default Deny for omitted routes
+    if (path.startsWith('/api')) {
+      return NextResponse.json({ error: 'Forbidden', message: 'No authorization rule defined' }, { status: 403 })
+    }
+    return NextResponse.redirect(new URL('/auth/signin', request.url))
   }
 
   return NextResponse.next()
