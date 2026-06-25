@@ -51,7 +51,6 @@ export async function GET(request: NextRequest) {
       orderBy: { name: 'asc' }
     })
 
-    console.log(`Menu API: Found ${menuItems.length} menu items`)
     
     // Always return an array, even if empty
     return NextResponse.json(menuItems || [], { status: 200 })

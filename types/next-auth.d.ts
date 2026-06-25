@@ -29,7 +29,7 @@ declare module 'next-auth/jwt' {
     id: string
     roleId?: string | null
     roleName?: string
-    permissions: string[]
+    permissions?: string[]
     hotelId?: string | null
   }
 }

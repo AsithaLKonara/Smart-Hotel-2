@@ -1,6 +1,6 @@
 import { POST } from '@/app/api/payments/route';
-import { FolioFactory, PaymentFactory } from '../../factories/finance.factory';
-import { cleanDatabase } from '../../utils/clean-db';
+import { FolioFactory, PaymentFactory } from '@/tests/factories/finance.factory';
+import { cleanDatabase } from '@/tests/utils/clean-db';
 import { createNextRequest } from '../../utils/api-handler';
 import prisma from '@/lib/prisma';
 import { faker } from '@faker-js/faker';
@@ -26,7 +26,7 @@ describe('Payment CRUD & Idempotency Verification', () => {
         user: { roleName: 'FRONT_DESK', id: 'staff-1' }
       });
 
-      const folio = await FolioFactory.create({ status: 'OPEN', balance: 500 });
+      const folio = await FolioFactory.create({ status: 'OPEN' });
       const idempotencyKey = faker.string.uuid();
 
       const payload = {
@@ -63,7 +63,7 @@ describe('Payment CRUD & Idempotency Verification', () => {
         user: { roleName: 'MANAGER', id: 'manager-1' }
       });
 
-      const folio = await FolioFactory.create({ status: 'OPEN', balance: 100 });
+      const folio = await FolioFactory.create({ status: 'OPEN' });
       const payload = {
         folioId: folio.id,
         amount: 100,

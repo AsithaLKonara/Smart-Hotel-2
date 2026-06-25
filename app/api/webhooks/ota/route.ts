@@ -8,6 +8,14 @@ import { log } from '@/lib/logger';
  */
 export async function POST(req: NextRequest) {
   try {
+    const authHeader = req.headers.get('authorization') || req.headers.get('x-api-key');
+    const secret = process.env.OTA_WEBHOOK_SECRET;
+    
+    if (!secret || authHeader !== `Bearer ${secret}` && authHeader !== secret) {
+      log.warn('OTA Webhook Authorization Failed', { ip: req.headers.get('x-forwarded-for') });
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    }
+
     const payload = await req.json();
     
     // 1. Log incoming request for debugging
@@ -31,13 +39,12 @@ export async function POST(req: NextRequest) {
   } catch (error: any) {
     log.error('Webhook Endpoint Error', error instanceof Error ? error : new Error(String(error)));
     
-    // Even on error, we might want to return 200 if we've logged it,
-    // to prevent the OTA from retrying indefinitely if it's a logic error.
-    // But for now, we return 500 for visibility.
+    // Return 200 to prevent OTA infinite retry loops on logic errors.
+    // The error is logged and can be investigated asynchronously.
     return NextResponse.json({ 
       success: false, 
-      error: error.message 
-    }, { status: 500 });
+      error: 'Webhook processing failed — logged for review'
+    }, { status: 200 });
   }
 }
 

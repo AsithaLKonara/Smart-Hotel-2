@@ -1,7 +1,7 @@
 import { POST } from '@/app/api/admin/users/route';
 import { DELETE, PUT } from '@/app/api/admin/users/[id]/route';
-import { UserFactory } from '../../factories/user.factory';
-import { cleanDatabase } from '../../utils/clean-db';
+import { UserFactory } from '@/tests/factories/user.factory';
+import { cleanDatabase } from '@/tests/utils/clean-db';
 import { createNextRequest } from '../../utils/api-handler';
 import prisma from '@/lib/prisma';
 
