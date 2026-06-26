@@ -48,16 +48,16 @@ model Room {
   createdAt          DateTime   @default(now())
   updatedAt          DateTime   @updatedAt
 
-  roomType      RoomType            @relation(fields: [roomTypeId], references: [id])
-  tasks         Task[]
-  statusHistory RoomStatusHistory[]
-  roomImages    RoomImage[]
-  reviews       RoomReview[]
-  foodOrders    FoodOrder[]
-  stays         Stay[]
-  roomAssignments RoomAssignment[]
+  roomType              RoomType               @relation(fields: [roomTypeId], references: [id])
+  tasks                 Task[]
+  statusHistory         RoomStatusHistory[]
+  roomImages            RoomImage[]
+  reviews               RoomReview[]
+  foodOrders            FoodOrder[]
+  stays                 Stay[]
+  roomAssignments       RoomAssignment[]
   maintenanceWorkOrders MaintenanceWorkOrder[]
-  outOfOrderRecords OutOfOrderRecord[]
+  outOfOrderRecords     OutOfOrderRecord[]
 
   @@index([status])
   @@index([roomTypeId])
@@ -140,14 +140,14 @@ model Booking {
   paymentMethod   String?
   paymentProvider String?
 
-  checkoutRequestId String?       @unique
+  checkoutRequestId   String?   @unique
   checkoutFinalizedAt DateTime?
 
   deletedAt DateTime?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
-  guest            User           @relation("PrimaryGuest", fields: [primaryGuestId], references: [id])
+  guest            User             @relation("PrimaryGuest", fields: [primaryGuestId], references: [id])
   additionalGuests BookingGuest[]
   payments         Payment[]
   tasks            Task[]
@@ -163,6 +163,8 @@ model Booking {
   @@index([createdAt])
   @@index([status, createdAt])
   @@index([primaryGuestId, paymentStatus])
+  @@index([source, status])
+  @@index([status, checkIn, checkOut])
 }
 
 model Event {
@@ -230,9 +232,9 @@ model RoomAssignment {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  booking   Booking  @relation(fields: [bookingId], references: [id])
-  room      Room     @relation(fields: [roomId], references: [id])
-  
+  booking Booking @relation(fields: [bookingId], references: [id])
+  room    Room    @relation(fields: [roomId], references: [id])
+
   @@index([bookingId])
   @@index([roomId])
 }
@@ -240,13 +242,13 @@ model RoomAssignment {
 model StayEvent {
   id        String   @id @default(uuid())
   bookingId String
-  type      String   // CHECK_IN, CHECK_OUT, ROOM_MOVE, EXTENSION
+  type      String // CHECK_IN, CHECK_OUT, ROOM_MOVE, EXTENSION
   timestamp DateTime @default(now())
   notes     String?
   actorId   String?
 
-  booking   Booking  @relation(fields: [bookingId], references: [id])
-  
+  booking Booking @relation(fields: [bookingId], references: [id])
+
   @@index([bookingId])
 }
 
@@ -275,7 +277,7 @@ model NightAuditLog {
   runByUserId    String?
   createdAt      DateTime @default(now())
 
-  user User? @relation(fields: [runByUserId], references: [id])
+  user            User?            @relation(fields: [runByUserId], references: [id])
   revenuePostings RevenuePosting[]
 }
 
@@ -306,6 +308,8 @@ model Payment {
 
   @@index([createdAt])
   @@index([status])
+  @@index([status, createdAt])
+  @@index([paymentMethod, status])
   @@index([orderId])
   @@index([bookingId])
   @@index([folioId])
@@ -340,20 +344,20 @@ enum PaymentMethod {
 }
 
 model Folio {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   bookingId String?
-  type      String   @default("GUEST") // MASTER, GUEST, ROUTING
-  status    String   @default("OPEN") // OPEN, CLOSED, LOCKED
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  type      String    @default("GUEST") // MASTER, GUEST, ROUTING
+  status    String    @default("OPEN") // OPEN, CLOSED, LOCKED
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  booking   Booking? @relation(fields: [bookingId], references: [id])
-  lineItems FolioLineItem[]
-  payments  Payment[]
-  routingRulesSource RoutingRule[] @relation("SourceFolio")
-  routingRulesTarget RoutingRule[] @relation("TargetFolio")
-  
+  booking            Booking?        @relation(fields: [bookingId], references: [id])
+  lineItems          FolioLineItem[]
+  payments           Payment[]
+  routingRulesSource RoutingRule[]   @relation("SourceFolio")
+  routingRulesTarget RoutingRule[]   @relation("TargetFolio")
+
   @@index([bookingId])
 }
 
@@ -366,8 +370,8 @@ model FolioLineItem {
   isRouted    Boolean  @default(false)
   createdAt   DateTime @default(now())
 
-  folio       Folio    @relation(fields: [folioId], references: [id])
-  
+  folio Folio @relation(fields: [folioId], references: [id])
+
   @@index([folioId])
 }
 
@@ -375,11 +379,11 @@ model RoutingRule {
   id            String   @id @default(uuid())
   sourceFolioId String
   targetFolioId String
-  criteria      Json     // e.g. { category: "ROOM_CHARGE" }
+  criteria      Json // e.g. { category: "ROOM_CHARGE" }
   createdAt     DateTime @default(now())
 
-  sourceFolio   Folio    @relation("SourceFolio", fields: [sourceFolioId], references: [id])
-  targetFolio   Folio    @relation("TargetFolio", fields: [targetFolioId], references: [id])
+  sourceFolio Folio @relation("SourceFolio", fields: [sourceFolioId], references: [id])
+  targetFolio Folio @relation("TargetFolio", fields: [targetFolioId], references: [id])
 }
 
 model RevenuePosting {
@@ -389,7 +393,7 @@ model RevenuePosting {
   amount          Float
   createdAt       DateTime @default(now())
 
-  nightAuditLog   NightAuditLog @relation(fields: [nightAuditLogId], references: [id])
+  nightAuditLog NightAuditLog @relation(fields: [nightAuditLogId], references: [id])
 }
 
 // ==========================================
@@ -546,13 +550,13 @@ model POSOrder {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  outlet  POSOutlet      @relation(fields: [outletId], references: [id])
-  items   POSOrderItem[]
+  outlet POSOutlet      @relation(fields: [outletId], references: [id])
+  items  POSOrderItem[]
 }
 
 model POSOrderItem {
   id        String @id @default(uuid())
-  orderId    String
+  orderId   String
   productId String
   quantity  Int
   price     Float
@@ -695,8 +699,8 @@ model GuestProfile {
   preferences   Json?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-  
-  user          User     @relation(fields: [userAccountId], references: [id])
+
+  user User @relation(fields: [userAccountId], references: [id])
 }
 
 model CorporateAccount {
@@ -1194,9 +1198,9 @@ model PurchaseOrder {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
-  vendor Vendor              @relation(fields: [vendorId], references: [id])
-  items  PurchaseOrderItem[]
-  goodsReceipts GoodsReceipt[]
+  vendor         Vendor              @relation(fields: [vendorId], references: [id])
+  items          PurchaseOrderItem[]
+  goodsReceipts  GoodsReceipt[]
   vendorInvoices VendorInvoice[]
 }
 
@@ -1215,14 +1219,14 @@ model PurchaseOrderItem {
 }
 
 model InventoryMovement {
-  id          String   @id @default(uuid())
-  itemId      String
-  type        String   // RECEIPT, CONSUMPTION, TRANSFER, ADJUSTMENT
-  quantity    Int
-  notes       String?
-  createdAt   DateTime @default(now())
+  id        String   @id @default(uuid())
+  itemId    String
+  type      String // RECEIPT, CONSUMPTION, TRANSFER, ADJUSTMENT
+  quantity  Int
+  notes     String?
+  createdAt DateTime @default(now())
 
-  item        InventoryItem @relation(fields: [itemId], references: [id])
+  item InventoryItem @relation(fields: [itemId], references: [id])
 }
 
 model GoodsReceipt {
@@ -1231,7 +1235,7 @@ model GoodsReceipt {
   receivedDate    DateTime @default(now())
   notes           String?
 
-  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+  purchaseOrder PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
 }
 
 model VendorInvoice {
@@ -1241,7 +1245,7 @@ model VendorInvoice {
   amount          Float
   receivedDate    DateTime @default(now())
 
-  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+  purchaseOrder PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
 }
 
 // ==========================================
@@ -1263,13 +1267,13 @@ model Employee {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  user     User?           @relation(fields: [userId], references: [id])
-  shifts   Shift[]
-  leaves   LeaveRequest[]
-  payrolls PayrollRecord[]
-  attendance      Attendance[]
+  user             User?             @relation(fields: [userId], references: [id])
+  shifts           Shift[]
+  leaves           LeaveRequest[]
+  payrolls         PayrollRecord[]
+  attendance       Attendance[]
   payrollLineItems PayrollLineItem[]
-  tasks    Task[]          @relation("EmployeeTasks")
+  tasks            Task[]            @relation("EmployeeTasks")
 }
 
 model Shift {
@@ -1320,14 +1324,14 @@ model PayrollRecord {
 }
 
 model Attendance {
-  id         String   @id @default(uuid())
+  id         String    @id @default(uuid())
   employeeId String
-  date       DateTime @db.Date
+  date       DateTime  @db.Date
   clockIn    DateTime
   clockOut   DateTime?
-  status     String   @default("PRESENT") // PRESENT, LATE, HALF_DAY
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  status     String    @default("PRESENT") // PRESENT, LATE, HALF_DAY
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
   employee Employee @relation(fields: [employeeId], references: [id])
 }
@@ -1376,8 +1380,8 @@ model Asset {
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
-  schedules   MaintenanceSchedule[]
-  inspections InspectionLog[]
+  schedules             MaintenanceSchedule[]
+  inspections           InspectionLog[]
   maintenanceWorkOrders MaintenanceWorkOrder[]
 }
 
@@ -1410,27 +1414,27 @@ model InspectionLog {
 }
 
 model MaintenanceWorkOrder {
-  id          String   @id @default(uuid())
-  roomId      String?
-  assetId     String?
-  issue       String
-  status      String   @default("OPEN")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(uuid())
+  roomId    String?
+  assetId   String?
+  issue     String
+  status    String   @default("OPEN")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  room        Room?    @relation(fields: [roomId], references: [id])
-  asset       Asset?   @relation(fields: [assetId], references: [id])
+  room  Room?  @relation(fields: [roomId], references: [id])
+  asset Asset? @relation(fields: [assetId], references: [id])
 }
 
 model OutOfOrderRecord {
-  id          String   @id @default(uuid())
-  roomId      String
-  reason      String
-  startDate   DateTime @db.Date
-  endDate     DateTime @db.Date
-  createdAt   DateTime @default(now())
+  id        String   @id @default(uuid())
+  roomId    String
+  reason    String
+  startDate DateTime @db.Date
+  endDate   DateTime @db.Date
+  createdAt DateTime @default(now())
 
-  room        Room     @relation(fields: [roomId], references: [id])
+  room Room @relation(fields: [roomId], references: [id])
 }
 
 // ==========================================
@@ -1502,8 +1506,8 @@ model WebhookEndpoint {
   secret    String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
-  deliveries WebhookDelivery[]
+
+  deliveries    WebhookDelivery[]
   subscriptions WebhookSubscription[]
 }
 
@@ -1516,7 +1520,7 @@ model WebhookDelivery {
   attempts          Int      @default(0)
   createdAt         DateTime @default(now())
 
-  webhookEndpoint   WebhookEndpoint @relation(fields: [webhookEndpointId], references: [id])
+  webhookEndpoint WebhookEndpoint @relation(fields: [webhookEndpointId], references: [id])
 }
 
 model WebhookSubscription {
@@ -1525,7 +1529,7 @@ model WebhookSubscription {
   eventTypes        String[] // Array of strings like "GUEST_CHECKIN"
   createdAt         DateTime @default(now())
 
-  webhookEndpoint   WebhookEndpoint @relation(fields: [webhookEndpointId], references: [id])
+  webhookEndpoint WebhookEndpoint @relation(fields: [webhookEndpointId], references: [id])
 }
 
 // ==========================================
@@ -1586,4 +1590,3 @@ model Incident {
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 }
-
