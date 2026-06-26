@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { enhancedRateLimit, createEnhancedRateLimitResponse } from '@/lib/rate-limit-enhanced';
+import { getCached } from '@/lib/cache';
 
 export async function POST(req: NextRequest) {
   try {
@@ -20,14 +21,14 @@ export async function POST(req: NextRequest) {
     }
 
     let discount = 0;
-    let corporateAccount = null;
-    let travelAgent = null;
+    let corporateAccount: any = null;
+    let travelAgent: any = null;
 
     if (companyId) {
       if (!companyEmail) {
         return NextResponse.json({ error: 'companyEmail is required to validate corporate account ownership.' }, { status: 401 });
       }
-      corporateAccount = await prisma.corporateAccount.findUnique({ where: { companyName: companyId } });
+      corporateAccount = await getCached(`corporateAccount:${companyId}`, () => prisma.corporateAccount.findUnique({ where: { companyName: companyId } }), 3600);
       if (!corporateAccount || corporateAccount.contactEmail !== companyEmail || !corporateAccount.isActive) {
          return NextResponse.json({ error: 'Invalid corporate account credentials or account inactive.' }, { status: 401 });
       }
@@ -38,7 +39,7 @@ export async function POST(req: NextRequest) {
       if (!agentEmail) {
         return NextResponse.json({ error: 'agentEmail is required to validate travel agent ownership.' }, { status: 401 });
       }
-      travelAgent = await prisma.travelAgent.findFirst({ where: { iataNumber } });
+      travelAgent = await getCached(`travelAgent:${iataNumber}`, () => prisma.travelAgent.findFirst({ where: { iataNumber } }), 3600);
       if (!travelAgent || travelAgent.contactEmail !== agentEmail || !travelAgent.isActive) {
         return NextResponse.json({ error: 'Invalid travel agent credentials or account inactive.' }, { status: 401 });
       }
@@ -59,7 +60,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No available rooms for the selected type' }, { status: 400 });
     }
 
-    const roomType = await prisma.roomType.findUnique({ where: { id: roomTypeId } });
+    const roomType: any = await getCached(`roomType:${roomTypeId}`, () => prisma.roomType.findUnique({ where: { id: roomTypeId } }), 3600);
     const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 3600 * 24));
     let totalAmount = (roomType?.baseRate || 0) * nights;
 

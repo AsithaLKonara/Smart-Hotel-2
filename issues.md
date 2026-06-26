@@ -50,7 +50,7 @@
 ### PERFORMANCE RISKS
 
 * Unpaginated list endpoints: `GET` routes across the `/api/admin/*` space fetch entire collections at once.
-* Uncached repeated API calls: Reference data (e.g., `RoomType`, `CorporateAccount`) is queried synchronously on every single booking creation without caching (Redis/Memory).
+* [x] Uncached repeated API calls: Reference data (e.g., `RoomType`, `CorporateAccount`) is queried synchronously on every single booking creation without caching (Redis/Memory).
 
 ### SECURITY ISSUES
 
