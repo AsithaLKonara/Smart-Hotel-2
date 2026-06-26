@@ -26,11 +26,14 @@ export async function GET(req: Request) {
       return NextResponse.json(employees);
     }
 
+    const limit = parseInt(searchParams.get('limit') || '50', 10);
+    const page = parseInt(searchParams.get('page') || '1', 10);
+    const skip = (page - 1) * limit;
+
     const employees = await prisma.employee.findMany({
-      include: {
-        user: true,
-      },
       orderBy: { firstName: 'asc' },
+      take: limit,
+      skip,
     });
     return NextResponse.json(employees);
   } catch (error) {

@@ -18,7 +18,7 @@
 ### MEDIUM
 
 * [x] Infinite retry risk: The OTA webhook endpoint returns a `500` status on handled logic errors, which will trigger infinite retry loops from OTAs like Channex/Beds24. — Fixed to return `200`.
-* Over-fetching / N+1 query risks: Default `GET` list endpoints (e.g., `/api/admin/hr/employees`) eagerly `include: { user: true }` on the entire table without pagination.
+* [x] Over-fetching / N+1 query risks: Default `GET` list endpoints (e.g., `/api/admin/hr/employees`) eagerly `include: { user: true }` on the entire table without pagination.
 * [x] Unhandled `console.log` statements left in production endpoints (e.g., `/api/auth/_log/route.ts`, `/api/restaurant/menu/route.ts`). — Removed bare `console.log` from `restaurant/menu/route.ts`.
 
 ### LOW / CLEANUP
