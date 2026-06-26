@@ -10,7 +10,14 @@ export async function POST(req: NextRequest) {
     }
 
     const data = await req.json();
-    const { companyId, iataNumber, employeeName, clientName, checkIn, checkOut, roomTypeId } = data;
+    const { companyId, iataNumber, employeeName, clientName, guestEmail, tosAccepted, gdprConsent, checkIn, checkOut, roomTypeId } = data;
+
+    if (!guestEmail || tosAccepted !== true || gdprConsent !== true) {
+      return NextResponse.json(
+        { error: 'Missing required compliance data: guestEmail, tosAccepted, and gdprConsent are mandatory.' },
+        { status: 400 }
+      );
+    }
 
     let discount = 0;
     let corporateAccount = null;
@@ -50,7 +57,6 @@ export async function POST(req: NextRequest) {
 
     const booking = await prisma.$transaction(async (tx: any) => {
       // 1. Create or find Guest
-      const guestEmail = `${clientName.replace(/\s+/g, '.').toLowerCase()}@b2b.guest.com`;
       let guest = await tx.user.findUnique({ where: { email: guestEmail } });
       
       if (!guest) {

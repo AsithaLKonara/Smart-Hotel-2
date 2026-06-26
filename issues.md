@@ -38,7 +38,7 @@
 
 ### BROKEN ROUTES / FLOWS
 
-* B2B Workflow (`/api/portals/b2b/book`): Auto-generates guest profiles silently, skipping email verification, terms of service consent, and GDPR compliance steps.
+* [x] B2B Workflow (`/api/portals/b2b/book`): Auto-generates guest profiles silently, skipping email verification, terms of service consent, and GDPR compliance steps.
 * [x] Missing API Handlers: `tests/integration/crud/user.test.ts` is attempting to hit `/api/admin/users/route` and `[id]/route` which appear to be missing or misaligned. — Created `app/api/admin/users/route.ts` and `[id]/route.ts`.
 
 ### SCHEMA / API MISMATCHES
