@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { processOtaReservation } from '@/lib/ota/webhook-handler';
 import { log } from '@/lib/logger';
+import { enhancedRateLimit, createEnhancedRateLimitResponse } from '@/lib/rate-limit-enhanced';
 
 /**
  * OTA Webhook Endpoint
@@ -8,6 +9,11 @@ import { log } from '@/lib/logger';
  */
 export async function POST(req: NextRequest) {
   try {
+    const rateLimitResult = await enhancedRateLimit(req, 'api');
+    if (!rateLimitResult.allowed) {
+      return createEnhancedRateLimitResponse(rateLimitResult);
+    }
+
     const authHeader = req.headers.get('authorization') || req.headers.get('x-api-key');
     const secret = process.env.OTA_WEBHOOK_SECRET;
     

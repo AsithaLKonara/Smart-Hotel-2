@@ -1,8 +1,14 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { enhancedRateLimit, createEnhancedRateLimitResponse } from '@/lib/rate-limit-enhanced';
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
+    const rateLimitResult = await enhancedRateLimit(req, 'booking');
+    if (!rateLimitResult.allowed) {
+      return createEnhancedRateLimitResponse(rateLimitResult);
+    }
+
     const data = await req.json();
     const { companyId, iataNumber, employeeName, clientName, checkIn, checkOut, roomTypeId } = data;
 
