@@ -77,6 +77,26 @@ export async function middleware(request: NextRequest) {
   const url = request.nextUrl
   const path = url.pathname
 
+  // 0.5. CSRF Protection for state-changing internal Admin API requests
+  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method) && path.startsWith('/api/admin')) {
+    const secFetchSite = request.headers.get('sec-fetch-site')
+    if (secFetchSite && secFetchSite !== 'same-origin' && secFetchSite !== 'same-site') {
+      return NextResponse.json({ error: 'CSRF violation: Cross-origin requests blocked for internal APIs.' }, { status: 403 })
+    }
+    const origin = request.headers.get('origin')
+    const host = request.headers.get('host')
+    if (origin && host) {
+      try {
+        const originHost = new URL(origin).host
+        if (originHost !== host) {
+          return NextResponse.json({ error: 'CSRF violation: Origin mismatch.' }, { status: 403 })
+        }
+      } catch (e) {
+        return NextResponse.json({ error: 'CSRF violation: Invalid Origin.' }, { status: 403 })
+      }
+    }
+  }
+
   // 1. Bypass Public Assets & Public APIs
   if (
     path.startsWith('/_next') ||
