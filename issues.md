@@ -10,10 +10,10 @@
 
 ### HIGH
 
-* Missing input validation: Administrative API routes (e.g., `/api/admin/corporate/properties`, `/api/admin/hr/employees`) map `await req.json()` fields directly to database calls without Zod/schema validation.
+* [x] Missing input validation: Administrative API routes (e.g., `/api/admin/corporate/properties`, `/api/admin/hr/employees`) map `await req.json()` fields directly to database calls without Zod/schema validation.
 * Missing rate limiting on unauthenticated/public endpoints (`/api/webhooks/ota`) and high-impact transaction endpoints (`/api/portals/b2b/book`).
 * [x] Incomplete CRUD operations: Critical entities (properties, employees) only implement `GET` and `POST`, entirely missing `PUT`, `PATCH`, and `DELETE` (or soft-delete) endpoints. — Added `[id]` routes for `employees` and `users`.
-* Unsafe database writes: Blindly parsing numbers (e.g., `parseInt(data.totalRooms)`) without `isNaN` checks will cause 500 server crashes at the Prisma layer when payloads are malformed.
+* [x] Unsafe database writes: Blindly parsing numbers (e.g., `parseInt(data.totalRooms)`) without `isNaN` checks will cause 500 server crashes at the Prisma layer when payloads are malformed.
 
 ### MEDIUM
 

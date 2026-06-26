@@ -1,5 +1,17 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
+import { z } from 'zod'
+
+const employeeSchema = z.object({
+  firstName: z.string().min(1, 'First name is required'),
+  lastName: z.string().min(1, 'Last name is required'),
+  email: z.string().email('Invalid email'),
+  phone: z.string().optional().nullable(),
+  department: z.string().min(1, 'Department is required'),
+  position: z.string().min(1, 'Position is required'),
+  baseSalary: z.preprocess((val) => parseFloat(String(val)), z.number().min(0)),
+  hireDate: z.preprocess((val) => new Date(String(val)), z.date()),
+})
 
 export async function GET(req: Request) {
   try {
@@ -29,17 +41,24 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const data = await req.json()
+    const json = await req.json()
+    const result = employeeSchema.safeParse(json)
+    
+    if (!result.success) {
+      return NextResponse.json({ error: 'Invalid input', details: result.error.errors }, { status: 400 })
+    }
+    
+    const data = result.data
     const employee = await prisma.employee.create({
       data: {
         firstName: data.firstName,
         lastName: data.lastName,
         email: data.email,
-        phone: data.phone,
+        phone: data.phone || null,
         department: data.department,
         position: data.position,
-        baseSalary: parseFloat(data.baseSalary),
-        hireDate: new Date(data.hireDate),
+        baseSalary: data.baseSalary,
+        hireDate: data.hireDate,
       },
     })
     return NextResponse.json(employee, { status: 201 })
