@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
     }
 
     const data = await req.json();
-    const { companyId, iataNumber, employeeName, clientName, guestEmail, tosAccepted, gdprConsent, checkIn, checkOut, roomTypeId } = data;
+    const { companyId, companyEmail, iataNumber, agentEmail, employeeName, clientName, guestEmail, tosAccepted, gdprConsent, checkIn, checkOut, roomTypeId } = data;
 
     if (!guestEmail || tosAccepted !== true || gdprConsent !== true) {
       return NextResponse.json(
@@ -24,12 +24,24 @@ export async function POST(req: NextRequest) {
     let travelAgent = null;
 
     if (companyId) {
+      if (!companyEmail) {
+        return NextResponse.json({ error: 'companyEmail is required to validate corporate account ownership.' }, { status: 401 });
+      }
       corporateAccount = await prisma.corporateAccount.findUnique({ where: { companyName: companyId } });
-      if (corporateAccount && corporateAccount.negotiatedRate) {
+      if (!corporateAccount || corporateAccount.contactEmail !== companyEmail || !corporateAccount.isActive) {
+         return NextResponse.json({ error: 'Invalid corporate account credentials or account inactive.' }, { status: 401 });
+      }
+      if (corporateAccount.negotiatedRate) {
         discount = corporateAccount.negotiatedRate;
       }
     } else if (iataNumber) {
+      if (!agentEmail) {
+        return NextResponse.json({ error: 'agentEmail is required to validate travel agent ownership.' }, { status: 401 });
+      }
       travelAgent = await prisma.travelAgent.findFirst({ where: { iataNumber } });
+      if (!travelAgent || travelAgent.contactEmail !== agentEmail || !travelAgent.isActive) {
+        return NextResponse.json({ error: 'Invalid travel agent credentials or account inactive.' }, { status: 401 });
+      }
     }
 
     const checkInDate = new Date(checkIn);

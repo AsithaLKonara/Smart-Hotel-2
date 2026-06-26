@@ -55,4 +55,4 @@
 ### SECURITY ISSUES
 
 * Missing CSRF/SSRF protections on internal admin API requests.
-* B2B endpoints rely on `companyId` and `iataNumber` lookups directly from the JSON payload without validating ownership or verifying secrets against the requesting client.
+* [x] B2B endpoints rely on `companyId` and `iataNumber` lookups directly from the JSON payload without validating ownership or verifying secrets against the requesting client.
