@@ -24,7 +24,7 @@
 ### LOW / CLEANUP
 
 * Missing composite indexes: Tables like `Payment` and `Booking` lack specific composite indexes for complex analytical dashboard queries.
-* Residual flags: APIs like `/api/notifications` and `/api/audit-logs` unnecessarily return `{ isMock: false }` metadata in production payloads.
+* [x] Residual flags: APIs like `/api/notifications` and `/api/audit-logs` unnecessarily return `{ isMock: false }` metadata in production payloads.
 
 ### MOCKS FOUND
 

@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
       take: 20
     })
 
-    return NextResponse.json({ notifications, isMock: false })
+    return NextResponse.json({ notifications })
   } catch (error: any) {
     console.error('Error loading notifications:', error)
     return NextResponse.json({
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
       data: notificationPayload as any
     })
 
-    return NextResponse.json({ notification, isMock: false })
+    return NextResponse.json({ notification })
   } catch (error: any) {
     console.error('Error creating notification:', error)
     return NextResponse.json({ error: 'Internal Server Error', details: error.message }, { status: 500 })
@@ -105,7 +105,7 @@ export async function PATCH(request: NextRequest) {
       })
     }
 
-    return NextResponse.json({ success: true, isMock: false })
+    return NextResponse.json({ success: true })
   } catch (error: any) {
     console.error('Error updating notifications:', error)
     return NextResponse.json({ error: 'Internal Server Error', details: error.message }, { status: 500 })

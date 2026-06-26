@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
       take: limit
     })
 
-    return NextResponse.json({ logs, isMock: false })
+    return NextResponse.json({ logs })
   } catch (error: any) {
     console.error('Error fetching audit logs:', error)
     return NextResponse.json({
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
       data: newLogData
     })
 
-    return NextResponse.json({ log, isMock: false })
+    return NextResponse.json({ log })
   } catch (error: any) {
     console.error('Error recording audit log:', error)
     return NextResponse.json({ error: 'Internal Server Error', details: error.message }, { status: 500 })
