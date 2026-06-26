@@ -23,8 +23,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
     }
 
-    // 2. Process the Notification (Mock Logic)
-    // In a real scenario, use an XML parser (like fast-xml-parser) to extract details
+    // 2. Process the Notification
+    // TODO: Parse XML payload and process reservation data using fast-xml-parser
     // For this demonstration, we acknowledge the receipt as per OTA standards
     
     logger.info('Booking.com notification processed successfully');

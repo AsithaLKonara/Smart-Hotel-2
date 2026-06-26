@@ -42,13 +42,14 @@ export async function POST(req: Request) {
       
       if (!availableRoom) continue; 
 
-      let user = await prisma.user.findFirst({ where: { email: `${res.guest_name.replace(' ', '.').toLowerCase()}@ota.mock.com` }});
+      const guestEmail = `${res.guest_name.replace(/\s+/g, '.').toLowerCase()}@guest.booking.com`;
+      let user = await prisma.user.findFirst({ where: { email: guestEmail }});
       if (!user) {
         user = await prisma.user.create({
           data: {
-            email: `${res.guest_name.replace(' ', '.').toLowerCase()}@ota.mock.com`,
+            email: guestEmail,
             name: res.guest_name,
-            password: 'mock_password_for_ota',
+            password: crypto.randomUUID(),
           }
         });
       }

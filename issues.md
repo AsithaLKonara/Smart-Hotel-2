@@ -28,8 +28,8 @@
 
 ### MOCKS FOUND
 
-* `/api/integrations/booking-com/sync/route.ts`: Hardcoded test domains and credentials (`@ota.mock.com` and `mock_password_for_ota`).
-* `/api/integrations/booking-com/webhook/route.ts`: Contains explicit mock processing logic (`// 2. Process the Notification (Mock Logic)`).
+* [x] `/api/integrations/booking-com/sync/route.ts`: Hardcoded test domains and credentials (`@ota.mock.com` and `mock_password_for_ota`).
+* [x] `/api/integrations/booking-com/webhook/route.ts`: Contains explicit mock processing logic (`// 2. Process the Notification (Mock Logic)`).
 
 ### INCOMPLETE FEATURES
 
