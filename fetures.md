@@ -93,19 +93,33 @@
 - **Navigation & Footer Links**: Control over website structure and external links.
 - **Social Links**: Manage integrated social media presence.
 
-## 12. Real-Time & Core Systems Subsystems
+## 14. Real-Time & Core Systems Subsystems
 - **Availability Engine**: High-performance real-time room search with filters.
 - **Conflict Prevention**: Distributed locking (Redis) preventing double bookings.
 - **Idempotency Engine**: Caching of API responses to ensure duplicate actions don't result in duplicate charges.
 - **Event Bus & Websockets**: Internal decoupled pub/sub architecture and live Pusher events for UI updates.
 - **Transactional Outbox**: Guaranteed event delivery (eventual consistency) for critical system actions.
 
-## 13. Security & Compliance (Enterprise Grade)
+## 15. Security & Compliance (Enterprise Grade)
 - **Data Masking**: Passport numbers and ID tokens are obfuscated in the UI (e.g. `XXXX-XXXX-XXXX-1234`).
 - **PII Encryption**: AES-256-GCM symmetric encryption at rest for highly sensitive guest identities.
 - **N+1 Query Protection**: Optimized Prisma aggregations prevent cascading queries and database over-fetching.
+- **DB Partitioning**: Core logging tables (`AuditLog`, `StayEvent`) partitioned by month/year for unbounded growth.
+- **Data Archiving**: Automated CRON jobs for 2-year old data archiving.
+- **Role-Based Access Control (RBAC)**: Strict API-level enforcement of capabilities across all endpoints.
 
-## 14. UI / UX Density
+## 16. Hardware & Integration Ecosystem
+- **Keycard Encoders**: Integrations for VingCard, Salto, and Assa Abloy via Websocket bridge.
+- **Passport / ID Scanners**: OCR integration for auto-populating check-in `BookingGuest` fields.
+- **Stripe Terminal**: Support for physical card readers (EMV / NFC / Apple Pay) at reception.
+- **Fiscal Printers**: XML payload generation for ESC/POS and regional e-invoicing compliance.
+- **HTNG / OTA Channel Manager**: 2-way XML sync endpoints for Siteminder/Cloudbeds.
+- **Webhooks**: Subscription engines to fire outbound events on `booking.created` or `folio.closed`.
+
+## 17. UI / UX & Ergonomics
 - **Rack Virtualization**: `@tanstack/react-virtual` DOM virtualization allows seamless 60fps scrolling across 1000+ rooms.
 - **Compact Mode**: Density controls for data tables to maximize visibility on standard 1080p hotel screens.
+- **Keyboard Shortcuts**: Native hotkeys (`Cmd+I` for Check-In, `Cmd+O` for Check-Out, `Cmd+P` for Payment, `Cmd+F` for Search).
+- **Progressive Web App (PWA)**: Offline caching via Service Workers for Housekeeping mobile app in basement dead-zones.
 - **Unified Orders**: Centralized `InternalOrder` data modeling for POS and Room Service.
+
