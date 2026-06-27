@@ -16,12 +16,12 @@ export async function GET() {
         where: { status: { notIn: ['CANCELLED', 'NO_SHOW'] }, createdAt: { lte: lastMonth } }
     })
 
-    const foodOrdersSum = await prisma.foodOrder.aggregate({
+    const internalOrdersSum = await prisma.internalOrder.aggregate({
         _sum: { totalAmount: true },
         where: { status: 'COMPLETED' }
     })
 
-    const posSum = await prisma.pOSOrder.aggregate({
+    const posSum = await prisma.internalOrder.aggregate({
         _sum: { totalAmount: true },
         where: { status: 'COMPLETED' }
     })
@@ -34,13 +34,13 @@ export async function GET() {
     const adr = totalBookings > 0 ? (bookingsSum._sum.totalAmount || 0) / totalBookings : 0
     const revpar = adr * (currentOccupancy / 100)
 
-    const currentRevenue = (bookingsSum._sum.totalAmount || 0) + (foodOrdersSum._sum.totalAmount || 0) + (posSum._sum.totalAmount || 0)
+    const currentRevenue = (bookingsSum._sum.totalAmount || 0) + (internalOrdersSum._sum.totalAmount || 0) + (posSum._sum.totalAmount || 0)
     const prevRevenue = (lastMonthBookingsSum._sum.totalAmount || 0)
     const yoyGrowth = prevRevenue > 0 ? ((currentRevenue - prevRevenue) / prevRevenue) * 100 : 0
 
     const revenueData = {
         totalRoomsRevenue: bookingsSum._sum.totalAmount || 0,
-        totalPOSRevenue: (foodOrdersSum._sum.totalAmount || 0) + (posSum._sum.totalAmount || 0),
+        totalPOSRevenue: (internalOrdersSum._sum.totalAmount || 0) + (posSum._sum.totalAmount || 0),
         totalEventsRevenue: 0,
         yoyGrowth: Number(yoyGrowth.toFixed(2)),
         adr: Number(adr.toFixed(2)),
@@ -49,7 +49,7 @@ export async function GET() {
         departmentPerformance: {
             rooms: bookingsSum._sum.totalAmount || 0,
             pos: posSum._sum.totalAmount || 0,
-            food: foodOrdersSum._sum.totalAmount || 0
+            food: internalOrdersSum._sum.totalAmount || 0
         }
     }
 

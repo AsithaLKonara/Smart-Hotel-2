@@ -56,7 +56,7 @@ export async function POST(req: Request) {
         }
       }
 
-      const order = await tx.pOSOrder.create({
+      const order = await tx.internalOrder.create({
         data: {
           outletId: defaultOutlet.id,
           invoiceId: targetInvoiceId,
@@ -68,7 +68,7 @@ export async function POST(req: Request) {
 
       // Create Order Items
       for (const item of cart) {
-        await tx.pOSOrderItem.create({
+        await tx.internalOrderItem.create({
           data: {
             orderId: order.id,
             productId: item.id,

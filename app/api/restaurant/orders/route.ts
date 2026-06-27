@@ -39,9 +39,9 @@ export async function GET(request: NextRequest) {
       where.guestId = session.user.id
     }
 
-    // Note: FoodOrder model doesn't have relations defined in schema
+    // Note: InternalOrder model doesn't have relations defined in schema
     // Items would need to be fetched separately if stored in a separate collection
-    const orders = await prisma.foodOrder.findMany({
+    const orders = await prisma.internalOrder.findMany({
       where,
       orderBy: {
         createdAt: 'desc'
@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create order with associated order items
-    const order = await prisma.foodOrder.create({
+    const order = await prisma.internalOrder.create({
       data: {
         roomNumber,
         guestId: resolvedGuestId,
@@ -212,7 +212,7 @@ export async function PATCH(request: NextRequest) {
       )
     }
 
-    const existingOrder = await prisma.foodOrder.findUnique({
+    const existingOrder = await prisma.internalOrder.findUnique({
       where: { id: orderId }
     })
 
@@ -235,13 +235,13 @@ export async function PATCH(request: NextRequest) {
       status
     }
 
-    // Note: preparationTime field doesn't exist in FoodOrder schema
+    // Note: preparationTime field doesn't exist in InternalOrder schema
     // Would need to be added to schema or stored differently
     if (status === 'PREPARING' && typeof estimatedPrepTime === 'number') {
       // Store estimated prep time in specialRequests or a separate field if schema is updated
     }
 
-    const order = await prisma.foodOrder.update({
+    const order = await prisma.internalOrder.update({
       where: { id: orderId },
       data: updateData
     })

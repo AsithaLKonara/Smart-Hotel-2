@@ -56,12 +56,12 @@ describe('Advanced Integration: BI Analytics Engine', () => {
     });
 
     // Create Food & POS orders
-    await prisma.foodOrder.create({
+    await prisma.internalOrder.create({
       data: { status: 'COMPLETED', totalAmount: 50, guestId: guest.id }
     });
 
     const outlet = await prisma.pOSOutlet.create({ data: { name: 'Bar', type: 'BAR' } });
-    await prisma.pOSOrder.create({
+    await prisma.internalOrder.create({
       data: { status: 'COMPLETED', totalAmount: 75, paymentType: 'CASH', outletId: outlet.id }
     });
 

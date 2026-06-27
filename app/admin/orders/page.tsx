@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import toast from 'react-hot-toast'
 
-interface FoodOrder {
+interface InternalOrder {
   id: string
   roomNumber: string
   totalAmount: number
@@ -38,7 +38,7 @@ export default function AdminOrdersPage() {
   const queryClient = useQueryClient()
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
-  const [selectedOrder, setSelectedOrder] = useState<FoodOrder | null>(null)
+  const [selectedOrder, setSelectedOrder] = useState<InternalOrder | null>(null)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
 
   // Redirect if unauthorized

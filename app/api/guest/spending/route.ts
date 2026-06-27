@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
     })
 
     // 2. Get food orders
-    const foodOrders = await prisma.foodOrder.findMany({
+    const internalOrders = await prisma.internalOrder.findMany({
       where: { guestId: userId },
       select: {
         id: true,
@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
       // Note: Tax is not explicitly split in V2 FolioLineItem yet, so we omit totalTax aggregation for now
     })
 
-    foodOrders.forEach((o: any) => {
+    internalOrders.forEach((o: any) => {
       totalFoodCharges += o.totalAmount
       const paidAmount = o.payments.reduce((sum: number, p: any) => sum + (p.status === 'completed' ? p.amount : 0), 0)
       pendingPayments += (o.totalAmount - paidAmount)
@@ -81,7 +81,7 @@ export async function GET(request: NextRequest) {
         date: b.createdAt,
         status: b.paymentStatus
       })),
-      ...foodOrders.map((o: any) => ({
+      ...internalOrders.map((o: any) => ({
         id: o.id,
         category: 'FOOD',
         description: `Room Service: ${o.roomNumber}`,

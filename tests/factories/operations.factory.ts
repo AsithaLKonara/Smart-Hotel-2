@@ -27,9 +27,9 @@ export class FoodMenuFactory {
   }
 }
 
-export class FoodOrderFactory {
+export class InternalOrderFactory {
   static async create(
-    overrides?: Partial<Prisma.FoodOrderCreateInput>,
+    overrides?: Partial<Prisma.InternalOrderCreateInput>,
     tx?: PrismaClientType
   ) {
     const client = tx || prisma;
@@ -40,7 +40,7 @@ export class FoodOrderFactory {
       guestInput = { connect: { id: guest.id } };
     }
 
-    return client.foodOrder.create({
+    return client.internalOrder.create({
       data: {
         status: overrides?.status || 'PENDING',
         totalAmount: overrides?.totalAmount || faker.number.float({ min: 10, max: 200, fractionDigits: 2 }),

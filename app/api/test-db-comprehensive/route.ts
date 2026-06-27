@@ -79,7 +79,7 @@ export async function GET(request: NextRequest) {
       { name: 'Room', model: prisma.room },
       { name: 'Booking', model: prisma.booking },
       { name: 'FoodMenu', model: prisma.foodMenu },
-      { name: 'FoodOrder', model: prisma.foodOrder },
+      { name: 'InternalOrder', model: prisma.internalOrder },
       { name: 'Staff', model: prisma.staff },
       { name: 'Task', model: prisma.task },
       { name: 'Inventory', model: prisma.inventory },

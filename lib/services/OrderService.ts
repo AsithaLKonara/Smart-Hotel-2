@@ -36,12 +36,13 @@ export class OrderService {
       if (!folio) throw new Error("Folio not found.");
       if (folio.status === "PAID") throw new Error("Cannot add charges to a closed or locked folio.");
 
-      // 3. Create FoodOrder
-      const order = await tx.foodOrder.create({
+      // 3. Create InternalOrder
+      const order = await tx.internalOrder.create({
         data: {
           guestId: validatedData.guestId,
           roomId: validatedData.roomId,
           folioId: folio.id,
+          orderType: "IN_ROOM_DINING",
           status: "PENDING",
           totalAmount,
           specialRequests: validatedData.specialRequests,

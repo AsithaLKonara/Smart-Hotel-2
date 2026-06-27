@@ -66,7 +66,7 @@ export async function POST(req: Request) {
       });
     }
 
-    const order = await prisma.pOSOrder.create({
+    const order = await prisma.internalOrder.create({
       data: {
         outletId,
         folioId,

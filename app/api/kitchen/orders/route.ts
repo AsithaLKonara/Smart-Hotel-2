@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     const startOfDay = new Date()
     startOfDay.setHours(0, 0, 0, 0)
 
-    const orders = await prisma.foodOrder.findMany({
+    const orders = await prisma.internalOrder.findMany({
       where: {
         ...(statusFilter && statusFilter !== 'all' ? { status: statusFilter } : { status: { in: ['PENDING', 'CONFIRMED', 'PREPARING', 'READY', 'DELIVERED'] } }),
         ...(today ? { createdAt: { gte: startOfDay } } : {})
@@ -77,7 +77,7 @@ export async function PUT(request: NextRequest) {
     const body = await request.json()
     const { orderId, status } = body
 
-    const updatedOrder = await prisma.foodOrder.update({
+    const updatedOrder = await prisma.internalOrder.update({
       where: { id: orderId },
       data: { status, updatedAt: new Date() },
       include: { guest: true }

@@ -1,5 +1,5 @@
 import { endOfDay, startOfDay, startOfMonth, subDays, subMonths } from 'date-fns'
-import { Booking, Room, FoodOrder } from '@prisma/client'
+import { Booking, Room, InternalOrder } from '@prisma/client'
 import prisma from '@/lib/db'
 
 const ALLOWED_ROLES = ['MANAGER', 'SUPER_ADMIN'] as const
@@ -91,7 +91,7 @@ export async function computeDashboardAnalytics(referenceDate = new Date()): Pro
   const [
     rooms,
     bookingsLast30Days,
-    foodOrdersLast30Days,
+    internalOrdersLast30Days,
     bookingsPreviousMonth,
     recentBookings,
     userStats,
@@ -107,7 +107,7 @@ export async function computeDashboardAnalytics(referenceDate = new Date()): Pro
       },
       include: { roomAssignments: { include: { room: { include: { roomType: true } } } }, guest: true }
     }),
-    prisma.foodOrder.findMany({
+    prisma.internalOrder.findMany({
       where: { createdAt: { gte: previousMonthStart }, status: 'DELIVERED' }
     }),
     prisma.booking.count({
@@ -127,20 +127,20 @@ export async function computeDashboardAnalytics(referenceDate = new Date()): Pro
   const monthlyBookings = bookingsLast30Days.filter((b: Booking) => b.createdAt >= monthStart)
   
   // Strictly aggregate completed revenue
-  const getRevenue = (list: Booking[], orders: FoodOrder[], start: Date, end: Date) => {
+  const getRevenue = (list: Booking[], orders: InternalOrder[], start: Date, end: Date) => {
     const roomRev = list.filter((b: Booking) => b.createdAt >= start && b.createdAt <= end && b.paymentStatus === 'completed')
                        .reduce((sum: number, b: Booking) => sum + (b.totalAmount || 0), 0)
-    const foodRev = orders.filter((o: FoodOrder) => o.createdAt >= start && o.createdAt <= end)
-                         .reduce((sum: number, o: FoodOrder) => sum + (o.totalAmount || 0), 0)
+    const foodRev = orders.filter((o: InternalOrder) => o.createdAt >= start && o.createdAt <= end)
+                         .reduce((sum: number, o: InternalOrder) => sum + (o.totalAmount || 0), 0)
     return roomRev + foodRev
   }
 
-  const todayRevenue = getRevenue(bookingsLast30Days, foodOrdersLast30Days, todayStart, todayEnd)
-  const monthlyRevenue = getRevenue(bookingsLast30Days, foodOrdersLast30Days, monthStart, todayEnd)
+  const todayRevenue = getRevenue(bookingsLast30Days, internalOrdersLast30Days, todayStart, todayEnd)
+  const monthlyRevenue = getRevenue(bookingsLast30Days, internalOrdersLast30Days, monthStart, todayEnd)
   
   const currentYearStart = new Date(now.getFullYear(), 0, 1)
   const yearlyBookings = bookingsLast30Days.filter((b: Booking) => b.createdAt >= currentYearStart).length
-  const yearlyRevenue = getRevenue(bookingsLast30Days, foodOrdersLast30Days, currentYearStart, todayEnd)
+  const yearlyRevenue = getRevenue(bookingsLast30Days, internalOrdersLast30Days, currentYearStart, todayEnd)
 
   const bookingGrowthRate = calculateGrowthRate(monthlyBookings.length, bookingsPreviousMonth)
 

@@ -41,7 +41,7 @@ export async function PUT(
 
       const newTotal = orderItems.reduce((sum: number, item: any) => sum + item.subtotal, 0)
 
-      await tx.foodOrder.update({
+      await tx.internalOrder.update({
         where: { id: updatedItem.orderId },
         data: { totalAmount: newTotal },
       })
@@ -99,7 +99,7 @@ export async function DELETE(
 
       const newTotal = orderItems.reduce((sum: number, item: any) => sum + item.subtotal, 0)
 
-      await tx.foodOrder.update({
+      await tx.internalOrder.update({
         where: { id: item.orderId },
         data: { totalAmount: newTotal },
       })

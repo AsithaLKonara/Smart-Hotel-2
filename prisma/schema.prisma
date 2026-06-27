@@ -53,7 +53,7 @@ model Room {
   statusHistory         RoomStatusHistory[]
   roomImages            RoomImage[]
   reviews               RoomReview[]
-  foodOrders            FoodOrder[]
+  internalOrders        InternalOrder[]
   stays                 Stay[]
   roomAssignments       RoomAssignment[]
   maintenanceWorkOrders MaintenanceWorkOrder[]
@@ -301,7 +301,7 @@ model Payment {
   updatedAt       DateTime      @updatedAt
 
   booking     Booking?              @relation(fields: [bookingId], references: [id])
-  order       FoodOrder?            @relation(fields: [orderId], references: [id])
+  internalOrder InternalOrder?      @relation(fields: [orderId], references: [id])
   folio       Folio?                @relation(fields: [folioId], references: [id])
   user        User?                 @relation(fields: [userId], references: [id])
   adjustments FinancialAdjustment[]
@@ -355,6 +355,7 @@ model Folio {
   booking            Booking?        @relation(fields: [bookingId], references: [id])
   lineItems          FolioLineItem[]
   payments           Payment[]
+  internalOrders     InternalOrder[]
   routingRulesSource RoutingRule[]   @relation("SourceFolio")
   routingRulesTarget RoutingRule[]   @relation("TargetFolio")
 
@@ -462,40 +463,9 @@ enum Priority {
 // KITCHEN & ROOM SERVICE
 // ==========================================
 
-model FoodOrder {
-  id              String    @id @default(uuid())
-  guestId         String
-  roomId          String?
-  idempotencyKey  String?   @unique
-  status          String
-  totalAmount     Float
-  specialRequests String?
-  deliveryTime    DateTime?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
 
-  items    OrderItem[]
-  payments Payment[]
-  guest    User        @relation("GuestOrders", fields: [guestId], references: [id])
-  room     Room?       @relation(fields: [roomId], references: [id])
 
-  @@index([guestId])
-}
 
-model OrderItem {
-  id         String   @id @default(uuid())
-  orderId    String
-  menuItemId String
-  quantity   Int
-  price      Float
-  subtotal   Float
-  notes      String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  order    FoodOrder @relation(fields: [orderId], references: [id])
-  menuItem FoodMenu  @relation(fields: [menuItemId], references: [id])
-}
 
 model YieldRule {
   id              String   @id @default(uuid())
@@ -530,7 +500,7 @@ model POSOutlet {
   updatedAt   DateTime @updatedAt
 
   products POSProduct[]
-  orders   POSOrder[]
+  internalOrders InternalOrder[]
 }
 
 model POSProduct {
@@ -544,33 +514,12 @@ model POSProduct {
   updatedAt DateTime @updatedAt
 
   outlet     POSOutlet      @relation(fields: [outletId], references: [id])
-  orderItems POSOrderItem[]
+  internalOrderItems InternalOrderItem[]
 }
 
-model POSOrder {
-  id          String   @id @default(uuid())
-  outletId    String
-  status      String // PENDING, COMPLETED, CANCELLED
-  totalAmount Float
-  paymentType String // CASH, CARD, ROOM_CHARGE
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
 
-  outlet POSOutlet      @relation(fields: [outletId], references: [id])
-  items  POSOrderItem[]
-}
 
-model POSOrderItem {
-  id        String @id @default(uuid())
-  orderId   String
-  productId String
-  quantity  Int
-  price     Float
-  subtotal  Float
 
-  order   POSOrder   @relation(fields: [orderId], references: [id])
-  product POSProduct @relation(fields: [productId], references: [id])
-}
 
 // ==========================================
 // EVENTS & BANQUETING (PHASE 6)
@@ -642,7 +591,7 @@ model FoodMenu {
   preparationTime Int
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
-  orderItems      OrderItem[]
+  internalOrderItems InternalOrderItem[]
 }
 
 // ==========================================
@@ -677,7 +626,7 @@ model User {
   hotelReviews       HotelReview[]
   tableBookings      TableBooking[]
   complaints         Complaint[]
-  foodOrders         FoodOrder[]         @relation("GuestOrders")
+  internalOrders     InternalOrder[]         @relation("GuestInternalOrders")
   payments           Payment[]
   notifications      Notification[]
   createdTasks       Task[]              @relation("CreatedTasks")
@@ -1595,4 +1544,53 @@ model Incident {
   notes               String   @default("")
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
+}
+
+model InternalOrder {
+  id              String    @id @default(uuid())
+  orderType       String    @default("IN_ROOM_DINING") // "POS_OUTLET", "IN_ROOM_DINING", "SPA"
+  status          String    // PENDING, PREPARING, DELIVERED, COMPLETED, CANCELLED
+  totalAmount     Float
+  
+  // Relations
+  guestId         String?
+  roomId          String?
+  outletId        String?
+  folioId         String?
+  
+  // Specific to order types
+  paymentType     String?   // CASH, CARD, ROOM_CHARGE
+  specialRequests String?
+  deliveryTime    DateTime?
+  idempotencyKey  String?   @unique
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  items    InternalOrderItem[]
+  payments Payment[]
+  
+  guest    User?       @relation("GuestInternalOrders", fields: [guestId], references: [id])
+  room     Room?       @relation(fields: [roomId], references: [id])
+  outlet   POSOutlet?  @relation(fields: [outletId], references: [id])
+  folio    Folio?      @relation(fields: [folioId], references: [id])
+
+  @@index([guestId])
+}
+
+model InternalOrderItem {
+  id         String   @id @default(uuid())
+  orderId    String
+  productId  String?  // References POSProduct
+  menuItemId String?  // String reference for legacy/food orders
+  quantity   Int
+  price      Float
+  subtotal   Float
+  notes      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  order      InternalOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product    POSProduct?   @relation(fields: [productId], references: [id])
+  menuItem   FoodMenu?     @relation(fields: [menuItemId], references: [id])
 }

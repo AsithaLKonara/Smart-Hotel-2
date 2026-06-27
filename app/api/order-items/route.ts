@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
     const validatedData = orderItemSchema.parse(body)
 
     // Verify order exists
-    const order = await prisma.foodOrder.findUnique({
+    const order = await prisma.internalOrder.findUnique({
       where: { id: validatedData.orderId },
     })
 
@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
 
       const newTotal = orderItems.reduce((sum: number, item: any) => sum + item.subtotal, 0)
 
-      await tx.foodOrder.update({
+      await tx.internalOrder.update({
         where: { id: validatedData.orderId },
         data: { totalAmount: newTotal },
       })

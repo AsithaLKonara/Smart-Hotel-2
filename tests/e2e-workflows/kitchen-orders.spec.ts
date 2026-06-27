@@ -45,7 +45,7 @@ test.describe('Kitchen Dashboard Workflow (Database Seeded)', () => {
       }
     });
 
-    const order = await prisma.foodOrder.create({
+    const order = await prisma.internalOrder.create({
       data: {
         guestId: guest.id,
         roomId: room.id,
@@ -105,7 +105,7 @@ test.describe('Kitchen Dashboard Workflow (Database Seeded)', () => {
     await expect(confirmedCard.getByRole('button', { name: /start preparation/i })).toBeVisible();
 
     // 8. Verify the DB was actually updated
-    const updatedOrder = await prisma.foodOrder.findUnique({ where: { id: order.id } });
+    const updatedOrder = await prisma.internalOrder.findUnique({ where: { id: order.id } });
     expect(updatedOrder?.status).toBe('CONFIRMED');
   });
 });

@@ -1,5 +1,5 @@
 // Ordering API integration for QR menu & ordering system
-import { FoodMenu, FoodOrder } from '@prisma/client'
+import { FoodMenu, InternalOrder } from '@prisma/client'
 // Note: OrderItem model doesn't exist in schema
 
 export interface MenuItemData {
@@ -36,7 +36,7 @@ export interface OrderRequest {
 
 export interface OrderResponse {
   success: boolean
-  order?: FoodOrder
+  order?: InternalOrder
   error?: string
 }
 
@@ -78,7 +78,7 @@ export async function getMenuItem(itemId: string): Promise<MenuItemData> {
 }
 
 // Create a new food order
-export async function createFoodOrder(orderData: OrderRequest): Promise<OrderResponse> {
+export async function createInternalOrder(orderData: OrderRequest): Promise<OrderResponse> {
   try {
     const response = await fetch('/api/restaurant/orders', {
       method: 'POST',
@@ -102,7 +102,7 @@ export async function createFoodOrder(orderData: OrderRequest): Promise<OrderRes
 }
 
 // Get order by ID
-export async function getOrder(orderId: string): Promise<FoodOrder> {
+export async function getOrder(orderId: string): Promise<InternalOrder> {
   try {
     const response = await fetch(`/api/restaurant/orders/${orderId}`)
     
@@ -142,7 +142,7 @@ export async function updateOrderStatus(orderId: string, status: string): Promis
 }
 
 // Get orders for kitchen dashboard
-export async function getKitchenOrders(status?: string): Promise<FoodOrder[]> {
+export async function getKitchenOrders(status?: string): Promise<InternalOrder[]> {
   try {
     const params = new URLSearchParams()
     if (status && status !== 'all') {
@@ -200,7 +200,7 @@ export function validateOrderData(data: Partial<OrderRequest>): string[] {
 
 // Format order for display
 // Note: OrderItem model doesn't exist in schema - using inline type
-export function formatOrderForDisplay(order: FoodOrder, items: Array<{ quantity: number; notes?: string; unitPrice: number }>): any {
+export function formatOrderForDisplay(order: InternalOrder, items: Array<{ quantity: number; notes?: string; unitPrice: number }>): any {
   return {
     id: order.id,
     roomId: order.roomId,
