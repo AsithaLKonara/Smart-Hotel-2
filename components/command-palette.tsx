@@ -186,15 +186,6 @@ export function CommandPalette() {
       action: () => router.push('/admin/automation'),
       category: 'NAVIGATION'
     },
-    {
-      id: 'nav-chaos',
-      title: 'Go to SRE Chaos Engine Cockpit',
-      shortcut: 'G S',
-      icon: <Navigation className="w-4 h-4 text-purple-400" />,
-      action: () => router.push('/admin/chaos'),
-      category: 'NAVIGATION'
-    },
-    
     // 2. Direct operations actions
     {
       id: 'act-clean-102',

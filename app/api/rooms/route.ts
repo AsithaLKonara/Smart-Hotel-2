@@ -5,8 +5,6 @@ import { prisma } from '@/lib/db'
 import { isDatabaseConfigured, getDatabaseErrorMessage } from '@/lib/db-helpers'
 import { z } from 'zod'
 import { unstable_cache } from 'next/cache'
-import { injectChaosDelay } from '@/qa/chaos/chaos-engine'
-
 /**
  * Enterprise Room Schema
  */
@@ -19,8 +17,6 @@ const roomSchema = z.object({
 })
 
 export async function GET(request: NextRequest) {
-  // Chaos delay removed for production
-  // await injectChaosDelay('DB_LATENCY')
 
   if (!isDatabaseConfigured()) {
     return NextResponse.json({ error: 'Database not configured', rooms: [] }, { status: 503 })

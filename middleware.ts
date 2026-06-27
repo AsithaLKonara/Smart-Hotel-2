@@ -4,8 +4,6 @@ import { getToken } from 'next-auth/jwt'
 // Centralized Route Protection Matrix
 const PROTECTED_ROUTES = [
   // 👑 SUPER ADMIN ONLY (SRE, Platform, Global)
-  { prefix: '/admin/chaos', roles: ['SUPER_ADMIN'] },
-  { prefix: '/api/chaos', roles: ['SUPER_ADMIN'] },
   { prefix: '/admin/roles', roles: ['SUPER_ADMIN'] },
   { prefix: '/admin/audit-logs', roles: ['SUPER_ADMIN'] },
   { prefix: '/admin/corporate', roles: ['SUPER_ADMIN'] }, // Global properties, Loyalty
