@@ -164,6 +164,9 @@ model Booking {
   propertyId String?
   property   Property? @relation(fields: [propertyId], references: [id])
 
+  groupBlockId String?
+  groupBlock   GroupBlock? @relation(fields: [groupBlockId], references: [id])
+
   @@index([checkIn, checkOut])
   @@index([status])
   @@index([createdAt])
@@ -584,6 +587,7 @@ model GroupBlock {
 
   event    BanquetingEvent @relation(fields: [eventId], references: [id])
   roomType RoomType        @relation(fields: [roomTypeId], references: [id])
+  bookings Booking[]
 }
 
 model FoodMenu {
