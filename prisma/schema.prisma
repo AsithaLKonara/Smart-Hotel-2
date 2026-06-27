@@ -199,7 +199,7 @@ model BookingGuest {
   name      String
   email     String?
   phone     String?
-  identity  String?
+  identity  String? // @encrypted (Use lib/crypto.ts encryptPII/decryptPII before DB write)
   isMinor   Boolean @default(false)
 
   booking Booking @relation(fields: [bookingId], references: [id])
