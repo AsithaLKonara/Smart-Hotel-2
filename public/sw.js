@@ -18,7 +18,9 @@ const API_CACHE_ROUTES = [
   '/api/health',
   '/api/rooms',
   '/api/bookings',
-  '/api/restaurant/menu'
+  '/api/restaurant/menu',
+  '/admin/tasks',
+  '/api/tasks'
 ]
 
 // Install event - cache static assets
