@@ -4,6 +4,7 @@ import { useState, useRef } from 'react'
 import { Upload, X, Image as ImageIcon, Loader2, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import Image from 'next/image'
 import toast from 'react-hot-toast'
 
 interface ImageUploadProps {
@@ -86,11 +87,12 @@ export function ImageUpload({
                 <X className="h-4 w-4" />
               </Button>
             </div>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-110"
+            <Image
+              className="object-cover transition-transform duration-300 group-hover:scale-110"
               alt="Room Image"
               src={url}
+              fill
+              sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
             />
           </div>
         ))}
