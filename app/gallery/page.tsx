@@ -24,13 +24,21 @@ export default function GalleryPage() {
   ]
 
   return (
-    <div className="bg-transparent text-white min-h-screen pt-24">
-      {/* Hero Section — Blur Glass */}
-      <section className="relative h-[40vh] min-h-[300px] overflow-hidden">
-        <div className="absolute inset-0 bg-black/50 backdrop-blur-xl" />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/70" />
+    <div className="bg-transparent text-white min-h-screen">
+      {/* Contextual Hero */}
+      <section className="relative min-h-[500px] flex items-center justify-center overflow-hidden border-b border-white/5">
+        <Image 
+          src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&q=80&w=1920" 
+          alt="Luxury Gallery" 
+          fill 
+          className="object-cover absolute inset-0 -z-20 scale-105 transform opacity-60" 
+          priority 
+        />
+        {/* Blend layers into the solid #0a0a0a body */}
+        <div className="absolute inset-0 bg-black/60 -z-10" />
+        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#0a0a0a] to-transparent -z-10" />
         
-        <div className="relative z-10 container mx-auto px-4 h-full flex flex-col justify-center items-center text-center">
+        <div className="relative z-10 container mx-auto px-4 flex flex-col items-center text-center pt-32 pb-16">
           <div className="space-y-6 max-w-4xl">
             <div className="flex items-center justify-center space-x-3 text-primary uppercase tracking-[0.4em] text-xs font-bold">
               <div className="w-12 h-px bg-primary" />
@@ -71,6 +79,10 @@ export default function GalleryPage() {
         <div className="container mx-auto px-4">
           <motion.div 
             layout
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6 }}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
           >
             <AnimatePresence mode='popLayout'>
@@ -91,7 +103,7 @@ export default function GalleryPage() {
                     fill
                     className="object-cover transition-transform duration-1000 group-hover:scale-110"
                   />
-                  <div className="absolute inset-0 bg-midnight/60 opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col justify-center items-center text-center p-8">
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col justify-center items-center text-center p-8 backdrop-blur-sm">
                     <div className="space-y-4 translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
                       <div className="w-10 h-10 bg-luxury/20 flex items-center justify-center mx-auto text-luxury mb-4">
                         <Maximize2 className="w-5 h-5" />
@@ -115,7 +127,7 @@ export default function GalleryPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-midnight flex items-center justify-center p-4 md:p-20"
+            className="fixed inset-0 z-[100] bg-[#0a0a0a]/95 backdrop-blur-md flex items-center justify-center p-4 md:p-20"
           >
             <button 
               onClick={() => setSelectedImage(null)}

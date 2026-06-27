@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import Image from 'next/image'
 import { formatPrice } from '@/lib/utils'
 import { PremiumSpinner } from '@/components/ui/premium-spinner'
+import { motion } from 'framer-motion'
 
 interface Room {
   id: string
@@ -56,15 +57,21 @@ export default function RoomsPage() {
   })
 
   return (
-    <div className="bg-transparent text-white pt-24">
-      {/* Hero Section — Blur Glass */}
-      <section className="relative h-[50vh] min-h-[400px] overflow-hidden">
-        {/* Glass blur overlay — lets video show through */}
-        <div className="absolute inset-0 bg-black/50 backdrop-blur-xl" />
-        {/* Subtle noise texture */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/60" />
+    <div className="bg-transparent text-white">
+      {/* Contextual Hero */}
+      <section className="relative min-h-[500px] flex items-center justify-center overflow-hidden border-b border-white/5">
+        <Image 
+          src="/images/hotel/hotel-hero-2.jpg" 
+          alt="Luxury Suites" 
+          fill 
+          className="object-cover absolute inset-0 -z-20 scale-105 transform" 
+          priority 
+        />
+        {/* Blend layers into the solid #0a0a0a body */}
+        <div className="absolute inset-0 bg-black/60 -z-10" />
+        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#0a0a0a] to-transparent -z-10" />
         
-        <div className="relative z-10 container mx-auto px-4 h-full flex flex-col justify-center items-center text-center">
+        <div className="relative z-10 container mx-auto px-4 flex flex-col items-center text-center pt-32 pb-16">
           <div className="space-y-6 max-w-4xl">
             <div className="flex items-center justify-center space-x-3 text-primary uppercase tracking-[0.4em] text-xs font-bold">
               <div className="w-12 h-px bg-primary" />
@@ -122,7 +129,13 @@ export default function RoomsPage() {
               <h3 className="text-2xl font-serif text-white/40">No suites match your search.</h3>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.6 }}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+            >
               {filteredRooms.map((room) => (
                 <div key={room.id} className="group relative" data-testid="room-card">
                   {/* Image container */}
@@ -193,7 +206,7 @@ export default function RoomsPage() {
                   </div>
                 </div>
               ))}
-            </div>
+            </motion.div>
           )}
         </div>
       </section>

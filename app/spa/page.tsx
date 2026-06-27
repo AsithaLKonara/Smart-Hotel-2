@@ -11,6 +11,7 @@ import {
   CheckCircle2,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { motion } from 'framer-motion'
 
 export const dynamic = 'force-dynamic'
 
@@ -46,20 +47,21 @@ const treatments = [
 
 export default function SpaPage() {
   return (
-    <div className="bg-white text-midnight">
-      {/* Hero Section */}
-      <section className="relative h-[60vh] min-h-[500px] overflow-hidden bg-midnight">
-        <div className="absolute inset-0">
-          <Image 
-            src="https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&q=80&w=1920" 
-            alt="Spa & Wellness" 
-            fill 
-            className="object-cover opacity-40 scale-110" 
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-midnight/20 via-midnight/60 to-midnight" />
-        </div>
+    <div className="bg-transparent text-white">
+      {/* Contextual Hero */}
+      <section className="relative min-h-[500px] flex items-center justify-center overflow-hidden border-b border-white/5">
+        <Image 
+          src="https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&q=80&w=1920" 
+          alt="Spa & Wellness" 
+          fill 
+          className="object-cover absolute inset-0 -z-20 scale-105 transform" 
+          priority 
+        />
+        {/* Blend layers into the solid #0a0a0a body */}
+        <div className="absolute inset-0 bg-black/60 -z-10" />
+        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#0a0a0a] to-transparent -z-10" />
         
-        <div className="relative z-10 container mx-auto px-4 h-full flex flex-col justify-center items-center text-center">
+        <div className="relative z-10 container mx-auto px-4 flex flex-col items-center text-center pt-32 pb-16">
           <div className="space-y-6 max-w-4xl">
             <div className="flex items-center justify-center space-x-3 text-luxury uppercase tracking-[0.4em] text-xs font-bold">
               <div className="w-12 h-px bg-luxury" />
@@ -77,7 +79,7 @@ export default function SpaPage() {
       </section>
 
       {/* Intro Section */}
-      <section className="py-24 lg:py-32 bg-white">
+      <section className="py-24 lg:py-32 bg-transparent">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
             <div className="relative">
@@ -92,12 +94,18 @@ export default function SpaPage() {
               <div className="absolute -top-10 -left-10 w-48 h-48 border-[15px] border-luxury/10 -z-10" />
             </div>
             
-            <div className="space-y-8">
+            <motion.div 
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7 }}
+              className="space-y-8"
+            >
               <div className="space-y-4">
                 <h4 className="text-luxury uppercase tracking-[0.3em] text-xs font-bold">The Serenity Method</h4>
-                <h2 className="text-5xl lg:text-6xl font-serif font-bold text-midnight">Holistic <span className="text-luxury italic">Healing</span></h2>
+                <h2 className="text-5xl lg:text-6xl font-serif font-bold text-white">Holistic <span className="text-luxury italic">Healing</span></h2>
               </div>
-              <p className="text-lg text-gray-600 leading-relaxed font-light">
+              <p className="text-lg text-white/60 leading-relaxed font-light">
                 Our philosophy centers on the harmony of mind, body, and spirit. We use only the world's most exclusive organic products and cutting-edge wellness technology to ensure profound results.
               </p>
               <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
@@ -107,47 +115,53 @@ export default function SpaPage() {
                   'Private VIP Spa Suites',
                   'Thermal Wellness Circuit',
                 ].map((item, i) => (
-                  <li key={i} className="flex items-center space-x-3 text-midnight/80 font-medium">
+                  <li key={i} className="flex items-center space-x-3 text-white/80 font-medium">
                     <CheckCircle2 className="w-5 h-5 text-luxury" />
                     <span>{item}</span>
                   </li>
                 ))}
               </ul>
-              <Button className="bg-midnight text-white rounded-none px-10 h-14 uppercase tracking-widest text-xs font-bold hover:bg-midnight/90 transition-all">
+              <Button variant="outline" className="border-white/20 text-white rounded-none px-10 h-14 uppercase tracking-widest text-xs font-bold hover:bg-white/10 transition-all">
                 Download Spa Menu
               </Button>
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>
 
       {/* Treatments List */}
-      <section className="py-24 lg:py-32 bg-gray-50">
+      <section className="py-24 lg:py-32 bg-[#0a0a0a]">
         <div className="container mx-auto px-4">
           <div className="text-center mb-20 space-y-4">
             <h4 className="text-luxury uppercase tracking-[0.3em] text-xs font-bold">Signature Rituals</h4>
-            <h2 className="text-5xl lg:text-6xl font-serif font-bold text-midnight">Bespoke <span className="text-luxury italic">Treatments</span></h2>
+            <h2 className="text-5xl lg:text-6xl font-serif font-bold text-white">Bespoke <span className="text-luxury italic">Treatments</span></h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6 }}
+            className="grid grid-cols-1 md:grid-cols-3 gap-10"
+          >
             {treatments.map((treatment) => (
-              <div key={treatment.id} className="group bg-white overflow-hidden shadow-xl hover:-translate-y-2 transition-all duration-500">
+              <div key={treatment.id} className="group bg-white/5 border border-white/10 overflow-hidden shadow-luxury hover:-translate-y-2 transition-all duration-500 rounded-2xl">
                 <div className="relative aspect-[4/3] overflow-hidden">
                   <Image src={treatment.image} alt={treatment.name} fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
-                  <div className="absolute top-4 right-4 bg-midnight/80 backdrop-blur-md px-3 py-1 text-luxury font-serif italic">
+                  <div className="absolute top-4 right-4 bg-black/80 backdrop-blur-md px-3 py-1 text-luxury font-serif italic border border-luxury/20 rounded-lg">
                     {treatment.price}
                   </div>
                 </div>
                 <div className="p-8 space-y-4">
                   <div className="space-y-1">
                     <p className="text-[10px] uppercase tracking-[0.2em] text-luxury font-bold">{treatment.subtitle}</p>
-                    <h3 className="text-2xl font-serif font-bold text-midnight">{treatment.name}</h3>
+                    <h3 className="text-2xl font-serif font-bold text-white">{treatment.name}</h3>
                   </div>
-                  <p className="text-gray-500 text-sm font-light leading-relaxed line-clamp-3">
+                  <p className="text-white/50 text-sm font-light leading-relaxed line-clamp-3">
                     {treatment.description}
                   </p>
-                  <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                    <div className="flex items-center space-x-2 text-gray-400">
+                  <div className="flex items-center justify-between pt-4 border-t border-white/10">
+                    <div className="flex items-center space-x-2 text-white/40">
                       <Clock className="w-4 h-4" />
                       <span className="text-xs font-medium uppercase tracking-widest">{treatment.duration}</span>
                     </div>
@@ -159,12 +173,12 @@ export default function SpaPage() {
                 </div>
               </div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* Amenities Icons */}
-      <section className="py-24 bg-midnight text-white">
+      <section className="py-24 bg-transparent text-white border-t border-white/5">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-12">
             {[
@@ -186,8 +200,8 @@ export default function SpaPage() {
       </section>
 
       {/* CTA Footer Section */}
-      <section className="relative py-24 bg-midnight overflow-hidden">
-        <div className="absolute inset-0 opacity-20">
+      <section className="relative py-24 bg-[#0a0a0a] overflow-hidden">
+        <div className="absolute inset-0 opacity-10">
           <Image src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&q=80&w=1920" alt="Background" fill className="object-cover" />
         </div>
         <div className="container mx-auto px-4 relative z-10 text-center space-y-10">

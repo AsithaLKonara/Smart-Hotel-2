@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { MapPin, Phone, Mail, Clock, Send, ChevronDown, Plus, Minus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { AnimatePresence, motion } from 'framer-motion'
+import Image from 'next/image'
 
 function GoogleMapFallback({ lat, lng, address }: { lat: number; lng: number; address: string }) {
   const apiKey = typeof window !== 'undefined' 
@@ -68,7 +69,13 @@ function FAQSection() {
 
   return (
     <section className="py-24">
-      <div className="max-w-3xl mx-auto px-4">
+      <motion.div 
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.6 }}
+        className="max-w-3xl mx-auto px-4"
+      >
         <div className="text-center mb-16 space-y-4">
           <h4 className="text-primary uppercase tracking-[0.3em] text-xs font-bold">Common Inquiries</h4>
           <h2 className="text-4xl font-serif font-bold text-white">Frequently Asked <span className="text-primary italic">Questions</span></h2>
@@ -98,7 +105,7 @@ function FAQSection() {
             </div>
           ))}
         </div>
-      </div>
+      </motion.div>
     </section>
   )
 }
@@ -139,13 +146,21 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="bg-transparent text-white min-h-screen pt-24">
-      {/* Hero Section — Blur Glass */}
-      <section className="relative h-[50vh] min-h-[400px] overflow-hidden">
-        <div className="absolute inset-0 bg-black/50 backdrop-blur-xl" />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/70" />
+    <div className="bg-transparent text-white min-h-screen">
+      {/* Contextual Hero */}
+      <section className="relative min-h-[500px] flex items-center justify-center overflow-hidden border-b border-white/5">
+        <Image 
+          src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&q=80&w=1920" 
+          alt="Contact Concierge" 
+          fill 
+          className="object-cover absolute inset-0 -z-20 scale-105 transform opacity-60" 
+          priority 
+        />
+        {/* Blend layers into the solid #0a0a0a body */}
+        <div className="absolute inset-0 bg-black/60 -z-10" />
+        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#0a0a0a] to-transparent -z-10" />
         
-        <div className="relative z-20 container mx-auto px-4 h-full flex flex-col justify-center items-center text-center">
+        <div className="relative z-20 container mx-auto px-4 flex flex-col items-center text-center pt-32 pb-16">
           <div className="space-y-6 max-w-4xl">
             <div className="flex items-center justify-center space-x-3 text-primary uppercase tracking-[0.4em] text-xs font-bold">
               <div className="w-12 h-px bg-primary" />
@@ -162,7 +177,13 @@ export default function ContactPage() {
 
       <section className="py-24">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-20">
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6 }}
+            className="grid grid-cols-1 lg:grid-cols-12 gap-20"
+          >
             {/* Contact Form */}
             <div className="lg:col-span-7 space-y-12">
               <div className="space-y-4">
@@ -259,7 +280,7 @@ export default function ContactPage() {
                 />
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       </section>
 

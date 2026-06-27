@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next"
 import { Inter } from "next/font/google"
+import Script from "next/script"
 import "./globals.css"
 import { Toaster } from "@/components/ui/toaster"
 import ErrorBoundary from "@/components/error-boundary"
@@ -123,11 +124,13 @@ export default function RootLayout({
         {/* Google Analytics */}
         {process.env.NEXT_PUBLIC_GA_ID && (
           <>
-            <script
-              async
+            <Script
               src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
+              strategy="afterInteractive"
             />
-            <script
+            <Script
+              id="google-analytics"
+              strategy="afterInteractive"
               dangerouslySetInnerHTML={{
                 __html: `
                   window.dataLayer = window.dataLayer || [];
@@ -142,7 +145,19 @@ export default function RootLayout({
           </>
         )}
       </head>
-      <body className="min-h-screen bg-transparent text-foreground font-sans antialiased">
+      <body className="min-h-screen bg-[#0a0a0a] text-foreground font-sans antialiased relative">
+        {/* Global Luxury Gradient Background */}
+        <div 
+          className="fixed inset-0 z-[-1] pointer-events-none" 
+          style={{ 
+            backgroundColor: '#0a0a0a',
+            backgroundImage: `
+              radial-gradient(circle at 50% 0%, rgba(197, 160, 89, 0.25) 0%, transparent 60%),
+              radial-gradient(circle at 85% 70%, rgba(197, 160, 89, 0.15) 0%, transparent 50%),
+              radial-gradient(circle at 15% 90%, rgba(197, 160, 89, 0.12) 0%, transparent 50%)
+            `
+          }} 
+        />
         <ErrorBoundary>
           <Providers>
             <HotelSchema />

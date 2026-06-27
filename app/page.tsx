@@ -78,7 +78,7 @@ export default async function HomePage() {
 
 
       {/* Our Story Section */}
-      <section className="py-24 lg:py-32 overflow-hidden bg-black/30 backdrop-blur-md border-y border-white/5 relative">
+      <section className="py-24 lg:py-32 overflow-hidden bg-black/10 backdrop-blur-sm border-y border-white/5 relative">
         <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 via-transparent to-transparent pointer-events-none" />
         <div className="container mx-auto px-4 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
@@ -129,7 +129,7 @@ export default async function HomePage() {
       </section>
 
       {/* Featured Suites */}
-      <section className="py-24 lg:py-32 bg-black/45 border-y border-white/5 text-white">
+      <section className="py-24 lg:py-32 bg-transparent border-y border-white/5 text-white">
         <div className="container mx-auto px-4">
           <div className="flex flex-col lg:flex-row justify-between items-end mb-20 gap-8">
             <div className="space-y-4">
@@ -180,7 +180,7 @@ export default async function HomePage() {
       </section>
 
       {/* Experiences Section */}
-      <section className="py-24 lg:py-32 bg-black/25 backdrop-blur-md border-y border-white/5">
+      <section className="py-24 lg:py-32 bg-black/5 backdrop-blur-sm border-y border-white/5">
         <div className="container mx-auto px-4">
           <div className="text-center space-y-4 mb-20">
             <h4 className="text-primary uppercase tracking-[0.3em] text-xs font-bold">Stay Beyond Ordinary</h4>

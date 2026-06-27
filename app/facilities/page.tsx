@@ -14,6 +14,7 @@ import {
   ChevronRight,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { motion } from 'framer-motion'
 
 import { Metadata } from 'next'
 
@@ -65,13 +66,21 @@ const facilities = [
 
 export default function FacilitiesPage() {
   return (
-    <div className="bg-transparent text-white pt-24">
-      {/* Hero Section — Blur Glass */}
-      <section className="relative h-[60vh] min-h-[500px] overflow-hidden">
-        <div className="absolute inset-0 bg-black/50 backdrop-blur-xl" />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/70" />
+    <div className="bg-transparent text-white">
+      {/* Contextual Hero */}
+      <section className="relative min-h-[500px] flex items-center justify-center overflow-hidden border-b border-white/5">
+        <Image 
+          src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&q=80&w=1920" 
+          alt="Luxury Facilities" 
+          fill 
+          className="object-cover absolute inset-0 -z-20 scale-105 transform" 
+          priority 
+        />
+        {/* Blend layers into the solid #0a0a0a body */}
+        <div className="absolute inset-0 bg-black/60 -z-10" />
+        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#0a0a0a] to-transparent -z-10" />
         
-        <div className="relative z-10 container mx-auto px-4 h-full flex flex-col justify-center items-center text-center">
+        <div className="relative z-10 container mx-auto px-4 flex flex-col items-center text-center pt-32 pb-16">
           <div className="space-y-6 max-w-4xl">
             <div className="flex items-center justify-center space-x-3 text-primary uppercase tracking-[0.4em] text-xs font-bold">
               <div className="w-12 h-px bg-primary" />
@@ -95,7 +104,14 @@ export default function FacilitiesPage() {
             {facilities.map((facility, index) => {
               const Icon = facility.icon
               return (
-                <div key={facility.id} className={`grid grid-cols-1 lg:grid-cols-2 gap-20 items-center ${index % 2 === 1 ? 'lg:flex-row-reverse' : ''}`}>
+                <motion.div 
+                  initial={{ opacity: 0, y: 40 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-100px" }}
+                  transition={{ duration: 0.7 }}
+                  key={facility.id} 
+                  className={`grid grid-cols-1 lg:grid-cols-2 gap-20 items-center ${index % 2 === 1 ? 'lg:flex-row-reverse' : ''}`}
+                >
                   <div className={`relative ${index % 2 === 1 ? 'lg:order-2' : ''}`}>
                     <div className="relative aspect-[4/3] overflow-hidden shadow-2xl">
                       <Image 
@@ -137,7 +153,7 @@ export default function FacilitiesPage() {
                       <ChevronRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                     </Button>
                   </div>
-                </div>
+                </motion.div>
               )
             })}
           </div>
@@ -166,8 +182,8 @@ export default function FacilitiesPage() {
       </section>
 
       {/* CTA Footer Section */}
-      <section className="relative py-24 bg-midnight overflow-hidden">
-        <div className="absolute inset-0 opacity-20">
+      <section className="relative py-24 bg-[#0a0a0a] overflow-hidden">
+        <div className="absolute inset-0 opacity-10">
           <Image src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&q=80&w=1920" alt="Background" fill className="object-cover" />
         </div>
         <div className="container mx-auto px-4 relative z-10 text-center space-y-10">

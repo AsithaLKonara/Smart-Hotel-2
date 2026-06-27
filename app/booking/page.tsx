@@ -13,6 +13,7 @@ import toast from 'react-hot-toast'
 import Image from 'next/image'
 import Link from 'next/link'
 import { PremiumSpinner } from '@/components/ui/premium-spinner'
+import { motion } from 'framer-motion'
 
 function BookingPageContent() {
   const searchParams = useSearchParams()
@@ -136,10 +137,19 @@ function BookingPageContent() {
 
   return (
     <div className="bg-transparent text-white min-h-screen">
-      {/* Header */}
-      <section className="relative pt-32 pb-20 overflow-hidden">
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-xl" />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/50" />
+      {/* Contextual Header */}
+      <section className="relative pt-40 pb-24 overflow-hidden min-h-[45vh] flex flex-col justify-end border-b border-white/5">
+        <Image 
+          src="/images/hotel/hotel-hero-1.jpg" 
+          alt="Luxury Booking" 
+          fill 
+          className="object-cover absolute inset-0 -z-20 scale-105 transform" 
+          priority 
+        />
+        {/* Blend layers into the solid #0a0a0a body */}
+        <div className="absolute inset-0 bg-black/40 -z-10" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0a0a0a]/80 to-[#0a0a0a] -z-10" />
+        
         <div className="relative z-10 container mx-auto px-4 text-center space-y-6">
           <div className="flex items-center justify-center space-x-3 text-primary uppercase tracking-[0.4em] text-[10px] font-bold">
             <div className="w-10 h-px bg-primary" />
@@ -170,7 +180,12 @@ function BookingPageContent() {
 
           {/* Step 1: Dates */}
           {step === 1 && (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center"
+            >
               <div className="lg:col-span-6 relative aspect-[4/3] overflow-hidden rounded-2xl shadow-2xl">
                 <Image src="https://images.unsplash.com/photo-1590490359683-658d3d23f972?auto=format&fit=crop&q=80&w=1200" alt="Luxury Suite" fill className="object-cover" />
                 <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
@@ -203,12 +218,17 @@ function BookingPageContent() {
                   {isSearching ? 'Curating Options...' : 'Check Availability'}
                 </Button>
               </div>
-            </div>
+            </motion.div>
           )}
 
           {/* Step 2: Carousel Room Selection */}
           {step === 2 && (
-            <div className="space-y-10">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="space-y-10"
+            >
               <div className="flex justify-between items-end border-b border-white/10 pb-6">
                 <div className="space-y-1">
                   <h2 className="text-3xl font-serif font-bold text-white">Select Your Suite</h2>
@@ -291,12 +311,17 @@ function BookingPageContent() {
                   </div>
                 </div>
               )}
-            </div>
+            </motion.div>
           )}
 
           {/* Step 3: Guest Details */}
           {step === 3 && selectedRoom && (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="grid grid-cols-1 lg:grid-cols-12 gap-12"
+            >
               <div className="lg:col-span-8 space-y-10">
 
                 {/* Auth guard */}
@@ -398,12 +423,17 @@ function BookingPageContent() {
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           )}
 
           {/* Step 4: Confirmation */}
           {step === 4 && (
-            <div className="text-center py-20 space-y-10">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.7, ease: "easeOut" }}
+              className="text-center py-20 space-y-10"
+            >
               <div className="w-24 h-24 bg-primary/10 border border-primary/20 rounded-2xl flex items-center justify-center mx-auto text-primary">
                 <CheckCircle className="w-12 h-12" />
               </div>
@@ -419,7 +449,7 @@ function BookingPageContent() {
                   Return Home
                 </Button>
               </div>
-            </div>
+            </motion.div>
           )}
         </div>
       </section>
