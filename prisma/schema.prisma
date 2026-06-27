@@ -52,7 +52,7 @@ model Room {
   tasks                 Task[]
   statusHistory         RoomStatusHistory[]
   roomImages            RoomImage[]
-  reviews               RoomReview[]
+  feedback              Feedback[]
   internalOrders        InternalOrder[]
   stays                 Stay[]
   roomAssignments       RoomAssignment[]
@@ -151,7 +151,7 @@ model Booking {
   additionalGuests BookingGuest[]
   payments         Payment[]
   tasks            Task[]
-  roomReviews      RoomReview[]
+  feedback         Feedback[]
   complaints       Complaint[]
   stay             Stay?
   roomAssignments  RoomAssignment[]
@@ -622,8 +622,7 @@ model User {
   guestBookings      Booking[]           @relation("PrimaryGuest")
   loyalty            LoyaltyPoint?
   guestPreferences   GuestPreference?
-  reviews            RoomReview[]
-  hotelReviews       HotelReview[]
+  feedback           Feedback[]
   tableBookings      TableBooking[]
   complaints         Complaint[]
   internalOrders     InternalOrder[]         @relation("GuestInternalOrders")
@@ -733,35 +732,9 @@ model RolePermission {
 // FEEDBACK
 // ==========================================
 
-model RoomReview {
-  id        String   @id @default(uuid())
-  roomId    String
-  userId    String
-  bookingId String?
-  rating    Int
-  comment   String?
-  createdAt DateTime @default(now())
 
-  room    Room     @relation(fields: [roomId], references: [id])
-  user    User     @relation(fields: [userId], references: [id])
-  booking Booking? @relation(fields: [bookingId], references: [id])
-}
 
-model HotelReview {
-  id                String   @id @default(uuid())
-  userId            String
-  rating            Int      @default(5) // Legacy compatibility (mapped to overall)
-  overallRating     Int      @default(5)
-  serviceRating     Int?
-  cleanlinessRating Int?
-  valueRating       Int?
-  title             String?
-  comment           String?
-  verified          Boolean  @default(false)
-  createdAt         DateTime @default(now())
 
-  user User @relation(fields: [userId], references: [id])
-}
 
 model Amenity {
   id           String   @id @default(uuid())
@@ -1593,4 +1566,28 @@ model InternalOrderItem {
   order      InternalOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product    POSProduct?   @relation(fields: [productId], references: [id])
   menuItem   FoodMenu?     @relation(fields: [menuItemId], references: [id])
+}
+
+model Feedback {
+  id                String   @id @default(uuid())
+  userId            String
+  targetType        String   @default("HOTEL") // "HOTEL", "ROOM", "RESTAURANT"
+  
+  rating            Int      @default(5)
+  overallRating     Int      @default(5)
+  serviceRating     Int?
+  cleanlinessRating Int?
+  valueRating       Int?
+  
+  title             String?
+  comment           String?
+  verified          Boolean  @default(false)
+  createdAt         DateTime @default(now())
+
+  roomId            String?
+  bookingId         String?
+
+  user              User     @relation(fields: [userId], references: [id])
+  room              Room?    @relation(fields: [roomId], references: [id])
+  booking           Booking? @relation(fields: [bookingId], references: [id])
 }

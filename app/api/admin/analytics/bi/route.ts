@@ -85,7 +85,7 @@ export async function GET() {
         guestSatisfactionScore: 0
     }
 
-    const reviews = await prisma.roomReview.aggregate({
+    const reviews = await prisma.feedback.aggregate({
       _avg: { rating: true }
     });
     if (reviews._avg.rating) {
