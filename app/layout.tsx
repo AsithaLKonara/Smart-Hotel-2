@@ -10,7 +10,6 @@ import { ChatWrapper } from "@/components/live-chat/chat-wrapper"
 import { Providers } from "@/components/providers"
 import { WebVitalsTracker } from "@/components/web-vitals-tracker"
 import HotelSchema from "@/components/seo/hotel-schema"
-import GlobalCinematicBackground from "@/components/global-cinematic-background"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -147,7 +146,6 @@ export default function RootLayout({
         <ErrorBoundary>
           <Providers>
             <HotelSchema />
-            <GlobalCinematicBackground />
             <div className="flex min-h-screen flex-col relative z-10 bg-transparent">
               <HotelNavigation />
               <main id="main-content" role="main" className="flex-1 bg-transparent">

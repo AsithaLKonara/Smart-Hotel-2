@@ -87,8 +87,8 @@ export default function GlobalCinematicBackground() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [pathname, isDashboard]) // Re-run effect when pathname/image changes to bind elements
 
-  // Enterprise Performance Optimization: Do not mount heavy cinematic animations on operational routes
-  if (isDashboard) {
+  // Enterprise Performance Optimization: Do not mount heavy cinematic animations on operational routes or the homepage (which has its own video)
+  if (isDashboard || pathname === '/') {
     return null;
   }
 

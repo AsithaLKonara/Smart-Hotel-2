@@ -106,6 +106,7 @@ export async function middleware(request: NextRequest) {
   if (
     path.startsWith('/_next') ||
     path.startsWith('/images') ||
+    path.startsWith('/videos') ||
     path.startsWith('/favicon') ||
     isAuthPage ||
     isPublicPage ||
@@ -176,7 +177,7 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|images|favicon.ico).*)',
+    '/((?!_next/static|_next/image|images|videos|favicon.ico).*)',
   ],
 }
 
