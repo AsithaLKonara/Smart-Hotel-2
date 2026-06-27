@@ -59,6 +59,9 @@ model Room {
   maintenanceWorkOrders MaintenanceWorkOrder[]
   outOfOrderRecords     OutOfOrderRecord[]
 
+  propertyId String?
+  property   Property? @relation(fields: [propertyId], references: [id])
+
   @@index([status])
   @@index([roomTypeId])
 }
@@ -157,6 +160,9 @@ model Booking {
   roomAssignments  RoomAssignment[]
   stayEvents       StayEvent[]
   folios           Folio[]
+
+  propertyId String?
+  property   Property? @relation(fields: [propertyId], references: [id])
 
   @@index([checkIn, checkOut])
   @@index([status])
@@ -300,11 +306,11 @@ model Payment {
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
-  booking     Booking?              @relation(fields: [bookingId], references: [id])
-  internalOrder InternalOrder?      @relation(fields: [orderId], references: [id])
-  folio       Folio?                @relation(fields: [folioId], references: [id])
-  user        User?                 @relation(fields: [userId], references: [id])
-  adjustments FinancialAdjustment[]
+  booking       Booking?              @relation(fields: [bookingId], references: [id])
+  internalOrder InternalOrder?        @relation(fields: [orderId], references: [id])
+  folio         Folio?                @relation(fields: [folioId], references: [id])
+  user          User?                 @relation(fields: [userId], references: [id])
+  adjustments   FinancialAdjustment[]
 
   @@index([createdAt])
   @@index([status])
@@ -358,6 +364,9 @@ model Folio {
   internalOrders     InternalOrder[]
   routingRulesSource RoutingRule[]   @relation("SourceFolio")
   routingRulesTarget RoutingRule[]   @relation("TargetFolio")
+
+  propertyId String?
+  property   Property? @relation(fields: [propertyId], references: [id])
 
   @@index([bookingId])
 }
@@ -431,6 +440,9 @@ model Task {
   room    Room?    @relation(fields: [roomId], references: [id])
   booking Booking? @relation(fields: [bookingId], references: [id])
 
+  propertyId String?
+  property   Property? @relation(fields: [propertyId], references: [id])
+
   @@index([assignedTo])
   @@index([roomId])
   @@index([bookingId])
@@ -464,22 +476,18 @@ enum Priority {
 // KITCHEN & ROOM SERVICE
 // ==========================================
 
-
-
-
-
 model YieldRule {
-  id              String   @id @default(uuid())
-  name            String
-  description     String?
-  startDate       DateTime @db.Date
-  endDate         DateTime @db.Date
-  
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  startDate   DateTime @db.Date
+  endDate     DateTime @db.Date
+
   // Dynamic Configuration Overrides
   minOccupancy    Float?
   maxOccupancy    Float?
   competitorPrice Float?
-  
+
   adjustmentType  String // 'DYNAMIC_TIER', 'PERCENTAGE' or 'FIXED'
   adjustmentValue Float
   isActive        Boolean  @default(true)
@@ -500,7 +508,7 @@ model POSOutlet {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  products POSProduct[]
+  products       POSProduct[]
   internalOrders InternalOrder[]
 }
 
@@ -514,13 +522,9 @@ model POSProduct {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  outlet     POSOutlet      @relation(fields: [outletId], references: [id])
+  outlet             POSOutlet           @relation(fields: [outletId], references: [id])
   internalOrderItems InternalOrderItem[]
 }
-
-
-
-
 
 // ==========================================
 // EVENTS & BANQUETING (PHASE 6)
@@ -583,15 +587,15 @@ model GroupBlock {
 }
 
 model FoodMenu {
-  id              String      @id @default(uuid())
-  name            String
-  description     String
-  category        String
-  price           Float
-  available       Boolean     @default(true)
-  preparationTime Int
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  id                 String              @id @default(uuid())
+  name               String
+  description        String
+  category           String
+  price              Float
+  available          Boolean             @default(true)
+  preparationTime    Int
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
   internalOrderItems InternalOrderItem[]
 }
 
@@ -626,7 +630,7 @@ model User {
   feedback           Feedback[]
   tableBookings      TableBooking[]
   complaints         Complaint[]
-  internalOrders     InternalOrder[]         @relation("GuestInternalOrders")
+  internalOrders     InternalOrder[]     @relation("GuestInternalOrders")
   payments           Payment[]
   notifications      Notification[]
   createdTasks       Task[]              @relation("CreatedTasks")
@@ -637,6 +641,9 @@ model User {
   guestConversations GuestConversation[]
   resortBookings     ResortBooking[]
   guestProfile       GuestProfile?
+
+  propertyId String?
+  property   Property? @relation(fields: [propertyId], references: [id])
 }
 
 model GuestPreference {
@@ -732,10 +739,6 @@ model RolePermission {
 // ==========================================
 // FEEDBACK
 // ==========================================
-
-
-
-
 
 model Amenity {
   id           String   @id @default(uuid())
@@ -1382,6 +1385,12 @@ model Property {
   status     String   @default("ACTIVE") // ACTIVE, PRE_OPENING, INACTIVE
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+
+  users    User[]
+  rooms    Room[]
+  bookings Booking[]
+  folios   Folio[]
+  tasks    Task[]
 }
 
 // ==========================================
@@ -1521,33 +1530,33 @@ model Incident {
 }
 
 model InternalOrder {
-  id              String    @id @default(uuid())
-  orderType       String    @default("IN_ROOM_DINING") // "POS_OUTLET", "IN_ROOM_DINING", "SPA"
-  status          String    // PENDING, PREPARING, DELIVERED, COMPLETED, CANCELLED
-  totalAmount     Float
-  
+  id          String @id @default(uuid())
+  orderType   String @default("IN_ROOM_DINING") // "POS_OUTLET", "IN_ROOM_DINING", "SPA"
+  status      String // PENDING, PREPARING, DELIVERED, COMPLETED, CANCELLED
+  totalAmount Float
+
   // Relations
-  guestId         String?
-  roomId          String?
-  outletId        String?
-  folioId         String?
-  
+  guestId  String?
+  roomId   String?
+  outletId String?
+  folioId  String?
+
   // Specific to order types
-  paymentType     String?   // CASH, CARD, ROOM_CHARGE
+  paymentType     String? // CASH, CARD, ROOM_CHARGE
   specialRequests String?
   deliveryTime    DateTime?
   idempotencyKey  String?   @unique
-  
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   items    InternalOrderItem[]
   payments Payment[]
-  
-  guest    User?       @relation("GuestInternalOrders", fields: [guestId], references: [id])
-  room     Room?       @relation(fields: [roomId], references: [id])
-  outlet   POSOutlet?  @relation(fields: [outletId], references: [id])
-  folio    Folio?      @relation(fields: [folioId], references: [id])
+
+  guest  User?      @relation("GuestInternalOrders", fields: [guestId], references: [id])
+  room   Room?      @relation(fields: [roomId], references: [id])
+  outlet POSOutlet? @relation(fields: [outletId], references: [id])
+  folio  Folio?     @relation(fields: [folioId], references: [id])
 
   @@index([guestId])
   @@index([orderType, createdAt])
@@ -1556,8 +1565,8 @@ model InternalOrder {
 model InternalOrderItem {
   id         String   @id @default(uuid())
   orderId    String
-  productId  String?  // References POSProduct
-  menuItemId String?  // String reference for legacy/food orders
+  productId  String? // References POSProduct
+  menuItemId String? // String reference for legacy/food orders
   quantity   Int
   price      Float
   subtotal   Float
@@ -1565,31 +1574,31 @@ model InternalOrderItem {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  order      InternalOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product    POSProduct?   @relation(fields: [productId], references: [id])
-  menuItem   FoodMenu?     @relation(fields: [menuItemId], references: [id])
+  order    InternalOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product  POSProduct?   @relation(fields: [productId], references: [id])
+  menuItem FoodMenu?     @relation(fields: [menuItemId], references: [id])
 }
 
 model Feedback {
-  id                String   @id @default(uuid())
-  userId            String
-  targetType        String   @default("HOTEL") // "HOTEL", "ROOM", "RESTAURANT"
-  
-  rating            Int      @default(5)
-  overallRating     Int      @default(5)
+  id         String @id @default(uuid())
+  userId     String
+  targetType String @default("HOTEL") // "HOTEL", "ROOM", "RESTAURANT"
+
+  rating            Int  @default(5)
+  overallRating     Int  @default(5)
   serviceRating     Int?
   cleanlinessRating Int?
   valueRating       Int?
-  
-  title             String?
-  comment           String?
-  verified          Boolean  @default(false)
-  createdAt         DateTime @default(now())
 
-  roomId            String?
-  bookingId         String?
+  title     String?
+  comment   String?
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now())
 
-  user              User     @relation(fields: [userId], references: [id])
-  room              Room?    @relation(fields: [roomId], references: [id])
-  booking           Booking? @relation(fields: [bookingId], references: [id])
+  roomId    String?
+  bookingId String?
+
+  user    User     @relation(fields: [userId], references: [id])
+  room    Room?    @relation(fields: [roomId], references: [id])
+  booking Booking? @relation(fields: [bookingId], references: [id])
 }
