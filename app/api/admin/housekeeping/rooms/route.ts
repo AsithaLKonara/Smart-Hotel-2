@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { z } from 'zod';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,23 +13,49 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const rooms = await prisma.room.findMany({
-      include: {
-        roomType: true,
-        bookings: {
-          where: { status: 'CHECKED_IN' },
-          include: { guest: true }
-        }
-      },
-      orderBy: { number: 'asc' }
-    });
+    const { searchParams } = new URL(req.url);
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '50');
+    const skip = (page - 1) * limit;
 
-    return NextResponse.json({ rooms });
+    const [rooms, total] = await Promise.all([
+      prisma.room.findMany({
+        skip,
+        take: limit,
+        include: {
+          roomType: true,
+          stays: {
+            where: { status: 'CHECKED_IN' },
+            include: { booking: { include: { guest: true } } }
+          }
+        },
+        orderBy: { number: 'asc' }
+      }),
+      prisma.room.count()
+    ]);
+
+    return NextResponse.json({ 
+      data: rooms,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit)
+      }
+    });
   } catch (error) {
     console.error('Failed to fetch rooms:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
+
+const updateRoomStatusSchema = z.object({
+  roomId: z.string().uuid(),
+  newStatus: z.enum([
+    'AVAILABLE', 'OCCUPIED', 'DIRTY', 'CLEANING', 
+    'INSPECTION_PENDING', 'MAINTENANCE', 'OUT_OF_ORDER'
+  ]),
+});
 
 export async function PUT(req: Request) {
   try {
@@ -37,12 +64,14 @@ export async function PUT(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const data = await req.json();
-    const { roomId, newStatus } = data;
+    const json = await req.json();
+    const result = updateRoomStatusSchema.safeParse(json);
 
-    if (!roomId || !newStatus) {
-      return NextResponse.json({ error: 'Missing roomId or newStatus' }, { status: 400 });
+    if (!result.success) {
+      return NextResponse.json({ error: 'Validation Error', details: result.error.format() }, { status: 400 });
     }
+
+    const { roomId, newStatus } = result.data;
 
     const oldRoom = await prisma.room.findUnique({ where: { id: roomId } });
     if (!oldRoom) return NextResponse.json({ error: 'Room not found' }, { status: 404 });
@@ -58,7 +87,7 @@ export async function PUT(req: Request) {
         roomId,
         oldStatus: oldRoom.status as any,
         newStatus: newStatus as any,
-        actorId: session.user.id,
+        actorId: (session.user as any).id,
         reason: 'Housekeeping board update'
       }
     });
