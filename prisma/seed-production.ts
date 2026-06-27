@@ -100,8 +100,8 @@ async function clearDatabase() {
   const models = [
     'auditLog',
     'notification',
-    'orderItem',
-    'foodOrder',
+    'internalOrderItem',
+    'internalOrder',
     'foodMenu',
     'task',
     'invoice',
@@ -597,8 +597,8 @@ async function seedTasks(context: SeedContext) {
 async function seedMenuAndOrders(context: SeedContext) {
   console.log('🍽️ Seeding menu, orders, and order items...')
   const menuItems: Prisma.FoodMenuCreateManyInput[] = []
-  const orders: Prisma.FoodOrderCreateManyInput[] = []
-  const orderItems: Prisma.OrderItemCreateManyInput[] = []
+  const orders: Prisma.InternalOrderCreateManyInput[] = []
+  const orderItems: Prisma.InternalOrderItemCreateManyInput[] = []
 
   const menuCategories = Object.values(FoodCategory)
 
@@ -646,11 +646,11 @@ async function seedMenuAndOrders(context: SeedContext) {
       orderItems.push({
         id: generateObjectId(),
         orderId: id,
-        menuId: item.id,
+        menuItemId: item.id,
         quantity,
-        unitPrice: item.price,
+        price: item.price,
+        subtotal: item.price * quantity,
         notes: faker.datatype.boolean({ probability: 0.2 }) ? faker.lorem.sentence() : undefined,
-        hotelId: bookingMeta.hotelId,
         createdAt: faker.date.recent({ days: 60 }),
       })
       return sum + item.price * quantity
@@ -659,21 +659,20 @@ async function seedMenuAndOrders(context: SeedContext) {
 
     orders.push({
       id,
-      roomNumber: bookingMeta.roomNumber,
+      orderType: 'IN_ROOM_DINING',
+      roomId: bookingMeta.roomId,
       guestId: bookingMeta.guestId,
-      bookingId,
       status,
       totalAmount: Number(totalAmount.toFixed(2)),
       specialRequests: faker.datatype.boolean({ probability: 0.3 }) ? faker.lorem.sentence() : undefined,
       deliveryTime: faker.datatype.boolean({ probability: 0.5 }) ? faker.date.soon({ days: 2 }) : undefined,
-      hotelId: bookingMeta.hotelId,
       createdAt: faker.date.between({ from: '2023-01-01', to: today }),
       updatedAt: faker.date.recent({ days: 20 }),
     })
   }
 
-  await insertInBatches(orders, batch => prisma.foodOrder.createMany({ data: batch }), 'Food orders')
-  await insertInBatches(orderItems, batch => prisma.orderItem.createMany({ data: batch }), 'Order items')
+  await insertInBatches(orders, batch => prisma.internalOrder.createMany({ data: batch }), 'Internal orders')
+  await insertInBatches(orderItems, batch => prisma.internalOrderItem.createMany({ data: batch }), 'Internal order items')
 }
 
 async function seedInventoryAndGallery(context: SeedContext) {
@@ -722,7 +721,7 @@ async function seedInventoryAndGallery(context: SeedContext) {
 
 async function seedReviewsPromotionsCommunication(context: SeedContext) {
   console.log('⭐ Seeding guest reviews, promotions, email templates & logs, notifications, wishlist, audit logs...')
-  const reviews: Prisma.GuestReviewCreateManyInput[] = []
+  const reviews: Prisma.FeedbackCreateManyInput[] = []
   const promotions: Prisma.PromotionCreateManyInput[] = []
   const emailTemplates: Prisma.EmailTemplateCreateManyInput[] = []
   const emailLogs: Prisma.EmailLogCreateManyInput[] = []
@@ -740,7 +739,9 @@ async function seedReviewsPromotionsCommunication(context: SeedContext) {
       bookingId,
       userId: booking.guestId,
       roomId: booking.roomId,
+      targetType: 'HOTEL',
       rating: faker.number.int({ min: 3, max: 5 }),
+      overallRating: faker.number.int({ min: 3, max: 5 }),
       title: faker.helpers.arrayElement([
         'Exceptional stay with breathtaking views',
         'Personalized service beyond expectations',
@@ -749,10 +750,8 @@ async function seedReviewsPromotionsCommunication(context: SeedContext) {
         'Seamless business travel experience',
       ]),
       comment: faker.lorem.paragraph({ min: 1, max: 3 }),
-      isVerified: faker.datatype.boolean({ probability: 0.8 }),
-      isPublic: faker.datatype.boolean({ probability: 0.9 }),
+      verified: faker.datatype.boolean({ probability: 0.8 }),
       createdAt: faker.date.past({ years: 1 }),
-      updatedAt: faker.date.recent({ days: 40 }),
     })
   }
 
@@ -918,7 +917,7 @@ async function seedReviewsPromotionsCommunication(context: SeedContext) {
     })
   }
 
-  await insertInBatches(reviews, batch => prisma.guestReview.createMany({ data: batch }), 'Guest reviews')
+  await insertInBatches(reviews, batch => prisma.feedback.createMany({ data: batch }), 'Feedback')
   await insertInBatches(promotions, batch => prisma.promotion.createMany({ data: batch }), 'Promotions')
   await insertInBatches(emailTemplates, batch => prisma.emailTemplate.createMany({ data: batch }), 'Email templates')
   await insertInBatches(emailLogs, batch => prisma.emailLog.createMany({ data: batch }), 'Email logs')

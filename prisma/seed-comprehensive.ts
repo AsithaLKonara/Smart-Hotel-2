@@ -1,6 +1,7 @@
 import { PrismaClient, RoomStatus, TaskType, TaskStatus, Priority, BookingStatus, StayStatus, BookingSource, PaymentStatus, PaymentMethod } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 import { addDays, subDays } from 'date-fns'
+import { encryptPII } from '../lib/crypto'
 
 const prisma = new PrismaClient()
 
@@ -9,8 +10,14 @@ async function main() {
   
   // Delete in correct order to respect foreign key constraints
   try { await prisma.task.deleteMany() } catch (e) {}
+  try { await prisma.feedback.deleteMany() } catch (e) {}
+  try { await prisma.internalOrderItem.deleteMany() } catch (e) {}
+  try { await prisma.internalOrder.deleteMany() } catch (e) {}
   try { await prisma.invoiceLineItem.deleteMany() } catch (e) {}
   try { await prisma.invoice.deleteMany() } catch (e) {}
+  try { await prisma.folioLineItem.deleteMany() } catch (e) {}
+  try { await prisma.folio.deleteMany() } catch (e) {}
+  try { await prisma.bookingGuest.deleteMany() } catch (e) {}
   try { await prisma.stay.deleteMany() } catch (e) {}
   try { await prisma.booking.deleteMany() } catch (e) {}
   try { await prisma.room.deleteMany() } catch (e) {}
@@ -191,12 +198,14 @@ async function main() {
   // ==========================================
   // 6. BOOKINGS, STAYS, AND INVOICES
   // ==========================================
-  console.log('Seeding Bookings & Stays...')
+  console.log('Seeding Bookings, Guests, and Feedback...')
   const today = new Date()
 
   // 1. Current Active Booking
-  const currentBooking = await prisma.booking.create({
-    data: {
+  const currentBooking = await prisma.booking.upsert({
+    where: { confirmationCode: 'RES-CUR-001' },
+    update: {},
+    create: {
       confirmationCode: 'RES-CUR-001',
       checkIn: subDays(today, 1),
       checkOut: addDays(today, 2),
@@ -224,13 +233,23 @@ async function main() {
             ]
           }
         }
+      },
+      additionalGuests: {
+        create: {
+          name: 'Alice Traveler',
+          email: 'guest@example.com',
+          identity: encryptPII('PA1234567'),
+          isMinor: false
+        }
       }
     }
   })
 
   // 2. Future Booking
-  await prisma.booking.create({
-    data: {
+  await prisma.booking.upsert({
+    where: { confirmationCode: 'RES-FUT-002' },
+    update: {},
+    create: {
       confirmationCode: 'RES-FUT-002',
       checkIn: addDays(today, 5),
       checkOut: addDays(today, 8),
@@ -251,12 +270,64 @@ async function main() {
             ]
           }
         }
+      },
+      additionalGuests: {
+        create: {
+          name: 'Charlie Voyager',
+          email: 'guestb@example.com',
+          identity: encryptPII('ID987654321'),
+          isMinor: false
+        }
+      }
+    }
+  })
+
+  // 3. Feedback
+  await prisma.feedback.create({
+    data: {
+      userId: createdUsers['guest@example.com'].id,
+      targetType: 'HOTEL',
+      rating: 5,
+      overallRating: 5,
+      serviceRating: 5,
+      cleanlinessRating: 4,
+      title: 'Amazing Stay!',
+      comment: 'We loved the room and the food was excellent.',
+      verified: true,
+      bookingId: currentBooking.id,
+      roomId: createdRooms['102'].id
+    }
+  })
+
+  // ==========================================
+  // 7. INTERNAL ORDERS (POS / F&B)
+  // ==========================================
+  console.log('Seeding Internal Orders...')
+
+  await prisma.internalOrder.create({
+    data: {
+      orderType: 'IN_ROOM_DINING',
+      status: 'DELIVERED',
+      totalAmount: 45.0,
+      guestId: createdUsers['guest@example.com'].id,
+      roomId: createdRooms['102'].id,
+      paymentType: 'ROOM_CHARGE',
+      items: {
+        create: [
+          {
+            menuItemId: 'wagyu-burger',
+            quantity: 1,
+            price: 45.0,
+            subtotal: 45.0,
+            notes: 'Medium rare'
+          }
+        ]
       }
     }
   })
 
   // ==========================================
-  // 7. TASKS (MAINTENANCE / HOUSEKEEPING)
+  // 8. TASKS (MAINTENANCE / HOUSEKEEPING)
   // ==========================================
   console.log('Seeding Tasks...')
   
