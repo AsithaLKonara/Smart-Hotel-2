@@ -15,10 +15,10 @@ const MOCK_EXCHANGE_RATES: Record<string, number> = {
 
 export async function GET(
   req: Request,
-  { params }: { params: { folioId: string } }
+  { params }: { params: Promise<{ folioId: string }> }
 ) {
   try {
-    const { folioId } = params
+    const { folioId } = await params
     const { searchParams } = new URL(req.url)
     const targetCurrency = searchParams.get('currency')?.toUpperCase() || 'USD'
 

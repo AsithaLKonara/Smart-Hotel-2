@@ -9,10 +9,10 @@ const MANAGEMENT_FEE_PERCENTAGE = 40
 
 export async function POST(
   req: Request,
-  { params }: { params: { folioId: string } }
+  { params }: { params: Promise<{ folioId: string }> }
 ) {
   try {
-    const { folioId } = params
+    const { folioId } = await params
 
     const folio = await prisma.folio.findUnique({
       where: { id: folioId },

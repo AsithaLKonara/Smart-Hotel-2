@@ -12,10 +12,10 @@ const StockAdjustmentSchema = z.object({
 
 export async function POST(
   req: Request,
-  { params }: { params: { itemId: string } }
+  { params }: { params: Promise<{ itemId: string }> }
 ) {
   try {
-    const { itemId } = params
+    const { itemId } = await params
     const body = await req.json()
     const validatedData = StockAdjustmentSchema.parse(body)
 

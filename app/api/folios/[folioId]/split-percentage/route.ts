@@ -11,10 +11,10 @@ const SplitPercentageSchema = z.object({
 
 export async function POST(
   req: Request,
-  { params }: { params: { folioId: string } }
+  { params }: { params: Promise<{ folioId: string }> }
 ) {
   try {
-    const { folioId } = params
+    const { folioId } = await params
     const body = await req.json()
     const validatedData = SplitPercentageSchema.parse(body)
 
