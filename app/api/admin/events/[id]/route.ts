@@ -15,15 +15,16 @@ const updateEventSchema = z.object({
   organizerEmail: z.string().email().optional().nullable(),
 });
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
     if (!session || !['SUPER_ADMIN', 'MANAGER'].includes((session.user as any).roleName as string)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const event = await prisma.banquetingEvent.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: {
         spaceBookings: { include: { space: true } },
         groupBlocks: { include: { roomType: true } }
@@ -41,8 +42,9 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   }
 }
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
     if (!session || !['SUPER_ADMIN', 'MANAGER'].includes((session.user as any).roleName as string)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -63,7 +65,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     if (data.endDate) updateData.endDate = new Date(data.endDate);
 
     const event = await prisma.banquetingEvent.update({
-      where: { id: params.id },
+      where: { id: id },
       data: updateData,
     });
 
@@ -74,15 +76,16 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   }
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
     if (!session || !['SUPER_ADMIN', 'MANAGER'].includes((session.user as any).roleName as string)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     await prisma.banquetingEvent.delete({
-      where: { id: params.id }
+      where: { id: id }
     });
 
     return NextResponse.json({ success: true });

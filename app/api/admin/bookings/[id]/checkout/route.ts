@@ -3,14 +3,15 @@ import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
     if (!session || !['SUPER_ADMIN', 'MANAGER', 'FRONT_DESK'].includes((session.user as any).roleName as string)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const bookingId = params.id;
+    const bookingId = id;
 
     // Validate the booking exists
     const booking = await prisma.booking.findUnique({
@@ -41,16 +42,16 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     // Process Folio balances
     let totalCharges = 0;
     let totalPayments = 0;
-    booking.folios.forEach(folio => {
-      folio.lineItems.forEach(item => {
+    for (const folio of booking.folios) {
+      for (const item of folio.lineItems) {
         totalCharges += item.amount;
-      });
-      folio.payments.forEach(payment => {
+      }
+      for (const payment of folio.payments) {
         if (payment.status === 'completed') {
           totalPayments += payment.amount;
         }
-      });
-    });
+      }
+    }
 
     const balance = totalCharges - totalPayments;
     
@@ -61,7 +62,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     // }
 
     // Execute state transitions
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: any) => {
       // 1. Update Booking status and clear checkout request
       await tx.booking.update({
         where: { id: bookingId },
