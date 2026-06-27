@@ -65,7 +65,7 @@ export class MessageBroker {
       if (this.state === CircuitState.HALF_OPEN) {
         this.state = CircuitState.CLOSED;
         this.failures = 0;
-        console.log('[MessageBroker] Circuit Breaker CLOSED (Redis restored)');
+        logger.info('[MessageBroker] Circuit Breaker CLOSED (Redis restored)');
       }
     } catch (error) {
       this.failures++;
@@ -88,7 +88,7 @@ export class MessageBroker {
   private static publishToMemory(message: PublishMessage, reason: string): void {
     this.memoryQueue.push(message);
     // Log gracefully instead of failing
-    console.log(`[MessageBroker:MemoryFallback] Topic: ${message.topic} (Reason: ${reason})`);
+    logger.info(`[MessageBroker:MemoryFallback] Topic: ${message.topic} (Reason: ${reason})`);
   }
 
   // Helper for test assertions if needed

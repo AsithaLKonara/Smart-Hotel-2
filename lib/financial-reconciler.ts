@@ -84,7 +84,7 @@ export class FinancialReconciler {
    * Reconciliation Worker for Cron
    */
   static async startReconciliationWorker() {
-    console.log('[RECONCILER] Starting nightly financial reconciliation worker...')
+    logger.info('[RECONCILER] Starting nightly financial reconciliation worker...')
     try {
       const report = await this.runGlobalAudit()
       
