@@ -120,7 +120,7 @@ export default async function HomePage() {
                 </div>
               </div>
 
-              <Button variant="outline" className="border-primary/50 text-white rounded-none px-10 h-14 uppercase tracking-widest text-xs font-bold hover:bg-primary hover:border-primary hover:text-white transition-all bg-white/5 backdrop-blur-md">
+              <Button variant="outline" className="border-primary/50 text-white rounded-xl px-10 h-14 uppercase tracking-widest text-xs font-bold hover:bg-primary hover:border-primary hover:text-white transition-all bg-white/5 backdrop-blur-md">
                 Learn More About Us
               </Button>
             </div>
@@ -155,7 +155,7 @@ export default async function HomePage() {
                     className="object-cover group-hover:scale-110 transition-transform duration-1000"
                   />
                   <div className="absolute top-4 left-4">
-                    <div className="bg-black/85 px-4 py-2 border border-white/10 rounded-lg">
+                    <div className="bg-black/85 px-4 py-2 border border-white/10 rounded-xl">
                       <span className="text-primary font-serif italic text-lg">{formatPrice(Number(room.roomType?.baseRate || '450'))}+</span>
                     </div>
                   </div>
@@ -252,7 +252,7 @@ export default async function HomePage() {
                 </div>
               </div>
 
-              <Button className="bg-primary hover:bg-primary/95 text-primary-foreground rounded-none px-10 h-14 uppercase tracking-widest text-xs font-bold transition-all">
+              <Button className="bg-primary hover:bg-primary/95 text-primary-foreground rounded-xl px-10 h-14 uppercase tracking-widest text-xs font-bold transition-all">
                 Get Directions
               </Button>
             </div>
@@ -287,12 +287,12 @@ export default async function HomePage() {
           </h2>
           <div className="flex flex-col sm:flex-row justify-center gap-6">
             <Link href="/booking">
-              <Button className="bg-gold-gradient hover:opacity-90 text-white px-12 h-16 rounded-none text-xs uppercase tracking-[0.2em] font-bold border-none shadow-luxury w-full sm:w-auto">
+              <Button className="bg-gold-gradient hover:opacity-90 text-white px-12 h-16 rounded-xl text-xs uppercase tracking-[0.2em] font-bold border-none shadow-luxury w-full sm:w-auto">
                 Begin Reservation
               </Button>
             </Link>
             <Link href="/contact">
-              <Button variant="outline" className="border-white/30 text-white rounded-none px-12 h-16 uppercase tracking-[0.2em] text-xs font-bold hover:bg-white/10 hover:border-white transition-all w-full sm:w-auto bg-white/5 backdrop-blur-md">
+              <Button variant="outline" className="border-white/30 text-white rounded-xl px-12 h-16 uppercase tracking-[0.2em] text-xs font-bold hover:bg-white/10 hover:border-white transition-all w-full sm:w-auto bg-white/5 backdrop-blur-md">
                 Contact Concierge
               </Button>
             </Link>

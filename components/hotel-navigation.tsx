@@ -189,7 +189,7 @@ export default function HotelNavigation() {
             )}
 
             <Link href="/booking">
-              <Button className="bg-gold-gradient hover:opacity-90 text-white px-8 rounded-none border-none font-serif tracking-widest uppercase text-xs h-12 transition-all hover:scale-105 active:scale-95 shadow-luxury">
+              <Button className="bg-gold-gradient hover:opacity-90 text-white px-8 rounded-xl border-none font-serif tracking-widest uppercase text-xs h-12 transition-all hover:scale-105 active:scale-95 shadow-luxury">
                 Book Your Stay
               </Button>
             </Link>
@@ -254,7 +254,7 @@ export default function HotelNavigation() {
               )}
 
               <Link href="/booking" onClick={() => setIsMenuOpen(false)}>
-                <Button className="w-full bg-gold-gradient text-white py-8 text-lg font-serif">
+                <Button className="w-full bg-gold-gradient text-white py-8 text-lg font-serif rounded-xl">
                   Book Now
                 </Button>
               </Link>
