@@ -23,6 +23,13 @@ model RoomType {
   images       String[]
   totalRooms   Int      @default(0)
   otaMappingId String?
+  
+  // Rate Rules
+  minLengthOfStay Int @default(1)
+  maxLengthOfStay Int @default(30)
+  closeToArrival  Boolean @default(false)
+  closeToDeparture Boolean @default(false)
+  nonRefundable   Boolean @default(false)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -60,6 +67,7 @@ model Room {
   outOfOrderRecords     OutOfOrderRecord[]
 
   propertyId String?
+  ownerId    String?
   property   Property? @relation(fields: [propertyId], references: [id])
 
   @@index([status])
