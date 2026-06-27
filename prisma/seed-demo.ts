@@ -32,27 +32,13 @@ async function main() {
   // 1. Roles & Permissions
   console.log('Generating Roles...')
   const rolesData = [
-    { name: 'SUPER_ADMIN', desc: 'Full System Access' },
-    { name: 'GENERAL_MANAGER', desc: 'Property Operations Oversight' },
-    { name: 'FINANCE_MANAGER', desc: 'Financial Reporting and Audits' },
-    { name: 'ACCOUNTANT', desc: 'Daily Financial Operations' },
-    { name: 'FRONT_OFFICE_MANAGER', desc: 'Front Desk Operations' },
-    { name: 'RECEPTIONIST', desc: 'Guest Check-in/Check-out' },
-    { name: 'NIGHT_AUDITOR', desc: 'Night Audit and Reconciliation' },
-    { name: 'RESERVATION_AGENT', desc: 'Booking Management' },
-    { name: 'HOUSEKEEPING_MANAGER', desc: 'Housekeeping Management' },
-    { name: 'HOUSEKEEPER', desc: 'Room Cleaning Tasks' },
-    { name: 'MAINTENANCE_MANAGER', desc: 'Maintenance Oversight' },
-    { name: 'MAINTENANCE_TECH', desc: 'Work Order Execution' },
-    { name: 'HR_MANAGER', desc: 'Human Resources' },
-    { name: 'HR_EXECUTIVE', desc: 'HR Tasks' },
-    { name: 'RESTAURANT_MANAGER', desc: 'F&B Management' },
-    { name: 'CHEF', desc: 'Kitchen Management' },
-    { name: 'WAITER', desc: 'F&B Service' },
-    { name: 'EVENTS_MANAGER', desc: 'Banqueting and Events' },
-    { name: 'SALES_MANAGER', desc: 'Corporate and Group Sales' },
-    { name: 'INVENTORY_MANAGER', desc: 'Stock and Procurement' },
-    { name: 'PURCHASING_OFFICER', desc: 'Vendor Orders' }
+    { name: 'SUPER_ADMIN', desc: 'System Administration' },
+    { name: 'MANAGER', desc: 'Management & Operations' },
+    { name: 'RECEPTIONIST', desc: 'Front Desk Operations' },
+    { name: 'HOUSEKEEPING', desc: 'Housekeeping & Cleaning' },
+    { name: 'MAINTENANCE', desc: 'Maintenance & Repairs' },
+    { name: 'KITCHEN', desc: 'F&B and Restaurant' },
+    { name: 'GUEST', desc: 'Hotel Guest' }
   ]
 
   const roles: Record<string, string> = {}
@@ -80,23 +66,11 @@ async function main() {
   console.log('Generating Demo Accounts and Employees...')
   const demoAccounts = [
     { email: 'admin@smarthotel.demo', name: 'Alex Admin', role: 'SUPER_ADMIN', dept: 'MANAGEMENT', title: 'Super Admin' },
-    { email: 'gm@smarthotel.demo', name: 'Gary Manager', role: 'GENERAL_MANAGER', dept: 'MANAGEMENT', title: 'General Manager' },
-    { email: 'finance@smarthotel.demo', name: 'Fiona Finance', role: 'FINANCE_MANAGER', dept: 'FINANCE', title: 'Finance Manager' },
-    { email: 'accountant@smarthotel.demo', name: 'Arthur Count', role: 'ACCOUNTANT', dept: 'FINANCE', title: 'Accountant' },
-    { email: 'fom@smarthotel.demo', name: 'Frank Office', role: 'FRONT_OFFICE_MANAGER', dept: 'FRONT_DESK', title: 'Front Office Manager' },
+    { email: 'manager@smarthotel.demo', name: 'Gary Manager', role: 'MANAGER', dept: 'MANAGEMENT', title: 'Hotel Manager' },
     { email: 'reception@smarthotel.demo', name: 'Rachel Desk', role: 'RECEPTIONIST', dept: 'FRONT_DESK', title: 'Receptionist' },
-    { email: 'nightaudit@smarthotel.demo', name: 'Nick Auditor', role: 'NIGHT_AUDITOR', dept: 'FRONT_DESK', title: 'Night Auditor' },
-    { email: 'reservations@smarthotel.demo', name: 'Rita Booking', role: 'RESERVATION_AGENT', dept: 'FRONT_DESK', title: 'Reservation Agent' },
-    { email: 'hkm@smarthotel.demo', name: 'Helen Keeper', role: 'HOUSEKEEPING_MANAGER', dept: 'HOUSEKEEPING', title: 'Housekeeping Manager' },
-    { email: 'housekeeping@smarthotel.demo', name: 'Hannah Clean', role: 'HOUSEKEEPER', dept: 'HOUSEKEEPING', title: 'Housekeeper' },
-    { email: 'maintenance.mgr@smarthotel.demo', name: 'Mike Fixit', role: 'MAINTENANCE_MANAGER', dept: 'MAINTENANCE', title: 'Maintenance Manager' },
-    { email: 'maintenance@smarthotel.demo', name: 'Mark Tech', role: 'MAINTENANCE_TECH', dept: 'MAINTENANCE', title: 'Maintenance Technician' },
-    { email: 'hr@smarthotel.demo', name: 'Holly Resources', role: 'HR_MANAGER', dept: 'MANAGEMENT', title: 'HR Manager' },
-    { email: 'restaurant@smarthotel.demo', name: 'Rose Dining', role: 'RESTAURANT_MANAGER', dept: 'KITCHEN', title: 'Restaurant Manager' },
-    { email: 'chef@smarthotel.demo', name: 'Charlie Cook', role: 'CHEF', dept: 'KITCHEN', title: 'Executive Chef' },
-    { email: 'waiter@smarthotel.demo', name: 'Will Serve', role: 'WAITER', dept: 'KITCHEN', title: 'Waiter' },
-    { email: 'events@smarthotel.demo', name: 'Eve Party', role: 'EVENTS_MANAGER', dept: 'MANAGEMENT', title: 'Events Manager' },
-    { email: 'inventory@smarthotel.demo', name: 'Ian Stock', role: 'INVENTORY_MANAGER', dept: 'MAINTENANCE', title: 'Inventory Manager' }
+    { email: 'housekeeping@smarthotel.demo', name: 'Hannah Clean', role: 'HOUSEKEEPING', dept: 'HOUSEKEEPING', title: 'Housekeeper' },
+    { email: 'maintenance@smarthotel.demo', name: 'Mark Tech', role: 'MAINTENANCE', dept: 'MAINTENANCE', title: 'Maintenance Tech' },
+    { email: 'kitchen@smarthotel.demo', name: 'Charlie Cook', role: 'KITCHEN', dept: 'KITCHEN', title: 'Chef' }
   ]
 
   const users = []

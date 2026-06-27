@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getToken } from 'next-auth/jwt'
+import { getBroadRole, getDefaultDashboardUrl } from '@/lib/rbac'
 
 // Centralized Route Protection Matrix
 const PROTECTED_ROUTES = [
@@ -144,16 +145,17 @@ export async function middleware(request: NextRequest) {
     }
 
     // Check Authorization
-    const userRole = (token.roleName || token.role || 'GUEST') as string
+    const rawRole = (token.roleName || token.role || 'GUEST') as string
+    const userRole = getBroadRole(rawRole)
 
     // Intelligent Routing: If staff hits guest dashboard, redirect them correctly
     if (path === '/dashboard' || path === '/dashboard/') {
-      if (userRole === 'RECEPTIONIST') return NextResponse.redirect(new URL('/admin/receptionist', request.url))
-      if (userRole === 'KITCHEN') return NextResponse.redirect(new URL('/kitchen/dashboard', request.url))
-      if (userRole === 'HOUSEKEEPING' || userRole === 'MAINTENANCE') return NextResponse.redirect(new URL('/admin/tasks', request.url))
-      if (userRole === 'MANAGER' || userRole === 'SUPER_ADMIN') return NextResponse.redirect(new URL('/admin/dashboard', request.url))
+      if (['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'HOUSEKEEPING', 'MAINTENANCE', 'KITCHEN'].includes(userRole)) {
+        return NextResponse.redirect(new URL(getDefaultDashboardUrl(rawRole), request.url))
+      }
     }
 
+    // Enforce Authorization
     if (!rule.roles.includes(userRole)) {
       const isApi = path.startsWith('/api')
       if (isApi) {
@@ -162,7 +164,7 @@ export async function middleware(request: NextRequest) {
           message: `Role [${userRole}] does not have permission to access this resource.`
         }, { status: 403 })
       }
-      return NextResponse.redirect(new URL('/', request.url))
+      return NextResponse.redirect(new URL('/unauthorized', request.url))
     }
   } else {
     // FAIL CLOSED: Default Deny for omitted routes

@@ -6,6 +6,7 @@ import { useSession, signOut } from 'next-auth/react'
 import { usePathname } from 'next/navigation'
 import { Menu, X, Phone, Mail, MapPin, LogOut, User, ShoppingBag } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { getDefaultDashboardUrl } from '@/lib/rbac'
 
 interface NavigationContact {
   name: string
@@ -49,12 +50,8 @@ export default function HotelNavigation() {
 
   const getDashboardUrl = () => {
     if (!session?.user) return '/auth/signin'
-    const role = session.user.roleName
-    if (role === 'SUPER_ADMIN' || role === 'MANAGER') return '/admin/dashboard'
-    if (role === 'RECEPTIONIST') return '/admin/bookings'
-    if (role === 'KITCHEN') return '/kitchen/dashboard'
-    if (role === 'HOUSEKEEPING') return '/admin/tasks'
-    return '/dashboard'
+    const role = session.user.roleName || session.user.role?.name || 'GUEST'
+    return getDefaultDashboardUrl(role)
   }
 
   useEffect(() => {

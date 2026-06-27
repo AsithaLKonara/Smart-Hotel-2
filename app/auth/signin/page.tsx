@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import toast from 'react-hot-toast'
 import Image from 'next/image'
 import Link from 'next/link'
+import { getDefaultDashboardUrl } from '@/lib/rbac'
 
 export default function SignInPage() {
   const [email, setEmail] = useState('')
@@ -17,24 +18,11 @@ export default function SignInPage() {
 
   const DEMO_CREDENTIALS = [
     { role: 'Super Admin', email: 'admin@smarthotel.demo', password: 'Demo@123', color: 'from-purple-500/20 to-indigo-500/20 border-purple-500/30 text-purple-200' },
-    { role: 'Dev Master', email: 'dev@smarthotel.demo', password: 'Demo@123', color: 'from-slate-700/20 to-slate-900/20 border-slate-700/30 text-slate-200' },
-    { role: 'General Manager', email: 'gm@smarthotel.demo', password: 'Demo@123', color: 'from-blue-500/20 to-cyan-500/20 border-blue-500/30 text-blue-200' },
-    { role: 'Finance Manager', email: 'finance@smarthotel.demo', password: 'Demo@123', color: 'from-emerald-500/20 to-teal-500/20 border-emerald-500/30 text-emerald-200' },
-    { role: 'Accountant', email: 'accountant@smarthotel.demo', password: 'Demo@123', color: 'from-green-500/20 to-emerald-500/20 border-green-500/30 text-green-200' },
-    { role: 'Front Office', email: 'fom@smarthotel.demo', password: 'Demo@123', color: 'from-sky-500/20 to-blue-500/20 border-sky-500/30 text-sky-200' },
-    { role: 'Receptionist', email: 'reception@smarthotel.demo', password: 'Demo@123', color: 'from-cyan-500/20 to-teal-500/20 border-cyan-500/30 text-cyan-200' },
-    { role: 'Night Auditor', email: 'nightaudit@smarthotel.demo', password: 'Demo@123', color: 'from-indigo-500/20 to-blue-500/20 border-indigo-500/30 text-indigo-200' },
-    { role: 'Reservations', email: 'reservations@smarthotel.demo', password: 'Demo@123', color: 'from-sky-400/20 to-cyan-400/20 border-sky-400/30 text-sky-200' },
-    { role: 'HK Manager', email: 'hkm@smarthotel.demo', password: 'Demo@123', color: 'from-amber-600/20 to-orange-600/20 border-amber-600/30 text-amber-200' },
-    { role: 'Housekeeper', email: 'housekeeping@smarthotel.demo', password: 'Demo@123', color: 'from-amber-400/20 to-yellow-500/20 border-amber-400/30 text-amber-200' },
-    { role: 'Maint. Mgr', email: 'maintenance.mgr@smarthotel.demo', password: 'Demo@123', color: 'from-orange-600/20 to-red-600/20 border-orange-600/30 text-orange-200' },
-    { role: 'Maint. Tech', email: 'maintenance@smarthotel.demo', password: 'Demo@123', color: 'from-orange-500/20 to-amber-500/20 border-orange-500/30 text-orange-200' },
-    { role: 'HR Manager', email: 'hr@smarthotel.demo', password: 'Demo@123', color: 'from-pink-500/20 to-rose-500/20 border-pink-500/30 text-pink-200' },
-    { role: 'Restaurant Mgr', email: 'restaurant@smarthotel.demo', password: 'Demo@123', color: 'from-red-500/20 to-rose-500/20 border-red-500/30 text-red-200' },
-    { role: 'Chef', email: 'chef@smarthotel.demo', password: 'Demo@123', color: 'from-rose-500/20 to-pink-500/20 border-rose-500/30 text-rose-200' },
-    { role: 'Waiter', email: 'waiter@smarthotel.demo', password: 'Demo@123', color: 'from-red-400/20 to-orange-400/20 border-red-400/30 text-red-200' },
-    { role: 'Events', email: 'events@smarthotel.demo', password: 'Demo@123', color: 'from-fuchsia-500/20 to-purple-500/20 border-fuchsia-500/30 text-fuchsia-200' },
-    { role: 'Inventory', email: 'inventory@smarthotel.demo', password: 'Demo@123', color: 'from-teal-500/20 to-emerald-500/20 border-teal-500/30 text-teal-200' },
+    { role: 'Manager', email: 'manager@smarthotel.demo', password: 'Demo@123', color: 'from-blue-500/20 to-cyan-500/20 border-blue-500/30 text-blue-200' },
+    { role: 'Receptionist', email: 'reception@smarthotel.demo', password: 'Demo@123', color: 'from-sky-500/20 to-blue-500/20 border-sky-500/30 text-sky-200' },
+    { role: 'Housekeeping', email: 'housekeeping@smarthotel.demo', password: 'Demo@123', color: 'from-amber-400/20 to-yellow-500/20 border-amber-400/30 text-amber-200' },
+    { role: 'Maintenance', email: 'maintenance@smarthotel.demo', password: 'Demo@123', color: 'from-orange-500/20 to-amber-500/20 border-orange-500/30 text-orange-200' },
+    { role: 'Kitchen & F&B', email: 'kitchen@smarthotel.demo', password: 'Demo@123', color: 'from-rose-500/20 to-pink-500/20 border-rose-500/30 text-rose-200' },
     { role: 'Guest', email: 'guest@smarthotel.demo', password: 'Demo@123', color: 'from-gray-500/20 to-slate-500/20 border-gray-500/30 text-gray-200' }
   ]
 
@@ -76,14 +64,11 @@ export default function SignInPage() {
         const role = rawUser?.roleName || rawUser?.role?.name || (session as any)?.roleName || 'GUEST';
         
         const callbackUrl = new URLSearchParams(window.location.search).get('callbackUrl');
-        let targetUrl = callbackUrl || '/dashboard';
         
-        if (!callbackUrl) {
-          if (role === 'SUPER_ADMIN' || role === 'MANAGER') targetUrl = '/admin/dashboard';
-          else if (role === 'RECEPTIONIST') targetUrl = '/admin/receptionist';
-          else if (role === 'KITCHEN') targetUrl = '/kitchen/dashboard';
-          else if (role === 'HOUSEKEEPING' || role === 'MAINTENANCE') targetUrl = '/admin/tasks';
-        }
+        // Import dynamically if needed, but since it's client-side, we should just use the same logic
+        // Wait, since we are in a client component, we should import getDefaultDashboardUrl at the top of the file.
+        // For now, let's just assume we've imported it. I will add the import to the top of the file next.
+        let targetUrl = callbackUrl || getDefaultDashboardUrl(role);
         
         window.location.href = targetUrl;
       } else {
