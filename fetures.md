@@ -99,3 +99,13 @@
 - **Idempotency Engine**: Caching of API responses to ensure duplicate actions don't result in duplicate charges.
 - **Event Bus & Websockets**: Internal decoupled pub/sub architecture and live Pusher events for UI updates.
 - **Transactional Outbox**: Guaranteed event delivery (eventual consistency) for critical system actions.
+
+## 13. Security & Compliance (Enterprise Grade)
+- **Data Masking**: Passport numbers and ID tokens are obfuscated in the UI (e.g. `XXXX-XXXX-XXXX-1234`).
+- **PII Encryption**: AES-256-GCM symmetric encryption at rest for highly sensitive guest identities.
+- **N+1 Query Protection**: Optimized Prisma aggregations prevent cascading queries and database over-fetching.
+
+## 14. UI / UX Density
+- **Rack Virtualization**: `@tanstack/react-virtual` DOM virtualization allows seamless 60fps scrolling across 1000+ rooms.
+- **Compact Mode**: Density controls for data tables to maximize visibility on standard 1080p hotel screens.
+- **Unified Orders**: Centralized `InternalOrder` data modeling for POS and Room Service.
