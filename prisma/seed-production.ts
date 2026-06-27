@@ -6,15 +6,20 @@ const prisma = new PrismaClient()
 async function main() {
   console.log('🧹 Clearing existing data...')
   
-  // Safe clear
-  const models = [
-    'auditLog', 'task', 'booking', 'room', 'staff', 'user', 'roomType', 'property'
-  ]
-
-  for (const model of models) {
-    if ((prisma as any)[model]) {
-      await (prisma as any)[model].deleteMany()
+  // Use PostgreSQL TRUNCATE CASCADE to safely clear everything without FK constraint issues
+  try {
+    const tablenames = await prisma.$queryRaw<Array<{ tablename: string }>>`SELECT tablename FROM pg_tables WHERE schemaname='public'`;
+    const tables = tablenames
+      .map(({ tablename }) => tablename)
+      .filter((name) => name !== '_prisma_migrations')
+      .map((name) => `"${name}"`)
+      .join(', ');
+      
+    if (tables.length > 0) {
+      await prisma.$executeRawUnsafe(`TRUNCATE TABLE ${tables} CASCADE;`);
     }
+  } catch (err) {
+    console.error('Error during DB truncate:', err)
   }
 
   console.log('🌱 Seeding new data...')
@@ -30,6 +35,13 @@ async function main() {
     }
   })
 
+  // Create Role
+  const adminRole = await prisma.role.create({
+    data: {
+      name: 'SUPER_ADMIN'
+    }
+  })
+
   // Create Admin User
   const passwordHash = await bcrypt.hash('admin123', 10)
   const admin = await prisma.user.create({
@@ -38,7 +50,7 @@ async function main() {
       email: 'admin@smarthotel.local',
       password: passwordHash,
       vipStatus: 'STANDARD',
-      roleId: 'admin-role-id' // Optional, based on RBAC logic
+      roleId: adminRole.id
     }
   })
 

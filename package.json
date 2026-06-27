@@ -54,7 +54,7 @@
     "db:apply-indexes:production": "node scripts/apply-indexes-production.js",
     "db:apply-indexes:simple": "node scripts/apply-indexes-simple.js",
     "db:seed": "tsx prisma/seed.ts",
-    "db:seed:demo": "tsx prisma/seed-comprehensive.ts",
+    "db:seed:demo": "tsx prisma/seed-demo.ts",
     "db:setup:production": "node scripts/setup-production-database.js",
     "db:studio": "prisma studio",
     "db:migrate": "prisma migrate dev",
