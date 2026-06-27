@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
       include: {
         roomType: true,
         roomImages: true,
-        reviews: true
+        feedback: true
       }
     })
 

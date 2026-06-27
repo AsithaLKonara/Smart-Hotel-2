@@ -60,7 +60,7 @@ export default async function HomePage() {
         include: {
           roomType: true,
           roomImages: { where: { isMain: true }, take: 1 },
-          reviews: true
+          feedback: true
         },
         orderBy: { roomType: { baseRate: 'desc' } },
       })

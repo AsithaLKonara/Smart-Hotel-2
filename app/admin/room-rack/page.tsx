@@ -2,8 +2,9 @@
 
 export const dynamic = "force-dynamic"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useSession } from 'next-auth/react'
+import { useWindowVirtualizer } from '@tanstack/react-virtual'
 import { useRouter } from 'next/navigation'
 import { canAccessReceptionistFeatures } from '@/lib/rbac-helpers'
 import {
@@ -473,6 +474,27 @@ export default function MasterOperationsRoomV2() {
   const maintenanceCount = rooms.filter(r => r.status === 'Maintenance').length
   const breachedDispatchesCount = dispatches.filter(d => d.state === 'SLA_BREACHED').length
 
+  // Virtualization Grid Logic
+  const [columns, setColumns] = useState(4)
+  useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth
+      if (width < 640) setColumns(2)
+      else if (width < 768) setColumns(3)
+      else setColumns(4)
+    }
+    handleResize()
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  const rowCount = Math.ceil(filteredRooms.length / columns)
+  const virtualizer = useWindowVirtualizer({
+    count: rowCount,
+    estimateSize: () => 151, // 135px card height + 16px (1rem) gap
+    overscan: 5,
+  })
+
   return (
     <div className="min-h-screen bg-[#050309] text-slate-100 p-6 font-sans antialiased selection:bg-purple-900/40">
 
@@ -580,49 +602,73 @@ export default function MasterOperationsRoomV2() {
 
             {/* Room Rack Cards Grid */}
             <CardContent className="p-6">
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                {filteredRooms.map(room => {
-                  const style = getStatusStyles(room.status)
-                  const isSelected = selectedRoom?.id === room.id
+              <div style={{ height: `${virtualizer.getTotalSize()}px`, width: '100%', position: 'relative' }}>
+                {virtualizer.getVirtualItems().map((virtualRow) => {
+                  const startIdx = virtualRow.index * columns
+                  const rowRooms = filteredRooms.slice(startIdx, startIdx + columns)
 
                   return (
-                    <button
-                      key={room.id}
-                      onClick={() => setSelectedRoom(room)}
-                      className={`p-4 text-left border rounded-none transition-all flex flex-col justify-between h-[135px] relative group/card overflow-hidden ${style.bg} ${isSelected ? 'ring-2 ring-purple-600 border-transparent scale-[1.01]' : ''}`}
+                    <div
+                      key={virtualRow.key}
+                      data-index={virtualRow.index}
+                      ref={virtualizer.measureElement}
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '135px',
+                        transform: `translateY(${virtualRow.start}px)`,
+                        display: 'grid',
+                        gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
+                        gap: '1rem',
+                      }}
                     >
-                      {/* Hover Slide-over info block */}
-                      <div className="absolute inset-0 bg-[#0f0b1e] p-3 text-[10px] space-y-2 border-t border-purple-500/20 translate-y-[100%] group-hover/card:translate-y-0 transition-transform duration-200 pointer-events-none flex flex-col justify-center">
-                        <div className="flex justify-between font-bold text-slate-400">
-                          <span>FLOOR: {room.floor}</span>
-                          <span>RATE: ${room.price}</span>
-                        </div>
-                        <div className="text-slate-200">
-                          <strong>GUEST:</strong> {room.guest || 'None (Vacant)'}
-                        </div>
-                        <div className="text-slate-400">
-                          <strong>SLA ETA:</strong> {room.eta}
-                        </div>
-                      </div>
+                      {rowRooms.map(room => {
+                        const style = getStatusStyles(room.status)
+                        const isSelected = selectedRoom?.id === room.id
 
-                      <div className="flex items-start justify-between w-full">
-                        <div>
-                          <span className="text-[10px] font-mono text-slate-500 font-bold">FL {room.floor}</span>
-                          <h4 className="text-xl font-serif font-black text-white">{room.number}</h4>
-                        </div>
-                        <span className={`w-2.5 h-2.5 rounded-full ${style.dot}`} />
-                      </div>
+                        return (
+                          <button
+                            key={room.id}
+                            onClick={() => setSelectedRoom(room)}
+                            className={`p-4 text-left border rounded-none transition-all flex flex-col justify-between h-[135px] relative group/card overflow-hidden ${style.bg} ${isSelected ? 'ring-2 ring-purple-600 border-transparent scale-[1.01]' : ''}`}
+                          >
+                            {/* Hover Slide-over info block */}
+                            <div className="absolute inset-0 bg-[#0f0b1e] p-3 text-[10px] space-y-2 border-t border-purple-500/20 translate-y-[100%] group-hover/card:translate-y-0 transition-transform duration-200 pointer-events-none flex flex-col justify-center">
+                              <div className="flex justify-between font-bold text-slate-400">
+                                <span>FLOOR: {room.floor}</span>
+                                <span>RATE: ${room.price}</span>
+                              </div>
+                              <div className="text-slate-200">
+                                <strong>GUEST:</strong> {room.guest || 'None (Vacant)'}
+                              </div>
+                              <div className="text-slate-400">
+                                <strong>SLA ETA:</strong> {room.eta}
+                              </div>
+                            </div>
 
-                      <div className="w-full">
-                        <Badge className={`text-[8px] py-0 px-1 font-black rounded-none tracking-wider uppercase border-0 ${style.badge}`}>
-                          {room.status}
-                        </Badge>
-                        <span className="block text-[11px] font-bold text-slate-200 truncate mt-1 flex items-center gap-1">
-                          {room.vip && <span className="w-1.5 h-1.5 bg-purple-400 rounded-full inline-block animate-ping shrink-0" />}
-                          {room.guest ? room.guest : 'Vacant Room'}
-                        </span>
-                      </div>
-                    </button>
+                            <div className="flex items-start justify-between w-full">
+                              <div>
+                                <span className="text-[10px] font-mono text-slate-500 font-bold">FL {room.floor}</span>
+                                <h4 className="text-xl font-serif font-black text-white">{room.number}</h4>
+                              </div>
+                              <span className={`w-2.5 h-2.5 rounded-full ${style.dot}`} />
+                            </div>
+
+                            <div className="w-full">
+                              <Badge className={`text-[8px] py-0 px-1 font-black rounded-none tracking-wider uppercase border-0 ${style.badge}`}>
+                                {room.status}
+                              </Badge>
+                              <span className="block text-[11px] font-bold text-slate-200 truncate mt-1 flex items-center gap-1">
+                                {room.vip && <span className="w-1.5 h-1.5 bg-purple-400 rounded-full inline-block animate-ping shrink-0" />}
+                                {room.guest ? room.guest : 'Vacant Room'}
+                              </span>
+                            </div>
+                          </button>
+                        )
+                      })}
+                    </div>
                   )
                 })}
               </div>
