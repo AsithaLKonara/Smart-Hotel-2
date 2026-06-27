@@ -198,34 +198,20 @@ export default function ReceptionistOperationsCenter() {
 
       <AnimatePresence>
         {selectedRoom && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl"
-          >
-            <motion.div 
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, y: 20 }}
-              className="w-full max-w-5xl max-h-[90vh] overflow-y-auto"
-            >
-              <RoomActionDesk 
-                room={selectedRoom}
-                onStatusTransition={handleStatusTransition}
-                roomBookings={allBookings.filter((b: any) => isRoomAssigned(b, selectedRoom?.id))}
-                onClose={() => setSelectedRoom(null)}
-                isVip={false}
-                onToggleVip={() => {}}
-                notes=""
-                onNotesChange={() => {}}
-                onUpdateMetadata={() => {}}
-                onCheckIn={handleCheckIn}
-                onCheckOut={handleCheckOut}
-                onCreateBooking={handleCreateBooking}
-              />
-            </motion.div>
-          </motion.div>
+          <RoomActionDesk 
+            room={selectedRoom}
+            onStatusTransition={handleStatusTransition}
+            roomBookings={allBookings.filter((b: any) => isRoomAssigned(b, selectedRoom?.id))}
+            onClose={() => setSelectedRoom(null)}
+            isVip={false}
+            onToggleVip={() => {}}
+            notes=""
+            onNotesChange={() => {}}
+            onUpdateMetadata={() => {}}
+            onCheckIn={handleCheckIn}
+            onCheckOut={handleCheckOut}
+            onCreateBooking={handleCreateBooking}
+          />
         )}
       </AnimatePresence>
     </AdminPageShell>
