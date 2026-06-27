@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { ArrowUpDown, ArrowUp, ArrowDown, Search, Filter, Download } from 'lucide-react'
+import { ArrowUpDown, ArrowUp, ArrowDown, Search, Filter, Download, Rows, AlignJustify } from 'lucide-react'
 import { Input } from './input'
 import { Button } from './button'
 import { Card } from './card'
@@ -37,6 +37,7 @@ interface DataTableProps<T> {
   emptyMessage?: string
   className?: string
   loading?: boolean
+  defaultCompact?: boolean
 }
 
 export function DataTable<T extends Record<string, any>>({
@@ -55,12 +56,14 @@ export function DataTable<T extends Record<string, any>>({
   emptyMessage = 'No data available',
   className,
   loading = false,
+  defaultCompact = false,
 }: DataTableProps<T>) {
   const [searchQuery, setSearchQuery] = useState('')
   const [sortColumn, setSortColumn] = useState<string | null>(null)
   const [sortDirection, setSortDirection] = useState<SortDirection>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(initialPageSize)
+  const [isCompact, setIsCompact] = useState(defaultCompact)
 
   // Filter data based on search query
   const filteredData = useMemo(() => {
@@ -167,7 +170,7 @@ export function DataTable<T extends Record<string, any>>({
   return (
     <Card className={cn('overflow-hidden', className)}>
       {/* Toolbar */}
-      {(searchable || exportable) && (
+      {(searchable || exportable || true) && (
         <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row gap-4 items-center justify-between">
           {searchable && (
             <div className="relative flex-1 max-w-md w-full">
@@ -185,17 +188,28 @@ export function DataTable<T extends Record<string, any>>({
             </div>
           )}
 
-          {exportable && onExport && (
+          <div className="flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
-              onClick={onExport}
+              onClick={() => setIsCompact(!isCompact)}
               className="flex items-center gap-2"
+              title={isCompact ? "Switch to Comfortable View" : "Switch to Compact View"}
             >
-              <Download className="h-4 w-4" />
-              Export
+              {isCompact ? <AlignJustify className="h-4 w-4" /> : <Rows className="h-4 w-4" />}
             </Button>
-          )}
+            {exportable && onExport && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onExport}
+                className="flex items-center gap-2"
+              >
+                <Download className="h-4 w-4" />
+                Export
+              </Button>
+            )}
+          </div>
         </div>
       )}
 
@@ -208,7 +222,8 @@ export function DataTable<T extends Record<string, any>>({
                 <th
                   key={column.key}
                   className={cn(
-                    'px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider',
+                    'text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider',
+                    isCompact ? 'px-3 py-2' : 'px-6 py-3',
                     column.headerClassName
                   )}
                 >
@@ -257,7 +272,8 @@ export function DataTable<T extends Record<string, any>>({
                       <td
                         key={column.key}
                         className={cn(
-                          'px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white',
+                          'whitespace-nowrap text-sm text-gray-900 dark:text-white',
+                          isCompact ? 'px-3 py-1.5' : 'px-6 py-4',
                           column.className
                         )}
                       >
