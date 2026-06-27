@@ -374,6 +374,7 @@ model FolioLineItem {
   folio Folio @relation(fields: [folioId], references: [id])
 
   @@index([folioId])
+  @@index([category, createdAt])
 }
 
 model RoutingRule {
@@ -1549,6 +1550,7 @@ model InternalOrder {
   folio    Folio?      @relation(fields: [folioId], references: [id])
 
   @@index([guestId])
+  @@index([orderType, createdAt])
 }
 
 model InternalOrderItem {
