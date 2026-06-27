@@ -64,7 +64,7 @@ async function main() {
         status: 'AVAILABLE',
         capacity: 2,
         size: 45,
-        typeId: roomType.id,
+        roomTypeId: roomType.id,
         propertyId: property.id
       }
     })

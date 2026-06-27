@@ -69,9 +69,7 @@ export async function POST(
           itemId,
           type: difference > 0 ? 'ADJUST_UP' : 'ADJUST_DOWN',
           quantity: Math.abs(difference),
-          source: 'MANUAL_COUNT',
-          destination: validatedData.location,
-          reference: validatedData.reason
+          notes: `Location: ${validatedData.location} | Reason: ${validatedData.reason}`
         }
       })
 
