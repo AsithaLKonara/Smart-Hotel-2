@@ -20,7 +20,7 @@ export interface Folio {
   id: string
   bookingId: string
   transactions: FolioTransaction[]
-  routingRules: { category: string; targetFolioId: string }[]
+  routingRules: { category: 'ROOM_CHARGE' | 'F_AND_B' | 'SPA' | 'TAX'; targetFolioId: string; splitPercentage: number }[]
   status: 'OPEN' | 'SETTLED' | 'PENDING_AUDIT'
 }
 
@@ -72,8 +72,30 @@ export class FinancialEngine {
 
     // Check for active routing rules
     const activeRule = folio.routingRules.find(r => r.category === category)
-    if (activeRule) {
-      return this.postCharge(activeRule.targetFolioId, description, baseAmount, category)
+    
+    let routedTx: FolioTransaction | undefined;
+    if (activeRule && activeRule.splitPercentage > 0) {
+      const splitDec = activeRule.splitPercentage / 100
+      const routedAmount = parseFloat((baseAmount * splitDec).toFixed(2))
+      const remainingAmount = parseFloat((baseAmount - routedAmount).toFixed(2))
+
+      // Post the routed portion to the target folio
+      if (routedAmount !== 0) {
+        routedTx = this.postCharge(
+          activeRule.targetFolioId, 
+          `${description} (Routed ${activeRule.splitPercentage}% from Folio ${folioId})`, 
+          routedAmount, 
+          category
+        )
+      }
+
+      // If nothing remains, return the routed transaction
+      if (remainingAmount === 0 && routedTx) {
+        return routedTx
+      }
+
+      // Process the remaining amount locally
+      baseAmount = remainingAmount
     }
 
     // Verify against Business Date Engine locks
