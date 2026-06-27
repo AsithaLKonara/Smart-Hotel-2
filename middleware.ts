@@ -95,11 +95,20 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // 1. Bypass Public Assets & Public APIs
+  // 1. Bypass Public Assets, Public APIs, and Public Pages
+  const isPublicPage = [
+    '/', '/about', '/booking', '/booking-flow', '/contact', '/cookies', 
+    '/facilities', '/gallery', '/privacy', '/rooms', '/spa', '/terms'
+  ].some(p => path === p || path.startsWith(`${p}/`))
+  
+  const isAuthPage = path.startsWith('/auth')
+
   if (
     path.startsWith('/_next') ||
     path.startsWith('/images') ||
     path.startsWith('/favicon') ||
+    isAuthPage ||
+    isPublicPage ||
     PUBLIC_API_PREFIXES.some(p => path.startsWith(p))
   ) {
     return NextResponse.next()
