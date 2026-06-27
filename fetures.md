@@ -123,3 +123,15 @@
 - **Progressive Web App (PWA)**: Offline caching via Service Workers for Housekeeping mobile app in basement dead-zones.
 - **Unified Orders**: Centralized `InternalOrder` data modeling for POS and Room Service.
 
+
+### Advanced APIs & System Automations
+- **Multi-property Cross-selling API:** Automatically suggests alternative available sister properties when one is fully booked.
+- **Loyalty Point Redemption:** Allows guests to redeem accumulated loyalty points directly against active folios (in-house credit).
+- **Point-of-Sale (POS) Charge Posting:** Secured API for external POS vendors (restaurants, spa) to post charges directly to a guest's room folio.
+- **Contactless Digital Key Generation:** Integrates with smart locks (Assa Abloy/Salto) to provision mobile access tokens upon arrival.
+- **PCI-DSS Tokenization Pre-auth:** Integrates with payment gateways (e.g. Stripe) to perform manual card holds for incidentals without storing PAN data.
+- **Event Space / Banquet Booking:** Dedicated endpoints to register event spaces, attendees, and special requirements.
+- **GDPR Right to be Forgotten API:** Automates the anonymization of user PII and deletion of profiling data (preferences, loyalty) while preserving tax-required accounting entries.
+- **Third-party Delivery Pass:** Generates temporary security access codes for couriers (Uber Eats, FedEx) tied directly to a checked-in guest's room.
+- **Travel Agent Commission Settlement API:** Automatically calculates monthly commissions for travel agents based on checked-out booking revenues.
+- **Night Audit Roll-forward Automation:** Cron-based endpoint to automatically post room/tax charges, update no-show statuses, and finalize the daily business date.
