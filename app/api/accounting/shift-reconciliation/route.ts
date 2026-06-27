@@ -20,7 +20,7 @@ export async function POST(req: Request) {
     const payments = await prisma.payment.findMany({
       where: {
         userId: validatedData.userId,
-        method: 'cash',
+        paymentMethod: 'cash',
         createdAt: {
           gte: new Date(validatedData.shiftStart),
           lte: new Date(validatedData.shiftEnd)
