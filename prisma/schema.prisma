@@ -503,7 +503,13 @@ model YieldRule {
   description     String?
   startDate       DateTime @db.Date
   endDate         DateTime @db.Date
-  adjustmentType  String // 'PERCENTAGE' or 'FIXED'
+  
+  // Dynamic Configuration Overrides
+  minOccupancy    Float?
+  maxOccupancy    Float?
+  competitorPrice Float?
+  
+  adjustmentType  String // 'DYNAMIC_TIER', 'PERCENTAGE' or 'FIXED'
   adjustmentValue Float
   isActive        Boolean  @default(true)
   createdAt       DateTime @default(now())

@@ -29,7 +29,7 @@ export async function POST(req: Request) {
     }
 
     const data = await req.json();
-    const { name, description, startDate, endDate, adjustmentType, adjustmentValue, isActive } = data;
+    const { name, description, startDate, endDate, adjustmentType, adjustmentValue, isActive, minOccupancy, maxOccupancy, competitorPrice } = data;
 
     const newRule = await prisma.yieldRule.create({
       data: {
@@ -39,6 +39,9 @@ export async function POST(req: Request) {
         endDate: new Date(endDate),
         adjustmentType,
         adjustmentValue: parseFloat(adjustmentValue),
+        minOccupancy: minOccupancy ? parseFloat(minOccupancy) : null,
+        maxOccupancy: maxOccupancy ? parseFloat(maxOccupancy) : null,
+        competitorPrice: competitorPrice ? parseFloat(competitorPrice) : null,
         isActive: isActive !== undefined ? isActive : true
       }
     });

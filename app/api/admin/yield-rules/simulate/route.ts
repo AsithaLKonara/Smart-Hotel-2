@@ -11,7 +11,7 @@ export async function POST(req: Request) {
     }
 
     const data = await req.json();
-    const { roomTypeId, date } = data;
+    const { roomTypeId, date, simulatedOccupancy = 0.50 } = data;
 
     if (!roomTypeId || !date) {
       return NextResponse.json({ error: 'Missing parameters' }, { status: 400 });
@@ -38,13 +38,30 @@ export async function POST(req: Request) {
     });
 
     for (const rule of rules) {
-      if (rule.adjustmentType === 'PERCENTAGE') {
+      if (rule.adjustmentType === 'DYNAMIC_TIER') {
+        const meetsMin = rule.minOccupancy === null || simulatedOccupancy >= rule.minOccupancy;
+        const meetsMax = rule.maxOccupancy === null || simulatedOccupancy <= rule.maxOccupancy;
+        
+        if (meetsMin && meetsMax) {
+          // Competitor parity logic could cap the adjustment here if competitorPrice exists
+          let adjustment = currentRate * (rule.adjustmentValue / 100);
+          
+          if (rule.competitorPrice && (currentRate + adjustment) > rule.competitorPrice) {
+            // Cap at competitor price
+            adjustment = rule.competitorPrice - currentRate;
+          }
+          
+          currentRate += adjustment;
+          appliedRules.push(`${rule.name} (Dynamic)`);
+        }
+      } else if (rule.adjustmentType === 'PERCENTAGE') {
         const adjustment = currentRate * (rule.adjustmentValue / 100);
         currentRate += adjustment;
+        appliedRules.push(rule.name);
       } else if (rule.adjustmentType === 'FIXED') {
         currentRate += rule.adjustmentValue;
+        appliedRules.push(rule.name);
       }
-      appliedRules.push(rule.name);
     }
 
     // Ensure rate doesn't drop below 0

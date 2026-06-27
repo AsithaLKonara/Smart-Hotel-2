@@ -5,15 +5,30 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Activity, TrendingUp, TrendingDown, DollarSign, Calculator } from 'lucide-react'
+import { Activity, TrendingUp, TrendingDown, DollarSign, Calculator, Plus } from 'lucide-react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 
 export default function YieldManagementPage() {
   const [rules, setRules] = useState([])
   const [loading, setLoading] = useState(true)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  
+  const [newRule, setNewRule] = useState({
+    name: '',
+    description: 'Dynamic Tier Rule',
+    startDate: new Date().toISOString().split('T')[0],
+    endDate: new Date(Date.now() + 86400000 * 30).toISOString().split('T')[0],
+    adjustmentType: 'DYNAMIC_TIER',
+    adjustmentValue: 15,
+    minOccupancy: 0.80,
+    maxOccupancy: 1.0,
+    competitorPrice: ''
+  })
   
   // Simulator State
   const [simRoomTypeId, setSimRoomTypeId] = useState('')
   const [simDate, setSimDate] = useState('')
+  const [simOccupancy, setSimOccupancy] = useState(0.85)
   const [simResult, setSimResult] = useState<any>(null)
 
   const fetchRules = () => {
@@ -37,11 +52,29 @@ export default function YieldManagementPage() {
     }).then(() => fetchRules())
   }
 
+  const handleCreateRule = () => {
+    fetch('/api/admin/yield-rules', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...newRule,
+        competitorPrice: newRule.competitorPrice ? parseFloat(newRule.competitorPrice) : null
+      })
+    }).then(() => {
+      setIsDialogOpen(false)
+      fetchRules()
+    })
+  }
+
   const runSimulator = () => {
     fetch('/api/admin/yield-rules/simulate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ roomTypeId: simRoomTypeId, date: simDate })
+      body: JSON.stringify({ 
+        roomTypeId: simRoomTypeId, 
+        date: simDate,
+        simulatedOccupancy: simOccupancy
+      })
     })
       .then(res => res.json())
       .then(data => {
@@ -58,7 +91,42 @@ export default function YieldManagementPage() {
           </h1>
           <p className="text-white/60 text-sm">Configure dynamic pricing rules to maximize RevPAR.</p>
         </div>
-        <Button className="bg-primary text-white">Create New Rule</Button>
+        
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger className="bg-primary text-white flex items-center gap-2 px-4 py-2 rounded-md hover:bg-primary/90 text-sm font-medium">
+            <Plus className="w-4 h-4" /> Create Dynamic Rule
+          </DialogTrigger>
+          <DialogContent className="bg-[#1a1a1a] border-white/10 text-white max-w-md">
+            <DialogHeader>
+              <DialogTitle>New Occupancy Tier Rule</DialogTitle>
+            </DialogHeader>
+            <div className="flex flex-col gap-4 mt-4">
+              <div>
+                <label className="text-xs text-white/60 mb-1 block">Rule Name</label>
+                <Input value={newRule.name} onChange={e => setNewRule({...newRule, name: e.target.value})} className="bg-white/5 border-white/10" placeholder="e.g. 80%+ Compression Surge" />
+              </div>
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <label className="text-xs text-white/60 mb-1 block">Min Occupancy (0.0-1.0)</label>
+                  <Input type="number" step="0.05" value={newRule.minOccupancy} onChange={e => setNewRule({...newRule, minOccupancy: parseFloat(e.target.value)})} className="bg-white/5 border-white/10" />
+                </div>
+                <div className="flex-1">
+                  <label className="text-xs text-white/60 mb-1 block">Max Occupancy (0.0-1.0)</label>
+                  <Input type="number" step="0.05" value={newRule.maxOccupancy} onChange={e => setNewRule({...newRule, maxOccupancy: parseFloat(e.target.value)})} className="bg-white/5 border-white/10" />
+                </div>
+              </div>
+              <div>
+                <label className="text-xs text-white/60 mb-1 block">Adjustment Percentage (%)</label>
+                <Input type="number" value={newRule.adjustmentValue} onChange={e => setNewRule({...newRule, adjustmentValue: parseFloat(e.target.value)})} className="bg-white/5 border-white/10" placeholder="e.g. 15 for +15%" />
+              </div>
+              <div>
+                <label className="text-xs text-white/60 mb-1 block">Competitor Parity Cap ($)</label>
+                <Input type="number" value={newRule.competitorPrice} onChange={e => setNewRule({...newRule, competitorPrice: e.target.value})} className="bg-white/5 border-white/10" placeholder="e.g. 250 (Optional)" />
+              </div>
+              <Button onClick={handleCreateRule} className="bg-primary text-white mt-4">Save Rule</Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -73,10 +141,19 @@ export default function YieldManagementPage() {
                     <Badge variant={rule.isActive ? 'default' : 'secondary'} className={rule.isActive ? 'bg-green-500/20 text-green-400' : ''}>
                       {rule.isActive ? 'ACTIVE' : 'DISABLED'}
                     </Badge>
+                    {rule.adjustmentType === 'DYNAMIC_TIER' && (
+                      <Badge variant="outline" className="border-primary/50 text-primary bg-primary/10 ml-2">DYNAMIC TIER</Badge>
+                    )}
                   </h3>
                   <p className="text-sm text-white/50 mt-1">
                     {new Date(rule.startDate).toLocaleDateString()} to {new Date(rule.endDate).toLocaleDateString()}
                   </p>
+                  {rule.adjustmentType === 'DYNAMIC_TIER' && (
+                    <p className="text-xs text-white/40 mt-1">
+                      Trigger: {rule.minOccupancy ? (rule.minOccupancy * 100).toFixed(0) + '%' : '0%'} to {rule.maxOccupancy ? (rule.maxOccupancy * 100).toFixed(0) + '%' : '100%'} occupancy
+                      {rule.competitorPrice && ` | Parity Cap: $${rule.competitorPrice}`}
+                    </p>
+                  )}
                 </div>
                 
                 <div className="flex items-center gap-6">
@@ -125,6 +202,16 @@ export default function YieldManagementPage() {
                   type="date"
                   value={simDate} 
                   onChange={e => setSimDate(e.target.value)} 
+                  className="bg-white/5 border-white/10 text-white"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-white/60 mb-1 block">Simulated Occupancy (0.0-1.0)</label>
+                <Input 
+                  type="number"
+                  step="0.05"
+                  value={simOccupancy} 
+                  onChange={e => setSimOccupancy(parseFloat(e.target.value))} 
                   className="bg-white/5 border-white/10 text-white"
                 />
               </div>

@@ -29,33 +29,42 @@ export class YieldOptimizationEngine {
     }
   }
 
-  // Calculate dynamic pricing based on multiple real-time compression vectors
-  static calculateDynamicPrice(
+  // Calculate dynamic pricing based on DB-backed rules and competitor ingest
+  static async calculateDynamicPrice(
     basePrice: number,
     occupancyRate: number,
     daysToArrival: number,
-    dayOfWeek: 'weekday' | 'weekend'
-  ): { recommendedPrice: number; multiplier: number; appliedRules: string[] } {
+    dayOfWeek: 'weekday' | 'weekend',
+    competitorAveragePrice?: number
+  ): Promise<{ recommendedPrice: number; multiplier: number; appliedRules: string[] }> {
     if (basePrice <= 0) {
       throw new Error('Base price must be strictly positive.')
     }
 
     let multiplier = 1.0
     const appliedRules: string[] = []
+    
+    // Dynamic import to avoid circular dependencies if any
+    const prisma = (await import('./db')).default
 
-    // 1. Occupancy-based Compression Surge rules
-    if (occupancyRate >= 0.90) {
-      multiplier += 0.45
-      appliedRules.push('CRITICAL_COMPRESSION_SURGE')
-    } else if (occupancyRate >= 0.75) {
-      multiplier += 0.25
-      appliedRules.push('MODERATE_COMPRESSION_SURGE')
-    } else if (occupancyRate < 0.30) {
-      multiplier -= 0.15
-      appliedRules.push('LOW_OCCUPANCY_DISCOUNT')
+    // Fetch active rules from the database
+    const rules = await prisma.yieldRule.findMany({
+      where: { isActive: true }
+    })
+
+    for (const rule of rules) {
+      if (rule.adjustmentType === 'DYNAMIC_TIER') {
+        const meetsMin = rule.minOccupancy === null || occupancyRate >= rule.minOccupancy;
+        const meetsMax = rule.maxOccupancy === null || occupancyRate <= rule.maxOccupancy;
+        
+        if (meetsMin && meetsMax) {
+          multiplier += (rule.adjustmentValue / 100);
+          appliedRules.push(`DB: ${rule.name}`);
+        }
+      }
     }
 
-    // 2. Booking Window Urgency rules
+    // Retain legacy heuristics for Booking Window (Urgency)
     if (daysToArrival >= 30) {
       multiplier -= 0.10 // Early bird discount
       appliedRules.push('EARLY_BIRD_INCENTIVE')
@@ -63,13 +72,9 @@ export class YieldOptimizationEngine {
       if (occupancyRate >= 0.65) {
         multiplier += 0.15 // Last-minute premium
         appliedRules.push('LAST_MINUTE_PREMIUM')
-      } else if (occupancyRate < 0.35) {
-        multiplier -= 0.10 // Last-minute clearance
-        appliedRules.push('LAST_MINUTE_CLEARANCE_DISCOUNT')
       }
     }
 
-    // 3. Day of week premium rules
     if (dayOfWeek === 'weekend') {
       multiplier += 0.10
       appliedRules.push('WEEKEND_PREMIUM')
@@ -77,7 +82,14 @@ export class YieldOptimizationEngine {
 
     // Ensure multiplier never crashes below 0.50 (minimum viable rate)
     multiplier = Math.max(0.50, parseFloat(multiplier.toFixed(2)))
-    const recommendedPrice = Math.round(basePrice * multiplier * 100) / 100
+    let recommendedPrice = Math.round(basePrice * multiplier * 100) / 100
+    
+    // Enforce Competitor Parity Cap (if ingest provided)
+    if (competitorAveragePrice && recommendedPrice > competitorAveragePrice) {
+      recommendedPrice = competitorAveragePrice
+      appliedRules.push('COMPETITOR_PARITY_CAP')
+      multiplier = recommendedPrice / basePrice
+    }
 
     return {
       recommendedPrice,
@@ -142,17 +154,18 @@ export class YieldOptimizationEngine {
   }
 
   // Full Orchestration Endpoint Recommendation
-  static generateOptimizationRecommendation(
+  static async generateOptimizationRecommendation(
     roomType: string,
     basePrice: number,
     occupancyRate: number,
     daysToArrival: number,
     dayOfWeek: 'weekday' | 'weekend',
     totalRooms: number,
-    historicalCancellationRate = 0.10
-  ): YieldRecommendation {
+    historicalCancellationRate = 0.10,
+    competitorAveragePrice?: number
+  ): Promise<YieldRecommendation> {
     const demandElasticity = this.calculateDemandElasticity(occupancyRate)
-    const pricing = this.calculateDynamicPrice(basePrice, occupancyRate, daysToArrival, dayOfWeek)
+    const pricing = await this.calculateDynamicPrice(basePrice, occupancyRate, daysToArrival, dayOfWeek, competitorAveragePrice)
     const los = this.recommendLengthOfStayLimit(occupancyRate)
 
     const recommendation: YieldRecommendation = {
