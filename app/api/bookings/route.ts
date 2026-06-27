@@ -280,9 +280,6 @@ export async function GET(request: NextRequest) {
             select: { number: true, roomType: { select: { name: true, baseRate: true } } }
           }
         }
-      },
-      folios: {
-        include: { lineItems: true }
       }
     },
     orderBy: { createdAt: 'desc' }
