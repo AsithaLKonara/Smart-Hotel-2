@@ -51,6 +51,8 @@ export default function GlobalCinematicBackground() {
   const overlayRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    if (isDashboard) return;
+
     const handleScroll = () => {
       const progress = Math.min(window.scrollY / (window.innerHeight || 1), 1)
 
@@ -84,6 +86,11 @@ export default function GlobalCinematicBackground() {
 
     return () => window.removeEventListener('scroll', handleScroll)
   }, [pathname, isDashboard]) // Re-run effect when pathname/image changes to bind elements
+
+  // Enterprise Performance Optimization: Do not mount heavy cinematic animations on operational routes
+  if (isDashboard) {
+    return null;
+  }
 
   return (
     <div className="fixed inset-0 -z-50 overflow-hidden pointer-events-none select-none">
