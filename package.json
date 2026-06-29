@@ -151,7 +151,7 @@
     "@types/supertest": "^6.0.3",
     "@types/three": "^0.184.1",
     "autoprefixer": "^10.0.1",
-    "baseline-browser-mapping": "^2.10.27",
+    "baseline-browser-mapping": "^2.10.40",
     "chrome-launcher": "^1.2.1",
     "eslint": "^8",
     "eslint-config-next": "14.0.4",
