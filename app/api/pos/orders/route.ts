@@ -1,57 +1,96 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
 import prisma from '@/lib/db'
+import { z } from 'zod'
+import { postCharge } from '@/lib/accounting'
 
-// GET /api/pos/orders - Fetch today's POS orders
-export async function GET(request: NextRequest) {
+const orderItemSchema = z.object({
+  productId: z.string().uuid(),
+  quantity: z.number().int().min(1)
+})
+
+const posOrderSchema = z.object({
+  outletId: z.string().uuid(),
+  items: z.array(orderItemSchema).min(1),
+  paymentType: z.enum(['CASH', 'CARD', 'ROOM_CHARGE']),
+  bookingId: z.string().uuid().optional(),
+  specialRequests: z.string().optional()
+})
+
+export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const body = await request.json()
+    const data = posOrderSchema.parse(body)
 
-    const todayStart = new Date()
-    todayStart.setHours(0, 0, 0, 0)
+    if (data.paymentType === 'ROOM_CHARGE' && !data.bookingId) {
+      return NextResponse.json({ error: 'bookingId is required for ROOM_CHARGE' }, { status: 400 })
+    }
 
-    const orders = await prisma.internalOrder.findMany({
-      where: {
-        createdAt: { gte: todayStart }
-      },
-      orderBy: { createdAt: 'desc' },
-      include: {
-        items: true,
-        room: { select: { number: true } },
-        guest: { select: { name: true } },
-        outlet: { select: { name: true } },
+    // 1. Fetch products to calculate totals securely
+    const productIds = data.items.map(item => item.productId)
+    const products = await prisma.pOSProduct.findMany({
+      where: { id: { in: productIds } }
+    })
+
+    let subtotal = 0
+    const orderItemsData = data.items.map(item => {
+      const product = products.find((p: any) => p.id === item.productId)
+      if (!product) throw new Error(`Product not found: ${item.productId}`)
+      
+      const itemSubtotal = product.price * item.quantity
+      subtotal += itemSubtotal
+      
+      return {
+        productId: product.id,
+        quantity: item.quantity,
+        price: product.price,
+        subtotal: itemSubtotal
       }
     })
 
-    return NextResponse.json({ orders })
-  } catch (error) {
-    console.error('POS orders GET error:', error)
-    return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 })
-  }
-}
+    // Add generic taxes/fees (e.g. 10% service charge)
+    const totalAmount = subtotal * 1.10
 
-export async function PATCH(request: NextRequest) {
-  try {
-    const session = await getServerSession(authOptions)
-    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-    const body = await request.json()
-    const { id, status } = body
-
-    if (!id || !status) {
-      return NextResponse.json({ error: 'Missing id or status' }, { status: 400 })
-    }
-
-    const updatedOrder = await prisma.internalOrder.update({
-      where: { id },
-      data: { status }
+    // 2. Create the POS Order (InternalOrder)
+    const internalOrder = await prisma.internalOrder.create({
+      data: {
+        orderType: 'POS_OUTLET',
+        outletId: data.outletId,
+        status: 'COMPLETED',
+        totalAmount,
+        paymentType: data.paymentType,
+        specialRequests: data.specialRequests,
+        items: {
+          create: orderItemsData
+        }
+      },
+      include: {
+        outlet: true
+      }
     })
 
-    return NextResponse.json({ order: updatedOrder })
-  } catch (error) {
-    console.error('POS orders PATCH error:', error)
-    return NextResponse.json({ error: 'Failed to update order status' }, { status: 500 })
+    // 3. If ROOM_CHARGE, post directly to the accounting engine
+    if (data.paymentType === 'ROOM_CHARGE' && data.bookingId) {
+      const chargeResult = await postCharge({
+        bookingId: data.bookingId,
+        amount: totalAmount,
+        category: 'F_AND_B', // Category mapped for routing
+        description: `POS Charge: ${internalOrder.outlet?.name || 'Restaurant'} (Order #${internalOrder.id.slice(0,8)})`
+      })
+
+      // Link order to the generated folio
+      await prisma.internalOrder.update({
+        where: { id: internalOrder.id },
+        data: { folioId: chargeResult.targetFolioId }
+      })
+    }
+
+    return NextResponse.json({ success: true, order: internalOrder }, { status: 201 })
+
+  } catch (error: any) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: 'Validation error', details: error.errors }, { status: 400 })
+    }
+    console.error('Error processing POS order:', error)
+    return NextResponse.json({ error: error.message || 'Failed to process POS order' }, { status: 500 })
   }
 }
