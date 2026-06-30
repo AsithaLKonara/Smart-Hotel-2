@@ -116,7 +116,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         });
       }
 
-      // 3. Mark active rooms as dirty
+      // 3. Mark active rooms as dirty and generate cleaning task
       const activeAssignments = booking.roomAssignments;
       for (const assignment of activeAssignments) {
         await tx.room.update({
@@ -124,6 +124,17 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
           data: {
             status: 'DIRTY',
             lastStatusChangeAt: new Date()
+          }
+        });
+
+        await tx.task.create({
+          data: {
+            title: `Clean Room ${assignment.room.number} (Checkout)`,
+            type: 'HOUSEKEEPING',
+            status: 'PENDING',
+            priority: 'HIGH',
+            roomId: assignment.roomId,
+            bookingId: bookingId
           }
         });
 

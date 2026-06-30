@@ -51,6 +51,7 @@ export async function GET(request: NextRequest) {
     // Note: Task model doesn't have staff or user relations defined in schema
     const tasks = await prisma.task.findMany({
       where: whereClause,
+      include: { room: true },
       orderBy: {
         createdAt: 'desc'
       }

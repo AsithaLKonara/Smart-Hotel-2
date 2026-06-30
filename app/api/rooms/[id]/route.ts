@@ -40,14 +40,47 @@ export async function PATCH(
     const body = await request.json()
     const validatedData = roomUpdateSchema.parse(body)
 
-    // Handle relational updates for images if provided (if we were in PUT, but this is PATCH)
-    // Actually, let's keep it simple for PATCH
-    const room = await prisma.room.update({
-      where: { id: id },
-      data: {
-        ...validatedData,
-        status: validatedData.status as any,
+    const existingRoom = await prisma.room.findUnique({ where: { id } })
+    if (!existingRoom) {
+      return NextResponse.json({ error: 'Room not found' }, { status: 404 })
+    }
+
+    const room = await prisma.$transaction(async (tx: any) => {
+      const updatedRoom = await tx.room.update({
+        where: { id: id },
+        data: {
+          ...validatedData,
+          status: validatedData.status as any,
+        }
+      })
+
+      // If status changed to DIRTY
+      if (validatedData.status === 'DIRTY' && existingRoom.status !== 'DIRTY') {
+        await tx.task.create({
+          data: {
+            title: `Clean Room ${updatedRoom.number}`,
+            type: 'HOUSEKEEPING',
+            status: 'PENDING',
+            priority: 'HIGH',
+            roomId: updatedRoom.id,
+          }
+        })
       }
+      
+      // If status changed to MAINTENANCE
+      if (validatedData.status === 'MAINTENANCE' && existingRoom.status !== 'MAINTENANCE') {
+        await tx.task.create({
+          data: {
+            title: `Maintenance required for Room ${updatedRoom.number}`,
+            type: 'MAINTENANCE',
+            status: 'PENDING',
+            priority: 'HIGH',
+            roomId: updatedRoom.id,
+          }
+        })
+      }
+
+      return updatedRoom
     })
 
     return NextResponse.json(room)

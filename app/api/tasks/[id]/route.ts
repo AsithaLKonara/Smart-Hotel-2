@@ -11,7 +11,7 @@ const taskUpdateSchema = z.object({
   description: z.string().optional(),
   type: z.enum(['HOUSEKEEPING', 'MAINTENANCE', 'ROOM_SERVICE', 'GUEST_REQUEST', 'ADMINISTRATIVE']).optional(),
   priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).optional(),
-  status: z.enum(['PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED']).optional(),
+  status: z.enum(['PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'VERIFIED']).optional(),
   assignedTo: z.string().optional(),
   dueDate: z.string().optional(),
   completedAt: z.string().optional(),
@@ -236,12 +236,24 @@ export async function PATCH(
         include: { room: true }
       })
 
-      // SIDE EFFECT: Housekeeping Completion restores room status
-      if (validatedData.status === 'COMPLETED' && t.type === 'HOUSEKEEPING' && t.roomId) {
-        await tx.room.update({
-          where: { id: t.roomId },
-          data: { status: 'AVAILABLE', lastStatusChangeAt: new Date() }
-        })
+      // SIDE EFFECT: Housekeeping status syncs with Room status
+      if (t.type === 'HOUSEKEEPING' && t.roomId) {
+        if (validatedData.status === 'IN_PROGRESS') {
+          await tx.room.update({
+            where: { id: t.roomId },
+            data: { status: 'CLEANING', lastStatusChangeAt: new Date() }
+          })
+        } else if (validatedData.status === 'COMPLETED') {
+          await tx.room.update({
+            where: { id: t.roomId },
+            data: { status: 'INSPECTION_PENDING', lastStatusChangeAt: new Date() }
+          })
+        } else if (validatedData.status === 'VERIFIED') {
+          await tx.room.update({
+            where: { id: t.roomId },
+            data: { status: 'AVAILABLE', lastStatusChangeAt: new Date() }
+          })
+        }
       }
 
       return t
@@ -250,8 +262,15 @@ export async function PATCH(
     // 3. REAL-TIME SYNCHRONIZATION
     const { RealtimeEvents } = await import('@/lib/realtime')
     await RealtimeEvents.emitTaskUpdated(updatedTask)
-    if (updatedTask.room && validatedData.status === 'COMPLETED' && updatedTask.type === 'HOUSEKEEPING') {
-      await RealtimeEvents.emitRoomStatusChanged({ ...updatedTask.room, status: 'AVAILABLE' })
+    if (updatedTask.room && updatedTask.type === 'HOUSEKEEPING') {
+      let nextRoomStatus = null
+      if (validatedData.status === 'IN_PROGRESS') nextRoomStatus = 'CLEANING'
+      if (validatedData.status === 'COMPLETED') nextRoomStatus = 'INSPECTION_PENDING'
+      if (validatedData.status === 'VERIFIED') nextRoomStatus = 'AVAILABLE'
+      
+      if (nextRoomStatus) {
+        await RealtimeEvents.emitRoomStatusChanged({ ...updatedTask.room, status: nextRoomStatus })
+      }
     }
 
     // Fetch related data separately (relations don't exist in schema)
