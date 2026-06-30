@@ -5,6 +5,7 @@ import DashboardSidebar from '@/components/dashboard/dashboard-sidebar'
 import { SidebarProvider, useSidebar } from '@/lib/sidebar-context'
 import { cn } from '@/lib/utils'
 import { CommandPalette } from '@/components/command-palette'
+import { IdleTimer } from '@/components/auth/idle-timer'
 
 export const dynamic = 'force-dynamic'
 
@@ -21,6 +22,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
         {children}
       </main>
       <CommandPalette />
+      <IdleTimer />
     </div>
   )
 }

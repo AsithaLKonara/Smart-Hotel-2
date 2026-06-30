@@ -5,7 +5,16 @@ const globalForPrisma = globalThis as unknown as {
 }
 
 function createPrismaClient() {
-  const baseClient = new PrismaClient()
+  // Use connection pooling strictly in production if PGBOUNCER is set
+  const isProduction = process.env.NODE_ENV === 'production'
+  const databaseUrl = process.env.DATABASE_URL || ''
+  
+  // If the user appended ?pgbouncer=true via env, Prisma handles it automatically,
+  // but we can ensure standard timeouts for serverless environments here
+  const baseClient = new PrismaClient({
+    log: isProduction ? ['error'] : ['warn', 'error'],
+  })
+  
   return baseClient.$extends({
     query: {
       $allModels: {

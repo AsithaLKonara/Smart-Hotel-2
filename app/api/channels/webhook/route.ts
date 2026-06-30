@@ -2,8 +2,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/db'
 
 export async function POST(req: NextRequest) {
+  let payload: any = {};
   try {
-    const payload = await req.json()
+    try {
+      payload = await req.json()
+    } catch (e) {
+      return NextResponse.json({ error: 'Invalid JSON payload' }, { status: 400 })
+    }
     
     // Simulate OTA payload:
     // { otaRoomTypeId: 'BCOM_DLX', guestName: 'OTA Guest', guestEmail: 'guest@ota.com', checkIn: '2023-12-01', checkOut: '2023-12-03', totalAmount: 400.00 }
@@ -25,7 +30,17 @@ export async function POST(req: NextRequest) {
           details: { otaRoomTypeId, error: 'Unmapped room type received from OTA' }
         }
       })
-      return NextResponse.json({ error: 'Unmapped OTA Room Type' }, { status: 400 })
+      
+      // Send to Dead-Letter Queue
+      await prisma.webhookDLQ.create({
+        data: {
+          provider: 'OTA_WEBHOOK',
+          payload: payload,
+          error: 'Unmapped OTA Room Type: ' + otaRoomTypeId
+        }
+      })
+      
+      return NextResponse.json({ error: 'Unmapped OTA Room Type. Logged to DLQ.' }, { status: 400 })
     }
 
     // 2. Resolve or Create User (Guest)
@@ -82,6 +97,22 @@ export async function POST(req: NextRequest) {
 
   } catch (error: any) {
     console.error('Channel Webhook Error:', error)
+    
+    // Attempt to write to DLQ even on massive systemic failure (e.g. Booking creation failed)
+    try {
+      if (typeof payload !== 'undefined') {
+        await prisma.webhookDLQ.create({
+          data: {
+            provider: 'OTA_WEBHOOK',
+            payload: payload,
+            error: error.message || 'Systemic failure during webhook processing'
+          }
+        })
+      }
+    } catch(e) {
+      console.error('Failed to write to DLQ', e)
+    }
+    
     return NextResponse.json({ error: 'Failed to process OTA webhook' }, { status: 500 })
   }
 }

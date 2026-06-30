@@ -11,6 +11,7 @@ import { ChatWrapper } from "@/components/live-chat/chat-wrapper"
 import { Providers } from "@/components/providers"
 import { WebVitalsTracker } from "@/components/web-vitals-tracker"
 import HotelSchema from "@/components/seo/hotel-schema"
+import { ServiceWorkerRegister } from "@/components/service-worker-register"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -172,6 +173,7 @@ export default function RootLayout({
             <ClientScripts />
             <ChatWrapper />
             <WebVitalsTracker />
+            <ServiceWorkerRegister />
           </Providers>
         </ErrorBoundary>
       </body>

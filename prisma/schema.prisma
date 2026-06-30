@@ -1693,3 +1693,16 @@ model Feedback {
   room    Room?    @relation(fields: [roomId], references: [id])
   booking Booking? @relation(fields: [bookingId], references: [id])
 }
+
+// ==========================================
+// INFRASTRUCTURE (Added for Module 11)
+// ==========================================
+model WebhookDLQ {
+  id          String   @id @default(uuid())
+  provider    String   // e.g. "Booking.com"
+  payload     Json
+  error       String?
+  resolved    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  resolvedAt  DateTime?
+}
