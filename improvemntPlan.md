@@ -64,18 +64,3 @@ Ready for enterprise deployment (100-500+ rooms across multiple chains). The sys
 
 ---
 
-## What is Left to Do (Remaining Enterprise Roadmap)
-
-###10. Operational & Enterprise Features **[IMPLEMENTED]**
-Multi-Property Architecture: Fully isolate properties for hotel chains, allowing corporate staff to switch between propertyId contexts from a single unified dashboard. **[DONE]**
-Keyboard-First Navigation: Implement global hotkeys (Alt+C check-in, Alt+F folio) to match legacy system speed. **[DONE]**
-Group Master Folios: Build dedicated UI for managing Group Blocks, allotments, and Master Accounts (weddings, conferences). **[DONE]**
-Fiscal Compliance Printers: Build out the api/integrations/fiscal-printer to support regional tax API requirements (e.g. Europe/LATAM). **[DONE]**
-Housekeeping Mobile App (PWA): Dedicated offline-first progressive web app for maids to mark rooms clean without a laptop. **[DONE]**
-
-### Technical & Infrastructure **[IMPLEMENTED]**
-6. **Prisma Schema Splitting**: Evaluated, deferred for native Prisma 5.15 `prismaSchemaFolder`. **[DONE]**
-7. **Offline Mode**: Implement Service Workers for the POS and Front Desk so operations don't halt during hotel internet outages. **[DONE]**
-8. **Database Connection Pooling**: Ensure Prisma is using PgBouncer or Prisma Accelerate to handle serverless connection spikes during peak check-in times. **[DONE]**
-9. **Dead-Letter Queue (DLQ)**: Implement robust DLQs for failed OTA webhooks to ensure reservations are caught if the mapping fails. **[DONE]**
-10. **Session Expiry**: Implement aggressive idle timeouts for Front Desk sessions to prevent unauthorized access when staff walk away from terminals. **[DONE]**
