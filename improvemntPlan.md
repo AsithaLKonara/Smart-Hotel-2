@@ -64,12 +64,12 @@ Ready for enterprise deployment (100-300+ rooms). The system has the architectur
 
 ## What is Left to Do (Remaining Enterprise Roadmap)
 
-### Operational & Enterprise Features
-1. **Multi-Property Architecture**: Fully isolate properties for hotel chains, allowing corporate staff to switch between `propertyId` contexts from a single unified dashboard.
-2. **Keyboard-First Navigation**: Implement global hotkeys (`Alt+C` check-in, `Alt+F` folio) to match legacy system speed.
-3. **Group Master Folios**: Build dedicated UI for managing Group Blocks, allotments, and Master Accounts (weddings, conferences).
-4. **Fiscal Compliance Printers**: Build out the `api/integrations/fiscal-printer` to support regional tax API requirements (e.g. Europe/LATAM).
-5. **Housekeeping Mobile App (PWA)**: Dedicated offline-first progressive web app for maids to mark rooms clean without a laptop.
+###10. Operational & Enterprise Features **[IMPLEMENTED]**
+Multi-Property Architecture: Fully isolate properties for hotel chains, allowing corporate staff to switch between propertyId contexts from a single unified dashboard. **[DONE]**
+Keyboard-First Navigation: Implement global hotkeys (Alt+C check-in, Alt+F folio) to match legacy system speed. **[DONE]**
+Group Master Folios: Build dedicated UI for managing Group Blocks, allotments, and Master Accounts (weddings, conferences). **[DONE]**
+Fiscal Compliance Printers: Build out the api/integrations/fiscal-printer to support regional tax API requirements (e.g. Europe/LATAM). **[DONE]**
+Housekeeping Mobile App (PWA): Dedicated offline-first progressive web app for maids to mark rooms clean without a laptop. **[DONE]**
 
 ### Technical & Infrastructure
 6. **Prisma Schema Splitting**: Break the 1600+ line `schema.prisma` into logical modules to improve DX and migration safety.

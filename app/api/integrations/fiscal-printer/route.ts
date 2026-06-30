@@ -1,112 +1,57 @@
-import { NextResponse } from 'next/server'
-import { z } from 'zod'
-import { PrismaClient } from '@prisma/client'
+import { NextRequest, NextResponse } from 'next/server'
+import prisma from '@/lib/db'
+import crypto from 'crypto'
 
-const prisma = new PrismaClient()
-
-const FiscalPrinterRequestSchema = z.object({
-  folioId: z.string().uuid(),
-  printerId: z.string(),
-  taxRegion: z.enum(['EU_VAT', 'US_SALES_TAX', 'VAT_GLOBAL']).default('VAT_GLOBAL')
-})
-
-export async function POST(req: Request) {
+/**
+ * Enterprise Feature: Fiscal Compliance
+ * This API acts as an adapter for regional tax authorities (e.g., LATAM DIAN/SUNAT, Europe SII)
+ * It takes an Invoice, signs it cryptographically, and records the signature in an AuditLog.
+ */
+export async function POST(req: NextRequest) {
   try {
-    const body = await req.json()
-    const validatedData = FiscalPrinterRequestSchema.parse(body)
+    const { invoiceId } = await req.json()
 
-    const folio = await prisma.folio.findUnique({
-      where: { id: validatedData.folioId },
-      include: {
-        booking: {
-          include: {
-            guest: true
-          }
-        },
-        lineItems: true,
-        payments: true
-      }
-    })
-
-    if (!folio) {
-      return NextResponse.json({ error: 'Folio not found' }, { status: 404 })
+    if (!invoiceId) {
+      return NextResponse.json({ error: 'Invoice ID required' }, { status: 400 })
     }
 
-    // 1. Calculate Tax Breakdown
-    // In a real application, each lineItem would have an associated TaxCode
-    let totalTax = 0
-    let subtotal = 0
-    const invoiceItems = folio.lineItems.map(item => {
-      const taxRate = 0.15 // 15% flat rate for mock
-      const itemTax = item.amount * taxRate
-      const itemSubtotal = item.amount - itemTax
-      
-      totalTax += itemTax
-      subtotal += itemSubtotal
-
-      return {
-        description: item.description,
-        quantity: 1, // FolioLineItem currently lacks quantity, assuming 1
-        unitPrice: item.amount,
-        taxRate: taxRate * 100,
-        taxAmount: itemTax,
-        netAmount: itemSubtotal,
-        grossAmount: item.amount
-      }
+    const invoice = await prisma.invoice.findUnique({
+      where: { id: invoiceId },
+      include: { folio: { include: { booking: { include: { user: true } } } } }
     })
 
-    const totalPaid = folio.payments.reduce((acc, pay) => acc + pay.amount, 0)
-    const grossTotal = subtotal + totalTax
-
-    // 2. Generate E-Invoice Payload tailored for a hardware bridge (e.g. Epson/Bixolon ESC/POS or local government tax endpoint)
-    const eInvoicePayload = {
-      invoiceNumber: `INV-${Date.now()}-${folio.id.substring(0, 4).toUpperCase()}`,
-      issueDate: new Date().toISOString(),
-      supplier: {
-        name: 'SmartHotel Group Ltd',
-        taxId: 'TX-9988776655',
-        address: '123 Hotel Ave, Hospitality City'
-      },
-      customer: {
-        name: folio.booking?.guest?.name || 'Walk-in Guest',
-        email: folio.booking?.guest?.email || ''
-      },
-      items: invoiceItems,
-      summary: {
-        netTotal: parseFloat(subtotal.toFixed(2)),
-        taxTotal: parseFloat(totalTax.toFixed(2)),
-        grossTotal: parseFloat(grossTotal.toFixed(2)),
-        paidTotal: parseFloat(totalPaid.toFixed(2)),
-        dueTotal: parseFloat((grossTotal - totalPaid).toFixed(2))
-      },
-      fiscalSignature: `FISC-${Math.random().toString(36).substring(2).toUpperCase()}`
+    if (!invoice) {
+      return NextResponse.json({ error: 'Invoice not found' }, { status: 404 })
     }
 
+    // 1. Generate Cryptographic Signature (simulating a Fiscal Private Key signing)
+    const payloadToSign = `${invoice.id}|${invoice.amount}|${invoice.createdAt.toISOString()}`
+    const signature = crypto.createHmac('sha256', process.env.FISCAL_SECRET || 'fallback_secret')
+      .update(payloadToSign)
+      .digest('hex')
+
+    // 2. Mark invoice as fiscally printed/signed (simulated via AuditLog for now)
     await prisma.auditLog.create({
       data: {
-        action: 'FISCAL_INVOICE_GENERATED',
-        resource: 'FOLIO',
-        resourceId: folio.id,
-        actor: 'SYSTEM',
-        details: {
-          invoiceNumber: eInvoicePayload.invoiceNumber,
-          printerId: validatedData.printerId,
-          grossTotal: eInvoicePayload.summary.grossTotal
-        }
+        actor: 'SYSTEM_FISCAL',
+        action: 'INVOICE_SIGNED',
+        resource: 'Invoice',
+        resourceId: invoice.id,
+        details: { signature, payload: payloadToSign }
       }
     })
+
+    // In a real enterprise system, we might update `invoice.fiscalSignature = signature`
+    // but AuditLog satisfies the compliance trail for this prototype.
 
     return NextResponse.json({
       success: true,
-      message: 'Fiscal invoice generated and sent to printer queue',
-      invoiceData: eInvoicePayload
+      signature,
+      timestamp: new Date().toISOString()
     })
 
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Validation failed', details: error.errors }, { status: 400 })
-    }
-    console.error('Fiscal printer integration error:', error)
-    return NextResponse.json({ error: 'Internal server error processing fiscal print' }, { status: 500 })
+  } catch (error: any) {
+    console.error('Fiscal Printer API Error:', error)
+    return NextResponse.json({ error: 'Failed to process fiscal signature' }, { status: 500 })
   }
 }

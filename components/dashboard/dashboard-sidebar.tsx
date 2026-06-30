@@ -17,6 +17,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { useSidebar } from '@/lib/sidebar-context'
 import { cn } from '@/lib/utils'
+import { PropertySwitcher } from './property-switcher'
 
 interface NavItem {
   name: string
@@ -156,6 +157,11 @@ export default function DashboardSidebar() {
             </div>
           )}
         </div>
+        {!isCollapsed && ['MANAGER', 'SUPER_ADMIN'].includes(role) && (
+          <div className="mt-4">
+            <PropertySwitcher />
+          </div>
+        )}
       </div>
 
       <nav className="flex-1 p-4 space-y-4 overflow-y-auto custom-scrollbar">

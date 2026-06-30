@@ -6,6 +6,8 @@ import { SidebarProvider, useSidebar } from '@/lib/sidebar-context'
 import { cn } from '@/lib/utils'
 import { CommandPalette } from '@/components/command-palette'
 import { IdleTimer } from '@/components/auth/idle-timer'
+import { PropertyProvider } from '@/contexts/property-context'
+import { GlobalHotkeys } from '@/components/global-hotkeys'
 
 export const dynamic = 'force-dynamic'
 
@@ -23,6 +25,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
       </main>
       <CommandPalette />
       <IdleTimer />
+      <GlobalHotkeys />
     </div>
   )
 }
@@ -33,10 +36,12 @@ export default function AdminLayout({
   children: React.ReactNode
 }) {
   return (
-    <SidebarProvider>
-      <AdminLayoutContent>
-        {children}
-      </AdminLayoutContent>
-    </SidebarProvider>
+    <PropertyProvider>
+      <SidebarProvider>
+        <AdminLayoutContent>
+          {children}
+        </AdminLayoutContent>
+      </SidebarProvider>
+    </PropertyProvider>
   )
 }
