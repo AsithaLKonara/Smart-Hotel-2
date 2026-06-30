@@ -35,6 +35,7 @@ model RoomType {
 
   rooms       Room[]
   groupBlocks GroupBlock[]
+  ratePlans   RatePlan[]
 }
 
 model Room {
@@ -106,6 +107,48 @@ model RoomImage {
   updatedAt    DateTime @updatedAt
 
   room Room @relation(fields: [roomId], references: [id])
+}
+
+// ==========================================
+// PRICING & RATE MANAGEMENT
+// ==========================================
+
+model RatePlan {
+  id             String         @id @default(uuid())
+  name           String         // e.g., "Standard", "Non-Refundable", "Bed & Breakfast"
+  description    String?
+  roomTypeId     String
+  baseMultiplier Float          @default(1.0) // e.g., 0.9 for non-refundable
+  isDefault      Boolean        @default(false)
+  active         Boolean        @default(true)
+  
+  cancelPolicy   String         @default("FLEXIBLE")
+  nonRefundable  Boolean        @default(false)
+
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  roomType       RoomType       @relation(fields: [roomTypeId], references: [id], onDelete: Cascade)
+  seasonalRates  SeasonalRate[]
+  
+  @@unique([name, roomTypeId])
+}
+
+model SeasonalRate {
+  id               String   @id @default(uuid())
+  ratePlanId       String
+  name             String   // e.g., "Summer Peak", "Christmas"
+  startDate        DateTime @db.Date
+  endDate          DateTime @db.Date
+  multiplier       Float    @default(1.0) // 1.5 = 50% more expensive
+  baseRateOverride Float?   // Optional absolute override instead of multiplier
+  
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  ratePlan         RatePlan @relation(fields: [ratePlanId], references: [id], onDelete: Cascade)
+
+  @@index([startDate, endDate])
 }
 
 // ==========================================
@@ -361,15 +404,18 @@ enum PaymentMethod {
 }
 
 model Folio {
-  id        String    @id @default(uuid())
-  bookingId String?
-  type      String    @default("GUEST") // MASTER, GUEST, ROUTING
-  status    String    @default("OPEN") // OPEN, CLOSED, LOCKED
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
+  id           String    @id @default(uuid())
+  bookingId    String?
+  companyId    String?
+  windowNumber Int       @default(1)
+  type         String    @default("GUEST") // MASTER, GUEST, ROUTING
+  status       String    @default("OPEN") // OPEN, CLOSED, LOCKED
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
 
   booking            Booking?        @relation(fields: [bookingId], references: [id])
+  company            CompanyProfile? @relation(fields: [companyId], references: [id])
   lineItems          FolioLineItem[]
   payments           Payment[]
   internalOrders     InternalOrder[]
@@ -383,13 +429,14 @@ model Folio {
 }
 
 model FolioLineItem {
-  id          String   @id @default(uuid())
-  folioId     String
-  description String
-  amount      Float
-  category    String
-  isRouted    Boolean  @default(false)
-  createdAt   DateTime @default(now())
+  id                String   @id @default(uuid())
+  folioId           String
+  transactionCodeId String?
+  description       String
+  amount            Float
+  category          String
+  isRouted          Boolean  @default(false)
+  createdAt         DateTime @default(now())
 
   folio Folio @relation(fields: [folioId], references: [id])
 
@@ -416,6 +463,37 @@ model RevenuePosting {
   createdAt       DateTime @default(now())
 
   nightAuditLog NightAuditLog @relation(fields: [nightAuditLogId], references: [id])
+}
+
+// ==========================================
+// PROFILES & COMPANIES
+// ==========================================
+
+model CompanyProfile {
+  id           String   @id @default(uuid())
+  name         String
+  taxId        String?
+  address      String?
+  billingEmail String?
+  creditLimit  Float?
+  
+  folios       Folio[]
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// ==========================================
+// ACCOUNTING CONFIG
+// ==========================================
+
+model TransactionCode {
+  id          String   @id // e.g. "1000", "2000"
+  description String
+  type        String   // "REVENUE", "PAYMENT", "TAX", "ADJUSTMENT"
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 // ==========================================
@@ -1392,11 +1470,12 @@ model Property {
   address    String
   city       String
   country    String
-  timezone   String   @default("UTC")
-  totalRooms Int      @default(0)
-  status     String   @default("ACTIVE") // ACTIVE, PRE_OPENING, INACTIVE
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  timezone     String   @default("UTC")
+  businessDate DateTime @default(now()) @db.Date // Tracks the current active logical date for operations
+  totalRooms   Int      @default(0)
+  status       String   @default("ACTIVE") // ACTIVE, PRE_OPENING, INACTIVE
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   users    User[]
   rooms    Room[]
