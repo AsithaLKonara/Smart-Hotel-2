@@ -63,6 +63,38 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
     // Execute state transitions
     await prisma.$transaction(async (tx: any) => {
+      // 0. Close Folios & Double-entry Ledger
+      for (const folio of booking.folios) {
+        await tx.folio.update({
+          where: { id: folio.id },
+          data: { status: 'CLOSED' }
+        });
+
+        // Calculate total charges for this specific folio
+        const folioCharges = folio.lineItems.reduce((acc: number, item: any) => acc + item.amount, 0);
+
+        if (folioCharges > 0) {
+          // Double-entry settlement log
+          await tx.journalEntry.create({
+            data: {
+              accountId: 'GUEST_LEDGER',
+              debit: 0,
+              credit: folioCharges,
+              description: `Checkout settlement for Folio ${folio.id}`,
+              postingDate: new Date()
+            }
+          });
+          await tx.journalEntry.create({
+            data: {
+              accountId: balance > 0 ? 'ACCOUNTS_RECEIVABLE' : 'CASH',
+              debit: folioCharges,
+              credit: 0,
+              description: `Checkout settlement transfer for Folio ${folio.id}`,
+              postingDate: new Date()
+            }
+          });
+        }
+      }
       // 1. Update Booking status and clear checkout request
       await tx.booking.update({
         where: { id: bookingId },

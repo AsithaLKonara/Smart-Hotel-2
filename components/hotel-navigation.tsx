@@ -50,7 +50,7 @@ export default function HotelNavigation() {
 
   const getDashboardUrl = () => {
     if (!session?.user) return '/auth/signin'
-    const role = session.user.roleName || session.user.role?.name || 'GUEST'
+    const role = (session.user as any).roleName || 'GUEST'
     return getDefaultDashboardUrl(role)
   }
 

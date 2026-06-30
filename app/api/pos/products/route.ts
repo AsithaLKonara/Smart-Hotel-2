@@ -1,11 +1,14 @@
 import { NextResponse } from 'next/server'
-import prisma from '@/lib/prisma'
+import prisma from '@/lib/db' // Make sure it uses @/lib/db which seems to be the standard
 
 export async function GET() {
   try {
     const products = await prisma.pOSProduct.findMany({
       where: { isActive: true },
-      orderBy: { category: 'asc' }
+      orderBy: { category: 'asc' },
+      include: {
+        outlet: true
+      }
     });
 
     return NextResponse.json({ products });

@@ -22,6 +22,7 @@ import { RoomActionDesk } from '@/components/dashboard/room-action-desk'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { AdminPageShell } from '@/components/dashboard/admin/admin-page-shell'
+import { ExpressCheckInModal } from '@/components/dashboard/express-checkin-modal'
 
 export default function ReceptionistOperationsCenter() {
   const { data: session, status: authStatus } = useSession()
@@ -31,6 +32,7 @@ export default function ReceptionistOperationsCenter() {
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("ALL")
   const [selectedRoom, setSelectedRoom] = useState<any | null>(null)
+  const [isExpressModalOpen, setIsExpressModalOpen] = useState(false)
 
   // Fetch Rooms Data
   const { data: roomsData, isLoading: roomsLoading } = useQuery({
@@ -56,6 +58,18 @@ export default function ReceptionistOperationsCenter() {
     // Rely solely on middleware.ts for enterprise-grade edge protection.
     // Client-side redirects cause race conditions during Playwright E2E hydration.
   }, [session, authStatus])
+
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      // Alt+C for Express Check-in
+      if (e.altKey && e.key.toLowerCase() === 'c') {
+        e.preventDefault()
+        setIsExpressModalOpen(true)
+      }
+    }
+    window.addEventListener('keydown', handleGlobalKeyDown)
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown)
+  }, [])
 
   const rooms = roomsData?.rooms || []
   const allBookings = bookingsData?.bookings || []
@@ -120,8 +134,20 @@ export default function ReceptionistOperationsCenter() {
       toast.error('No active resident found in this room.')
       return
     }
-    updateBookingMutation.mutate({ id: booking.id, status: 'CHECKED_OUT' })
-    toast.success(`Check-out and settlement initiated for Room ${roomNumber}`)
+    
+    try {
+      const res = await fetch(`/api/admin/bookings/${booking.id}/checkout`, {
+        method: 'POST'
+      })
+      const result = await res.json()
+      if (!res.ok) throw new Error(result.error || 'Failed to checkout')
+      
+      queryClient.invalidateQueries({ queryKey: ['bookings'] })
+      queryClient.invalidateQueries({ queryKey: ['rooms'] })
+      toast.success(`Check-out and settlement completed for Room ${roomNumber}`)
+    } catch (err: any) {
+      toast.error(err.message || 'Check-out failed')
+    }
   }
 
   const handleCreateBooking = async (data: any) => {
@@ -211,6 +237,16 @@ export default function ReceptionistOperationsCenter() {
             onCheckIn={handleCheckIn}
             onCheckOut={handleCheckOut}
             onCreateBooking={handleCreateBooking}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isExpressModalOpen && (
+          <ExpressCheckInModal
+            rooms={rooms}
+            onClose={() => setIsExpressModalOpen(false)}
+            onCreateWalkIn={handleCreateBooking}
           />
         )}
       </AnimatePresence>
