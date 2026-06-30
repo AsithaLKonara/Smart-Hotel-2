@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import toast from 'react-hot-toast'
 import Image from 'next/image'
 import Link from 'next/link'
-import { getDefaultDashboardUrl } from '@/lib/rbac'
+import { getDefaultDashboardUrl } from '@/lib/rbac-utils'
 
 export default function SignInPage() {
   const [email, setEmail] = useState('')

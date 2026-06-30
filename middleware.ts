@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getToken } from 'next-auth/jwt'
-import { getBroadRole, getDefaultDashboardUrl } from '@/lib/rbac'
+import { getBroadRole, getDefaultDashboardUrl } from '@/lib/rbac-utils'
 
 // Centralized Route Protection Matrix
 const PROTECTED_ROUTES = [
@@ -34,6 +34,7 @@ const PROTECTED_ROUTES = [
 
   // 🧹 HOUSEKEEPING
   { prefix: '/admin/housekeeping', roles: ['SUPER_ADMIN', 'MANAGER', 'HOUSEKEEPING'] },
+  { prefix: '/mobile/housekeeping', roles: ['SUPER_ADMIN', 'MANAGER', 'HOUSEKEEPING'] },
 
   // 🔧 MAINTENANCE
   { prefix: '/admin/maintenance', roles: ['SUPER_ADMIN', 'MANAGER', 'MAINTENANCE'] },

@@ -1,0 +1,49 @@
+{
+  "cookies": [
+    {
+      "name": "next-auth.csrf-token",
+      "value": "a9dea4d0d1df6fb9eeecbea68f012f99abff96b4f039c2024da6d4673e103bb7%7C10b573205f6d5e56c8ca3f6971a6f41b96fcb76cf342994c0bea9101c217ef47",
+      "domain": "localhost",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "next-auth.callback-url",
+      "value": "http%3A%2F%2Flocalhost%3A3000",
+      "domain": "localhost",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "next-auth.session-token",
+      "value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..FkMtYlj05FnJo6h-.K3DbK5q5AP-zGfX9p8LmBUTZEuP_jvreZTXFaE75QCaj1QXKjXLKlLAcVQ5-9Dm0hKLYvIhHrPHijjF8FMFBLK5265_AsGS0R-grFC820KLClFZiNw4RDwIbaT8Dj90JegnOrAo-z490FelHsANCQWmfAqufVZZh2hzLjGeoiz7n6jbZh9xSGgh3Tdmk9f85dk3m_Cfx8wRt0Hs_Tso5QVs9HlQQ8rWyvU88LGI3Ur05wOj0LIz9SE1oqv8JAX2P1VryME7hC0Q33mj78XaClMrxFmwwlH84ZMorso5X5vn0UwfXSJvgc74vdILeMpQ1RJuDa3n0COk90eJ4ws67cl_XlFivdQ52lFEZMjMWT2z-KapPjL72Ekbr-Eaaw5uE6I7UKN0mVHS9-hWANIGz_4F1f0iLlv-vh4oFbrcq-zLOfEnYXu1P.yn5PhW4LhuOgNau_q95-Ww",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1782879829.456858,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "http://localhost:3001",
+      "localStorage": [
+        {
+          "name": "nextauth.message",
+          "value": "{\"event\":\"session\",\"data\":{\"trigger\":\"getSession\"},\"timestamp\":1782851032}"
+        },
+        {
+          "name": "smarthotel_chat_session",
+          "value": "1ed1ca7a-4374-4cb9-b632-3fe617b4054f"
+        }
+      ]
+    }
+  ]
+}

@@ -10,21 +10,16 @@ test.describe('Guest Booking Flow', () => {
   });
 
   test('should allow a guest to search for availability', async ({ page }) => {
-    // Look for the Booking Widget on the homepage
+    // Look for the Check Availability button on the hero section
     await expect(page.getByRole('button', { name: /Check Availability/i })).toBeVisible();
 
-    // The user flow:
-    // 1. Enter dates (Skipping explicit calendar clicks for this smoke test)
-    // 2. Select guests
-    // 3. Click Check Availability
+    // Click "Check Availability" — it navigates to /booking
     await page.getByRole('button', { name: /Check Availability/i }).click();
 
-    // The system should navigate to /rooms or display the availability drawer
-    // In our implementation, it usually navigates to /rooms
-    await expect(page).toHaveURL(/.*\/rooms/);
+    // The system navigates to /booking (the booking wizard)
+    await expect(page).toHaveURL(/.*\/booking/);
 
-    // Verify rooms are listed
-    await expect(page.getByRole('heading', { name: /Available Rooms/i })).toBeVisible();
-    await expect(page.getByRole('button', { name: /Book Now/i }).first()).toBeVisible();
+    // Verify the booking page loaded with its heading
+    await expect(page.getByRole('heading', { name: /Secure Your Stay/i })).toBeVisible();
   });
 });

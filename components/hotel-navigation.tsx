@@ -6,7 +6,7 @@ import { useSession, signOut } from 'next-auth/react'
 import { usePathname } from 'next/navigation'
 import { Menu, X, Phone, Mail, MapPin, LogOut, User, ShoppingBag } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { getDefaultDashboardUrl } from '@/lib/rbac'
+import { getDefaultDashboardUrl } from '@/lib/rbac-utils'
 
 interface NavigationContact {
   name: string

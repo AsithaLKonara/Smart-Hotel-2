@@ -1,4 +1,5 @@
 import React from 'react'
+import Script from 'next/script'
 
 export default function HotelSchema() {
   const hotelData = {
@@ -35,8 +36,10 @@ export default function HotelSchema() {
   }
 
   return (
-    <script
+    <Script
+      id="hotel-schema"
       type="application/ld+json"
+      strategy="afterInteractive"
       dangerouslySetInnerHTML={{ __html: JSON.stringify(hotelData) }}
     />
   )

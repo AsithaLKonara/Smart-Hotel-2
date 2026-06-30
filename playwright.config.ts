@@ -26,7 +26,7 @@ export default defineConfig({
   ],
   testMatch: '**/*.spec.ts',
   use: {
-    baseURL: process.env.BASE_URL || 'http://localhost:3000',
+    baseURL: process.env.BASE_URL || 'http://localhost:3001',
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
@@ -47,6 +47,11 @@ export default defineConfig({
       },
       dependencies: ['setup'],
     },
-    // We disable firefox and webkit by default for local velocity, CI can re-enable
   ],
+  webServer: {
+    command: 'npm run dev -- -p 3001',
+    url: 'http://localhost:3001',
+    reuseExistingServer: false,
+    timeout: 120000,
+  },
 });
