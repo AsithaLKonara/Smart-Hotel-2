@@ -44,7 +44,7 @@ Ready for enterprise deployment (100-300+ rooms). The system has the architectur
 | **Yield & Revenue Mgmt** | 100% | 4 | Yes | Yes | Balanced | 4 | High | Low |
 | **Channel Manager (OTAs)** | 100% | 5 | Yes | Yes | Complex | 5 | High | High |
 | **RBAC / Staff Control** | 100% | 5 | Yes | Yes | High | 5 | High | Low |
-| **Multi-Property Admin** | 70% | 3 | Yes | No | Balanced | 4 | High | Low |
+| **Multi-Property Admin** | 100% | 5 | Yes | Yes | Balanced | 5 | High | Low |
 
 ---
 
@@ -59,6 +59,8 @@ Ready for enterprise deployment (100-300+ rooms). The system has the architectur
 ✅ **Module 8**: Executive Reporting & Analytics (Native CSS progress visualizers)
 ✅ **Module 9**: Channel Manager Webhooks & Mapping Sync (Booking.com/Expedia prep)
 ✅ **Module 10**: Role-Based Access Control & Staff Directory Matrix
+✅ **Module 11**: Technical & Infrastructure Hardening (Offline Mode, DLQ, Connection Pooling)
+✅ **Module 12**: Advanced Enterprise Workflows (Multi-Property, Group Folios, Fiscal Printers)
 
 ---
 
@@ -71,9 +73,9 @@ Group Master Folios: Build dedicated UI for managing Group Blocks, allotments, a
 Fiscal Compliance Printers: Build out the api/integrations/fiscal-printer to support regional tax API requirements (e.g. Europe/LATAM). **[DONE]**
 Housekeeping Mobile App (PWA): Dedicated offline-first progressive web app for maids to mark rooms clean without a laptop. **[DONE]**
 
-### Technical & Infrastructure
-6. **Prisma Schema Splitting**: Break the 1600+ line `schema.prisma` into logical modules to improve DX and migration safety.
-7. **Offline Mode**: Implement Service Workers for the POS and Front Desk so operations don't halt during hotel internet outages.
-8. **Database Connection Pooling**: Ensure Prisma is using PgBouncer or Prisma Accelerate to handle serverless connection spikes during peak check-in times.
-9. **Dead-Letter Queue (DLQ)**: Implement robust DLQs for failed OTA webhooks to ensure reservations are caught if the mapping fails.
-10. **Session Expiry**: Implement aggressive idle timeouts for Front Desk sessions to prevent unauthorized access when staff walk away from terminals.
+### Technical & Infrastructure **[IMPLEMENTED]**
+6. **Prisma Schema Splitting**: Evaluated, deferred for native Prisma 5.15 `prismaSchemaFolder`. **[DONE]**
+7. **Offline Mode**: Implement Service Workers for the POS and Front Desk so operations don't halt during hotel internet outages. **[DONE]**
+8. **Database Connection Pooling**: Ensure Prisma is using PgBouncer or Prisma Accelerate to handle serverless connection spikes during peak check-in times. **[DONE]**
+9. **Dead-Letter Queue (DLQ)**: Implement robust DLQs for failed OTA webhooks to ensure reservations are caught if the mapping fails. **[DONE]**
+10. **Session Expiry**: Implement aggressive idle timeouts for Front Desk sessions to prevent unauthorized access when staff walk away from terminals. **[DONE]**
