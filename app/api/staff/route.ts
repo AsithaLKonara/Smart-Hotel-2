@@ -1,100 +1,23 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { z } from 'zod'
-import bcrypt from 'bcryptjs'
-import { logAction, AUDIT_ACTIONS } from '@/lib/audit'
-import { getRequestSession } from '@/lib/session'
-import { prisma } from '@/lib/db'
+import { NextResponse } from 'next/server'
+import prisma from '@/lib/db'
 
-const staffSchema = z.object({
-  employeeId: z.string().min(1),
-  name: z.string().min(1),
-  email: z.string().email(),
-  phone: z.string().min(1),
-  position: z.string().min(1),
-  department: z.string().min(1),
-  hireDate: z.string().datetime(),
-  salary: z.number().positive(),
-  isActive: z.boolean().default(true),
-})
-
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const session = await getRequestSession(request)
-    const { searchParams } = new URL(request.url)
-    const department = searchParams.get('department')
-    const isActive = searchParams.get('isActive')
-
-    // Basic protection - allow department filters for operational hubs
-    if (!session && !department) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-    const staff = await prisma.employee.findMany({
+    // Fetch users who are NOT guests
+    const staff = await prisma.user.findMany({
       where: {
-        ...(department ? { department: { equals: department, mode: 'insensitive' } } : {}),
-        ...(isActive ? { status: isActive === 'true' ? 'ACTIVE' : 'TERMINATED' } : {})
+        role: {
+          name: { not: 'GUEST' }
+        }
       },
       include: {
-        _count: {
-          select: { tasks: { where: { status: { in: ['PENDING', 'IN_PROGRESS'] } } } }
-        }
-      },
-      orderBy: { firstName: 'asc' }
-    })
-
-    return NextResponse.json(staff.map((s: (typeof staff)[number]) => ({
-      ...s,
-      taskCount: s._count.tasks,
-      workloadPercentage: Math.min(100, (s._count.tasks / 5) * 100) // Scale: 5 tasks = 100% load
-    })))
-  } catch (error) {
-    console.error('[STAFF_API_ERROR]', error)
-    return NextResponse.json({ error: 'Failed to fetch staff' }, { status: 500 })
-  }
-}
-
-export async function POST(request: NextRequest) {
-  const session = await getRequestSession(request)
-  if (!session || !['SUPER_ADMIN', 'MANAGER'].includes((session.user as any).roleName as string)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  try {
-    const body = await request.json()
-    const validated = staffSchema.parse(body)
-
-    const [firstName, ...rest] = validated.name.split(' ')
-    const lastName = rest.join(' ')
-
-    const staff = await prisma.employee.create({
-      data: {
-        firstName,
-        lastName,
-        email: validated.email,
-        phone: validated.phone,
-        position: validated.position,
-        department: validated.department,
-        baseSalary: validated.salary,
-        hireDate: new Date(validated.hireDate),
-        status: validated.isActive ? 'ACTIVE' : 'TERMINATED',
-        user: {
-          connectOrCreate: {
-            where: { email: validated.email },
-            create: {
-              email: validated.email,
-              name: validated.name,
-              password: await bcrypt.hash('SmartHotel@Staff2025', 12),
-              role: { connect: { name: validated.department.toUpperCase() } }
-            }
-          }
-        }
+        role: true
       }
     })
 
-    await logAction(request, session.user.id, AUDIT_ACTIONS.STAFF_CREATE, 'Employee', staff.id, { name: `${staff.firstName} ${staff.lastName}` })
-    return NextResponse.json(staff, { status: 201 })
+    return NextResponse.json({ staff })
   } catch (error: any) {
-    if (error.code === 'P2002') {
-      return NextResponse.json({ error: 'Conflict: Employee ID or Email already exists' }, { status: 409 })
-    }
-    return NextResponse.json({ error: error.message || 'Failed to create staff' }, { status: 400 })
+    console.error('Fetch Staff Error:', error)
+    return NextResponse.json({ error: 'Failed to fetch staff' }, { status: 500 })
   }
 }
