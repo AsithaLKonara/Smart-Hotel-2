@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { PrismaClient, RoomStatus, TaskType, TaskStatus, Priority, BookingStatus, StayStatus, BookingSource, PaymentStatus, PaymentMethod } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 import { addDays, subDays } from 'date-fns'
@@ -13,8 +14,6 @@ async function main() {
   try { await prisma.feedback.deleteMany() } catch (e) {}
   try { await prisma.internalOrderItem.deleteMany() } catch (e) {}
   try { await prisma.internalOrder.deleteMany() } catch (e) {}
-  try { await prisma.invoiceLineItem.deleteMany() } catch (e) {}
-  try { await prisma.invoice.deleteMany() } catch (e) {}
   try { await prisma.folioLineItem.deleteMany() } catch (e) {}
   try { await prisma.folio.deleteMany() } catch (e) {}
   try { await prisma.bookingGuest.deleteMany() } catch (e) {}
@@ -374,5 +373,6 @@ main()
   .catch(async (e) => {
     console.error('❌ Error during seeding:', e)
     await prisma.$disconnect()
+    // @ts-ignore
     process.exit(1)
   })

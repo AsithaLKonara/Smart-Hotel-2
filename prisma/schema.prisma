@@ -9,80 +9,61 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-// ==========================================
-// PROPERTY STRUCTURE
-// ==========================================
-
 model RoomType {
-  id           String   @id @default(uuid())
-  name         String   @unique
-  description  String
-  baseRate     Float
-  capacity     Int      @default(2)
-  amenities    String[]
-  images       String[]
-  totalRooms   Int      @default(0)
-  otaMappingId String?
-  
-  // Rate Rules
-  minLengthOfStay Int @default(1)
-  maxLengthOfStay Int @default(30)
-  closeToArrival  Boolean @default(false)
-  closeToDeparture Boolean @default(false)
-  nonRefundable   Boolean @default(false)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  rooms       Room[]
-  groupBlocks GroupBlock[]
-  ratePlans   RatePlan[]
+  id               String       @id @default(uuid())
+  name             String       @unique
+  description      String
+  baseRate         Float
+  capacity         Int          @default(2)
+  amenities        String[]
+  images           String[]
+  totalRooms       Int          @default(0)
+  otaMappingId     String?
+  minLengthOfStay  Int          @default(1)
+  maxLengthOfStay  Int          @default(30)
+  closeToArrival   Boolean      @default(false)
+  closeToDeparture Boolean      @default(false)
+  nonRefundable    Boolean      @default(false)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  groupBlocks      GroupBlock[]
+  ratePlans        RatePlan[]
+  rooms            Room[]
 }
 
 model Room {
-  id                 String     @id @default(uuid())
-  version            Int        @default(1)
-  number             String     @unique
-  floor              Int
-  capacity           Int        @default(2)
-  size               Int        @default(25)
-  roomTypeId         String
-  status             RoomStatus @default(AVAILABLE)
-  lastStatusChangeAt DateTime?  @default(now())
-  lockId             String?
-  lockExpiresAt      DateTime?
-  lastCleanedAt      DateTime?
-  lastInspectedAt    DateTime?
-  deletedAt          DateTime?
-  createdAt          DateTime   @default(now())
-  updatedAt          DateTime   @updatedAt
-
-  roomType              RoomType               @relation(fields: [roomTypeId], references: [id])
-  tasks                 Task[]
-  statusHistory         RoomStatusHistory[]
-  roomImages            RoomImage[]
+  id                    String                 @id @default(uuid())
+  version               Int                    @default(1)
+  number                String                 @unique
+  floor                 Int
+  capacity              Int                    @default(2)
+  size                  Int                    @default(25)
+  roomTypeId            String
+  status                RoomStatus             @default(AVAILABLE)
+  lastStatusChangeAt    DateTime?              @default(now())
+  lockId                String?
+  lockExpiresAt         DateTime?
+  lastCleanedAt         DateTime?
+  lastInspectedAt       DateTime?
+  deletedAt             DateTime?
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  propertyId            String?
+  ownerId               String?
   feedback              Feedback[]
   internalOrders        InternalOrder[]
-  stays                 Stay[]
-  roomAssignments       RoomAssignment[]
   maintenanceWorkOrders MaintenanceWorkOrder[]
   outOfOrderRecords     OutOfOrderRecord[]
-
-  propertyId String?
-  ownerId    String?
-  property   Property? @relation(fields: [propertyId], references: [id])
+  property              Property?              @relation(fields: [propertyId], references: [id])
+  roomType              RoomType               @relation(fields: [roomTypeId], references: [id])
+  roomAssignments       RoomAssignment[]
+  roomImages            RoomImage[]
+  statusHistory         RoomStatusHistory[]
+  stays                 Stay[]
+  tasks                 Task[]
 
   @@index([status])
   @@index([roomTypeId])
-}
-
-enum RoomStatus {
-  AVAILABLE
-  OCCUPIED
-  DIRTY
-  CLEANING
-  INSPECTION_PENDING
-  MAINTENANCE
-  OUT_OF_ORDER
 }
 
 model RoomStatusHistory {
@@ -93,8 +74,7 @@ model RoomStatusHistory {
   actorId   String
   reason    String?
   createdAt DateTime   @default(now())
-
-  room Room @relation(fields: [roomId], references: [id])
+  room      Room       @relation(fields: [roomId], references: [id])
 }
 
 model RoomImage {
@@ -105,55 +85,41 @@ model RoomImage {
   displayOrder Int      @default(0)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-
-  room Room @relation(fields: [roomId], references: [id])
+  room         Room     @relation(fields: [roomId], references: [id])
 }
-
-// ==========================================
-// PRICING & RATE MANAGEMENT
-// ==========================================
 
 model RatePlan {
   id             String         @id @default(uuid())
-  name           String         // e.g., "Standard", "Non-Refundable", "Bed & Breakfast"
+  name           String
   description    String?
   roomTypeId     String
-  baseMultiplier Float          @default(1.0) // e.g., 0.9 for non-refundable
+  baseMultiplier Float          @default(1.0)
   isDefault      Boolean        @default(false)
   active         Boolean        @default(true)
-  
   cancelPolicy   String         @default("FLEXIBLE")
   nonRefundable  Boolean        @default(false)
-
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
-
   roomType       RoomType       @relation(fields: [roomTypeId], references: [id], onDelete: Cascade)
   seasonalRates  SeasonalRate[]
-  
+
   @@unique([name, roomTypeId])
 }
 
 model SeasonalRate {
   id               String   @id @default(uuid())
   ratePlanId       String
-  name             String   // e.g., "Summer Peak", "Christmas"
+  name             String
   startDate        DateTime @db.Date
   endDate          DateTime @db.Date
-  multiplier       Float    @default(1.0) // 1.5 = 50% more expensive
-  baseRateOverride Float?   // Optional absolute override instead of multiplier
-  
+  multiplier       Float    @default(1.0)
+  baseRateOverride Float?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
-
   ratePlan         RatePlan @relation(fields: [ratePlanId], references: [id], onDelete: Cascade)
 
   @@index([startDate, endDate])
 }
-
-// ==========================================
-// BOOKING & GUESTS
-// ==========================================
 
 model Stay {
   id           String     @id @default(uuid())
@@ -164,59 +130,44 @@ model Stay {
   checkOutTime DateTime?
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
-
-  booking Booking @relation(fields: [bookingId], references: [id])
-  room    Room    @relation(fields: [roomId], references: [id])
-}
-
-enum StayStatus {
-  EXPECTED
-  CHECKED_IN
-  CHECKED_OUT
-  NO_SHOW
+  booking      Booking    @relation(fields: [bookingId], references: [id])
+  room         Room       @relation(fields: [roomId], references: [id])
 }
 
 model Booking {
-  id               String        @id @default(uuid())
-  version          Int           @default(1)
-  confirmationCode String        @unique
-  checkIn          DateTime      @db.Date
-  checkOut         DateTime      @db.Date
-  status           BookingStatus @default(CONFIRMED)
-  source           BookingSource @default(WEBSITE)
-  otaReference     String?
-
-  primaryGuestId String
-
-  guests          Int           @default(1)
-  totalAmount     Float
-  paymentStatus   PaymentStatus @default(unpaid)
-  paymentMethod   String?
-  paymentProvider String?
-
-  checkoutRequestId   String?   @unique
+  id                  String           @id @default(uuid())
+  version             Int              @default(1)
+  confirmationCode    String           @unique
+  checkIn             DateTime         @db.Date
+  checkOut            DateTime         @db.Date
+  status              BookingStatus    @default(CONFIRMED)
+  source              BookingSource    @default(WEBSITE)
+  otaReference        String?
+  primaryGuestId      String
+  guests              Int              @default(1)
+  totalAmount         Float
+  paymentStatus       PaymentStatus    @default(unpaid)
+  paymentMethod       String?
+  paymentProvider     String?
+  checkoutRequestId   String?          @unique
   checkoutFinalizedAt DateTime?
-
-  deletedAt DateTime?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-
-  guest            User             @relation("PrimaryGuest", fields: [primaryGuestId], references: [id])
-  additionalGuests BookingGuest[]
-  payments         Payment[]
-  tasks            Task[]
-  feedback         Feedback[]
-  complaints       Complaint[]
-  stay             Stay?
-  roomAssignments  RoomAssignment[]
-  stayEvents       StayEvent[]
-  folios           Folio[]
-
-  propertyId String?
-  property   Property? @relation(fields: [propertyId], references: [id])
-
-  groupBlockId String?
-  groupBlock   GroupBlock? @relation(fields: [groupBlockId], references: [id])
+  deletedAt           DateTime?
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  propertyId          String?
+  groupBlockId        String?
+  groupBlock          GroupBlock?      @relation(fields: [groupBlockId], references: [id])
+  guest               User             @relation("PrimaryGuest", fields: [primaryGuestId], references: [id])
+  property            Property?        @relation(fields: [propertyId], references: [id])
+  additionalGuests    BookingGuest[]
+  complaints          Complaint[]
+  feedback            Feedback[]
+  folios              Folio[]
+  payments            Payment[]
+  roomAssignments     RoomAssignment[]
+  stay                Stay?
+  stayEvents          StayEvent[]
+  tasks               Task[]
 
   @@index([checkIn, checkOut])
   @@index([status])
@@ -245,13 +196,6 @@ model Event {
   @@index([status])
 }
 
-enum EventStatus {
-  upcoming
-  ongoing
-  completed
-  cancelled
-}
-
 model BookingGuest {
   id        String  @id @default(uuid())
   bookingId String
@@ -259,27 +203,9 @@ model BookingGuest {
   name      String
   email     String?
   phone     String?
-  identity  String? // @encrypted (Use lib/crypto.ts encryptPII/decryptPII before DB write)
+  identity  String?
   isMinor   Boolean @default(false)
-
-  booking Booking @relation(fields: [bookingId], references: [id])
-}
-
-enum BookingStatus {
-  PENDING
-  CONFIRMED
-  CHECKED_IN
-  CHECKED_OUT
-  CANCELLED
-  NO_SHOW
-}
-
-enum BookingSource {
-  WALK_IN
-  WEBSITE
-  BOOKING_COM
-  AGODA
-  EXPEDIA
+  booking   Booking @relation(fields: [bookingId], references: [id])
 }
 
 model RoomAssignment {
@@ -288,12 +214,11 @@ model RoomAssignment {
   roomId    String
   startDate DateTime @db.Date
   endDate   DateTime @db.Date
-  status    String   @default("ACTIVE") // ACTIVE, MOVED, COMPLETED
+  status    String   @default("ACTIVE")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  booking Booking @relation(fields: [bookingId], references: [id])
-  room    Room    @relation(fields: [roomId], references: [id])
+  booking   Booking  @relation(fields: [bookingId], references: [id])
+  room      Room     @relation(fields: [roomId], references: [id])
 
   @@index([bookingId])
   @@index([roomId])
@@ -302,19 +227,14 @@ model RoomAssignment {
 model StayEvent {
   id        String   @id @default(uuid())
   bookingId String
-  type      String // CHECK_IN, CHECK_OUT, ROOM_MOVE, EXTENSION
+  type      String
   timestamp DateTime @default(now())
   notes     String?
   actorId   String?
-
-  booking Booking @relation(fields: [bookingId], references: [id])
+  booking   Booking  @relation(fields: [bookingId], references: [id])
 
   @@index([bookingId])
 }
-
-// ==========================================
-// FINANCIALS
-// ==========================================
 
 model JournalEntry {
   id            String   @id @default(uuid())
@@ -329,42 +249,40 @@ model JournalEntry {
 }
 
 model NightAuditLog {
-  id             String   @id @default(uuid())
-  businessDate   DateTime @db.Date
-  totalRevenue   Float
-  roomsProcessed Int
-  status         String   @default("COMPLETED")
-  runByUserId    String?
-  createdAt      DateTime @default(now())
-
+  id              String           @id @default(uuid())
+  businessDate    DateTime         @db.Date
+  totalRevenue    Float
+  roomsProcessed  Int
+  status          String           @default("COMPLETED")
+  runByUserId     String?
+  createdAt       DateTime         @default(now())
   user            User?            @relation(fields: [runByUserId], references: [id])
   revenuePostings RevenuePosting[]
 }
 
 model Payment {
-  id              String        @id @default(uuid())
-  version         Int           @default(1)
+  id              String                @id @default(uuid())
+  version         Int                   @default(1)
   bookingId       String?
   orderId         String?
   folioId         String?
   userId          String?
   amount          Float
-  currency        String        @default("LKR")
-  paymentMethod   PaymentMethod @default(card)
+  currency        String                @default("LKR")
+  paymentMethod   PaymentMethod         @default(card)
   paymentProvider String?
-  providerId      String?       @unique
-  status          PaymentStatus @default(pending)
+  providerId      String?               @unique
+  status          PaymentStatus         @default(pending)
   capturedAt      DateTime?
   refundedAt      DateTime?
   deletedAt       DateTime?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-
-  booking       Booking?              @relation(fields: [bookingId], references: [id])
-  internalOrder InternalOrder?        @relation(fields: [orderId], references: [id])
-  folio         Folio?                @relation(fields: [folioId], references: [id])
-  user          User?                 @relation(fields: [userId], references: [id])
-  adjustments   FinancialAdjustment[]
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+  adjustments     FinancialAdjustment[]
+  booking         Booking?              @relation(fields: [bookingId], references: [id])
+  folio           Folio?                @relation(fields: [folioId], references: [id])
+  internalOrder   InternalOrder?        @relation(fields: [orderId], references: [id])
+  user            User?                 @relation(fields: [userId], references: [id])
 
   @@index([createdAt])
   @@index([status])
@@ -382,48 +300,28 @@ model FinancialAdjustment {
   amount    Float
   reason    String
   createdAt DateTime @default(now())
-
-  payment Payment @relation(fields: [paymentId], references: [id])
-}
-
-enum PaymentStatus {
-  pending
-  completed
-  failed
-  refunded
-  unpaid
-  partial
-}
-
-enum PaymentMethod {
-  cash
-  card
-  bank_transfer
-  crypto
-  other
+  payment   Payment  @relation(fields: [paymentId], references: [id])
 }
 
 model Folio {
-  id           String    @id @default(uuid())
-  bookingId    String?
-  companyId    String?
-  windowNumber Int       @default(1)
-  type         String    @default("GUEST") // MASTER, GUEST, ROUTING
-  status       String    @default("OPEN") // OPEN, CLOSED, LOCKED
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  deletedAt    DateTime?
-
+  id                 String          @id @default(uuid())
+  bookingId          String?
+  companyId          String?
+  windowNumber       Int             @default(1)
+  type               String          @default("GUEST")
+  status             String          @default("OPEN")
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  deletedAt          DateTime?
+  propertyId         String?
   booking            Booking?        @relation(fields: [bookingId], references: [id])
   company            CompanyProfile? @relation(fields: [companyId], references: [id])
+  property           Property?       @relation(fields: [propertyId], references: [id])
   lineItems          FolioLineItem[]
-  payments           Payment[]
   internalOrders     InternalOrder[]
+  payments           Payment[]
   routingRulesSource RoutingRule[]   @relation("SourceFolio")
   routingRulesTarget RoutingRule[]   @relation("TargetFolio")
-
-  propertyId String?
-  property   Property? @relation(fields: [propertyId], references: [id])
 
   @@index([bookingId])
 }
@@ -437,8 +335,7 @@ model FolioLineItem {
   category          String
   isRouted          Boolean  @default(false)
   createdAt         DateTime @default(now())
-
-  folio Folio @relation(fields: [folioId], references: [id])
+  folio             Folio    @relation(fields: [folioId], references: [id])
 
   @@index([folioId])
   @@index([category, createdAt])
@@ -448,26 +345,20 @@ model RoutingRule {
   id            String   @id @default(uuid())
   sourceFolioId String
   targetFolioId String
-  criteria      Json // e.g. { category: "ROOM_CHARGE" }
+  criteria      Json
   createdAt     DateTime @default(now())
-
-  sourceFolio Folio @relation("SourceFolio", fields: [sourceFolioId], references: [id])
-  targetFolio Folio @relation("TargetFolio", fields: [targetFolioId], references: [id])
+  sourceFolio   Folio    @relation("SourceFolio", fields: [sourceFolioId], references: [id])
+  targetFolio   Folio    @relation("TargetFolio", fields: [targetFolioId], references: [id])
 }
 
 model RevenuePosting {
-  id              String   @id @default(uuid())
+  id              String        @id @default(uuid())
   nightAuditLogId String
   category        String
   amount          Float
-  createdAt       DateTime @default(now())
-
-  nightAuditLog NightAuditLog @relation(fields: [nightAuditLogId], references: [id])
+  createdAt       DateTime      @default(now())
+  nightAuditLog   NightAuditLog @relation(fields: [nightAuditLogId], references: [id])
 }
-
-// ==========================================
-// PROFILES & COMPANIES
-// ==========================================
 
 model CompanyProfile {
   id           String   @id @default(uuid())
@@ -476,204 +367,144 @@ model CompanyProfile {
   address      String?
   billingEmail String?
   creditLimit  Float?
-  
-  folios       Folio[]
-
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  folios       Folio[]
 }
 
-// ==========================================
-// ACCOUNTING CONFIG
-// ==========================================
-
 model TransactionCode {
-  id          String   @id // e.g. "1000", "2000"
+  id          String   @id
   description String
-  type        String   // "REVENUE", "PAYMENT", "TAX", "ADJUSTMENT"
-  
+  type        String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
 
-// ==========================================
-// OPERATIONS
-// ==========================================
-
 model Task {
-  id          String     @id @default(uuid())
-  version     Int        @default(1)
-  type        TaskType
-  status      TaskStatus @default(PENDING)
-  priority    Priority   @default(MEDIUM)
-  title       String
-  description String?
-  assignedTo  String?
-  roomId      String?
-  bookingId   String?
-  createdBy   String?
-  dueDate     DateTime?
-
-  assignedEmployee Employee? @relation("EmployeeTasks", fields: [assignedTo], references: [id])
-  creator          User?     @relation("CreatedTasks", fields: [createdBy], references: [id])
-
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  acceptedAt     DateTime?
-  startedAt      DateTime?
-  completedAt    DateTime?
-  verifiedAt     DateTime?
-  elapsedMinutes Int?
-  deletedAt      DateTime?
-
-  room    Room?    @relation(fields: [roomId], references: [id])
-  booking Booking? @relation(fields: [bookingId], references: [id])
-
-  propertyId String?
-  property   Property? @relation(fields: [propertyId], references: [id])
+  id               String     @id @default(uuid())
+  version          Int        @default(1)
+  type             TaskType
+  status           TaskStatus @default(PENDING)
+  priority         Priority   @default(MEDIUM)
+  title            String
+  description      String?
+  assignedTo       String?
+  roomId           String?
+  bookingId        String?
+  createdBy        String?
+  dueDate          DateTime?
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+  acceptedAt       DateTime?
+  startedAt        DateTime?
+  completedAt      DateTime?
+  verifiedAt       DateTime?
+  elapsedMinutes   Int?
+  deletedAt        DateTime?
+  propertyId       String?
+  assignedEmployee Employee?  @relation("EmployeeTasks", fields: [assignedTo], references: [id])
+  booking          Booking?   @relation(fields: [bookingId], references: [id])
+  creator          User?      @relation("CreatedTasks", fields: [createdBy], references: [id])
+  property         Property?  @relation(fields: [propertyId], references: [id])
+  room             Room?      @relation(fields: [roomId], references: [id])
 
   @@index([assignedTo])
   @@index([roomId])
   @@index([bookingId])
 }
 
-enum TaskType {
-  HOUSEKEEPING
-  MAINTENANCE
-  ROOM_SERVICE
-  GUEST_REQUEST
-  ADMINISTRATIVE
-}
-
-enum TaskStatus {
-  PENDING
-  ACCEPTED
-  IN_PROGRESS
-  COMPLETED
-  VERIFIED
-  CANCELLED
-}
-
-enum Priority {
-  LOW
-  MEDIUM
-  HIGH
-  URGENT
-}
-
-// ==========================================
-// KITCHEN & ROOM SERVICE
-// ==========================================
-
 model YieldRule {
-  id          String   @id @default(uuid())
-  name        String
-  description String?
-  startDate   DateTime @db.Date
-  endDate     DateTime @db.Date
-
-  // Dynamic Configuration Overrides
+  id              String   @id @default(uuid())
+  name            String
+  description     String?
+  startDate       DateTime @db.Date
+  endDate         DateTime @db.Date
   minOccupancy    Float?
   maxOccupancy    Float?
   competitorPrice Float?
-
-  adjustmentType  String // 'DYNAMIC_TIER', 'PERCENTAGE' or 'FIXED'
+  adjustmentType  String
   adjustmentValue Float
   isActive        Boolean  @default(true)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
 
-// ==========================================
-// ENTERPRISE POS (RESTAURANT, BAR, SPA)
-// ==========================================
-
 model POSOutlet {
-  id          String   @id @default(uuid())
-  name        String
-  type        String // RESTAURANT, BAR, SPA, RETAIL
-  description String?
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  products       POSProduct[]
+  id             String          @id @default(uuid())
+  name           String
+  type           String
+  description    String?
+  isActive       Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
   internalOrders InternalOrder[]
+  products       POSProduct[]
 }
 
 model POSProduct {
-  id        String   @id @default(uuid())
-  outletId  String
-  name      String
-  category  String
-  price     Float
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  outlet             POSOutlet           @relation(fields: [outletId], references: [id])
+  id                 String              @id @default(uuid())
+  outletId           String
+  name               String
+  category           String
+  price              Float
+  isActive           Boolean             @default(true)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
   internalOrderItems InternalOrderItem[]
+  outlet             POSOutlet           @relation(fields: [outletId], references: [id])
 }
 
-// ==========================================
-// EVENTS & BANQUETING (PHASE 6)
-// ==========================================
-
 model EventSpace {
-  id         String   @id @default(uuid())
+  id         String         @id @default(uuid())
   name       String
   capacity   Int
   hourlyRate Float
   dailyRate  Float
-  isActive   Boolean  @default(true)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  bookings EventBooking[]
+  isActive   Boolean        @default(true)
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  bookings   EventBooking[]
 }
 
 model BanquetingEvent {
-  id                String   @id @default(uuid())
+  id                String         @id @default(uuid())
   name              String
-  type              String // CONFERENCE, WEDDING, MEETING
-  status            String // PROSPECT, TENTATIVE, DEFINITE, CANCELLED
-  startDate         DateTime @db.Date
-  endDate           DateTime @db.Date
+  type              String
+  status            String
+  startDate         DateTime       @db.Date
+  endDate           DateTime       @db.Date
   expectedAttendees Int
   organizerName     String
   organizerEmail    String?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-
-  spaceBookings EventBooking[]
-  groupBlocks   GroupBlock[]
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  spaceBookings     EventBooking[]
+  groupBlocks       GroupBlock[]
 }
 
 model EventBooking {
-  id        String   @id @default(uuid())
+  id        String          @id @default(uuid())
   eventId   String
   spaceId   String
   startTime DateTime
   endTime   DateTime
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  event BanquetingEvent @relation(fields: [eventId], references: [id])
-  space EventSpace      @relation(fields: [spaceId], references: [id])
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  event     BanquetingEvent @relation(fields: [eventId], references: [id])
+  space     EventSpace      @relation(fields: [spaceId], references: [id])
 }
 
 model GroupBlock {
-  id             String   @id @default(uuid())
+  id             String          @id @default(uuid())
   eventId        String
   roomTypeId     String
   blockedCount   Int
   contractedRate Float
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  event    BanquetingEvent @relation(fields: [eventId], references: [id])
-  roomType RoomType        @relation(fields: [roomTypeId], references: [id])
-  bookings Booking[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  bookings       Booking[]
+  event          BanquetingEvent @relation(fields: [eventId], references: [id])
+  roomType       RoomType        @relation(fields: [roomTypeId], references: [id])
 }
 
 model FoodMenu {
@@ -689,51 +520,43 @@ model FoodMenu {
   internalOrderItems InternalOrderItem[]
 }
 
-// ==========================================
-// USERS & GUESTS
-// ==========================================
-
 model User {
-  id        String    @id @default(uuid())
-  email     String    @unique
-  name      String
-  phone     String?
-  password  String
-  roleId    String?
-  deletedAt DateTime?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-
-  vipStatus          String  @default("STANDARD")
-  blacklistStatus    Boolean @default(false)
+  id                 String              @id @default(uuid())
+  email              String              @unique
+  name               String
+  phone              String?
+  password           String
+  roleId             String?
+  deletedAt          DateTime?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  vipStatus          String              @default("STANDARD")
+  blacklistStatus    Boolean             @default(false)
   blacklistReason    String?
   corporateAccountId String?
   travelAgentId      String?
-
-  corporateAccount CorporateAccount? @relation(fields: [corporateAccountId], references: [id])
-  travelAgent      TravelAgent?      @relation(fields: [travelAgentId], references: [id])
-  guestHistory     GuestHistory?
-
-  guestBookings      Booking[]           @relation("PrimaryGuest")
-  loyalty            LoyaltyPoint?
-  guestPreferences   GuestPreference?
-  feedback           Feedback[]
-  tableBookings      TableBooking[]
-  complaints         Complaint[]
-  internalOrders     InternalOrder[]     @relation("GuestInternalOrders")
-  payments           Payment[]
-  notifications      Notification[]
-  createdTasks       Task[]              @relation("CreatedTasks")
+  propertyId         String?
   auditLogs          AuditLog[]
-  nightAuditsRun     NightAuditLog[]
+  guestBookings      Booking[]           @relation("PrimaryGuest")
+  complaints         Complaint[]
   employee           Employee?
-  role               Role?               @relation(fields: [roleId], references: [id])
+  feedback           Feedback[]
   guestConversations GuestConversation[]
-  resortBookings     ResortBooking[]
+  guestHistory       GuestHistory?
+  guestPreferences   GuestPreference?
   guestProfile       GuestProfile?
-
-  propertyId String?
-  property   Property? @relation(fields: [propertyId], references: [id])
+  internalOrders     InternalOrder[]     @relation("GuestInternalOrders")
+  loyalty            LoyaltyPoint?
+  nightAuditsRun     NightAuditLog[]
+  notifications      Notification[]
+  payments           Payment[]
+  resortBookings     ResortBooking[]
+  tableBookings      TableBooking[]
+  createdTasks       Task[]              @relation("CreatedTasks")
+  corporateAccount   CorporateAccount?   @relation(fields: [corporateAccountId], references: [id])
+  property           Property?           @relation(fields: [propertyId], references: [id])
+  role               Role?               @relation(fields: [roleId], references: [id])
+  travelAgent        TravelAgent?        @relation(fields: [travelAgentId], references: [id])
 }
 
 model GuestPreference {
@@ -751,8 +574,7 @@ model GuestProfile {
   preferences   Json?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-
-  user User @relation(fields: [userAccountId], references: [id])
+  user          User     @relation(fields: [userAccountId], references: [id])
 }
 
 model CorporateAccount {
@@ -765,8 +587,7 @@ model CorporateAccount {
   isActive       Boolean  @default(true)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
-
-  users User[]
+  users          User[]
 }
 
 model TravelAgent {
@@ -780,8 +601,7 @@ model TravelAgent {
   isActive       Boolean  @default(true)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
-
-  users User[]
+  users          User[]
 }
 
 model GuestHistory {
@@ -794,41 +614,36 @@ model GuestHistory {
   lastRoomTypeId String?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
-
-  user User @relation(fields: [userId], references: [id])
+  user           User      @relation(fields: [userId], references: [id])
 }
 
 model Role {
   id          String           @id @default(uuid())
   name        String           @unique
   description String?
-  permissions RolePermission[]
-  users       User[]
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
+  permissions RolePermission[]
+  users       User[]
 }
 
 model Permission {
   id          String           @id @default(uuid())
   action      String           @unique
   description String?
-  roles       RolePermission[]
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
+  roles       RolePermission[]
 }
 
 model RolePermission {
   roleId       String
   permissionId String
-  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
   permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
   @@id([roleId, permissionId])
 }
-
-// ==========================================
-// FEEDBACK
-// ==========================================
 
 model Amenity {
   id           String   @id @default(uuid())
@@ -862,10 +677,6 @@ model EmbeddingCache {
   model     String   @default("nomic-embed-text-v1_5")
   createdAt DateTime @default(now())
 }
-
-// ==========================================
-// INFRA & OTA
-// ==========================================
 
 model Notification {
   id        String    @id @default(uuid())
@@ -912,8 +723,7 @@ model AuditLog {
   resourceId String?
   details    Json?
   createdAt  DateTime @default(now())
-
-  user User? @relation(fields: [userId], references: [id])
+  user       User?    @relation(fields: [userId], references: [id])
 }
 
 model ChannelConfig {
@@ -932,10 +742,6 @@ model RoomMapping {
   priceMarkupPercentage Float   @default(15.0)
   syncEnabled           Boolean @default(true)
 }
-
-// ==========================================
-// CHAT & AI
-// ==========================================
 
 model Gallery {
   id        String   @id @default(uuid())
@@ -980,15 +786,14 @@ model Inventory {
 }
 
 model LoyaltyPoint {
-  id          String   @id @default(uuid())
-  userId      String   @unique
-  points      Int      @default(0)
-  totalEarned Int      @default(0)
-  totalSpent  Int      @default(0)
-  tier        String   @default("SILVER")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
+  id           String               @id @default(uuid())
+  userId       String               @unique
+  points       Int                  @default(0)
+  totalEarned  Int                  @default(0)
+  totalSpent   Int                  @default(0)
+  tier         String               @default("SILVER")
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
   user         User                 @relation(fields: [userId], references: [id])
   transactions LoyaltyTransaction[]
 }
@@ -1001,16 +806,9 @@ model LoyaltyTransaction {
   description    String
   referenceId    String?
   createdAt      DateTime               @default(now())
-
-  loyaltyPoint LoyaltyPoint @relation(fields: [loyaltyPointId], references: [id])
+  loyaltyPoint   LoyaltyPoint           @relation(fields: [loyaltyPointId], references: [id])
 
   @@index([loyaltyPointId])
-}
-
-enum LoyaltyTransactionType {
-  earned
-  spent
-  expired
 }
 
 model NavigationLink {
@@ -1083,8 +881,7 @@ model TableBooking {
   specialRequests String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
-
-  user User? @relation(fields: [userId], references: [id])
+  user            User?    @relation(fields: [userId], references: [id])
 }
 
 model Complaint {
@@ -1099,9 +896,8 @@ model Complaint {
   resolvedAt  DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-
-  user    User     @relation(fields: [userId], references: [id])
-  booking Booking? @relation(fields: [bookingId], references: [id])
+  booking     Booking?  @relation(fields: [bookingId], references: [id])
+  user        User      @relation(fields: [userId], references: [id])
 }
 
 model Testimonial {
@@ -1136,7 +932,7 @@ model ContactMessage {
   email     String
   subject   String
   message   String
-  status    String   @default("UNREAD") // UNREAD, READ, REPLIED, ARCHIVED
+  status    String   @default("UNREAD")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -1158,143 +954,126 @@ model FAQ {
   @@index([active, order])
 }
 
-// ==========================================
-// PROCUREMENT & INVENTORY (PHASE 9)
-// ==========================================
-
 model Vendor {
-  id            String   @id @default(uuid())
-  name          String
-  contactPerson String?
-  email         String?
-  phone         String?
-  address       String?
-  isActive      Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
+  id             String          @id @default(uuid())
+  name           String
+  contactPerson  String?
+  email          String?
+  phone          String?
+  address        String?
+  isActive       Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
   items          InventoryItem[]
   purchaseOrders PurchaseOrder[]
 }
 
 model InventoryItem {
-  id        String   @id @default(uuid())
-  name      String
-  sku       String?  @unique
-  category  String // FOOD, BEVERAGE, LINEN, MAINTENANCE
-  unit      String // KG, LITER, PIECE, BOX
-  unitPrice Float
-  parLevel  Int      @default(10) // Reorder threshold
-  vendorId  String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  id            String              @id @default(uuid())
+  name          String
+  sku           String?             @unique
+  category      String
+  unit          String
+  unitPrice     Float
+  parLevel      Int                 @default(10)
+  vendorId      String?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
   vendor        Vendor?             @relation(fields: [vendorId], references: [id])
+  movements     InventoryMovement[]
   stocks        InventoryStock[]
   purchaseItems PurchaseOrderItem[]
-  movements     InventoryMovement[]
 }
 
 model InventoryStock {
-  id            String   @id @default(uuid())
+  id            String        @id @default(uuid())
   itemId        String
-  location      String // MAIN_STORE, KITCHEN, BAR, HOUSEKEEPING
-  quantity      Int      @default(0)
-  lastCountedAt DateTime @default(now())
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  item InventoryItem @relation(fields: [itemId], references: [id])
+  location      String
+  quantity      Int           @default(0)
+  lastCountedAt DateTime      @default(now())
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  item          InventoryItem @relation(fields: [itemId], references: [id])
 
   @@unique([itemId, location])
 }
 
 model PurchaseOrder {
-  id           String    @id @default(uuid())
-  orderNumber  String    @unique
-  vendorId     String
-  status       String // DRAFT, PENDING_APPROVAL, APPROVED, DELIVERED, CANCELLED
-  totalAmount  Float     @default(0)
-  expectedDate DateTime?
-  notes        String?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-
+  id             String              @id @default(uuid())
+  orderNumber    String              @unique
+  vendorId       String
+  status         String
+  totalAmount    Float               @default(0)
+  expectedDate   DateTime?
+  notes          String?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  goodsReceipts  GoodsReceipt[]
   vendor         Vendor              @relation(fields: [vendorId], references: [id])
   items          PurchaseOrderItem[]
-  goodsReceipts  GoodsReceipt[]
   vendorInvoices VendorInvoice[]
 }
 
 model PurchaseOrderItem {
-  id              String   @id @default(uuid())
+  id              String        @id @default(uuid())
   purchaseOrderId String
   itemId          String
   quantity        Int
   unitPrice       Float
   totalPrice      Float
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  purchaseOrder PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
-  item          InventoryItem @relation(fields: [itemId], references: [id])
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  item            InventoryItem @relation(fields: [itemId], references: [id])
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
 }
 
 model InventoryMovement {
-  id        String   @id @default(uuid())
+  id        String        @id @default(uuid())
   itemId    String
-  type      String // RECEIPT, CONSUMPTION, TRANSFER, ADJUSTMENT
+  type      String
   quantity  Int
   notes     String?
-  createdAt DateTime @default(now())
-
-  item InventoryItem @relation(fields: [itemId], references: [id])
+  createdAt DateTime      @default(now())
+  item      InventoryItem @relation(fields: [itemId], references: [id])
 }
 
 model GoodsReceipt {
-  id              String   @id @default(uuid())
+  id              String        @id @default(uuid())
   purchaseOrderId String
-  receivedDate    DateTime @default(now())
+  receivedDate    DateTime      @default(now())
   notes           String?
-
-  purchaseOrder PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
 }
 
 model VendorInvoice {
-  id              String   @id @default(uuid())
+  id              String        @id @default(uuid())
   purchaseOrderId String
   invoiceNumber   String
   amount          Float
-  receivedDate    DateTime @default(now())
-
-  purchaseOrder PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+  receivedDate    DateTime      @default(now())
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
 }
 
-// ==========================================
-// HR & WORKFORCE (PHASE 10)
-// ==========================================
-
 model Employee {
-  id         String   @id @default(uuid())
-  userId     String?  @unique
-  firstName  String
-  lastName   String
-  email      String   @unique
-  phone      String?
-  department String // FRONT_DESK, KITCHEN, HOUSEKEEPING, MANAGEMENT, MAINTENANCE
-  position   String
-  baseSalary Float
-  hireDate   DateTime @db.Date
-  status     String   @default("ACTIVE") // ACTIVE, ON_LEAVE, TERMINATED
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  user             User?             @relation(fields: [userId], references: [id])
-  shifts           Shift[]
-  leaves           LeaveRequest[]
-  payrolls         PayrollRecord[]
+  id               String            @id @default(uuid())
+  userId           String?           @unique
+  firstName        String
+  lastName         String
+  email            String            @unique
+  phone            String?
+  department       String
+  position         String
+  baseSalary       Float
+  hireDate         DateTime          @db.Date
+  status           String            @default("ACTIVE")
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
   attendance       Attendance[]
+  user             User?             @relation(fields: [userId], references: [id])
+  leaves           LeaveRequest[]
   payrollLineItems PayrollLineItem[]
+  payrolls         PayrollRecord[]
+  shifts           Shift[]
   tasks            Task[]            @relation("EmployeeTasks")
 }
 
@@ -1303,28 +1082,26 @@ model Shift {
   employeeId String
   startTime  DateTime
   endTime    DateTime
-  role       String? // Optional override for specific shift role
-  status     String   @default("SCHEDULED") // SCHEDULED, COMPLETED, NO_SHOW
+  role       String?
+  status     String   @default("SCHEDULED")
   notes      String?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
-
-  employee Employee @relation(fields: [employeeId], references: [id])
+  employee   Employee @relation(fields: [employeeId], references: [id])
 }
 
 model LeaveRequest {
   id         String   @id @default(uuid())
   employeeId String
-  type       String // ANNUAL, SICK, UNPAID, MATERNITY
+  type       String
   startDate  DateTime @db.Date
   endDate    DateTime @db.Date
   reason     String?
-  status     String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  status     String   @default("PENDING")
   approvedBy String?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
-
-  employee Employee @relation(fields: [employeeId], references: [id])
+  employee   Employee @relation(fields: [employeeId], references: [id])
 }
 
 model PayrollRecord {
@@ -1337,12 +1114,11 @@ model PayrollRecord {
   deductions     Float     @default(0)
   bonuses        Float     @default(0)
   netPay         Float
-  status         String    @default("DRAFT") // DRAFT, PAID
+  status         String    @default("DRAFT")
   paidAt         DateTime?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
-
-  employee Employee @relation(fields: [employeeId], references: [id])
+  employee       Employee  @relation(fields: [employeeId], references: [id])
 }
 
 model Attendance {
@@ -1351,59 +1127,51 @@ model Attendance {
   date       DateTime  @db.Date
   clockIn    DateTime
   clockOut   DateTime?
-  status     String    @default("PRESENT") // PRESENT, LATE, HALF_DAY
+  status     String    @default("PRESENT")
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
-
-  employee Employee @relation(fields: [employeeId], references: [id])
+  employee   Employee  @relation(fields: [employeeId], references: [id])
 }
 
 model PayrollRun {
-  id          String   @id @default(uuid())
-  periodStart DateTime @db.Date
-  periodEnd   DateTime @db.Date
-  status      String   @default("DRAFT") // DRAFT, FINALIZED, PAID
-  totalAmount Float    @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  lineItems PayrollLineItem[]
+  id          String            @id @default(uuid())
+  periodStart DateTime          @db.Date
+  periodEnd   DateTime          @db.Date
+  status      String            @default("DRAFT")
+  totalAmount Float             @default(0)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  lineItems   PayrollLineItem[]
 }
 
 model PayrollLineItem {
-  id           String   @id @default(uuid())
+  id           String     @id @default(uuid())
   payrollRunId String
   employeeId   String
   basePay      Float
-  overtimePay  Float    @default(0)
-  deductions   Float    @default(0)
+  overtimePay  Float      @default(0)
+  deductions   Float      @default(0)
   netPay       Float
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  payrollRun PayrollRun @relation(fields: [payrollRunId], references: [id])
-  employee   Employee   @relation(fields: [employeeId], references: [id])
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  employee     Employee   @relation(fields: [employeeId], references: [id])
+  payrollRun   PayrollRun @relation(fields: [payrollRunId], references: [id])
 }
 
-// ==========================================
-// CMMS & PREVENTIVE MAINTENANCE (PHASE 11)
-// ==========================================
-
 model Asset {
-  id               String    @id @default(uuid())
-  name             String
-  category         String // HVAC, PLUMBING, ELECTRICAL, KITCHEN_EQUIPMENT
-  location         String
-  serialNumber     String?
-  installationDate DateTime? @db.Date
-  warrantyExpiry   DateTime? @db.Date
-  status           String    @default("OPERATIONAL") // OPERATIONAL, MAINTENANCE, OUT_OF_ORDER
-  notes            String?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-
-  schedules             MaintenanceSchedule[]
+  id                    String                 @id @default(uuid())
+  name                  String
+  category              String
+  location              String
+  serialNumber          String?
+  installationDate      DateTime?              @db.Date
+  warrantyExpiry        DateTime?              @db.Date
+  status                String                 @default("OPERATIONAL")
+  notes                 String?
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
   inspections           InspectionLog[]
+  schedules             MaintenanceSchedule[]
   maintenanceWorkOrders MaintenanceWorkOrder[]
 }
 
@@ -1411,15 +1179,14 @@ model MaintenanceSchedule {
   id             String    @id @default(uuid())
   assetId        String
   taskName       String
-  frequencyDays  Int // e.g., 30 for monthly, 90 for quarterly
+  frequencyDays  Int
   lastRun        DateTime? @db.Date
   nextRun        DateTime  @db.Date
-  assignedToRole String? // e.g. "MAINTENANCE"
+  assignedToRole String?
   isActive       Boolean   @default(true)
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
-
-  asset Asset @relation(fields: [assetId], references: [id])
+  asset          Asset     @relation(fields: [assetId], references: [id])
 }
 
 model InspectionLog {
@@ -1427,12 +1194,11 @@ model InspectionLog {
   assetId        String
   technicianName String
   inspectionDate DateTime @default(now())
-  status         String // PASS, FAIL, REPAIR_NEEDED
+  status         String
   notes          String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
-
-  asset Asset @relation(fields: [assetId], references: [id])
+  asset          Asset    @relation(fields: [assetId], references: [id])
 }
 
 model MaintenanceWorkOrder {
@@ -1443,9 +1209,8 @@ model MaintenanceWorkOrder {
   status    String   @default("OPEN")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  room  Room?  @relation(fields: [roomId], references: [id])
-  asset Asset? @relation(fields: [assetId], references: [id])
+  asset     Asset?   @relation(fields: [assetId], references: [id])
+  room      Room?    @relation(fields: [roomId], references: [id])
 }
 
 model OutOfOrderRecord {
@@ -1455,72 +1220,56 @@ model OutOfOrderRecord {
   startDate DateTime @db.Date
   endDate   DateTime @db.Date
   createdAt DateTime @default(now())
-
-  room Room @relation(fields: [roomId], references: [id])
+  room      Room     @relation(fields: [roomId], references: [id])
 }
-
-// ==========================================
-// MULTI-PROPERTY & LOYALTY (PHASE 12)
-// ==========================================
 
 model Property {
-  id         String   @id @default(uuid())
-  name       String
-  code       String   @unique // e.g. SH-NYC
-  address    String
-  city       String
-  country    String
-  timezone     String   @default("UTC")
-  businessDate DateTime @default(now()) @db.Date // Tracks the current active logical date for operations
-  totalRooms   Int      @default(0)
-  status       String   @default("ACTIVE") // ACTIVE, PRE_OPENING, INACTIVE
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  users    User[]
-  rooms    Room[]
-  bookings Booking[]
-  folios   Folio[]
-  tasks    Task[]
+  id           String    @id @default(uuid())
+  name         String
+  code         String    @unique
+  address      String
+  city         String
+  country      String
+  timezone     String    @default("UTC")
+  businessDate DateTime  @default(now()) @db.Date
+  totalRooms   Int       @default(0)
+  status       String    @default("ACTIVE")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  bookings     Booking[]
+  folios       Folio[]
+  rooms        Room[]
+  tasks        Task[]
+  users        User[]
 }
 
-// ==========================================
-// GUEST MESSAGING & AI CONCIERGE (PHASE 13)
-// ==========================================
-
 model GuestConversation {
-  id            String   @id @default(uuid())
+  id            String         @id @default(uuid())
   guestId       String
-  status        String   @default("OPEN") // OPEN, CLOSED
-  aiEnabled     Boolean  @default(true)
-  lastMessageAt DateTime @default(now())
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  guest    User           @relation(fields: [guestId], references: [id])
-  messages GuestMessage[]
+  status        String         @default("OPEN")
+  aiEnabled     Boolean        @default(true)
+  lastMessageAt DateTime       @default(now())
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  guest         User           @relation(fields: [guestId], references: [id])
+  messages      GuestMessage[]
 }
 
 model GuestMessage {
-  id             String   @id @default(uuid())
+  id             String            @id @default(uuid())
   conversationId String
-  senderType     String // GUEST, STAFF, AI
+  senderType     String
   content        String
-  isRead         Boolean  @default(false)
-  createdAt      DateTime @default(now())
-
-  conversation GuestConversation @relation(fields: [conversationId], references: [id])
+  isRead         Boolean           @default(false)
+  createdAt      DateTime          @default(now())
+  conversation   GuestConversation @relation(fields: [conversationId], references: [id])
 }
-
-// ==========================================
-// INTEGRATIONS & WEBHOOKS (PHASE 15)
-// ==========================================
 
 model Integration {
   id        String   @id @default(uuid())
   appName   String   @unique
-  provider  String // e.g., STRIPE, QUICKBOOKS, ASSA_ABLOY
-  status    String   @default("INACTIVE") // ACTIVE, INACTIVE
+  provider  String
+  status    String   @default("INACTIVE")
   apiKey    String?
   config    Json?
   createdAt DateTime @default(now())
@@ -1528,83 +1277,70 @@ model Integration {
 }
 
 model WebhookEndpoint {
-  id        String   @id @default(uuid())
-  url       String
-  event     String // e.g., GUEST_CHECKIN, PAYMENT_SUCCESS
-  isActive  Boolean  @default(true)
-  secret    String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  id            String                @id @default(uuid())
+  url           String
+  event         String
+  isActive      Boolean               @default(true)
+  secret        String?
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
   deliveries    WebhookDelivery[]
   subscriptions WebhookSubscription[]
 }
 
 model WebhookDelivery {
-  id                String   @id @default(uuid())
+  id                String          @id @default(uuid())
   webhookEndpointId String
   payload           Json
-  status            String   @default("PENDING")
+  status            String          @default("PENDING")
   statusCode        Int?
-  attempts          Int      @default(0)
-  createdAt         DateTime @default(now())
-
-  webhookEndpoint WebhookEndpoint @relation(fields: [webhookEndpointId], references: [id])
+  attempts          Int             @default(0)
+  createdAt         DateTime        @default(now())
+  webhookEndpoint   WebhookEndpoint @relation(fields: [webhookEndpointId], references: [id])
 }
 
 model WebhookSubscription {
-  id                String   @id @default(uuid())
+  id                String          @id @default(uuid())
   webhookEndpointId String
-  eventTypes        String[] // Array of strings like "GUEST_CHECKIN"
-  createdAt         DateTime @default(now())
-
-  webhookEndpoint WebhookEndpoint @relation(fields: [webhookEndpointId], references: [id])
+  eventTypes        String[]
+  createdAt         DateTime        @default(now())
+  webhookEndpoint   WebhookEndpoint @relation(fields: [webhookEndpointId], references: [id])
 }
 
-// ==========================================
-// RESORT MODULES (PHASE 16)
-// ==========================================
-
 model ResortFacility {
-  id             String   @id @default(uuid())
+  id             String          @id @default(uuid())
   name           String
-  type           String // SPA, GOLF, TENNIS, CABANA
-  operatingHours String   @default("09:00-18:00")
-  status         String   @default("ACTIVE")
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  services ResortService[]
-  bookings ResortBooking[]
+  type           String
+  operatingHours String          @default("09:00-18:00")
+  status         String          @default("ACTIVE")
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  bookings       ResortBooking[]
+  services       ResortService[]
 }
 
 model ResortService {
-  id           String   @id @default(uuid())
+  id           String         @id @default(uuid())
   facilityId   String
   name         String
   durationMins Int
   price        Float
-  createdAt    DateTime @default(now())
-
-  facility ResortFacility @relation(fields: [facilityId], references: [id])
+  createdAt    DateTime       @default(now())
+  facility     ResortFacility @relation(fields: [facilityId], references: [id])
 }
 
 model ResortBooking {
-  id         String   @id @default(uuid())
+  id         String         @id @default(uuid())
   facilityId String
   guestId    String
   startTime  DateTime
   endTime    DateTime
-  status     String   @default("CONFIRMED") // CONFIRMED, COMPLETED, CANCELLED
+  status     String         @default("CONFIRMED")
   notes      String?
-  createdAt  DateTime @default(now())
-
-  facility ResortFacility @relation(fields: [facilityId], references: [id])
-  guest    User           @relation(fields: [guestId], references: [id])
+  createdAt  DateTime       @default(now())
+  facility   ResortFacility @relation(fields: [facilityId], references: [id])
+  guest      User           @relation(fields: [guestId], references: [id])
 }
-
-// SRE / INCIDENT MODULE
-// ==========================================
 
 model Incident {
   id                  String   @id @default(uuid())
@@ -1621,88 +1357,161 @@ model Incident {
 }
 
 model InternalOrder {
-  id          String @id @default(uuid())
-  orderType   String @default("IN_ROOM_DINING") // "POS_OUTLET", "IN_ROOM_DINING", "SPA"
-  status      String // PENDING, PREPARING, DELIVERED, COMPLETED, CANCELLED
-  totalAmount Float
-
-  // Relations
-  guestId  String?
-  roomId   String?
-  outletId String?
-  folioId  String?
-
-  // Specific to order types
-  paymentType     String? // CASH, CARD, ROOM_CHARGE
+  id              String              @id @default(uuid())
+  orderType       String              @default("IN_ROOM_DINING")
+  status          String
+  totalAmount     Float
+  guestId         String?
+  roomId          String?
+  outletId        String?
+  folioId         String?
+  paymentType     String?
   specialRequests String?
   deliveryTime    DateTime?
-  idempotencyKey  String?   @unique
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  items    InternalOrderItem[]
-  payments Payment[]
-
-  guest  User?      @relation("GuestInternalOrders", fields: [guestId], references: [id])
-  room   Room?      @relation(fields: [roomId], references: [id])
-  outlet POSOutlet? @relation(fields: [outletId], references: [id])
-  folio  Folio?     @relation(fields: [folioId], references: [id])
+  idempotencyKey  String?             @unique
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  folio           Folio?              @relation(fields: [folioId], references: [id])
+  guest           User?               @relation("GuestInternalOrders", fields: [guestId], references: [id])
+  outlet          POSOutlet?          @relation(fields: [outletId], references: [id])
+  room            Room?               @relation(fields: [roomId], references: [id])
+  items           InternalOrderItem[]
+  payments        Payment[]
 
   @@index([guestId])
   @@index([orderType, createdAt])
 }
 
 model InternalOrderItem {
-  id         String   @id @default(uuid())
+  id         String        @id @default(uuid())
   orderId    String
-  productId  String? // References POSProduct
-  menuItemId String? // String reference for legacy/food orders
+  productId  String?
+  menuItemId String?
   quantity   Int
   price      Float
   subtotal   Float
   notes      String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  order    InternalOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product  POSProduct?   @relation(fields: [productId], references: [id])
-  menuItem FoodMenu?     @relation(fields: [menuItemId], references: [id])
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  menuItem   FoodMenu?     @relation(fields: [menuItemId], references: [id])
+  order      InternalOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product    POSProduct?   @relation(fields: [productId], references: [id])
 }
 
 model Feedback {
-  id         String @id @default(uuid())
-  userId     String
-  targetType String @default("HOTEL") // "HOTEL", "ROOM", "RESTAURANT"
-
-  rating            Int  @default(5)
-  overallRating     Int  @default(5)
+  id                String   @id @default(uuid())
+  userId            String
+  targetType        String   @default("HOTEL")
+  rating            Int      @default(5)
+  overallRating     Int      @default(5)
   serviceRating     Int?
   cleanlinessRating Int?
   valueRating       Int?
-
-  title     String?
-  comment   String?
-  verified  Boolean  @default(false)
-  createdAt DateTime @default(now())
-
-  roomId    String?
-  bookingId String?
-
-  user    User     @relation(fields: [userId], references: [id])
-  room    Room?    @relation(fields: [roomId], references: [id])
-  booking Booking? @relation(fields: [bookingId], references: [id])
+  title             String?
+  comment           String?
+  verified          Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  roomId            String?
+  bookingId         String?
+  booking           Booking? @relation(fields: [bookingId], references: [id])
+  room              Room?    @relation(fields: [roomId], references: [id])
+  user              User     @relation(fields: [userId], references: [id])
 }
 
-// ==========================================
-// INFRASTRUCTURE (Added for Module 11)
-// ==========================================
 model WebhookDLQ {
-  id          String   @id @default(uuid())
-  provider    String   // e.g. "Booking.com"
-  payload     Json
-  error       String?
-  resolved    Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  resolvedAt  DateTime?
+  id         String    @id @default(uuid())
+  provider   String
+  payload    Json
+  error      String?
+  resolved   Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+  resolvedAt DateTime?
+}
+
+enum RoomStatus {
+  AVAILABLE
+  OCCUPIED
+  DIRTY
+  CLEANING
+  INSPECTION_PENDING
+  MAINTENANCE
+  OUT_OF_ORDER
+}
+
+enum StayStatus {
+  EXPECTED
+  CHECKED_IN
+  CHECKED_OUT
+  NO_SHOW
+}
+
+enum EventStatus {
+  upcoming
+  ongoing
+  completed
+  cancelled
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CHECKED_IN
+  CHECKED_OUT
+  CANCELLED
+  NO_SHOW
+}
+
+enum BookingSource {
+  WALK_IN
+  WEBSITE
+  BOOKING_COM
+  AGODA
+  EXPEDIA
+}
+
+enum PaymentStatus {
+  pending
+  completed
+  failed
+  refunded
+  unpaid
+  partial
+}
+
+enum PaymentMethod {
+  cash
+  card
+  bank_transfer
+  crypto
+  other
+}
+
+enum TaskType {
+  HOUSEKEEPING
+  MAINTENANCE
+  ROOM_SERVICE
+  GUEST_REQUEST
+  ADMINISTRATIVE
+}
+
+enum TaskStatus {
+  PENDING
+  ACCEPTED
+  IN_PROGRESS
+  COMPLETED
+  VERIFIED
+  CANCELLED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum LoyaltyTransactionType {
+  earned
+  spent
+  expired
 }
