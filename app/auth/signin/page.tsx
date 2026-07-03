@@ -17,13 +17,14 @@ export default function SignInPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const DEMO_CREDENTIALS = [
-    { role: 'Super Admin', email: 'admin@smarthotel.demo', password: 'Demo@123', color: 'from-purple-500/20 to-indigo-500/20 border-purple-500/30 text-purple-200' },
-    { role: 'Manager', email: 'manager@smarthotel.demo', password: 'Demo@123', color: 'from-blue-500/20 to-cyan-500/20 border-blue-500/30 text-blue-200' },
-    { role: 'Receptionist', email: 'reception@smarthotel.demo', password: 'Demo@123', color: 'from-sky-500/20 to-blue-500/20 border-sky-500/30 text-sky-200' },
-    { role: 'Housekeeping', email: 'housekeeping@smarthotel.demo', password: 'Demo@123', color: 'from-amber-400/20 to-yellow-500/20 border-amber-400/30 text-amber-200' },
-    { role: 'Maintenance', email: 'maintenance@smarthotel.demo', password: 'Demo@123', color: 'from-orange-500/20 to-amber-500/20 border-orange-500/30 text-orange-200' },
-    { role: 'Kitchen & F&B', email: 'kitchen@smarthotel.demo', password: 'Demo@123', color: 'from-rose-500/20 to-pink-500/20 border-rose-500/30 text-rose-200' },
-    { role: 'Guest', email: 'guest@smarthotel.demo', password: 'Demo@123', color: 'from-gray-500/20 to-slate-500/20 border-gray-500/30 text-gray-200' }
+    { role: 'Super Admin', email: 'admin@smarthotel.com', password: 'SmartHotel@2025!Admin', color: 'from-purple-500/20 to-indigo-500/20 border-purple-500/30 text-purple-200' },
+    { role: 'Manager', email: 'manager@smarthotel.com', password: 'SmartHotel@2025!Manager', color: 'from-blue-500/20 to-cyan-500/20 border-blue-500/30 text-blue-200' },
+    { role: 'Receptionist', email: 'receptionist@smarthotel.com', password: 'SmartHotel@2025!Reception', color: 'from-sky-500/20 to-blue-500/20 border-sky-500/30 text-sky-200' },
+    { role: 'Housekeeping', email: 'housekeeping@smarthotel.com', password: 'SmartHotel@2025!House', color: 'from-amber-400/20 to-yellow-500/20 border-amber-400/30 text-amber-200' },
+    { role: 'Maintenance', email: 'maintenance@smarthotel.com', password: 'SmartHotel@2025!Maint', color: 'from-orange-500/20 to-amber-500/20 border-orange-500/30 text-orange-200' },
+    { role: 'Kitchen & F&B', email: 'kitchen@smarthotel.com', password: 'SmartHotel@2025!Kitchen', color: 'from-rose-500/20 to-pink-500/20 border-rose-500/30 text-rose-200' },
+    { role: 'Guest', email: 'guest@example.com', password: 'SmartHotel@2025!Guest', color: 'from-gray-500/20 to-slate-500/20 border-gray-500/30 text-gray-200' },
+    { role: 'Guest B', email: 'guestb@example.com', password: 'SmartHotel@2025!GuestB', color: 'from-gray-500/20 to-slate-500/20 border-gray-500/30 text-gray-200' }
   ]
 
   const handleDemoLogin = (email: string, pass: string) => {
