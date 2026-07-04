@@ -42,16 +42,25 @@ export async function POST(req: Request) {
     let paymentRecord = null
     
     if (primaryFolio) {
-      paymentRecord = await prisma.payment.create({
-        data: {
-          folioId: primaryFolio.id,
-          bookingId: booking.id,
-          amount: validatedData.amount,
-          method: 'card', // Terminal translates to card
-          status: 'completed',
-          provider: 'STRIPE_TERMINAL',
-          transactionId: mockChargeId
-        }
+      paymentRecord = await prisma.$transaction(async (tx: any) => {
+        const p = await tx.payment.create({
+          data: {
+            folioId: primaryFolio.id,
+            bookingId: booking.id,
+            amount: validatedData.amount,
+            method: 'card',
+            status: 'completed',
+            provider: 'STRIPE_TERMINAL',
+            transactionId: mockChargeId
+          }
+        })
+
+        await tx.booking.update({
+          where: { id: booking.id },
+          data: { paymentStatus: 'completed' }
+        })
+
+        return p
       })
     }
 

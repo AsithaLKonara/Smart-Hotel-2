@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const validatedData = paymentSchema.parse(body)
 
-    const payment = await prisma.$transaction(async (tx) => {
+    const payment = await prisma.$transaction(async (tx: any) => {
       const p = await tx.payment.create({
         data: {
           ...validatedData,
