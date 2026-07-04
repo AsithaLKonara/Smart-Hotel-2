@@ -1,9 +1,9 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { 
-  Coffee, Utensils, Wine, ShoppingCart, CreditCard, Banknote, UserCheck, Search 
+  Coffee, Utensils, Wine, ShoppingCart, CreditCard, Banknote, UserCheck, Search, ClipboardList, Trash2, ChevronDown, ChevronUp
 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -15,8 +15,12 @@ import { PremiumSpinner } from '@/components/ui/premium-spinner'
 export default function POSTerminal() {
   const queryClient = useQueryClient()
   const [cart, setCart] = useState<{product: any, quantity: number}[]>([])
-  const [checkoutMode, setCheckoutMode] = useState<string | null>(null) // null, 'ROOM', 'DIRECT'
+  const [checkoutMode, setCheckoutMode] = useState<string | null>(null)
   const [searchRoom, setSearchRoom] = useState('')
+  const [orderHistoryItems, setOrderHistoryItems] = useState<any[]>([])
+  const [showOrderHistory, setShowOrderHistory] = useState(false)
+  const [orderHistoryOrderId, setOrderHistoryOrderId] = useState('')
+  const [loadingOrderHistory, setLoadingOrderHistory] = useState(false)
 
   // Init/Fetch POS data
   const { data: outlets, isLoading: isLoadingOutlets } = useQuery({
@@ -261,6 +265,73 @@ export default function POSTerminal() {
                 {bookings?.length === 0 && <div className="p-2 text-xs text-slate-500 text-center">No active guests found.</div>}
               </div>
               <Button variant="ghost" className="w-full text-slate-500" onClick={() => setCheckoutMode(null)}>Cancel</Button>
+            </div>
+          )}
+        </div>
+
+        {/* Order History Panel */}
+        <div className="border-t border-white/10">
+          <button
+            className="w-full flex items-center justify-between px-6 py-3 text-sm text-white/50 hover:text-white/80 hover:bg-white/5 transition-colors"
+            onClick={() => setShowOrderHistory(p => !p)}
+          >
+            <span className="flex items-center gap-2"><ClipboardList className="w-4 h-4" /> View Order Items</span>
+            {showOrderHistory ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+          </button>
+          {showOrderHistory && (
+            <div className="px-6 pb-4 space-y-3">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Paste Order ID..."
+                  value={orderHistoryOrderId}
+                  onChange={e => setOrderHistoryOrderId(e.target.value)}
+                  className="flex-1 bg-white/5 border border-white/10 text-white text-xs px-3 py-2 rounded-lg placeholder:text-slate-600 focus:outline-none"
+                />
+                <button
+                  disabled={!orderHistoryOrderId || loadingOrderHistory}
+                  onClick={async () => {
+                    setLoadingOrderHistory(true)
+                    try {
+                      const res = await fetch(`/api/order-items?orderId=${orderHistoryOrderId}`)
+                      const data = await res.json()
+                      setOrderHistoryItems(Array.isArray(data) ? data : [])
+                    } finally {
+                      setLoadingOrderHistory(false)
+                    }
+                  }}
+                  className="px-3 py-2 bg-primary/80 hover:bg-primary text-white text-xs rounded-lg disabled:opacity-50 transition-colors"
+                >
+                  Load
+                </button>
+              </div>
+              <div className="space-y-1 max-h-48 overflow-y-auto">
+                {orderHistoryItems.map(item => (
+                  <div key={item.id} className="flex items-center justify-between bg-white/[0.03] border border-white/8 p-2 rounded-lg text-xs">
+                    <div>
+                      <p className="text-white font-semibold">{item.menuItem?.name || 'Item'}</p>
+                      <p className="text-white/40">Qty: {item.quantity} · ${item.subtotal?.toFixed(2)}</p>
+                    </div>
+                    <button
+                      onClick={async () => {
+                        const res = await fetch(`/api/order-items/${item.id}`, { method: 'DELETE' })
+                        if (res.ok) {
+                          toast.success('Item removed from order')
+                          setOrderHistoryItems(prev => prev.filter(i => i.id !== item.id))
+                        } else {
+                          toast.error('Failed to remove item')
+                        }
+                      }}
+                      className="p-1.5 rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 transition-colors"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
+                {orderHistoryItems.length === 0 && !loadingOrderHistory && (
+                  <p className="text-white/30 text-xs text-center py-3">Enter an Order ID to load its items.</p>
+                )}
+              </div>
             </div>
           )}
         </div>

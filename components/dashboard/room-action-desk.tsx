@@ -21,7 +21,10 @@ import {
   Zap,
   AlertCircle,
   CheckCheck,
-  Loader2
+  Loader2,
+  Scan,
+  QrCode,
+  KeyRound
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
@@ -364,7 +367,7 @@ export function RoomActionDesk({
                   </button>
                 </div>
                 {currentBooking && (
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-3 gap-3">
                     <button
                       onClick={async () => {
                         const res = await fetch('/api/payments/pre-auth', {
@@ -376,7 +379,7 @@ export function RoomActionDesk({
                       }}
                       className="flex items-center gap-2 p-3 rounded-xl border border-white/8 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 transition-all text-left justify-center"
                     >
-                      <p className="font-semibold text-xs">Pre-Auth Card ($100)</p>
+                      <p className="font-semibold text-xs text-center">Pre-Auth Card<br/>($100)</p>
                     </button>
                     <button
                       onClick={async () => {
@@ -389,7 +392,29 @@ export function RoomActionDesk({
                       }}
                       className="flex items-center gap-2 p-3 rounded-xl border border-white/8 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 transition-all text-left justify-center"
                     >
-                      <p className="font-semibold text-xs">Send to Terminal ($50)</p>
+                      <p className="font-semibold text-xs text-center">Terminal<br/>($50)</p>
+                    </button>
+                    <button
+                      onClick={async () => {
+                        const res = await fetch('/api/integrations/door-locks', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ 
+                            bookingId: currentBooking.id, 
+                            roomId: room.id, 
+                            provider: 'ASSA_ABLOY', 
+                            action: 'ENCODE', 
+                            validFrom: new Date().toISOString(),
+                            validUntil: currentBooking.checkOut,
+                            keyCount: 1
+                          })
+                        })
+                        if (res.ok) alert(`Keycard Encoded successfully (UID: ${(await res.json()).uid})`)
+                        else alert('Encoding failed: ' + (await res.json()).error)
+                      }}
+                      className="flex items-center gap-2 p-3 rounded-xl border border-white/8 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 transition-all text-left justify-center"
+                    >
+                      <p className="font-semibold text-xs text-center">Encode<br/>Keycard</p>
                     </button>
                   </div>
                 )}
@@ -409,12 +434,36 @@ export function RoomActionDesk({
                     <div className="w-14 h-14 rounded-2xl bg-emerald-500/20 flex items-center justify-center">
                       <User className="w-7 h-7 text-emerald-400" />
                     </div>
-                    <div>
+                    <div className="flex-1">
                       <p className="text-white font-bold text-lg">{currentBooking.user?.name || 'Unknown Guest'}</p>
                       <p className="text-white/40 text-sm">{currentBooking.user?.email}</p>
                       <p className="text-emerald-400 text-xs mt-1 font-semibold">
                         Checked in · Leaves {format(new Date(currentBooking.checkOut), 'MMM dd, yyyy')}
                       </p>
+                    </div>
+                  </div>
+                  {/* Email dispatch */}
+                  <div className="mt-4 pt-4 border-t border-emerald-500/20">
+                    <p className="text-xs text-emerald-400/60 font-semibold uppercase tracking-widest mb-2">Send Email</p>
+                    <div className="flex flex-wrap gap-2">
+                      {(['PRE_ARRIVAL', 'BOOKING_CONFIRMATION', 'PAYMENT_RECEIPT', 'POST_DEPARTURE'] as const).map(template => (
+                        <button
+                          key={template}
+                          onClick={async () => {
+                            const res = await fetch('/api/communications/email', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ bookingId: currentBooking.id, template })
+                            })
+                            const data = await res.json()
+                            if (res.ok) alert(`Email sent: ${template}`)
+                            else alert('Failed: ' + data.error)
+                          }}
+                          className="px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-[11px] font-semibold hover:bg-emerald-500/20 transition-all"
+                        >
+                          {template.replace(/_/g, ' ')}
+                        </button>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -490,6 +539,56 @@ export function RoomActionDesk({
                 </div>
               )}
 
+              {/* Digital Guest Actions — only when guest is checked in */}
+              {currentBooking && (
+                <div>
+                  <p className="text-xs text-white/40 font-bold uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <KeyRound className="w-3.5 h-3.5" /> Digital Guest Tools
+                  </p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      onClick={async () => {
+                        const res = await fetch(`/api/guest/qr-compendium?roomId=${room.id}`)
+                        const data = await res.json()
+                        if (res.ok) {
+                          window.open(data.data.link, '_blank')
+                        } else {
+                          alert('Failed to generate QR link: ' + data.error)
+                        }
+                      }}
+                      className="flex items-center gap-3 p-4 rounded-2xl border border-white/8 bg-white/[0.03] hover:bg-white/[0.07] text-white/60 hover:text-white transition-all text-left"
+                    >
+                      <QrCode className="w-5 h-5 flex-shrink-0" />
+                      <div>
+                        <p className="font-semibold text-sm">QR Compendium</p>
+                        <p className="text-[11px] opacity-50">Open guest portal link</p>
+                      </div>
+                    </button>
+                    <button
+                      onClick={async () => {
+                        const deviceId = prompt('Enter guest device ID (for mobile key):')
+                        if (!deviceId) return
+                        const res = await fetch('/api/guest/digital-key', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ bookingId: currentBooking.id, deviceId })
+                        })
+                        const data = await res.json()
+                        if (res.ok) alert(`Mobile key issued!\nToken: ${data.keyData.token}`)
+                        else alert('Failed: ' + data.error)
+                      }}
+                      className="flex items-center gap-3 p-4 rounded-2xl border border-white/8 bg-white/[0.03] hover:bg-white/[0.07] text-white/60 hover:text-white transition-all text-left"
+                    >
+                      <KeyRound className="w-5 h-5 flex-shrink-0" />
+                      <div>
+                        <p className="font-semibold text-sm">Issue Digital Key</p>
+                        <p className="text-[11px] opacity-50">Send mobile key to phone</p>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Notes */}
               <div>
                 <label className="text-xs text-white/40 font-bold uppercase tracking-widest mb-2 flex items-center gap-2 ml-1">
@@ -530,6 +629,31 @@ export function RoomActionDesk({
                   </div>
 
                   <div className="space-y-3">
+                    {/* OCR Scan Button */}
+                    <button
+                      onClick={async () => {
+                        try {
+                          const res = await fetch('/api/integrations/ocr', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ base64Image: 'mock_image_data', documentType: 'PASSPORT' })
+                          })
+                          const data = await res.json()
+                          if (res.ok) {
+                            setGuestName(`${data.parsedData.firstName} ${data.parsedData.lastName}`)
+                            alert(`Scanned Passport: ${data.parsedData.firstName} ${data.parsedData.lastName}`)
+                          } else {
+                            alert('Scan failed: ' + data.error)
+                          }
+                        } catch (err) {
+                          alert('Scan failed')
+                        }
+                      }}
+                      className="w-full flex justify-center items-center gap-2 p-3 bg-white/5 border border-white/10 hover:bg-white/10 rounded-xl text-sm text-white transition-all mb-4"
+                    >
+                      <Scan className="w-4 h-4" /> Scan ID / Passport (OCR)
+                    </button>
+
                     {/* Guest Name */}
                     <div>
                       <label className="text-xs text-white/40 font-semibold uppercase tracking-wider ml-1 mb-1.5 block">Guest Name *</label>

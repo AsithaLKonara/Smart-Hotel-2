@@ -84,16 +84,24 @@ export default function OtaChannelSync() {
     }
   }
 
-  const triggerGlobalSync = () => {
+  const triggerGlobalSync = async () => {
     setSyncing(true)
-    toast.loading("Securing transactional inventory locks across global OTAs...")
+    toast.loading("Synchronizing with Booking.com (Pushing Availability & Pulling Reservations)...")
     
-    setTimeout(() => {
-      setSyncing(false)
+    try {
+      const res = await fetch('/api/integrations/booking-com/sync', { method: 'POST' })
+      if (!res.ok) throw new Error('Sync failed')
+      
+      const data = await res.json()
       toast.dismiss()
-      toast.success("All listings synchronized successfully!")
+      toast.success(`Synced! Reservations: ${data.reservations_synced || 0}, Rooms Updated: ${data.room_types_updated || 0}`)
       fetchInitialData()
-    }, 2000)
+    } catch (err) {
+      toast.dismiss()
+      toast.error("Synchronization failed")
+    } finally {
+      setSyncing(false)
+    }
   }
 
   const saveMapping = async (mapping: any) => {

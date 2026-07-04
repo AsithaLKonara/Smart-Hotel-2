@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { canAccessManagerFeatures } from '@/lib/rbac-helpers'
-import { Plus, Edit, Trash2, Search, Package, AlertTriangle, CheckCircle, Loader2, Save, X } from 'lucide-react'
+import { Plus, Edit, Trash2, Search, Package, AlertTriangle, CheckCircle, Loader2, Save, X, SlidersHorizontal } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -33,6 +33,7 @@ export default function AdminInventoryPage() {
   const [filterStatus, setFilterStatus] = useState('all')
   const [showModal, setShowModal] = useState(false)
   const [editingItem, setEditingItem] = useState<InventoryItem | null>(null)
+  const [adjustingItemId, setAdjustingItemId] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -380,6 +381,39 @@ export default function AdminInventoryPage() {
                           className="text-red-600"
                         >
                           <Trash2 className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={adjustingItemId === item.id}
+                          onClick={async () => {
+                            const location = prompt('Location (e.g. Storeroom A):', 'Storeroom A')
+                            if (!location) return
+                            const newQty = prompt(`New quantity for "${item.name}":`)
+                            if (newQty === null || newQty === '') return
+                            const reason = prompt('Reason for adjustment (e.g. Manual Count, Spillage):', 'Manual Count')
+                            if (!reason) return
+                            setAdjustingItemId(item.id)
+                            try {
+                              const res = await fetch(`/api/inventory/${item.id}/adjust`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ location, newQuantity: parseInt(newQty), reason })
+                              })
+                              const data = await res.json()
+                              if (res.ok) {
+                                toast.success(`Stock adjusted to ${newQty} at ${location}`)
+                                fetchInventory()
+                              } else {
+                                toast.error(data.error || 'Adjustment failed')
+                              }
+                            } finally {
+                              setAdjustingItemId(null)
+                            }
+                          }}
+                          title="Adjust Stock"
+                        >
+                          {adjustingItemId === item.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <SlidersHorizontal className="w-4 h-4" />}
                         </Button>
                       </div>
                     </td>

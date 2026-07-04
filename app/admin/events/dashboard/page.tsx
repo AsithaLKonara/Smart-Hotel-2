@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { CalendarDays, Users, MapPin, Plus, Hotel } from 'lucide-react'
+import { CalendarDays, Users, MapPin, Plus, Hotel, BookOpen, Calculator } from 'lucide-react'
 
 export default function EventsDashboard() {
   const [events, setEvents] = useState([])
@@ -58,7 +58,7 @@ export default function EventsDashboard() {
           </h1>
           <p className="text-white/60 text-sm">Manage group blocks, conferences, and event spaces.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           {['EVENTS', 'SPACES', 'BLOCKS'].map(tab => (
             <Button 
               key={tab}
@@ -69,6 +69,30 @@ export default function EventsDashboard() {
               {tab}
             </Button>
           ))}
+          <Button
+            variant="outline"
+            className="bg-white/5 text-white border-white/10 ml-auto"
+            onClick={async () => {
+              const roomTypeId = prompt('Room Type ID:')
+              const checkIn = prompt('Check-In (YYYY-MM-DD):')
+              const checkOut = prompt('Check-Out (YYYY-MM-DD):')
+              const guests = prompt('Number of Guests:', '2')
+              if (!roomTypeId || !checkIn || !checkOut) return
+              const res = await fetch('/api/pricing/quote', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ roomTypeId, checkIn, checkOut, guests: parseInt(guests || '1') })
+              })
+              const data = await res.json()
+              if (res.ok) {
+                alert(`Price Quote:\n${data.quote.nights} nights · ${data.quote.ratePlanName}\nTotal: $${data.quote.totalAmount} USD`)
+              } else {
+                alert('Error: ' + data.error)
+              }
+            }}
+          >
+            <Calculator className="w-4 h-4 mr-2" /> Get Price Quote
+          </Button>
         </div>
       </div>
 
@@ -123,6 +147,28 @@ export default function EventsDashboard() {
                     ))}
                   </div>
                 )}
+                <div className="mt-4 pt-4 border-t border-white/10 flex justify-end">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-primary border-primary/30 bg-primary/10 hover:bg-primary/20 text-xs"
+                    onClick={async () => {
+                      const userId = prompt('Guest User ID to book attendance:')
+                      const attendees = prompt('Number of attendees:', '1')
+                      if (!userId || !attendees) return
+                      const res = await fetch('/api/events/book', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ eventId: event.id, userId, attendees: parseInt(attendees) })
+                      })
+                      const data = await res.json()
+                      if (res.ok) alert(`Booking confirmed!\nRef: ${data.bookingReference}`)
+                      else alert('Error: ' + data.error)
+                    }}
+                  >
+                    <BookOpen className="w-3.5 h-3.5 mr-1" /> Book Attendance
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           ))}

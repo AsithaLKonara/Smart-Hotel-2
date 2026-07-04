@@ -62,7 +62,7 @@ export default function PaymentsLedgerPage() {
 
         <div className="mt-8 bg-white/5 border border-white/10 rounded-xl p-6">
           <h2 className="text-lg font-bold text-white mb-4">Advanced Folio Tools</h2>
-          <div className="flex gap-4">
+          <div className="flex gap-4 flex-wrap">
             <button 
               onClick={async () => {
                 const folioId = prompt('Enter Folio ID:')
@@ -96,6 +96,23 @@ export default function PaymentsLedgerPage() {
               className="px-4 py-2 bg-purple-500/20 text-purple-400 border border-purple-500/30 rounded-lg hover:bg-purple-500/30 transition-all text-sm font-semibold"
             >
               Split Folio by Percentage
+            </button>
+            <button
+              onClick={async () => {
+                const invoiceId = prompt('Enter Invoice ID to Fiscal Sign:')
+                if (!invoiceId) return
+                const res = await fetch('/api/integrations/fiscal-printer', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ invoiceId })
+                })
+                const data = await res.json()
+                if (res.ok) alert(`Invoice fiscally signed.\nSignature: ${data.signature}`)
+                else alert(`Error: ${data.error}`)
+              }}
+              className="px-4 py-2 bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-lg hover:bg-amber-500/30 transition-all text-sm font-semibold"
+            >
+              Fiscal Sign Invoice
             </button>
           </div>
         </div>

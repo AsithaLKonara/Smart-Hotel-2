@@ -54,31 +54,31 @@
 - [x] `/api/admin/events/blocks/[id]` (Fixed: Added delete block functionality in Events Dashboard)
 - [x] `/api/admin/events/spaces` (Fixed: Added Spaces tab in Events Dashboard to read/create event spaces)
 - [x] `/api/admin/events/spaces/[id]` (Fixed: Added delete space functionality in Events Dashboard)
-- [ ] `/api/debug-env`
-- [ ] `/api/loyalty/redeem`
-- [ ] `/api/compliance/gdpr/forget-me`
-- [ ] `/api/feedback`
-- [ ] `/api/feedback/[id]`
-- [ ] `/api/iot/minibar-post`
-- [ ] `/api/frontdesk/vip-alerts`
-- [ ] `/api/integrations/rate-parity`
-- [ ] `/api/integrations/booking-com/webhook`
-- [ ] `/api/integrations/booking-com/sync`
-- [ ] `/api/integrations/ocr`
-- [ ] `/api/integrations/door-locks`
-- [ ] `/api/integrations/rate-shopper`
-- [ ] `/api/integrations/channel-manager`
-- [ ] `/api/integrations/pos/charge`
-- [ ] `/api/integrations/exchange-rates`
-- [ ] `/api/integrations/fiscal-printer`
-- [ ] `/api/inventory/[id]/adjust`
-- [ ] `/api/guest/qr-compendium`
-- [ ] `/api/guest/digital-key`
-- [ ] `/api/order-items`
-- [ ] `/api/order-items/[id]`
-- [ ] `/api/events/book`
-- [ ] `/api/pricing/quote`
-- [ ] `/api/communications/email`
+- [x] `/api/debug-env` (Fixed: False Positive, System diagnostic endpoint used for k8s/Vercel verification)
+- [x] `/api/loyalty/redeem` (Fixed: Added Redeem Points action to CRM Guest Profile to credit Folios)
+- [x] `/api/compliance/gdpr/forget-me` (Fixed: Added GDPR Forget Me action to CRM Guest Profile)
+- [x] `/api/feedback` (Fixed: Built Global Feedback Dashboard in CRM to list guest reviews)
+- [x] `/api/feedback/[id]` (Fixed: Added delete review action to Global Feedback Dashboard)
+- [x] `/api/iot/minibar-post` (Fixed: False Positive, IoT hardware webhook requiring secure API key)
+- [x] `/api/frontdesk/vip-alerts` (Fixed: False Positive, Vercel cron job endpoint for daily VIP detection)
+- [x] `/api/integrations/rate-parity` (Fixed: False Positive, Vercel cron job endpoint for rate scraping)
+- [x] `/api/integrations/booking-com/webhook` (Fixed: False Positive, External OTA XML listener endpoint)
+- [x] `/api/integrations/booking-com/sync` (Fixed: Wired up Global Sync button in OTA Manager Dashboard)
+- [x] `/api/integrations/ocr` (Fixed: Added Scan ID / Passport (OCR) button to Walk-In Booking modal)
+- [x] `/api/integrations/door-locks` (Fixed: Added Encode Keycard button to Room Action Desk for active bookings)
+- [x] `/api/integrations/rate-shopper` (Fixed: False Positive, Yield Management/Rate Shopper external webhook)
+- [x] `/api/integrations/channel-manager` (Fixed: False Positive, HTNG/OTA XML webhook receiver for Siteminder/Cloudbeds)
+- [x] `/api/integrations/pos/charge` (Fixed: False Positive, physical POS terminal hardware webhook)
+- [x] `/api/integrations/exchange-rates` (Fixed: False Positive, Vercel cron job with Bearer token auth for currency sync)
+- [x] `/api/integrations/fiscal-printer` (Fixed: Added Fiscal Sign Invoice button in Accounting → Folio Tools)
+- [x] `/api/inventory/[id]/adjust` (Fixed: Added Adjust Stock action button to each inventory row)
+- [x] `/api/guest/qr-compendium` (Fixed: Added QR Compendium button in Room Action Desk → Guest Info tab)
+- [x] `/api/guest/digital-key` (Fixed: Added Issue Digital Key button in Room Action Desk → Guest Info tab)
+- [x] `/api/order-items` (Fixed: Wired GET into POS "View Order Items" panel — load by Order ID)
+- [x] `/api/order-items/[id]` (Fixed: Wired DELETE into POS Order Items panel — remove line item from existing order)
+- [x] `/api/events/book` (Fixed: Added "Book Attendance" button on each Event card in Events Dashboard)
+- [x] `/api/pricing/quote` (Fixed: Added "Get Price Quote" button in Events Dashboard header)
+- [x] `/api/communications/email` (Fixed: Added Email dispatch buttons in Room Action Desk → Guest Info tab)
 - [ ] `/api/cron/archive-db`
 - [ ] `/api/cron/generate-preventive-maintenance`
 - [ ] `/api/cron/night-audit/roll-forward`

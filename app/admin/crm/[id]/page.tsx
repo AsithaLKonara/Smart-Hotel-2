@@ -37,9 +37,49 @@ export default function GuestProfileDashboard() {
 
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-6">
-      <Button variant="ghost" className="mb-2 -ml-4 text-slate-500 hover:text-slate-900" onClick={() => router.back()}>
-        <ArrowLeft className="w-4 h-4 mr-2" /> Back to Directory
-      </Button>
+      <div className="flex justify-between items-center mb-2">
+        <Button variant="ghost" className="-ml-4 text-slate-500 hover:text-slate-900" onClick={() => router.back()}>
+          <ArrowLeft className="w-4 h-4 mr-2" /> Back to Directory
+        </Button>
+        <div className="flex gap-2">
+          {guest.loyalty && guest.loyalty.points >= 100 && (
+            <Button variant="outline" className="text-indigo-600 border-indigo-200 hover:bg-indigo-50" onClick={async () => {
+              const folioId = prompt('Enter active Folio ID to apply credit:')
+              const points = prompt(`Points to redeem (Max ${guest.loyalty.points}):`)
+              if (folioId && points) {
+                const res = await fetch('/api/loyalty/redeem', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ userId: guest.id, folioId, pointsToRedeem: parseInt(points) })
+                })
+                if (res.ok) {
+                  alert('Points redeemed successfully.')
+                  window.location.reload()
+                } else {
+                  alert('Redemption failed: ' + (await res.json()).error)
+                }
+              }
+            }}>
+              <Star className="w-4 h-4 mr-2" /> Redeem Points
+            </Button>
+          )}
+          <Button variant="destructive" className="bg-rose-600 hover:bg-rose-700" onClick={async () => {
+            if (confirm('CRITICAL WARNING: This will permanently anonymize this user record under GDPR. This action CANNOT be undone. Proceed?')) {
+              const res = await fetch('/api/compliance/gdpr/forget-me', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: guest.id })
+              })
+              if (res.ok) {
+                alert('User anonymized successfully.')
+                router.replace('/admin/crm')
+              }
+            }
+          }}>
+            <AlertTriangle className="w-4 h-4 mr-2" /> GDPR Forget Me
+          </Button>
+        </div>
+      </div>
 
       {/* Header Profile Card */}
       <div className="flex flex-col md:flex-row gap-6 items-start md:items-center bg-white p-6 rounded-xl border shadow-sm">

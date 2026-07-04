@@ -49,14 +49,19 @@ export default function CRMDashboard() {
           <p className="text-slate-500 mt-1">Unified profiles, loyalty status, and history.</p>
         </div>
         
-        <div className="relative w-full md:w-96">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <Input 
-            placeholder="Search by name or email..." 
-            className="pl-9 bg-white"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
+        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto items-center">
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Input 
+              placeholder="Search by name or email..." 
+              className="pl-9 bg-white"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+          </div>
+          <Button variant="outline" className="w-full sm:w-auto" onClick={() => router.push('/admin/crm/feedback')}>
+            View Global Feedback
+          </Button>
         </div>
       </div>
 
