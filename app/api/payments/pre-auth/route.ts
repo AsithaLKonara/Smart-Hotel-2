@@ -32,31 +32,33 @@ export async function POST(req: Request) {
     
     const mockIntentId = `pi_${Buffer.from(Date.now().toString()).toString('base64')}`
 
-    if (folioId) {
-      await prisma.payment.create({
+    await prisma.$transaction(async (tx: any) => {
+      if (folioId) {
+        await tx.payment.create({
+          data: {
+            folioId,
+            amount: validated.amount,
+            paymentMethod: 'card',
+            paymentProvider: 'STRIPE',
+            status: 'pending',
+            providerId: mockIntentId,
+            userId: booking.primaryGuestId
+          }
+        })
+      }
+
+      await tx.auditLog.create({
         data: {
-          folioId,
-          amount: validated.amount,
-          paymentMethod: 'card',
-          paymentProvider: 'STRIPE',
-          status: 'pending',
-          providerId: mockIntentId,
-          userId: booking.primaryGuestId
+          action: 'PAYMENT_PRE_AUTH_CREATED',
+          resource: 'BOOKING',
+          resourceId: booking.id,
+          actor: 'SYSTEM',
+          details: {
+            amount: validated.amount,
+            intentId: mockIntentId
+          }
         }
       })
-    }
-
-    await prisma.auditLog.create({
-      data: {
-        action: 'PAYMENT_PRE_AUTH_CREATED',
-        resource: 'BOOKING',
-        resourceId: booking.id,
-        actor: 'SYSTEM',
-        details: {
-          amount: validated.amount,
-          intentId: mockIntentId
-        }
-      }
     })
 
     return NextResponse.json({

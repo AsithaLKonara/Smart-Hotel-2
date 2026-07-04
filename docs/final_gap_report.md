@@ -35,7 +35,7 @@
 - app/api/restaurant/bookings/route.ts
 - [x] app/api/payments/route.ts (Fixed: Added $transaction)
 - [x] app/api/payments/terminal/route.ts (Fixed: Added $transaction)
-- app/api/payments/pre-auth/route.ts
+- [x] app/api/payments/pre-auth/route.ts (Fixed: Added $transaction)
 - app/api/payments/[id]/route.ts
 - app/api/night-audit/run/route.ts
 - app/api/folios/routing/route.ts
