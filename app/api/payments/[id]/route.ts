@@ -78,27 +78,30 @@ export async function PATCH(
     const body = await request.json()
     const validatedData = updatePaymentSchema.parse(body)
 
-    const payment = await prisma.payment.update({
-      where: { id },
-      data: validatedData,
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
+    const payment = await prisma.$transaction(async (tx: any) => {
+      const p = await tx.payment.update({
+        where: { id },
+        data: validatedData,
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
           },
         },
-      },
-    })
-
-    // Update booking payment status if payment completed
-    if (validatedData.status === 'completed' && payment.bookingId) {
-      await prisma.booking.update({
-        where: { id: payment.bookingId },
-        data: { paymentStatus: 'completed' },
       })
-    }
+
+      // Update booking payment status if payment completed
+      if (validatedData.status === 'completed' && p.bookingId) {
+        await tx.booking.update({
+          where: { id: p.bookingId },
+          data: { paymentStatus: 'completed' },
+        })
+      }
+      return p
+    })
 
     return NextResponse.json(payment)
   } catch (error: any) {
