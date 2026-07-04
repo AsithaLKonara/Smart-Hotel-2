@@ -10,8 +10,8 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: Request) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || !['SUPER_ADMIN', 'MANAGER', 'HOUSEKEEPER', 'RECEPTIONIST'].includes((session.user as any).roleName as string)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!session || !['SUPER_ADMIN', 'MANAGER', 'HOUSEKEEPING', 'RECEPTIONIST'].includes((session.user as any).roleName as string)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const { searchParams } = new URL(req.url);
@@ -65,8 +65,8 @@ const updateRoomStatusSchema = z.object({
 export async function PUT(req: Request) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || !['SUPER_ADMIN', 'MANAGER', 'HOUSEKEEPER', 'RECEPTIONIST'].includes((session.user as any).roleName as string)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!session || !['SUPER_ADMIN', 'MANAGER', 'HOUSEKEEPING', 'RECEPTIONIST'].includes((session.user as any).roleName as string)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const json = await req.json();
