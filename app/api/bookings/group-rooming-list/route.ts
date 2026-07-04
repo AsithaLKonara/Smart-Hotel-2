@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client'
 import { z } from 'zod'
 import { parse } from 'csv-parse/sync'
 import { getRequestSession } from '@/lib/session'
+import { realtime } from '@/lib/realtime'
 
 const prisma = new PrismaClient()
 
@@ -129,6 +130,15 @@ export async function POST(req: NextRequest) {
         createdCount++
       }
     })
+
+    try {
+      await realtime.trigger('admin', 'group.rooming_list.imported', {
+        groupBlockId: groupBlock.id,
+        importedCount: createdCount
+      })
+    } catch (e) {
+      console.error('Pusher error:', e)
+    }
 
     return NextResponse.json({
       success: true,

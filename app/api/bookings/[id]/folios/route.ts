@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/db'
 import { getRequestSession } from '@/lib/session'
+import { realtime } from '@/lib/realtime'
 
 export async function GET(
   request: NextRequest,
@@ -42,6 +43,16 @@ export async function GET(
           routingRulesTarget: true
         }
       })
+      
+      try {
+        await realtime.trigger('admin', 'folio.created', {
+          folioId: defaultFolio.id,
+          bookingId: defaultFolio.bookingId
+        })
+      } catch (e) {
+        console.error('Pusher error:', e)
+      }
+
       return NextResponse.json([defaultFolio])
     }
 
@@ -83,6 +94,16 @@ export async function POST(
         }
       })
     })
+
+    try {
+      await realtime.trigger('admin', 'folio.created', {
+        folioId: newFolio.id,
+        bookingId: newFolio.bookingId
+      })
+    } catch (e) {
+      console.error('Pusher error:', e)
+    }
+
     return NextResponse.json(newFolio, { status: 201 })
   } catch (error) {
     console.error('Error creating folio:', error)

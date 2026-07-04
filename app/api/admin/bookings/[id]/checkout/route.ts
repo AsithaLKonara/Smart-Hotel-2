@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { realtime } from '@/lib/realtime';
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -167,6 +168,21 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         }
       });
     });
+
+    try {
+      await realtime.trigger('admin', 'booking.checked_out', {
+        bookingId: bookingId,
+        balance: balance
+      });
+      for (const assignment of booking.roomAssignments) {
+        await realtime.trigger('admin', 'room.status_changed', {
+          roomId: assignment.roomId,
+          status: 'DIRTY'
+        });
+      }
+    } catch (e) {
+      console.error('Pusher error:', e);
+    }
 
     return NextResponse.json({ success: true, message: 'Checkout completed successfully' });
   } catch (error) {

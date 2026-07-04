@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 import { z } from 'zod'
 import { getRequestSession } from '@/lib/session'
+import { realtime } from '@/lib/realtime'
 
 const prisma = new PrismaClient()
 
@@ -37,9 +38,10 @@ export async function POST(req: NextRequest) {
     
     const mockIntentId = `pi_${Buffer.from(Date.now().toString()).toString('base64')}`
 
+    let paymentRecordId = null
     await prisma.$transaction(async (tx: any) => {
       if (folioId) {
-        await tx.payment.create({
+        const payment = await tx.payment.create({
           data: {
             folioId,
             amount: validated.amount,
@@ -50,6 +52,7 @@ export async function POST(req: NextRequest) {
             userId: booking.primaryGuestId
           }
         })
+        paymentRecordId = payment.id
       }
 
       await tx.auditLog.create({
@@ -65,6 +68,18 @@ export async function POST(req: NextRequest) {
         }
       })
     })
+
+    if (paymentRecordId) {
+      try {
+        await realtime.trigger('admin', 'payment.created', {
+          paymentId: paymentRecordId,
+          amount: validated.amount,
+          status: 'pending'
+        })
+      } catch (e) {
+        console.error('Pusher error:', e)
+      }
+    }
 
     return NextResponse.json({
       success: true,

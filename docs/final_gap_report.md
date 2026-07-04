@@ -65,21 +65,21 @@
 *Issues regarding background processing, real-time updates, and webhooks.*
 
 ### Missing Event Emissions (Webhooks / Pusher / Outbox):
-- app/api/restaurant/bookings/route.ts
-- app/api/payments/route.ts
-- app/api/payments/terminal/route.ts
-- app/api/payments/pre-auth/route.ts
-- app/api/payments/[id]/route.ts
-- app/api/night-audit/run/route.ts
-- app/api/folios/routing/route.ts
-- app/api/folios/post-charge/route.ts
-- app/api/folios/[folioId]/split-percentage/route.ts
-- app/api/bookings/group-rooming-list/route.ts
-- app/api/bookings/[id]/route.ts
-- app/api/bookings/[id]/folios/route.ts
-- app/api/admin/bookings/[id]/checkout/route.ts
-- app/api/admin/accounting/night-audit/route.ts
-- app/api/admin/accounting/folios/route.ts
+- [x] app/api/restaurant/bookings/route.ts (Fixed: Added realtime triggers)
+- [x] app/api/payments/route.ts (Fixed: Added realtime triggers)
+- [x] app/api/payments/terminal/route.ts (Fixed: Added realtime triggers)
+- [x] app/api/payments/pre-auth/route.ts (Fixed: Added realtime triggers)
+- [x] app/api/payments/[id]/route.ts (Fixed: Added realtime triggers)
+- [x] app/api/night-audit/run/route.ts (Fixed: Added realtime triggers)
+- [x] app/api/folios/routing/route.ts (Fixed: Added realtime triggers)
+- [x] app/api/folios/post-charge/route.ts (Fixed: Added realtime triggers)
+- [x] app/api/folios/[folioId]/split-percentage/route.ts (Fixed: Added realtime triggers)
+- [x] app/api/bookings/group-rooming-list/route.ts (Fixed: Added realtime triggers)
+- [x] app/api/bookings/[id]/route.ts (Fixed: Added realtime triggers)
+- [x] app/api/bookings/[id]/folios/route.ts (Fixed: Added realtime triggers)
+- [x] app/api/admin/bookings/[id]/checkout/route.ts (Fixed: Added realtime triggers)
+- [x] app/api/admin/accounting/night-audit/route.ts (Fixed: Added realtime triggers)
+- [x] app/api/admin/accounting/folios/route.ts (Fixed: Added realtime triggers)
 
 - **Pusher Triggers Used**: 1
 - **Webhook Emitters Used**: 11

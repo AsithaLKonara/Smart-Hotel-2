@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { PrismaClient } from '@prisma/client'
 import { getRequestSession } from '@/lib/session'
+import { realtime } from '@/lib/realtime'
 
 const prisma = new PrismaClient()
 
@@ -67,6 +68,16 @@ export async function POST(req: NextRequest) {
 
         return p
       })
+      
+      try {
+        await realtime.trigger('admin', 'payment.created', {
+          paymentId: paymentRecord.id,
+          amount: paymentRecord.amount,
+          status: paymentRecord.status
+        })
+      } catch (e) {
+        console.error('Pusher error:', e)
+      }
     }
 
     return NextResponse.json({

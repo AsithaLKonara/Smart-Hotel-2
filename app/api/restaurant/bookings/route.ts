@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { realtime } from '@/lib/realtime'
 
 export async function GET(request: NextRequest) {
   try {
@@ -62,6 +63,15 @@ export async function POST(request: NextRequest) {
       })
     })
 
+    try {
+      await realtime.trigger('admin', 'restaurant.booking.created', { 
+        bookingId: booking.id, 
+        status: booking.status 
+      })
+    } catch (e) {
+      console.error('Pusher error:', e)
+    }
+
     return NextResponse.json(booking, { status: 201 })
   } catch (error) {
     console.error('Error creating table booking:', error)
@@ -89,6 +99,15 @@ export async function PATCH(request: NextRequest) {
         data: { status }
       })
     })
+
+    try {
+      await realtime.trigger('admin', 'restaurant.booking.updated', { 
+        bookingId: booking.id, 
+        status: booking.status 
+      })
+    } catch (e) {
+      console.error('Pusher error:', e)
+    }
 
     return NextResponse.json(booking)
   } catch (error) {

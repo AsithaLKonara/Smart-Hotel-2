@@ -3,6 +3,7 @@ import prisma from '@/lib/db'
 import { postCharge } from '@/lib/accounting'
 import { differenceInDays, addDays, startOfDay, isBefore, isSameDay } from 'date-fns'
 import { getRequestSession } from '@/lib/session'
+import { realtime } from '@/lib/realtime'
 
 export async function POST(req: NextRequest) {
   try {
@@ -128,6 +129,16 @@ export async function POST(req: NextRequest) {
 
     if (auditResult.error) {
       return NextResponse.json({ error: auditResult.error }, { status: auditResult.status })
+    }
+
+    try {
+      await realtime.trigger('admin', 'night_audit.completed', {
+        businessDate: auditResult.summary.previousDate,
+        newDate: auditResult.summary.newDate,
+        revenue: auditResult.summary.totalRevenuePosted
+      })
+    } catch (e) {
+      console.error('Pusher error:', e)
     }
 
     return NextResponse.json(auditResult)

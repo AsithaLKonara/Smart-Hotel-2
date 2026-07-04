@@ -361,6 +361,13 @@ export async function DELETE(
       where: { id: id }
     })
 
+    try {
+      const { realtime } = await import('@/lib/realtime')
+      await realtime.trigger('admin', 'booking.deleted', { bookingId: id })
+    } catch (e) {
+      console.error('Pusher error:', e)
+    }
+
     return NextResponse.json({ message: 'Booking deleted successfully' })
   } catch (error) {
     console.error('Error deleting booking:', error)

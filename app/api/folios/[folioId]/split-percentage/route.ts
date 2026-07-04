@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { PrismaClient } from '@prisma/client'
 import { getRequestSession } from '@/lib/session'
+import { realtime } from '@/lib/realtime'
 
 const prisma = new PrismaClient()
 
@@ -95,6 +96,16 @@ export async function POST(
         }
       })
     })
+
+    try {
+      await realtime.trigger('admin', 'folio.split', {
+        originalFolioId: folio.id,
+        newFolioId: newFolio.id,
+        percentage: validatedData.percentage
+      })
+    } catch (e) {
+      console.error('Pusher error:', e)
+    }
 
     return NextResponse.json({
       success: true,

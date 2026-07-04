@@ -3,6 +3,7 @@ import prisma from '@/lib/db'
 import { postCharge, ChargePayload } from '@/lib/accounting'
 import { z } from 'zod'
 import { getRequestSession } from '@/lib/session'
+import { realtime } from '@/lib/realtime'
 
 const chargeSchema = z.object({
   bookingId: z.string().uuid(),
@@ -24,6 +25,16 @@ export async function POST(request: NextRequest) {
     const result = await prisma.$transaction(async (tx: any) => {
       return await postCharge(data, tx)
     })
+
+    try {
+      await realtime.trigger('admin', 'folio.charge_posted', {
+        bookingId: data.bookingId,
+        amount: data.amount,
+        category: data.category
+      })
+    } catch (e) {
+      console.error('Pusher error:', e)
+    }
 
     return NextResponse.json(result, { status: 201 })
   } catch (error: any) {

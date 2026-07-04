@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { realtime } from '@/lib/realtime';
 
 export async function GET(req: Request) {
   try {
@@ -53,6 +54,15 @@ export async function POST(req: Request) {
         }
       });
     });
+
+    try {
+      await realtime.trigger('admin', 'folio.created', {
+        folioId: newFolio.id,
+        bookingId: newFolio.bookingId
+      });
+    } catch (e) {
+      console.error('Pusher error:', e);
+    }
 
     return NextResponse.json({ success: true, folio: newFolio });
   } catch (error) {

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { getRequestSession } from '@/lib/session'
 import { z } from 'zod'
+import { realtime } from '@/lib/realtime'
 
 const paymentSchema = z.object({
   bookingId: z.string().optional(),
@@ -115,6 +116,16 @@ export async function POST(request: NextRequest) {
       
       return p
     })
+
+    try {
+      await realtime.trigger('admin', 'payment.created', {
+        paymentId: payment.id,
+        amount: payment.amount,
+        status: payment.status
+      })
+    } catch (e) {
+      console.error('Pusher error:', e)
+    }
 
     return NextResponse.json(payment, { status: 201 })
   } catch (error: any) {

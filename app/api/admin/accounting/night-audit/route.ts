@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { realtime } from '@/lib/realtime';
 
 export async function POST(req: Request) {
   try {
@@ -84,6 +85,16 @@ export async function POST(req: Request) {
         }
       });
     });
+
+    try {
+      await realtime.trigger('admin', 'night_audit.completed', {
+        businessDate: auditLog.businessDate,
+        revenue: auditLog.totalRevenue,
+        roomsProcessed: auditLog.roomsProcessed
+      });
+    } catch (e) {
+      console.error('Pusher error:', e);
+    }
 
     return NextResponse.json({ success: true, auditLog });
   } catch (error) {

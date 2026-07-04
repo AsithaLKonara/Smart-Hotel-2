@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { getRequestSession } from '@/lib/session'
 import { z } from 'zod'
+import { realtime } from '@/lib/realtime'
 
 const updatePaymentSchema = z.object({
   status: z.enum(['pending', 'completed', 'failed', 'refunded']).optional(),
@@ -102,6 +103,16 @@ export async function PATCH(
       }
       return p
     })
+
+    try {
+      await realtime.trigger('admin', 'payment.updated', {
+        paymentId: payment.id,
+        amount: payment.amount,
+        status: payment.status
+      })
+    } catch (e) {
+      console.error('Pusher error:', e)
+    }
 
     return NextResponse.json(payment)
   } catch (error: any) {

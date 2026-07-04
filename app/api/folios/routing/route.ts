@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/db'
 import { z } from 'zod'
 import { getRequestSession } from '@/lib/session'
+import { realtime } from '@/lib/realtime'
 
 const routingSchema = z.object({
   sourceFolioId: z.string().uuid(),
@@ -35,6 +36,16 @@ export async function POST(request: NextRequest) {
         }
       })
     })
+
+    try {
+      await realtime.trigger('admin', 'folio.routing_rule.created', {
+        ruleId: rule.id,
+        sourceFolioId: rule.sourceFolioId,
+        targetFolioId: rule.targetFolioId
+      })
+    } catch (e) {
+      console.error('Pusher error:', e)
+    }
 
     return NextResponse.json({ rule }, { status: 201 })
   } catch (error: any) {
