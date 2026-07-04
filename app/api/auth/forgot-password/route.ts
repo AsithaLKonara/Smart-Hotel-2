@@ -42,7 +42,8 @@ export async function POST(request: NextRequest) {
     // For now, we'll generate the token and send email
     // The reset-password route would need to be updated to handle token validation differently
     
-    const resetUrl = `${process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`
+    const baseUrl = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || new URL(request.url).origin;
+    const resetUrl = `${baseUrl}/auth/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`
 
     // Send email with reset link
     try {

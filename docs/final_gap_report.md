@@ -13,7 +13,7 @@
 - **Potentially Unused/Disconnected Endpoints**: 75
 
 ### Top 10 Disconnected Endpoints (Orphans):
-- `/api/webhooks/stripe`
+- [x] `/api/webhooks/stripe` (Fixed: False Positive, invoked by external webhook)
 - `/api/webhooks/retry`
 - `/api/webhooks/ota`
 - `/api/test-simple`
@@ -93,16 +93,16 @@
 - **Hardcoded Secrets/URLs**: 24
 
 ### Top 10 Hardcoded Secrets/URLs:
-- app/onboarding/page.tsx:69 - key="completed"
-- app/mobile/guest-super-app/page.tsx:190 - key="key"
-- app/mobile/guest-super-app/page.tsx:266 - key="dining"
-- app/mobile/guest-super-app/page.tsx:309 - key="valet"
-- app/api/qr-codes/generate/route.ts:20 - Hardcoded URL: const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
-- app/api/qr-codes/generate/route.ts:80 - Hardcoded URL: const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
-- app/api/auth/forgot-password/route.ts:45 - Hardcoded URL: const resetUrl = `${process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`
-- components/ui/sparkline-chart.tsx:24 - dataKey="value"
-- components/ui/optimized-image.tsx:171 - key="error"
-- components/ui/optimized-image.tsx:177 - key="loading"
+- [x] app/onboarding/page.tsx:69 - key="completed" (Fixed: False Positive, React key)
+- [x] app/mobile/guest-super-app/page.tsx:190 - key="key" (Fixed: False Positive, React key)
+- [x] app/mobile/guest-super-app/page.tsx:266 - key="dining" (Fixed: False Positive, React key)
+- [x] app/mobile/guest-super-app/page.tsx:309 - key="valet" (Fixed: False Positive, React key)
+- [x] app/api/qr-codes/generate/route.ts:20 (Fixed: Replaced localhost with dynamic origin)
+- [x] app/api/qr-codes/generate/route.ts:80 (Fixed: Replaced localhost with dynamic origin)
+- [x] app/api/auth/forgot-password/route.ts:45 (Fixed: Replaced localhost with dynamic origin)
+- [x] components/ui/sparkline-chart.tsx:24 - dataKey="value" (Fixed: False Positive, Recharts prop)
+- [x] components/ui/optimized-image.tsx:171 - key="error" (Fixed: False Positive, React key)
+- [x] components/ui/optimized-image.tsx:177 - key="loading" (Fixed: False Positive, React key)
 
 ## 6. Executive Summary & Recommendations
 

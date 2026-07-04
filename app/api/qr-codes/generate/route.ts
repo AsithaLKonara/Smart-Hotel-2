@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     let qrData = data
     if (!qrData && roomNumber && guestId) {
       // Generate room service ordering URL
-      const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
+      const baseUrl = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || new URL(request.url).origin
       qrData = `${baseUrl}/order?room=${encodeURIComponent(roomNumber)}&guest=${encodeURIComponent(guestId)}&type=${type}`
     }
 
@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
 
     let qrData = data
     if (!qrData && roomNumber && guestId) {
-      const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
+      const baseUrl = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || new URL(request.url).origin
       qrData = `${baseUrl}/order?room=${encodeURIComponent(roomNumber)}&guest=${encodeURIComponent(guestId)}&type=${type}`
     }
 
