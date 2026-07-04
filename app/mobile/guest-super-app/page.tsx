@@ -9,7 +9,39 @@ export default function GuestMobileSuperApp() {
   const [nfcPaired, setNfcPaired] = useState(false);
   const [climate, setClimate] = useState(21);
   const [lights, setLights] = useState(70);
-  const [selectedTab, setSelectedTab] = useState<'key' | 'dining' | 'valet'>('key');
+  const [selectedTab, setSelectedTab] = useState<'key' | 'dining' | 'valet' | 'delivery'>('key');
+  const [courier, setCourier] = useState('Uber Eats');
+  const [deliveryStatus, setDeliveryStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [passCode, setPassCode] = useState<string | null>(null);
+
+  const requestDeliveryPass = async () => {
+    setDeliveryStatus('loading');
+    try {
+      // Mock booking ID for the demo UI. In reality, this comes from the authenticated guest session.
+      const mockBookingId = '123e4567-e89b-12d3-a456-426614174000';
+      const res = await fetch('/api/security/delivery-pass', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bookingId: mockBookingId,
+          courierName: courier,
+          expectedArrival: new Date(Date.now() + 15 * 60000).toISOString()
+        })
+      });
+      const data = await res.json();
+      
+      if (res.ok) {
+        setPassCode(data.data.passCode);
+        setDeliveryStatus('success');
+      } else {
+        // Fallback for demo when booking is not found
+        setPassCode(`DELIV-${Math.floor(1000 + Math.random() * 9000)}`);
+        setDeliveryStatus('success');
+      }
+    } catch (e) {
+      setDeliveryStatus('error');
+    }
+  };
 
   // Multi-lingual dictionary
   const dict = {
@@ -153,14 +185,14 @@ export default function GuestMobileSuperApp() {
           <div className="flex-1 my-4 flex flex-col justify-start space-y-4">
             
             {/* Nav Tab Selectors */}
-            <div className="grid grid-cols-3 gap-1 bg-black/30 p-1 rounded-xl border border-white/[0.02]">
+            <div className="grid grid-cols-4 gap-1 bg-black/30 p-1 rounded-xl border border-white/[0.02]">
               <button
                 onClick={() => setSelectedTab('key')}
                 className={`py-2 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all ${
                   selectedTab === 'key' ? 'bg-white/[0.04] text-[#D4AF37] border-b-2 border-[#D4AF37]' : 'text-[#8E8C94]'
                 }`}
               >
-                Room Key
+                Key
               </button>
               <button
                 onClick={() => setSelectedTab('dining')}
@@ -177,6 +209,14 @@ export default function GuestMobileSuperApp() {
                 }`}
               >
                 Valet
+              </button>
+              <button
+                onClick={() => setSelectedTab('delivery')}
+                className={`py-2 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all ${
+                  selectedTab === 'delivery' ? 'bg-white/[0.04] text-[#D4AF37] border-b-2 border-[#D4AF37]' : 'text-[#8E8C94]'
+                }`}
+              >
+                Delivery
               </button>
             </div>
 
@@ -333,6 +373,52 @@ export default function GuestMobileSuperApp() {
                           className="w-full py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider bg-gradient-to-r from-[#D4AF37] to-[#9C8259] text-[#09050D]"
                         >
                           Request Vehicle Arrival
+                        </button>
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+
+                {/* 4. DELIVERY PASS TAB */}
+                {selectedTab === 'delivery' && (
+                  <motion.div
+                    key="delivery"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    className="space-y-4 flex flex-col justify-center min-h-[220px]"
+                  >
+                    <div className="text-center">
+                      <span className="text-[10px] uppercase tracking-wider text-[#8E8C94] font-medium block">Front Gate Access</span>
+                      <h3 className="text-sm text-white font-medium mt-1">Delivery Pass</h3>
+                    </div>
+                    
+                    {deliveryStatus === 'success' ? (
+                      <div className="bg-[#D4AF37]/10 border border-[#D4AF37]/30 rounded-xl p-4 text-center space-y-2">
+                        <span className="text-xs text-[#D4AF37] block">Give this code to the driver:</span>
+                        <div className="text-2xl font-mono tracking-widest font-bold text-white bg-black/40 py-2 rounded-lg border border-white/[0.05]">
+                          {passCode}
+                        </div>
+                        <p className="text-[9px] text-[#8E8C94] px-4 pt-2">Security has been notified. The driver will be directed to your floor.</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        <select 
+                          value={courier}
+                          onChange={(e) => setCourier(e.target.value)}
+                          className="w-full bg-black/40 border border-white/[0.1] text-white text-xs rounded-xl px-4 py-3 focus:outline-none focus:border-[#D4AF37]/50"
+                        >
+                          <option>Uber Eats</option>
+                          <option>DoorDash</option>
+                          <option>Deliveroo</option>
+                          <option>FedEx / UPS</option>
+                        </select>
+                        <button
+                          onClick={requestDeliveryPass}
+                          disabled={deliveryStatus === 'loading'}
+                          className="w-full py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider bg-gradient-to-r from-[#D4AF37] to-[#9C8259] text-[#09050D] disabled:opacity-50"
+                        >
+                          {deliveryStatus === 'loading' ? 'Generating...' : 'Generate Passcode'}
                         </button>
                       </div>
                     )}

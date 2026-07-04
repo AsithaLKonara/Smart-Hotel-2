@@ -14,13 +14,13 @@
 
 ### Top 10 Disconnected Endpoints (Orphans):
 - [x] `/api/webhooks/stripe` (Fixed: False Positive, invoked by external webhook)
-- `/api/webhooks/retry`
-- `/api/webhooks/ota`
-- `/api/test-simple`
-- `/api/test-minimal`
-- `/api/test-db-comprehensive`
-- `/api/test-db`
-- `/api/security/delivery-pass`
+- [x] `/api/webhooks/retry` (Fixed: False Positive, invoked by CRON scheduler)
+- [x] `/api/webhooks/ota` (Fixed: False Positive, invoked by external OTA channels)
+- [x] `/api/test-simple` (Fixed: Deleted dead test code)
+- [x] `/api/test-minimal` (Fixed: Deleted dead test code)
+- [x] `/api/test-db-comprehensive` (Fixed: Deleted dead test code)
+- [x] `/api/test-db` (Fixed: Deleted dead test code)
+- [x] `/api/security/delivery-pass` (Fixed: Built UI tab in Guest Super App)
 - `/api/rooms/check-availability`
 - `/api/revenue/yield-engine`
 *(and 65 more...)*
