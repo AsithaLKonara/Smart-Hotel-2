@@ -2,7 +2,7 @@
   "cookies": [
     {
       "name": "next-auth.csrf-token",
-      "value": "d319fbce1229fc5062484c857c82f3f39149a27efba7e3ee93b8bf0ecc30894a%7Cdad5c73d7a0b418169924408d8ee55b0dda72fd78f8d30f8b62255a79e356196",
+      "value": "73641b5399507e6e1950d146fda69957126f84bbaf5de9eab52d943e4c224b54%7C21d1c6aa8c7465be90af877b84bc3c61a749f7361688e1b298bbc2bf41c7036c",
       "domain": "localhost",
       "path": "/",
       "expires": -1,
@@ -22,10 +22,10 @@
     },
     {
       "name": "next-auth.session-token",
-      "value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..lcYFbB15CMLxDOS7.F449wiB7yueZ0vbuFavKOw-vK34JH8kULgNiewEALTUJ3QPDoBIfziCwdu9LNE02ElXEagWmwLBkHp0fg43GzO2NMON7UvzJMdBk3XoWJiWCjX7J00IRrlcm0IbaNYZJnCiZB7-gpvFdeP3mRDNkrG5j10-K1G3ULDz_7XHTlvsRLcfm636tlHt4zleSEKPa-SbPmeD_um5EUVD0FmzJnMiIu1jO4nBLmlJP8bvSy5cLhFWzr4RhfCXX5amUlm7JEcqZahjtRQ1lilqx-uC66wLGxMfisO4ndBq2i9a5AFKBRVcUuUDckSz2h9KiUfFF2Cwe2q8NX1BHPter_U5EUHxN1DwwXtyjiaCOsJfI-4kFDHEzgnZfjr2pp5o9YHkKa_2C7uq8nXKqNU9sKr5WKFMoZzNW0xhY6CnwXUgnnNHIkz06Sw4Uxv_f.6oKjpCan0EdJxWpjc48OJw",
+      "value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..sjJmOUCBZ67kmJzE.0BT9MoPvZEkiN2j26OtBdevIHZl-7bHxPXc0jU17Ns2j9Fc9Eu77cdw041_lKOJ-t9DHGapIeXAaMSrzyTDPAdXP_AIR-eI5SIsoP9rii9WjkFj9I_S-IEpX1HlF4ey3zdz24j4tzot-yXHKzM89omCDzPcwiROfRDqJF4RIgXsbEXrq7uwJIPosZ8gvyHHYz0Cbr9z028po3IxI8mZyKNnVTYg51F1K_Av_KnkK8wufTBpOb07VKgAPFhZzAs-_SovVNKEqXBfzwoT1BNkNv1N4Qg_O-IuCr19QHxOkOe4dvTn32Y5fNDWyuWOkLGbmH-n8kgb5MsHqtUuVV53mSVxYvmhrOsuYuEM9NcOnAF8NDe9brmozUyi1qDT9MtdsAGP-srD_xj4OLagbuJ6M68nUSlE1Nfy1iKEVAO3ZUASEkwX2W08GydJQ.G8aKKuT-BJmm1xZWrFKQUg",
       "domain": "localhost",
       "path": "/",
-      "expires": 1783230384.480651,
+      "expires": 1783233128.329568,
       "httpOnly": true,
       "secure": false,
       "sameSite": "Lax"
@@ -37,11 +37,11 @@
       "localStorage": [
         {
           "name": "nextauth.message",
-          "value": "{\"event\":\"session\",\"data\":{\"trigger\":\"getSession\"},\"timestamp\":1783201587}"
+          "value": "{\"event\":\"session\",\"data\":{\"trigger\":\"getSession\"},\"timestamp\":1783204331}"
         },
         {
           "name": "smarthotel_chat_session",
-          "value": "de8cad35-b8db-49d3-80f3-be70f23fa468"
+          "value": "0504ba32-f764-4499-b955-1eb02846ed2d"
         }
       ]
     }

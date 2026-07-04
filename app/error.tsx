@@ -47,6 +47,9 @@ export default function Error({ error, reset }: ErrorProps) {
           <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
             We encountered an error while loading the page. Please try again.
           </p>
+          <pre className="mt-4 p-2 text-xs text-left bg-gray-100 dark:bg-gray-900 overflow-auto whitespace-pre-wrap rounded text-red-500">
+            {error.message}
+          </pre>
           {process.env.NODE_ENV === 'development' && error.digest && (
             <p className="mt-2 text-xs text-gray-400 dark:text-gray-500">
               Error ID: {error.digest}
