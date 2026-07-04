@@ -9,9 +9,10 @@ export interface ChargePayload {
   transactionCodeId?: string
 }
 
-export async function postCharge(payload: ChargePayload) {
+export async function postCharge(payload: ChargePayload, tx?: any) {
+  const db = tx || prisma
   // 1. Get all open folios for this booking
-  const folios = await prisma.folio.findMany({
+  const folios = await db.folio.findMany({
     where: { bookingId: payload.bookingId, status: 'OPEN' },
     include: {
       routingRulesSource: true
@@ -52,7 +53,7 @@ export async function postCharge(payload: ChargePayload) {
   }
 
   // 4. Post the charge to the chosen folio
-  const lineItem = await prisma.folioLineItem.create({
+  const lineItem = await db.folioLineItem.create({
     data: {
       folioId: targetFolioId,
       amount: payload.amount,
@@ -65,7 +66,7 @@ export async function postCharge(payload: ChargePayload) {
 
   // 5. Create a Journal Entry for strictly double-entry accounting (simplified)
   // Debit Accounts Receivable (Guest Ledger), Credit Revenue
-  await prisma.journalEntry.create({
+  await db.journalEntry.create({
     data: {
       accountId: 'AR-GUEST-LEDGER',
       debit: payload.amount,
@@ -75,7 +76,7 @@ export async function postCharge(payload: ChargePayload) {
     }
   })
 
-  await prisma.journalEntry.create({
+  await db.journalEntry.create({
     data: {
       accountId: `REV-${payload.category}`,
       debit: 0,
