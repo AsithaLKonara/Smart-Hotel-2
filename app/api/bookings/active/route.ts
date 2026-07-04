@@ -1,8 +1,13 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/db'
+import { getRequestSession } from '@/lib/session'
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    const session = await getRequestSession(req)
+    if (!session || !['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'].includes((session.user as any).roleName as string)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     const bookings = await prisma.booking.findMany({
       where: {
         status: 'CHECKED_IN'

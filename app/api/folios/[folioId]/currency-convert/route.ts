@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
+import { getRequestSession } from '@/lib/session'
 
 const prisma = new PrismaClient()
 
@@ -14,10 +15,14 @@ const MOCK_EXCHANGE_RATES: Record<string, number> = {
 }
 
 export async function GET(
-  req: Request,
+  req: NextRequest,
   { params }: { params: Promise<{ folioId: string }> }
 ) {
   try {
+    const session = await getRequestSession(req)
+    if (!session || !['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'].includes((session.user as any).roleName as string)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     const { folioId } = await params
     const { searchParams } = new URL(req.url)
     const targetCurrency = searchParams.get('currency')?.toUpperCase() || 'USD'

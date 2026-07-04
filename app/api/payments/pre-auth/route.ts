@@ -1,6 +1,7 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 import { z } from 'zod'
+import { getRequestSession } from '@/lib/session'
 
 const prisma = new PrismaClient()
 
@@ -10,8 +11,12 @@ const PreAuthSchema = z.object({
   amount: z.number().positive()
 })
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
+    const session = await getRequestSession(req)
+    if (!session || !['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'].includes((session.user as any).roleName as string)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     const body = await req.json()
     const validated = PreAuthSchema.parse(body)
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/db'
 import { z } from 'zod'
+import { getRequestSession } from '@/lib/session'
 
 const routingSchema = z.object({
   sourceFolioId: z.string().uuid(),
@@ -11,6 +12,10 @@ const routingSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await getRequestSession(request)
+    if (!session || !['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'].includes((session.user as any).roleName as string)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     const body = await request.json()
     const data = routingSchema.parse(body)
 

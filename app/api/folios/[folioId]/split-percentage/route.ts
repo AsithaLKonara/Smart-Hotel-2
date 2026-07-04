@@ -1,6 +1,7 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { PrismaClient } from '@prisma/client'
+import { getRequestSession } from '@/lib/session'
 
 const prisma = new PrismaClient()
 
@@ -10,10 +11,14 @@ const SplitPercentageSchema = z.object({
 })
 
 export async function POST(
-  req: Request,
+  req: NextRequest,
   { params }: { params: Promise<{ folioId: string }> }
 ) {
   try {
+    const session = await getRequestSession(req)
+    if (!session || !['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'].includes((session.user as any).roleName as string)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     const { folioId } = await params
     const body = await req.json()
     const validatedData = SplitPercentageSchema.parse(body)

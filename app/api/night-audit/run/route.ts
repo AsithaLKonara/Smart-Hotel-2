@@ -1,10 +1,15 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/db'
 import { postCharge } from '@/lib/accounting'
 import { differenceInDays, addDays, startOfDay, isBefore, isSameDay } from 'date-fns'
+import { getRequestSession } from '@/lib/session'
 
-export async function POST() {
+export async function POST(req: NextRequest) {
   try {
+    const session = await getRequestSession(req)
+    if (!session || !['MANAGER', 'SUPER_ADMIN'].includes((session.user as any).roleName as string)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     const auditResult = await prisma.$transaction(async (tx: any) => {
       // 1. Get the current business date from the first property (or fallback to today)
       let property = await tx.property.findFirst()
@@ -133,8 +138,12 @@ export async function POST() {
   }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    const session = await getRequestSession(req)
+    if (!session || !['MANAGER', 'SUPER_ADMIN'].includes((session.user as any).roleName as string)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     const property = await prisma.property.findFirst()
     
     if (!property) {

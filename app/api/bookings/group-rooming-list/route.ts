@@ -1,7 +1,8 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 import { z } from 'zod'
 import { parse } from 'csv-parse/sync'
+import { getRequestSession } from '@/lib/session'
 
 const prisma = new PrismaClient()
 
@@ -17,8 +18,12 @@ const RoomingListRowSchema = z.object({
   specialRequests: z.string().optional()
 })
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
+    const session = await getRequestSession(req)
+    if (!session || !['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'].includes((session.user as any).roleName as string)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     const formData = await req.formData()
     const file = formData.get('file') as File | null
     const groupBlockId = formData.get('groupBlockId') as string | null

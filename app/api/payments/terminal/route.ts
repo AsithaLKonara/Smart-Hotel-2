@@ -1,6 +1,7 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { PrismaClient } from '@prisma/client'
+import { getRequestSession } from '@/lib/session'
 
 const prisma = new PrismaClient()
 
@@ -11,8 +12,12 @@ const TerminalPaymentSchema = z.object({
   readerId: z.string().min(1, 'Stripe reader ID is required')
 })
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
+    const session = await getRequestSession(req)
+    if (!session || !['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'].includes((session.user as any).roleName as string)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     const body = await req.json()
     const validatedData = TerminalPaymentSchema.parse(body)
 

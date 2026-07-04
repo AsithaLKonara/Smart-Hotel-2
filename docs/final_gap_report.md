@@ -46,20 +46,20 @@
 
 ### Missing Role-Based Access Control (RBAC):
 *The following critical endpoints do not explicitly check user roles or permissions:*
-- app/api/payments/route.ts
-- app/api/payments/terminal/route.ts
-- app/api/payments/pre-auth/route.ts
-- app/api/payments/[id]/route.ts
-- app/api/night-audit/run/route.ts
-- app/api/folios/routing/route.ts
-- app/api/folios/post-charge/route.ts
-- app/api/folios/[folioId]/split-percentage/route.ts
-- app/api/folios/[folioId]/currency-convert/route.ts
-- app/api/cron/night-audit/roll-forward/route.ts
-- app/api/bookings/route.ts
-- app/api/bookings/group-rooming-list/route.ts
-- app/api/bookings/active/route.ts
-- app/api/bookings/[id]/folios/route.ts
+- [x] app/api/payments/route.ts (Fixed: False Positive, already uses getRequestSession)
+- [x] app/api/payments/terminal/route.ts (Fixed: Added RBAC)
+- [x] app/api/payments/pre-auth/route.ts (Fixed: Added RBAC)
+- [x] app/api/payments/[id]/route.ts (Fixed: False Positive, already uses getRequestSession with role validation)
+- [x] app/api/night-audit/run/route.ts (Fixed: Added RBAC)
+- [x] app/api/folios/routing/route.ts (Fixed: Added RBAC)
+- [x] app/api/folios/post-charge/route.ts (Fixed: Added RBAC)
+- [x] app/api/folios/[folioId]/split-percentage/route.ts (Fixed: Added RBAC)
+- [x] app/api/folios/[folioId]/currency-convert/route.ts (Fixed: Added RBAC)
+- [x] app/api/cron/night-audit/roll-forward/route.ts (Fixed: False Positive, uses token auth)
+- [x] app/api/bookings/route.ts (Fixed: False Positive, intentional public OTA endpoint)
+- [x] app/api/bookings/group-rooming-list/route.ts (Fixed: Added RBAC)
+- [x] app/api/bookings/active/route.ts (Fixed: Added RBAC)
+- [x] app/api/bookings/[id]/folios/route.ts (Fixed: Added RBAC)
 
 ## 4. Event Architecture & Async Processing
 *Issues regarding background processing, real-time updates, and webhooks.*
