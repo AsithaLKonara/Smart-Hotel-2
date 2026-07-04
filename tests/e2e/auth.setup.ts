@@ -11,8 +11,8 @@ setup('authenticate as admin', async ({ page }) => {
   await page.goto('/auth/signin');
   
   // Fill the credentials
-  await page.getByPlaceholder('name@smarthotel.com').fill('admin@smarthotel.local');
-  await page.locator('input[type="password"]').fill('admin123');
+  await page.getByPlaceholder('name@smarthotel.com').fill('admin@smarthotel.com');
+  await page.locator('input[type="password"]').fill('SmartHotel@2025!Admin');
   
   // Submit the form
   await page.getByRole('button', { name: /initialize session/i }).click();

@@ -24,3 +24,9 @@
 - **Always run synchronously**: When running commands, avoid running them asynchronously in the background. Use large `WaitMsBeforeAsync` limits to execute commands directly on the terminal tab, preventing background process leaks and resource exhaustion.
 - **Do not run background processes**: Kill unnecessary terminals immediately, keeping only localhost:3000 active for dev servers.
 
+## Current Project Phase
+- **Phase 2: Full Business E2E**: 
+  - DO NOT TEST ISOLATED FEATURES.
+  - Test Complete Business Journeys from start to finish.
+  - Key Journeys: Guest Journey, Reception Journey, Housekeeping, Finance.
+

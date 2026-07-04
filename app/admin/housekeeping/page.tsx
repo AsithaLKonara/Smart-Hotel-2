@@ -43,6 +43,15 @@ export default function HousekeepingOperations() {
     }
   })
 
+  const { data: roomsData, isLoading: roomsLoading } = useQuery({
+    queryKey: ['housekeeping-rooms'],
+    queryFn: async () => {
+      const res = await fetch('/api/admin/housekeeping/rooms')
+      const data = await res.json()
+      return data.data || []
+    }
+  })
+
   const updateTaskStatus = useMutation({
     mutationFn: async ({ id, status, assignedTo }: { id: string, status?: string, assignedTo?: string }) => {
       const body: any = {}
@@ -75,14 +84,7 @@ export default function HousekeepingOperations() {
     )
   }
 
-  const { data: roomsData, isLoading: roomsLoading } = useQuery({
-    queryKey: ['housekeeping-rooms'],
-    queryFn: async () => {
-      const res = await fetch('/api/admin/housekeeping/rooms')
-      const data = await res.json()
-      return data.data || []
-    }
-  })
+
 
   // Filter tasks that are not verified/cancelled
   const activeTasks = tasksData?.filter((t: any) => !['VERIFIED', 'CANCELLED'].includes(t.status)) || []

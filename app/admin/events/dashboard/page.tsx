@@ -11,6 +11,7 @@ export default function EventsDashboard() {
   const [activeTab, setActiveTab] = useState('EVENTS')
   const [spaces, setSpaces] = useState([])
   const [blocks, setBlocks] = useState([])
+  const [loading, setLoading] = useState(true)
 
   const fetchEvents = async () => {
     try {
