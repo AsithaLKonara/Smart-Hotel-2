@@ -379,7 +379,6 @@ export async function sendBookingConfirmation(data: {
 }) {
   if (!isEmailConfigured || !transporter) {
     console.warn('SMTP not configured - email not sent. Booking confirmation would be sent to:', data.guestEmail)
-    console.log('Email template:', emailTemplates.bookingConfirmation(data).subject)
     return // Gracefully skip email sending
   }
 
@@ -393,7 +392,7 @@ export async function sendBookingConfirmation(data: {
       html: template.html,
     })
     
-    console.log(`Booking confirmation email sent to ${data.guestEmail}`)
+    // console log removed
   } catch (error) {
     console.error('Failed to send booking confirmation email:', error)
     // Don't throw - log error but don't break the flow
@@ -424,7 +423,7 @@ export async function sendAdminBookingAlert(data: {
       html: template.html,
     })
     
-    console.log(`Admin booking alert sent for booking ${data.bookingId}`)
+    // console log removed
   } catch (error) {
     console.error('Failed to send admin booking alert:', error)
     // Don't throw - log error but don't break the flow
@@ -453,7 +452,7 @@ export async function sendBookingReminder(data: {
       html: template.html,
     })
     
-    console.log(`Booking reminder sent to ${data.guestEmail}`)
+    // console log removed
   } catch (error) {
     console.error('Failed to send booking reminder:', error)
     // Don't throw - log error but don't break the flow
@@ -520,7 +519,7 @@ export async function sendBookingStatusUpdate(data: {
       html: template.html,
     })
     
-    console.log(`Booking status update sent to ${data.guestEmail}`)
+    // console log removed
   } catch (error) {
     console.error('Failed to send booking status update:', error)
     // Don't throw - log error but don't break the flow
@@ -535,7 +534,6 @@ export async function sendPasswordResetEmail(data: {
 }) {
   if (!isEmailConfigured || !transporter) {
     console.warn('SMTP not configured - password reset email not sent. Reset URL would be:', data.resetUrl)
-    console.log('Email would be sent to:', data.email)
     // Return success to prevent email enumeration, but log the attempt
     return
   }
@@ -550,7 +548,7 @@ export async function sendPasswordResetEmail(data: {
       html: template.html,
     })
     
-    console.log(`Password reset email sent to ${data.email}`)
+    // console log removed
   } catch (error) {
     console.error('Failed to send password reset email:', error)
     // Don't throw - return gracefully to prevent email enumeration
@@ -576,7 +574,7 @@ export async function sendPasswordResetConfirmation(data: {
       html: template.html,
     })
     
-    console.log(`Password reset confirmation sent to ${data.email}`)
+    // console log removed
   } catch (error) {
     console.error('Failed to send password reset confirmation:', error)
     // Don't throw - this is a confirmation, not critical
@@ -592,7 +590,7 @@ export async function testEmailConfiguration() {
 
   try {
     await transporter.verify()
-    console.log('Email configuration is valid')
+    // console log removed
     return true
   } catch (error) {
     console.error('Email configuration is invalid:', error)
@@ -608,9 +606,6 @@ export async function sendContactEmail(data: {
 }) {
   if (!isEmailConfigured || !transporter) {
     console.warn('SMTP not configured - contact email not sent. Message details:')
-    console.log('From:', data.name, `<${data.email}>`)
-    console.log('Subject:', data.subject)
-    console.log('Message:', data.message)
     return
   }
 
@@ -676,7 +671,7 @@ export async function sendContactEmail(data: {
     html,
   })
 
-    console.log('Contact email sent:', { to: recipient, subject: `[Contact] ${data.subject}` })
+    // console log removed
   } catch (error) {
     console.error('Failed to send contact email:', error)
     // Don't throw - log error but don't break the flow
