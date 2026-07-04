@@ -40,12 +40,18 @@ export async function POST(req: Request) {
     const data = await req.json();
     const { bookingId, folioType } = data;
 
-    const newFolio = await prisma.folio.create({
-      data: {
-        bookingId,
-        type: folioType || 'INCIDENTALS',
-        status: 'OPEN',
-      }
+    const newFolio = await prisma.$transaction(async (tx: any) => {
+      const folios = await tx.folio.findMany({ where: { bookingId } });
+      const nextWindow = folios.length > 0 ? Math.max(...folios.map((f: any) => f.windowNumber)) + 1 : 1;
+
+      return await tx.folio.create({
+        data: {
+          bookingId,
+          windowNumber: nextWindow,
+          type: folioType || 'INCIDENTALS',
+          status: 'OPEN',
+        }
+      });
     });
 
     return NextResponse.json({ success: true, folio: newFolio });

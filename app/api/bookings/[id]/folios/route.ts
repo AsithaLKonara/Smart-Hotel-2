@@ -54,24 +54,25 @@ export async function POST(
   try {
     const { id } = await params
     const body = await request.json()
-    // Find highest window number
-    const folios = await prisma.folio.findMany({ where: { bookingId: id } })
-    const nextWindow = folios.length > 0 ? Math.max(...folios.map((f: any) => f.windowNumber)) + 1 : 1
+    const newFolio = await prisma.$transaction(async (tx: any) => {
+      const folios = await tx.folio.findMany({ where: { bookingId: id } })
+      const nextWindow = folios.length > 0 ? Math.max(...folios.map((f: any) => f.windowNumber)) + 1 : 1
 
-    const newFolio = await prisma.folio.create({
-      data: {
-        bookingId: id,
-        windowNumber: nextWindow,
-        type: body.companyId ? 'ROUTING' : 'GUEST',
-        companyId: body.companyId || null,
-        status: 'OPEN'
-      },
-      include: {
-        lineItems: true,
-        company: true,
-        routingRulesSource: true,
-        routingRulesTarget: true
-      }
+      return await tx.folio.create({
+        data: {
+          bookingId: id,
+          windowNumber: nextWindow,
+          type: body.companyId ? 'ROUTING' : 'GUEST',
+          companyId: body.companyId || null,
+          status: 'OPEN'
+        },
+        include: {
+          lineItems: true,
+          company: true,
+          routingRulesSource: true,
+          routingRulesTarget: true
+        }
+      })
     })
     return NextResponse.json(newFolio, { status: 201 })
   } catch (error) {

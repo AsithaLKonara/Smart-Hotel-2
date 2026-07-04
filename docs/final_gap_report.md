@@ -32,7 +32,7 @@
 
 ### Missing Database Transactions:
 *The following endpoints likely perform multiple mutations but lack `$transaction` wrappers, risking partial updates:*
-- app/api/restaurant/bookings/route.ts
+- [x] app/api/restaurant/bookings/route.ts (Fixed: Added $transaction)
 - [x] app/api/payments/route.ts (Fixed: Added $transaction)
 - [x] app/api/payments/terminal/route.ts (Fixed: Added $transaction)
 - [x] app/api/payments/pre-auth/route.ts (Fixed: Added $transaction)
@@ -40,9 +40,9 @@
 - [x] app/api/night-audit/run/route.ts (Fixed: Added $transaction)
 - [x] app/api/folios/routing/route.ts (Fixed: Added $transaction)
 - [x] app/api/folios/post-charge/route.ts (Fixed: Added $transaction)
-- app/api/bookings/[id]/folios/route.ts
-- app/api/admin/accounting/night-audit/route.ts
-- app/api/admin/accounting/folios/route.ts
+- [x] app/api/bookings/[id]/folios/route.ts (Fixed: Added $transaction)
+- [x] app/api/admin/accounting/night-audit/route.ts (Fixed: Added $transaction)
+- [x] app/api/admin/accounting/folios/route.ts (Fixed: Added $transaction)
 
 ### Missing Role-Based Access Control (RBAC):
 *The following critical endpoints do not explicitly check user roles or permissions:*

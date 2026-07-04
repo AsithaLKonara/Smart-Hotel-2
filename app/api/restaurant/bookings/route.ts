@@ -46,18 +46,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
-    const booking = await prisma.tableBooking.create({
-      data: {
-        name,
-        email,
-        phone,
-        guests: parseInt(guests),
-        bookingDate: new Date(bookingDate),
-        bookingTime,
-        specialRequests,
-        userId: session?.user?.id || null,
-        status: 'PENDING'
-      }
+    const booking = await prisma.$transaction(async (tx: any) => {
+      return await tx.tableBooking.create({
+        data: {
+          name,
+          email,
+          phone,
+          guests: parseInt(guests),
+          bookingDate: new Date(bookingDate),
+          bookingTime,
+          specialRequests,
+          userId: session?.user?.id || null,
+          status: 'PENDING'
+        }
+      })
     })
 
     return NextResponse.json(booking, { status: 201 })
@@ -81,9 +83,11 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
-    const booking = await prisma.tableBooking.update({
-      where: { id },
-      data: { status }
+    const booking = await prisma.$transaction(async (tx: any) => {
+      return await tx.tableBooking.update({
+        where: { id },
+        data: { status }
+      })
     })
 
     return NextResponse.json(booking)

@@ -10,77 +10,79 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // 1. Get all CHECKED_IN bookings
-    const activeBookings = await prisma.booking.findMany({
-      where: { status: 'CHECKED_IN' },
-      include: { roomAssignments: { include: { room: { include: { roomType: true } } } } }
-    });
-
-    let totalRevenue = 0;
-    const businessDate = new Date();
-
-    // 2. Post room charges
-    for (const booking of activeBookings) {
-      let folio = await prisma.invoice.findFirst({
-        where: { bookingId: booking.id, folioType: 'MASTER' }
+    const auditLog = await prisma.$transaction(async (tx: any) => {
+      // 1. Get all CHECKED_IN bookings
+      const activeBookings = await tx.booking.findMany({
+        where: { status: 'CHECKED_IN' },
+        include: { roomAssignments: { include: { room: { include: { roomType: true } } } } }
       });
 
-      if (!folio) {
-        folio = await prisma.invoice.create({
+      let totalRevenue = 0;
+      const businessDate = new Date();
+
+      // 2. Post room charges
+      for (const booking of activeBookings) {
+        let folio = await tx.invoice.findFirst({
+          where: { bookingId: booking.id, folioType: 'MASTER' }
+        });
+
+        if (!folio) {
+          folio = await tx.invoice.create({
+            data: {
+              bookingId: booking.id,
+              invoiceNo: `FOL-${Date.now()}-${booking.id.slice(0,4)}`,
+              folioType: 'MASTER',
+              status: 'OPEN',
+              subtotal: 0, taxAmount: 0, grandTotal: 0
+            }
+          });
+        }
+
+        const assignment = booking.roomAssignments?.[0]
+        const rate = assignment?.room?.roomType?.baseRate || 0;
+        const tax = 0; // Tax removed
+
+        await tx.invoiceLineItem.create({
           data: {
-            bookingId: booking.id,
-            invoiceNo: `FOL-${Date.now()}-${booking.id.slice(0,4)}`,
-            folioType: 'MASTER',
-            status: 'OPEN',
-            subtotal: 0, taxAmount: 0, grandTotal: 0
+            invoiceId: folio.id,
+            description: `Room Charge - ${assignment?.room?.number || 'TBD'}`,
+            category: 'ROOM',
+            quantity: 1,
+            unitPrice: rate,
+            totalPrice: rate + tax
+          }
+        });
+
+        await tx.invoice.update({
+          where: { id: folio.id },
+          data: {
+            subtotal: folio.subtotal + rate,
+            taxAmount: folio.taxAmount + tax,
+            grandTotal: folio.grandTotal + rate + tax
+          }
+        });
+
+        totalRevenue += (rate + tax);
+
+        await tx.journalEntry.create({
+          data: {
+            accountId: 'A/R-GUEST',
+            debit: rate + tax,
+            description: `Room Posting: ${booking.id}`,
+            postingDate: businessDate
           }
         });
       }
 
-      const assignment = booking.roomAssignments?.[0]
-      const rate = assignment?.room?.roomType?.baseRate || 0;
-      const tax = 0; // Tax removed
-
-      await prisma.invoiceLineItem.create({
+      // 3. Log Audit
+      return await tx.nightAuditLog.create({
         data: {
-          invoiceId: folio.id,
-          description: `Room Charge - ${assignment?.room?.number || 'TBD'}`,
-          category: 'ROOM',
-          quantity: 1,
-          unitPrice: rate,
-          totalPrice: rate + tax
+          businessDate,
+          totalRevenue,
+          roomsProcessed: activeBookings.length,
+          runByUserId: session.user.id
         }
       });
-
-      await prisma.invoice.update({
-        where: { id: folio.id },
-        data: {
-          subtotal: folio.subtotal + rate,
-          taxAmount: folio.taxAmount + tax,
-          grandTotal: folio.grandTotal + rate + tax
-        }
-      });
-
-      totalRevenue += (rate + tax);
-
-      await prisma.journalEntry.create({
-        data: {
-          accountId: 'A/R-GUEST',
-          debit: rate + tax,
-          description: `Room Posting: ${booking.id}`,
-          postingDate: businessDate
-        }
-      });
-    }
-
-    // 3. Log Audit
-    const auditLog = await prisma.nightAuditLog.create({
-      data: {
-        businessDate,
-        totalRevenue,
-        roomsProcessed: activeBookings.length,
-        runByUserId: session.user.id
-      }
     });
 
     return NextResponse.json({ success: true, auditLog });
