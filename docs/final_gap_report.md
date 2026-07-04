@@ -79,11 +79,11 @@
 - [x] `/api/events/book` (Fixed: Added "Book Attendance" button on each Event card in Events Dashboard)
 - [x] `/api/pricing/quote` (Fixed: Added "Get Price Quote" button in Events Dashboard header)
 - [x] `/api/communications/email` (Fixed: Added Email dispatch buttons in Room Action Desk → Guest Info tab)
-- [ ] `/api/cron/archive-db`
-- [ ] `/api/cron/generate-preventive-maintenance`
-- [ ] `/api/cron/night-audit/roll-forward`
-- [ ] `/api/cron/keepalive`
-- [ ] `/api/debug`
+- [x] `/api/cron/archive-db` (Fixed: False Positive, Vercel Cron with Bearer auth for 2yr soft-delete archiving)
+- [x] `/api/cron/generate-preventive-maintenance` (Fixed: False Positive, Vercel Cron for quarterly AC maintenance tasks)
+- [x] `/api/cron/night-audit/roll-forward` (Fixed: Added "Force Roll-Forward" button in Night Audit page for manual override)
+- [x] `/api/cron/keepalive` (Fixed: False Positive, Vercel Cron every 15min to prevent DB sleep on free tier)
+- [x] `/api/debug` (Fixed: Added "System Health" button in Night Audit page — shows DB/env status inline)
 
 ## 3. Business Logic & Transaction Gaps
 *Critical issues regarding financial data integrity and RBAC.*

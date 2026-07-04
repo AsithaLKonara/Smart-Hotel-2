@@ -3,12 +3,14 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Moon, Clock, TrendingUp, AlertTriangle } from 'lucide-react'
+import { Moon, Clock, TrendingUp, AlertTriangle, SkipForward, Activity } from 'lucide-react'
 import { useToast } from '@/components/ui/use-toast'
 
 export default function NightAuditPage() {
   const [logs, setLogs] = useState([])
   const [running, setRunning] = useState(false)
+  const [rollingForward, setRollingForward] = useState(false)
+  const [healthStatus, setHealthStatus] = useState<any>(null)
   const { success, error: toastError } = useToast()
 
   const fetchLogs = () => {
@@ -72,6 +74,76 @@ export default function NightAuditPage() {
             >
               {running ? 'Processing Audit...' : 'Run Night Audit'}
             </Button>
+
+            <div className="flex gap-3 mt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={rollingForward}
+                onClick={async () => {
+                  setRollingForward(true)
+                  try {
+                    const res = await fetch('/api/cron/night-audit/roll-forward', {
+                      headers: { 'Authorization': `Bearer ${process.env.NEXT_PUBLIC_CRON_SECRET || 'dev-secret-key'}` }
+                    })
+                    const data = await res.json()
+                    if (res.ok) {
+                      success('Roll-Forward Complete', `Audit ID: ${data.auditId}`)
+                      fetchLogs()
+                    } else {
+                      toastError('Roll-Forward Failed', data.error)
+                    }
+                  } finally {
+                    setRollingForward(false)
+                  }
+                }}
+                className="border-amber-500/30 text-amber-400 bg-amber-500/10 hover:bg-amber-500/20"
+              >
+                <SkipForward className="w-4 h-4 mr-2" />
+                {rollingForward ? 'Rolling...' : 'Force Roll-Forward'}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  const res = await fetch('/api/debug')
+                  const data = await res.json()
+                  setHealthStatus(data)
+                }}
+                className="border-blue-500/30 text-blue-400 bg-blue-500/10 hover:bg-blue-500/20"
+              >
+                <Activity className="w-4 h-4 mr-2" /> System Health
+              </Button>
+            </div>
+
+            {healthStatus && (
+              <div className="mt-4 w-full text-left bg-black/40 border border-white/10 rounded-xl p-4 text-xs">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className={`w-2 h-2 rounded-full ${healthStatus.status === 'healthy' ? 'bg-emerald-400' : 'bg-rose-400'}`} />
+                  <span className={`font-bold uppercase tracking-widest ${healthStatus.status === 'healthy' ? 'text-emerald-400' : 'text-rose-400'}`}>
+                    {healthStatus.status}
+                  </span>
+                  <span className="text-white/30 ml-auto">{healthStatus.timestamp}</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-white/60">
+                  <span>DB Connection:</span>
+                  <span className={healthStatus.checks?.databaseConnection?.connected ? 'text-emerald-400' : 'text-rose-400'}>
+                    {healthStatus.checks?.databaseConnection?.connected ? `✓ ${healthStatus.checks.databaseConnection.userCount} users` : '✗ Failed'}
+                  </span>
+                  <span>Environment:</span>
+                  <span className="text-white/80">{healthStatus.environment}</span>
+                  <span>Checks Passed:</span>
+                  <span className="text-white/80">{healthStatus.summary?.passedChecks}/{healthStatus.summary?.totalChecks}</span>
+                </div>
+                {healthStatus.errors?.length > 0 && (
+                  <div className="mt-2 pt-2 border-t border-white/10">
+                    {healthStatus.errors.map((e: string, i: number) => (
+                      <p key={i} className="text-rose-400">{e}</p>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
 
