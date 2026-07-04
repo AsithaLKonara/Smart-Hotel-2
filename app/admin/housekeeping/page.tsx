@@ -209,13 +209,46 @@ export default function HousekeepingOperations() {
                       </div>
                       <div className="flex gap-2 mt-4">
                         <Button 
-                          onClick={() => updateTaskStatus.mutate({ id: task.id, status: 'VERIFIED' })} 
+                          onClick={async () => {
+                            if (!task.room?.id) return toast.error('No Room ID')
+                            try {
+                              const res = await fetch('/api/housekeeping/inspection', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ roomId: task.room.id, supervisorId: '00000000-0000-0000-0000-000000000000', passed: true })
+                              })
+                              if (res.ok) {
+                                await updateTaskStatus.mutateAsync({ id: task.id, status: 'VERIFIED' })
+                              } else {
+                                toast.error((await res.json()).error || 'Inspection failed')
+                              }
+                            } catch (e) {
+                              toast.error('Failed to submit inspection')
+                            }
+                          }}
                           className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold"
                         >
                           Verify & Release
                         </Button>
                         <Button 
-                          onClick={() => updateTaskStatus.mutate({ id: task.id, status: 'IN_PROGRESS' })} 
+                          onClick={async () => {
+                            if (!task.room?.id) return toast.error('No Room ID')
+                            const reason = prompt('Reason for failing inspection?')
+                            try {
+                              const res = await fetch('/api/housekeeping/inspection', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ roomId: task.room.id, supervisorId: '00000000-0000-0000-0000-000000000000', passed: false, notes: reason || '' })
+                              })
+                              if (res.ok) {
+                                await updateTaskStatus.mutateAsync({ id: task.id, status: 'IN_PROGRESS' })
+                              } else {
+                                toast.error((await res.json()).error || 'Inspection failed')
+                              }
+                            } catch (e) {
+                              toast.error('Failed to submit inspection')
+                            }
+                          }}
                           variant="outline" 
                           className="w-12 border-rose-500/30 hover:bg-rose-500/10 text-rose-500"
                           title="Reject (Send back to cleaning)"

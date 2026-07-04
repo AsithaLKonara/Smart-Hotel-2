@@ -214,6 +214,31 @@ export default function ReceptionistOperationsCenter() {
     )
   }
 
+  const handleShiftClose = async () => {
+    const cash = prompt('Enter total cash in drawer ($):')
+    if (!cash) return
+    try {
+      const res = await fetch('/api/accounting/shift-reconciliation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          userId: session?.user?.id || '00000000-0000-0000-0000-000000000000',
+          shiftStart: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(), 
+          shiftEnd: new Date().toISOString(),
+          declaredCash: Number(cash)
+        })
+      })
+      const data = await res.json()
+      if (res.ok) {
+        toast.success(`Shift reconciled! Variance: $${data.data.variance} (${data.data.status})`)
+      } else {
+        toast.error('Reconciliation failed')
+      }
+    } catch {
+      toast.error('Failed to submit shift reconciliation')
+    }
+  }
+
   return (
     <AdminPageShell
       title="Reception Desk"
@@ -222,26 +247,32 @@ export default function ReceptionistOperationsCenter() {
     >
       <div className="space-y-12">
         <section>
-          <div className="bg-white/5 border border-white/10 rounded-xl p-4 mb-8 flex items-end gap-4">
-            <div>
-              <label className="text-xs text-white/60 mb-1 block">Check-in Date</label>
-              <input type="date" className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary" value={availabilityDates.checkIn} onChange={e => setAvailabilityDates({...availabilityDates, checkIn: e.target.value})} />
-            </div>
-            <div>
-              <label className="text-xs text-white/60 mb-1 block">Check-out Date</label>
-              <input type="date" className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary" value={availabilityDates.checkOut} onChange={e => setAvailabilityDates({...availabilityDates, checkOut: e.target.value})} />
-            </div>
-            <Button onClick={checkAvailability} className="bg-primary text-primary-foreground font-semibold">
-              <Search className="w-4 h-4 mr-2" />
-              Check Availability
-            </Button>
-            {availableRoomsCount !== null && (
-              <div className="ml-4 flex items-center animate-in fade-in zoom-in duration-300">
-                <Badge variant="outline" className="border-emerald-500/30 text-emerald-400 bg-emerald-500/10 py-1.5 px-4 text-sm font-bold">
-                  {availableRoomsCount} Rooms Available
-                </Badge>
+          <div className="bg-white/5 border border-white/10 rounded-xl p-4 mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div className="flex items-end gap-4">
+              <div>
+                <label className="text-xs text-white/60 mb-1 block">Check-in Date</label>
+                <input type="date" className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary" value={availabilityDates.checkIn} onChange={e => setAvailabilityDates({...availabilityDates, checkIn: e.target.value})} />
               </div>
-            )}
+              <div>
+                <label className="text-xs text-white/60 mb-1 block">Check-out Date</label>
+                <input type="date" className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary" value={availabilityDates.checkOut} onChange={e => setAvailabilityDates({...availabilityDates, checkOut: e.target.value})} />
+              </div>
+              <Button onClick={checkAvailability} className="bg-primary text-primary-foreground font-semibold">
+                <Search className="w-4 h-4 mr-2" />
+                Check Availability
+              </Button>
+              {availableRoomsCount !== null && (
+                <div className="ml-4 flex items-center animate-in fade-in zoom-in duration-300">
+                  <Badge variant="outline" className="border-emerald-500/30 text-emerald-400 bg-emerald-500/10 py-1.5 px-4 text-sm font-bold">
+                    {availableRoomsCount} Rooms Available
+                  </Badge>
+                </div>
+              )}
+            </div>
+            
+            <Button onClick={handleShiftClose} variant="destructive" className="bg-rose-500/20 text-rose-400 border border-rose-500/30 hover:bg-rose-500/40">
+              Close Shift (Reconcile)
+            </Button>
           </div>
 
           <div className="flex items-center justify-between mb-8">

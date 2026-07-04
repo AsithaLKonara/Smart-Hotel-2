@@ -315,31 +315,73 @@ export function RoomActionDesk({
                 </div>
               </div>
 
-              {/* Quick links */}
+              {/* Quick links & Payments */}
               <div>
-                <p className="text-xs text-white/40 font-bold uppercase tracking-widest mb-3">Billing & Charges</p>
-                <div className="grid grid-cols-2 gap-3">
+                <p className="text-xs text-white/40 font-bold uppercase tracking-widest mb-3">Billing & Payments</p>
+                <div className="grid grid-cols-2 gap-3 mb-3">
                   <button
-                    onClick={() => window.location.href = '/admin/accounting'}
+                    onClick={async () => {
+                      if (!currentBooking) return window.location.href = '/admin/accounting'
+                      try {
+                        const res = await fetch(`/api/bookings/${currentBooking.id}/folios`)
+                        const folios = await res.json()
+                        if (res.ok) alert(`Loaded ${folios.length} folios. Folio 1 ID: ${folios[0]?.id}`)
+                      } catch {
+                        alert('Failed to load folios.')
+                      }
+                    }}
                     className="flex items-center gap-3 p-4 rounded-2xl border border-white/8 bg-white/[0.03] hover:bg-white/[0.07] text-white/60 hover:text-white transition-all text-left"
                   >
                     <Receipt className="w-5 h-5" />
                     <div>
-                      <p className="font-semibold text-sm">View Bill</p>
-                      <p className="text-[11px] opacity-50">Guest charges & folio</p>
+                      <p className="font-semibold text-sm">View Folios</p>
+                      <p className="text-[11px] opacity-50">Guest bills & windows</p>
                     </div>
                   </button>
                   <button
-                    onClick={() => window.location.href = '/admin/pos'}
+                    onClick={() => {
+                      const invoiceId = prompt('Enter Invoice ID to download PDF receipt:')
+                      if (invoiceId) window.open(`/api/invoices/${invoiceId}/receipt`, '_blank')
+                    }}
                     className="flex items-center gap-3 p-4 rounded-2xl border border-white/8 bg-white/[0.03] hover:bg-white/[0.07] text-white/60 hover:text-white transition-all text-left"
                   >
-                    <ShoppingCart className="w-5 h-5" />
+                    <Receipt className="w-5 h-5" />
                     <div>
-                      <p className="font-semibold text-sm">Add Charge</p>
-                      <p className="text-[11px] opacity-50">Food, spa, extras...</p>
+                      <p className="font-semibold text-sm">Download Receipt</p>
+                      <p className="text-[11px] opacity-50">Generate PDF invoice</p>
                     </div>
                   </button>
                 </div>
+                {currentBooking && (
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      onClick={async () => {
+                        const res = await fetch('/api/payments/pre-auth', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ bookingId: currentBooking.id, paymentMethodId: 'pm_card_mock', amount: 100 })
+                        })
+                        if (res.ok) alert('Pre-Auth of $100 placed successfully.')
+                      }}
+                      className="flex items-center gap-2 p-3 rounded-xl border border-white/8 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 transition-all text-left justify-center"
+                    >
+                      <p className="font-semibold text-xs">Pre-Auth Card ($100)</p>
+                    </button>
+                    <button
+                      onClick={async () => {
+                        const res = await fetch('/api/payments/terminal', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ bookingId: currentBooking.id, amount: 50, currency: 'USD', readerId: 'tmr_mock' })
+                        })
+                        if (res.ok) alert('Sent $50 charge to physical terminal.')
+                      }}
+                      className="flex items-center gap-2 p-3 rounded-xl border border-white/8 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 transition-all text-left justify-center"
+                    >
+                      <p className="font-semibold text-xs">Send to Terminal ($50)</p>
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           )}

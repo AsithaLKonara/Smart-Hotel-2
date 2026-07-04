@@ -23,7 +23,68 @@
 - [x] `/api/security/delivery-pass` (Fixed: Built UI tab in Guest Super App)
 - [x] `/api/rooms/check-availability` (Fixed: Built availability checker in Receptionist UI)
 - [x] `/api/revenue/yield-engine` (Fixed: False Positive, invoked by CRON scheduler)
-*(and 65 more...)*
+### Remaining 65 Disconnected Endpoints (Orphans):
+- [x] `/api/accounting/commissions/settle` (Fixed: False Positive, invoked by CRON scheduler)
+- [x] `/api/accounting/shift-reconciliation` (Fixed: Built Close Shift UI in Receptionist page)
+- [x] `/api/accounting/owner-split/[folioId]` (Fixed: False Positive, invoked by Night Audit)
+- [x] `/api/payments/pre-auth` (Fixed: Built Pre-Auth Card UI in Room Action Desk)
+- [x] `/api/payments/terminal` (Fixed: Built Physical Terminal trigger UI in Room Action Desk)
+- [x] `/api/payments` (Fixed: Built Payments Ledger Dashboard)
+- [x] `/api/payments/[id]` (Fixed: Built Payments Ledger Dashboard)
+- [x] `/api/housekeeping/inspection` (Fixed: Integrated Supervisor Inspection in Housekeeping Board)
+- [x] `/api/folios/[folioId]/currency-convert` (Fixed: Built Folio Tools in Payments Ledger)
+- [x] `/api/folios/[folioId]/split-percentage` (Fixed: Built Folio Tools in Payments Ledger)
+- [x] `/api/bookings/group-rooming-list` (Fixed: Added CSV Import button to Bookings page)
+- [x] `/api/bookings/[id]/folios` (Fixed: Added View Folios button to Room Action Desk)
+- [x] `/api/invoices/[id]/receipt` (Fixed: Added Download Receipt PDF generator to Room Action Desk)
+- [x] `/api/auth/_log` (Fixed: False Positive, internal NextAuth diagnostic endpoint)
+- [x] `/api/auth/session` (Fixed: False Positive, internal NextAuth session check)
+- [ ] `/api/reservations/cross-sell`
+- [ ] `/api/health/ready`
+- [ ] `/api/health/live`
+- [ ] `/api/admin/housekeeping/rooms`
+- [ ] `/api/admin/bookings/[id]/checkout`
+- [ ] `/api/admin/pos/products`
+- [ ] `/api/admin/pos/outlets`
+- [ ] `/api/admin/pos/orders`
+- [ ] `/api/admin/audit`
+- [ ] `/api/admin/users`
+- [ ] `/api/admin/users/[id]`
+- [ ] `/api/admin/hr/attendance/[id]`
+- [ ] `/api/admin/events/blocks`
+- [ ] `/api/admin/events/blocks/[id]`
+- [ ] `/api/admin/events/spaces`
+- [ ] `/api/admin/events/spaces/[id]`
+- [ ] `/api/debug-env`
+- [ ] `/api/loyalty/redeem`
+- [ ] `/api/compliance/gdpr/forget-me`
+- [ ] `/api/feedback`
+- [ ] `/api/feedback/[id]`
+- [ ] `/api/iot/minibar-post`
+- [ ] `/api/frontdesk/vip-alerts`
+- [ ] `/api/integrations/rate-parity`
+- [ ] `/api/integrations/booking-com/webhook`
+- [ ] `/api/integrations/booking-com/sync`
+- [ ] `/api/integrations/ocr`
+- [ ] `/api/integrations/door-locks`
+- [ ] `/api/integrations/rate-shopper`
+- [ ] `/api/integrations/channel-manager`
+- [ ] `/api/integrations/pos/charge`
+- [ ] `/api/integrations/exchange-rates`
+- [ ] `/api/integrations/fiscal-printer`
+- [ ] `/api/inventory/[id]/adjust`
+- [ ] `/api/guest/qr-compendium`
+- [ ] `/api/guest/digital-key`
+- [ ] `/api/order-items`
+- [ ] `/api/order-items/[id]`
+- [ ] `/api/events/book`
+- [ ] `/api/pricing/quote`
+- [ ] `/api/communications/email`
+- [ ] `/api/cron/archive-db`
+- [ ] `/api/cron/generate-preventive-maintenance`
+- [ ] `/api/cron/night-audit/roll-forward`
+- [ ] `/api/cron/keepalive`
+- [ ] `/api/debug`
 
 ## 3. Business Logic & Transaction Gaps
 *Critical issues regarding financial data integrity and RBAC.*

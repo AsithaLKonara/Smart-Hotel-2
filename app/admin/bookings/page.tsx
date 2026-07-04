@@ -245,6 +245,46 @@ export default function AdminBookingsPage() {
           <option value="PAID">Paid</option>
           <option value="FAILED">Failed</option>
         </select>
+
+        <Button 
+          variant="outline"
+          className="px-6 py-3 bg-primary/10 border border-primary/20 hover:bg-primary/20 text-primary text-xs font-bold uppercase tracking-widest rounded-2xl h-auto"
+          onClick={() => {
+            const input = document.createElement('input')
+            input.type = 'file'
+            input.accept = '.csv'
+            input.onchange = async (e: any) => {
+              const file = e.target.files[0]
+              if (!file) return
+              const groupId = prompt('Enter Group Block ID for this rooming list:')
+              if (!groupId) return
+              
+              const formData = new FormData()
+              formData.append('file', file)
+              formData.append('groupBlockId', groupId)
+              
+              const toastId = toast.loading('Importing rooming list...')
+              try {
+                const res = await fetch('/api/bookings/group-rooming-list', {
+                  method: 'POST',
+                  body: formData
+                })
+                const data = await res.json()
+                if (res.ok) {
+                  toast.success(data.message, { id: toastId })
+                  fetchBookings()
+                } else {
+                  toast.error(data.error || 'Import failed', { id: toastId })
+                }
+              } catch {
+                toast.error('Network error during import', { id: toastId })
+              }
+            }
+            input.click()
+          }}
+        >
+          Import Rooming List (CSV)
+        </Button>
       </div>
 
       {/* Bookings Table */}
