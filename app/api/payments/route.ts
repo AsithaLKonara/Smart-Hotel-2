@@ -87,30 +87,34 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const validatedData = paymentSchema.parse(body)
 
-    const payment = await prisma.payment.create({
-      data: {
-        ...validatedData,
-        paymentMethod: validatedData.paymentMethod as any,
-        status: validatedData.status as any,
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
+    const payment = await prisma.$transaction(async (tx) => {
+      const p = await tx.payment.create({
+        data: {
+          ...validatedData,
+          paymentMethod: validatedData.paymentMethod as any,
+          status: validatedData.status as any,
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
           },
         },
-      },
-    })
-
-    // Update booking payment status if applicable
-    if (validatedData.bookingId && validatedData.status === 'completed') {
-      await prisma.booking.update({
-        where: { id: validatedData.bookingId },
-        data: { paymentStatus: 'completed' },
       })
-    }
+
+      // Update booking payment status if applicable
+      if (validatedData.bookingId && validatedData.status === 'completed') {
+        await tx.booking.update({
+          where: { id: validatedData.bookingId },
+          data: { paymentStatus: 'completed' },
+        })
+      }
+      
+      return p
+    })
 
     return NextResponse.json(payment, { status: 201 })
   } catch (error: any) {
