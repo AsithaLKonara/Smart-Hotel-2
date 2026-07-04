@@ -21,8 +21,8 @@
 - [x] `/api/test-db-comprehensive` (Fixed: Deleted dead test code)
 - [x] `/api/test-db` (Fixed: Deleted dead test code)
 - [x] `/api/security/delivery-pass` (Fixed: Built UI tab in Guest Super App)
-- `/api/rooms/check-availability`
-- `/api/revenue/yield-engine`
+- [x] `/api/rooms/check-availability` (Fixed: Built availability checker in Receptionist UI)
+- [x] `/api/revenue/yield-engine` (Fixed: False Positive, invoked by CRON scheduler)
 *(and 65 more...)*
 
 ## 3. Business Logic & Transaction Gaps

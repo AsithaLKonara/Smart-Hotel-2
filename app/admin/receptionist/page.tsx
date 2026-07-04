@@ -33,6 +33,26 @@ export default function ReceptionistOperationsCenter() {
   const [statusFilter, setStatusFilter] = useState("ALL")
   const [selectedRoom, setSelectedRoom] = useState<any | null>(null)
   const [isExpressModalOpen, setIsExpressModalOpen] = useState(false)
+  
+  // Availability UI State
+  const [availabilityDates, setAvailabilityDates] = useState({ checkIn: '', checkOut: '' })
+  const [availableRoomsCount, setAvailableRoomsCount] = useState<number | null>(null)
+
+  const checkAvailability = async () => {
+    if (!availabilityDates.checkIn || !availabilityDates.checkOut) return toast.error('Select check-in and check-out dates')
+    try {
+      const res = await fetch(`/api/rooms/check-availability?checkIn=${availabilityDates.checkIn}&checkOut=${availabilityDates.checkOut}`)
+      const data = await res.json()
+      if (res.ok) {
+        setAvailableRoomsCount(data.totalAvailable)
+        toast.success(`Found ${data.totalAvailable} rooms available for these dates!`)
+      } else {
+        toast.error(data.error || 'Check failed')
+      }
+    } catch (e) {
+      toast.error('Failed to check availability')
+    }
+  }
 
   // Fetch Rooms Data
   const { data: roomsData, isLoading: roomsLoading } = useQuery({
@@ -202,6 +222,28 @@ export default function ReceptionistOperationsCenter() {
     >
       <div className="space-y-12">
         <section>
+          <div className="bg-white/5 border border-white/10 rounded-xl p-4 mb-8 flex items-end gap-4">
+            <div>
+              <label className="text-xs text-white/60 mb-1 block">Check-in Date</label>
+              <input type="date" className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary" value={availabilityDates.checkIn} onChange={e => setAvailabilityDates({...availabilityDates, checkIn: e.target.value})} />
+            </div>
+            <div>
+              <label className="text-xs text-white/60 mb-1 block">Check-out Date</label>
+              <input type="date" className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary" value={availabilityDates.checkOut} onChange={e => setAvailabilityDates({...availabilityDates, checkOut: e.target.value})} />
+            </div>
+            <Button onClick={checkAvailability} className="bg-primary text-primary-foreground font-semibold">
+              <Search className="w-4 h-4 mr-2" />
+              Check Availability
+            </Button>
+            {availableRoomsCount !== null && (
+              <div className="ml-4 flex items-center animate-in fade-in zoom-in duration-300">
+                <Badge variant="outline" className="border-emerald-500/30 text-emerald-400 bg-emerald-500/10 py-1.5 px-4 text-sm font-bold">
+                  {availableRoomsCount} Rooms Available
+                </Badge>
+              </div>
+            )}
+          </div>
+
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-xl font-serif font-bold flex items-center gap-3">
               <Bed className="w-6 h-6 text-primary" /> Room Matrix
