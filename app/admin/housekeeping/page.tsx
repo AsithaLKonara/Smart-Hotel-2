@@ -75,11 +75,21 @@ export default function HousekeepingOperations() {
     )
   }
 
+  const { data: roomsData, isLoading: roomsLoading } = useQuery({
+    queryKey: ['housekeeping-rooms'],
+    queryFn: async () => {
+      const res = await fetch('/api/admin/housekeeping/rooms')
+      const data = await res.json()
+      return data.data || []
+    }
+  })
+
   // Filter tasks that are not verified/cancelled
   const activeTasks = tasksData?.filter((t: any) => !['VERIFIED', 'CANCELLED'].includes(t.status)) || []
   
   // Filter for tabs
   const filteredTasks = activeTasks.filter((t: any) => {
+    if (activeTab === 'ROOMS') return false
     if (activeTab === 'ALL') return t.status !== 'COMPLETED' // hide completed from main board
     return t.status === activeTab
   })
@@ -94,19 +104,22 @@ export default function HousekeepingOperations() {
           <h1 className="text-3xl font-serif font-bold">Housekeeping Command Center</h1>
           <p className="text-slate-400 text-sm mt-1">Dispatch cleaning tasks and inspect rooms.</p>
         </div>
-        <Button variant="outline" onClick={() => queryClient.invalidateQueries({ queryKey: ['housekeeping-tasks'] })} className="bg-white/5 border-white/10 mt-4 md:mt-0 text-white">
-          <RefreshCw className="w-4 h-4 mr-2" /> Sync Tasks
+        <Button variant="outline" onClick={() => {
+          queryClient.invalidateQueries({ queryKey: ['housekeeping-tasks'] })
+          queryClient.invalidateQueries({ queryKey: ['housekeeping-rooms'] })
+        }} className="bg-white/5 border-white/10 mt-4 md:mt-0 text-white">
+          <RefreshCw className="w-4 h-4 mr-2" /> Sync Board
         </Button>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
         
-        {/* Cleaning Queue */}
+        {/* Cleaning Queue / Rooms */}
         <div className="xl:col-span-2 space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold flex items-center"><Brush className="w-5 h-5 mr-2 text-primary" /> Task Dispatch Board</h2>
+            <h2 className="text-xl font-bold flex items-center"><Brush className="w-5 h-5 mr-2 text-primary" /> {activeTab === 'ROOMS' ? 'Live Room Status' : 'Task Dispatch Board'}</h2>
             <div className="flex gap-2 bg-white/5 p-1 rounded-lg">
-              {["ALL", "PENDING", "IN_PROGRESS"].map(tab => (
+              {["ALL", "PENDING", "IN_PROGRESS", "ROOMS"].map(tab => (
                 <button 
                   key={tab} 
                   onClick={() => setActiveTab(tab)}
@@ -118,7 +131,24 @@ export default function HousekeepingOperations() {
             </div>
           </div>
 
-          {filteredTasks.length === 0 ? (
+          {activeTab === 'ROOMS' ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {roomsData?.map((room: any) => (
+                <div key={room.id} className="p-4 bg-white/[0.03] border border-white/10 rounded-2xl flex flex-col items-center justify-center text-center">
+                  <h4 className="text-2xl font-bold text-white mb-1">{room.number}</h4>
+                  <Badge className={
+                    room.status === 'AVAILABLE' ? 'bg-emerald-500/20 text-emerald-400' :
+                    room.status === 'DIRTY' ? 'bg-orange-500/20 text-orange-400' :
+                    room.status === 'CLEANING' ? 'bg-blue-500/20 text-blue-400' :
+                    'bg-slate-500/20 text-slate-400'
+                  }>
+                    {room.status.replace('_', ' ')}
+                  </Badge>
+                </div>
+              ))}
+              {roomsData?.length === 0 && <p className="col-span-full text-center text-white/40 p-8">No rooms found.</p>}
+            </div>
+          ) : filteredTasks.length === 0 ? (
              <div className="text-center py-20 bg-white/[0.02] border border-white/5 rounded-3xl">
                <CheckCheck className="w-12 h-12 text-slate-600 mx-auto mb-3" />
                <p className="text-slate-400 font-medium">No active tasks in this view.</p>

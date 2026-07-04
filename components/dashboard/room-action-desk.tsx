@@ -114,8 +114,19 @@ export function RoomActionDesk({
 
   const handleCheckOut = async () => {
     setIsCheckingOut(true)
-    try { await onCheckOut(room.number) }
-    finally { setIsCheckingOut(false) }
+    try {
+      if (currentBooking) {
+        const res = await fetch(`/api/admin/bookings/${currentBooking.id}/checkout`, { method: 'POST' })
+        if (!res.ok) {
+          const err = await res.json()
+          alert(`Checkout failed: ${err.error}`)
+          return
+        }
+      }
+      await onCheckOut(room.number)
+    } finally { 
+      setIsCheckingOut(false) 
+    }
   }
 
   const handleQuickReserve = async () => {

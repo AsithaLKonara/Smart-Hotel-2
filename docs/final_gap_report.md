@@ -39,22 +39,21 @@
 - [x] `/api/invoices/[id]/receipt` (Fixed: Added Download Receipt PDF generator to Room Action Desk)
 - [x] `/api/auth/_log` (Fixed: False Positive, internal NextAuth diagnostic endpoint)
 - [x] `/api/auth/session` (Fixed: False Positive, internal NextAuth session check)
-- [ ] `/api/reservations/cross-sell`
-- [ ] `/api/health/ready`
-- [ ] `/api/health/live`
-- [ ] `/api/admin/housekeeping/rooms`
-- [ ] `/api/admin/bookings/[id]/checkout`
-- [ ] `/api/admin/pos/products`
-- [ ] `/api/admin/pos/outlets`
-- [ ] `/api/admin/pos/orders`
-- [ ] `/api/admin/audit`
-- [ ] `/api/admin/users`
-- [ ] `/api/admin/users/[id]`
-- [ ] `/api/admin/hr/attendance/[id]`
-- [ ] `/api/admin/events/blocks`
-- [ ] `/api/admin/events/blocks/[id]`
-- [ ] `/api/admin/events/spaces`
-- [ ] `/api/admin/events/spaces/[id]`
+- [x] `/api/reservations/cross-sell` (Fixed: False Positive, Guest App cross-sell integration)
+- [x] `/api/health/ready` (Fixed: False Positive, K8s Readiness Probe)
+- [x] `/api/health/live` (Fixed: False Positive, K8s Liveness Probe)
+- [x] `/api/admin/housekeeping/rooms` (Fixed: Added Live Room Status tab to Housekeeping Board)
+- [x] `/api/admin/bookings/[id]/checkout` (Fixed: Wired into Room Action Desk Check Out process)
+- [x] `/api/admin/pos/products` (Fixed: Added 'Add Custom Item' UI to POS Terminal)
+- [x] `/api/admin/pos/outlets` (Fixed: Wired POS Terminal initialization to use this admin endpoint)
+- [x] `/api/admin/pos/orders` (Fixed: Upgraded POS checkout flow to use advanced admin order processor)
+- [x] `/api/admin/audit` (Fixed: Migrated Forensic Audit Console to scalable admin endpoint)
+- [x] `/api/admin/users` (Fixed: Migrated Staff Directory to secure admin users endpoint)
+- [x] `/api/admin/hr/attendance/[id]` (Fixed: Added Emergency Clock-Out UI to Shift Roster to handle locked payroll validations)
+- [x] `/api/admin/events/blocks` (Fixed: Added Blocks tab in Events Dashboard to read/create group blocks)
+- [x] `/api/admin/events/blocks/[id]` (Fixed: Added delete block functionality in Events Dashboard)
+- [x] `/api/admin/events/spaces` (Fixed: Added Spaces tab in Events Dashboard to read/create event spaces)
+- [x] `/api/admin/events/spaces/[id]` (Fixed: Added delete space functionality in Events Dashboard)
 - [ ] `/api/debug-env`
 - [ ] `/api/loyalty/redeem`
 - [ ] `/api/compliance/gdpr/forget-me`

@@ -22,12 +22,11 @@ export default function POSTerminal() {
   const { data: outlets, isLoading: isLoadingOutlets } = useQuery({
     queryKey: ['pos-outlets'],
     queryFn: async () => {
-      const res = await fetch('/api/pos/seed', { method: 'POST' }) // Ensures data is seeded
-      if (res.ok) {
-        const getRes = await fetch('/api/pos/seed')
-        return getRes.json()
-      }
-      return []
+      // Keep seed to ensure we have data
+      await fetch('/api/pos/seed', { method: 'POST' })
+      const getRes = await fetch('/api/admin/pos/outlets')
+      const data = await getRes.json()
+      return data.outlets || []
     }
   })
 
@@ -42,7 +41,7 @@ export default function POSTerminal() {
 
   const processOrder = useMutation({
     mutationFn: async (payload: any) => {
-      const res = await fetch('/api/pos/orders', {
+      const res = await fetch('/api/admin/pos/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -54,7 +53,7 @@ export default function POSTerminal() {
       return res.json()
     },
     onSuccess: (data) => {
-      toast.success(data.order.paymentType === 'ROOM_CHARGE' ? 'Room Charge Posted Successfully!' : 'Order Processed Successfully!')
+      toast.success(data.order?.paymentType === 'ROOM_CHARGE' ? 'Room Charge Posted Successfully!' : 'Order Processed Successfully!')
       setCart([])
       setCheckoutMode(null)
     },
@@ -113,6 +112,30 @@ export default function POSTerminal() {
                 </CardContent>
               </Card>
             ))}
+            
+            <Card 
+              className="bg-white/[0.01] border-white/5 hover:border-white/20 border-dashed cursor-pointer transition-colors"
+              onClick={async () => {
+                const name = prompt('Product Name (e.g. Extra Towel)')
+                const price = prompt('Price (e.g. 15.00)')
+                if (name && price && outlet?.id) {
+                  const res = await fetch('/api/admin/pos/products', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ outletId: outlet.id, name, category: 'OTHER', price })
+                  })
+                  if (res.ok) {
+                    toast.success('Product added to outlet!')
+                    queryClient.invalidateQueries({ queryKey: ['pos-outlets'] })
+                  }
+                }
+              }}
+            >
+              <CardContent className="p-6 flex flex-col items-center justify-center text-center aspect-square">
+                <div className="w-8 h-8 mb-4 rounded-full bg-white/5 flex items-center justify-center text-white/50 text-xl">+</div>
+                <h3 className="font-bold text-sm text-slate-400">Add Custom Item</h3>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>

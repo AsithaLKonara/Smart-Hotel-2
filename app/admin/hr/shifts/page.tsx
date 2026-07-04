@@ -68,9 +68,30 @@ export default function ShiftsPage() {
           <h1 className="text-3xl font-bold font-serif">Shift Roster</h1>
           <p className="text-slate-400">Schedule staff across departments</p>
         </div>
-        <Button onClick={() => setShowForm(!showForm)}>
-          <Plus className="w-4 h-4 mr-2" /> Assign Shift
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" className="border-rose-500/50 text-rose-400 hover:bg-rose-500/10" onClick={async () => {
+            const attId = prompt('Enter Attendance Record ID to force clock-out:');
+            if (attId) {
+              const res = await fetch(`/api/admin/hr/attendance/${attId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ clockOut: new Date().toISOString(), status: 'COMPLETED' })
+              });
+              if (res.ok) {
+                toast.success('Forced clock-out successful');
+              } else if (res.status === 423) {
+                toast.error('Cannot modify: Payroll period finalized');
+              } else {
+                toast.error('Failed to update attendance');
+              }
+            }
+          }}>
+            <Clock className="w-4 h-4 mr-2" /> Emergency Clock-Out
+          </Button>
+          <Button onClick={() => setShowForm(!showForm)}>
+            <Plus className="w-4 h-4 mr-2" /> Assign Shift
+          </Button>
+        </div>
       </div>
 
       {showForm && (

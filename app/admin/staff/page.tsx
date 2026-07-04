@@ -10,7 +10,7 @@ export default function StaffDirectoryPage() {
   const { data: staffData, isLoading: loadingStaff } = useQuery({
     queryKey: ['staff-directory'],
     queryFn: async () => {
-      const res = await fetch('/api/staff')
+      const res = await fetch('/api/admin/users')
       return res.json()
     }
   })
@@ -33,7 +33,7 @@ export default function StaffDirectoryPage() {
     )
   }
 
-  const staff = staffData?.staff || []
+  const staff = staffData?.users || staffData?.staff || []
   const roles = roleData?.roles || []
   const allPermissions = roleData?.allPermissions || []
 

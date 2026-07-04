@@ -51,7 +51,7 @@ export default function ForensicAuditTimeline() {
   const loadAuditLogs = async () => {
     try {
       setLoading(true)
-      const res = await fetch('/api/audit-logs').then(r => r.json()).catch(() => null)
+      const res = await fetch('/api/admin/audit').then(r => r.json()).catch(() => null)
       if (res && res.logs) {
         setLogs(res.logs)
       } else {
