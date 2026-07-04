@@ -364,6 +364,8 @@ export const emailTemplates = {
 }
 
 // Email sending functions with fallback for missing SMTP configuration
+import { chaosState } from '@/lib/chaos'
+
 export async function sendBookingConfirmation(data: {
   guestName: string
   guestEmail: string
@@ -377,6 +379,11 @@ export async function sendBookingConfirmation(data: {
   confirmationCode: string
   specialRequests?: string
 }) {
+  if (chaosState.emailFailure) {
+    console.error('CHAOS_TEST: Simulated Email Failure')
+    return
+  }
+
   if (!isEmailConfigured || !transporter) {
     console.warn('SMTP not configured - email not sent. Booking confirmation would be sent to:', data.guestEmail)
     return // Gracefully skip email sending

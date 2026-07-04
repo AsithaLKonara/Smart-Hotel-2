@@ -10,6 +10,9 @@ export interface ChaosState {
   latency: number // latency injection in milliseconds
   stripeFailure: boolean
   memoryPressure: boolean
+  emailFailure: boolean
+  pusherFailure: boolean
+  otaFailure: boolean
 }
 
 const globalForChaos = globalThis as unknown as {
@@ -23,6 +26,9 @@ if (!globalForChaos.chaosState) {
     latency: 0,
     stripeFailure: false,
     memoryPressure: false,
+    emailFailure: false,
+    pusherFailure: false,
+    otaFailure: false,
   }
 }
 

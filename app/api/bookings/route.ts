@@ -12,6 +12,7 @@ import { InventoryLockEngine } from '@/lib/inventory-lock'
 import { RealtimeEvents } from '@/lib/realtime'
 import { pushAvailabilityToOTA } from '@/lib/ota/ota-service'
 import { checkIdempotency, saveIdempotency, clearIdempotency } from '@/lib/idempotency'
+import { chaosState } from '@/lib/chaos'
 
 const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' }) : null
 
@@ -104,7 +105,6 @@ export async function POST(request: NextRequest) {
 
         const booking = await tx.booking.create({
           data: {
-            roomId: room.id,
             primaryGuestId: guestId,
             checkIn,
             checkOut,
@@ -167,12 +167,13 @@ export async function POST(request: NextRequest) {
         await InventoryLockEngine.commitHold(hold, tx)
 
         return { booking, folioId: folio.id }
-      })
+      }, { isolationLevel: 'Serializable', maxWait: 10000, timeout: 30000 })
 
       const result = txResult.booking
       const folioId = txResult.folioId
       // 4. REAL-TIME EVENTS (Pusher) - AFTER SUCCESSFUL TX
       try {
+        if (chaosState.pusherFailure) throw new Error('CHAOS_TEST: Simulated Pusher Failure')
         await RealtimeEvents.emitBookingCreated(result)
       } catch (pusherErr) {
         console.error('[REALTIME] Pusher event emit failed:', pusherErr)
@@ -180,6 +181,7 @@ export async function POST(request: NextRequest) {
 
       // 6. OTA SYNCHRONIZATION (Non-blocking but logged)
       try {
+        if (chaosState.otaFailure) throw new Error('CHAOS_TEST: Simulated OTA Failure')
         const assignment = result.roomAssignments?.[0]
         if (assignment && assignment.room) {
           const availableCount = await prisma.room.count({ where: { roomTypeId: assignment.room.roomTypeId, status: 'AVAILABLE' } })
@@ -196,26 +198,33 @@ export async function POST(request: NextRequest) {
 
       // 7. STRIPE PAYMENT INTENT
       let clientSecret: string | null = null
+      let paymentFailed = false
       if (validated.paymentMethod === 'pay_now' && stripe) {
-        const intent = await stripe.paymentIntents.create({
-          amount: Math.round(result.totalAmount * 100),
-          currency: 'lkr',
-          metadata: { bookingId: result.id },
-        })
-        clientSecret = intent.client_secret
-        // Link to payment in DB
-        await prisma.payment.create({
-          data: {
-            bookingId: result.id,
-            folioId: folioId, // DDD dual-write
-            userId: result.primaryGuestId,
-            amount: result.totalAmount,
-            paymentMethod: 'card',
-            paymentProvider: 'STRIPE',
-            providerId: intent.id,
-            status: 'pending'
-          }
-        })
+        try {
+          if (chaosState.stripeFailure) throw new Error('CHAOS_TEST: Simulated Stripe Failure')
+          const intent = await stripe.paymentIntents.create({
+            amount: Math.round(result.totalAmount * 100),
+            currency: 'lkr',
+            metadata: { bookingId: result.id },
+          })
+          clientSecret = intent.client_secret
+          // Link to payment in DB
+          await prisma.payment.create({
+            data: {
+              bookingId: result.id,
+              folioId: folioId, // DDD dual-write
+              userId: result.primaryGuestId,
+              amount: result.totalAmount,
+              paymentMethod: 'card',
+              paymentProvider: 'STRIPE',
+              providerId: intent.id,
+              status: 'pending'
+            }
+          })
+        } catch (stripeErr) {
+          console.error('[STRIPE] Payment Intent creation failed:', stripeErr)
+          paymentFailed = true
+        }
       }
 
       // 8. AUDIT & EMAIL
@@ -233,7 +242,7 @@ export async function POST(request: NextRequest) {
         confirmationCode: result.confirmationCode
       })
 
-      const responseBody = { booking: { ...result, clientSecret } }
+      const responseBody = { booking: { ...result, clientSecret }, paymentFailed }
       if (idempotencyKey) await saveIdempotency(idempotencyKey, { status: 201, body: responseBody })
       
       return NextResponse.json(responseBody, { status: 201 })

@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
 
     const result = await prisma.$transaction(async (tx: any) => {
       return await postCharge(data, tx)
-    })
+    }, { isolationLevel: 'Serializable', maxWait: 10000, timeout: 30000 })
 
     try {
       await realtime.trigger('admin', 'folio.charge_posted', {

@@ -35,6 +35,7 @@ function BookingPageContent() {
   const [totalAmount, setTotalAmount] = useState(0)
   const [isSearching, setIsSearching] = useState(false)
   const [carouselIdx, setCarouselIdx] = useState(0)
+  const [idempotencyKey] = useState(() => typeof window !== 'undefined' ? crypto.randomUUID() : '')
 
   // Load cached details from localStorage if present after redirect/login
   useEffect(() => {
@@ -116,9 +117,24 @@ function BookingPageContent() {
         paymentMethod: bookingData.paymentMethod,
         ...(session ? {} : { guestName: bookingData.guestName, guestEmail: bookingData.guestEmail, guestPhone: bookingData.guestPhone })
       }
-      const res = await fetch('/api/bookings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
-      if (res.ok) setStep(4)
-      else toast.error('Failed to create booking')
+      const res = await fetch('/api/bookings', { 
+        method: 'POST', 
+        headers: { 
+          'Content-Type': 'application/json',
+          'idempotency-key': idempotencyKey
+        }, 
+        body: JSON.stringify(payload) 
+      })
+      
+      if (res.ok) {
+        const data = await res.json()
+        if (data.paymentFailed) {
+          toast.error('Booking confirmed, but payment initialization failed. Please pay at the front desk.', { duration: 6000 })
+        }
+        setStep(4)
+      } else {
+        toast.error('Failed to create booking')
+      }
     } catch { toast.error('Failed to create booking') }
     finally { setIsLoading(false) }
   }
