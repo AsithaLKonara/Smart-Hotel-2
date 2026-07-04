@@ -39,7 +39,7 @@
 - [x] app/api/payments/[id]/route.ts (Fixed: Added $transaction)
 - [x] app/api/night-audit/run/route.ts (Fixed: Added $transaction)
 - [x] app/api/folios/routing/route.ts (Fixed: Added $transaction)
-- app/api/folios/post-charge/route.ts
+- [x] app/api/folios/post-charge/route.ts (Fixed: Added $transaction)
 - app/api/bookings/[id]/folios/route.ts
 - app/api/admin/accounting/night-audit/route.ts
 - app/api/admin/accounting/folios/route.ts

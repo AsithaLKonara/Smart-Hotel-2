@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import prisma from '@/lib/db'
 import { postCharge, ChargePayload } from '@/lib/accounting'
 import { z } from 'zod'
 
@@ -15,7 +16,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const data = chargeSchema.parse(body)
 
-    const result = await postCharge(data)
+    const result = await prisma.$transaction(async (tx: any) => {
+      return await postCharge(data, tx)
+    })
 
     return NextResponse.json(result, { status: 201 })
   } catch (error: any) {
