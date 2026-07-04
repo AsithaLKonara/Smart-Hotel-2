@@ -142,7 +142,7 @@ export const authOptions: NextAuthOptions = {
             roleId: user.roleId,
             roleName: user.role?.name,
             permissions,
-            hotelId: (user as any).hotelId || null,
+            propertyId: (user as any).propertyId || null,
           }
         } catch (error) {
           console.error('Authentication error:', error)
@@ -182,7 +182,7 @@ export const authOptions: NextAuthOptions = {
           roleId: null,
           roleName: 'GUEST',
           permissions: [],
-          hotelId: null,
+          propertyId: null,
           iat: 0,
         }
       }
@@ -192,7 +192,7 @@ export const authOptions: NextAuthOptions = {
         token.roleId = user.roleId
         token.roleName = (user as any).roleName || (user as any).role?.name
         token.permissions = user.permissions || []
-        token.hotelId = user.hotelId
+        token.propertyId = (user as any).propertyId
       }
       
       return token
@@ -208,7 +208,7 @@ export const authOptions: NextAuthOptions = {
         }
         (session.user as any).roleName = token.roleName as string | undefined
         session.user.permissions = token.permissions as string[] || []
-        session.user.hotelId = token.hotelId as string | undefined
+        session.user.propertyId = token.propertyId as string | undefined
       }
       return session
     },

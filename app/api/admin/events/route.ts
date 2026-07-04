@@ -7,7 +7,7 @@ import { z } from 'zod';
 export async function GET(req: Request) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || !['SUPER_ADMIN', 'MANAGER'].includes((session.user as any).roleName as string)) {
+    if (!session || !['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'KITCHEN', 'HOUSEKEEPING', 'MAINTENANCE'].includes((session.user as any).roleName as string)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -59,7 +59,7 @@ const createEventSchema = z.object({
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || !['SUPER_ADMIN', 'MANAGER'].includes((session.user as any).roleName as string)) {
+    if (!session || !['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'].includes((session.user as any).roleName as string)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

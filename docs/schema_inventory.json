@@ -1,0 +1,771 @@
+{
+  "models": [
+    {
+      "name": "RoomType",
+      "fieldCount": 19,
+      "relations": []
+    },
+    {
+      "name": "Room",
+      "fieldCount": 29,
+      "relations": [
+        "property",
+        "roomType"
+      ]
+    },
+    {
+      "name": "RoomStatusHistory",
+      "fieldCount": 8,
+      "relations": [
+        "room"
+      ]
+    },
+    {
+      "name": "RoomImage",
+      "fieldCount": 8,
+      "relations": [
+        "room"
+      ]
+    },
+    {
+      "name": "RatePlan",
+      "fieldCount": 13,
+      "relations": [
+        "roomType"
+      ]
+    },
+    {
+      "name": "SeasonalRate",
+      "fieldCount": 10,
+      "relations": [
+        "ratePlan"
+      ]
+    },
+    {
+      "name": "Stay",
+      "fieldCount": 10,
+      "relations": [
+        "booking",
+        "room"
+      ]
+    },
+    {
+      "name": "Booking",
+      "fieldCount": 33,
+      "relations": [
+        "groupBlock",
+        "guest",
+        "property"
+      ]
+    },
+    {
+      "name": "Event",
+      "fieldCount": 12,
+      "relations": []
+    },
+    {
+      "name": "BookingGuest",
+      "fieldCount": 9,
+      "relations": [
+        "booking"
+      ]
+    },
+    {
+      "name": "RoomAssignment",
+      "fieldCount": 10,
+      "relations": [
+        "booking",
+        "room"
+      ]
+    },
+    {
+      "name": "StayEvent",
+      "fieldCount": 7,
+      "relations": [
+        "booking"
+      ]
+    },
+    {
+      "name": "JournalEntry",
+      "fieldCount": 9,
+      "relations": []
+    },
+    {
+      "name": "NightAuditLog",
+      "fieldCount": 9,
+      "relations": [
+        "user"
+      ]
+    },
+    {
+      "name": "Payment",
+      "fieldCount": 22,
+      "relations": [
+        "booking",
+        "folio",
+        "internalOrder",
+        "user"
+      ]
+    },
+    {
+      "name": "FinancialAdjustment",
+      "fieldCount": 7,
+      "relations": [
+        "payment"
+      ]
+    },
+    {
+      "name": "Folio",
+      "fieldCount": 18,
+      "relations": [
+        "booking",
+        "company",
+        "property",
+        "routingRulesSource",
+        "routingRulesTarget"
+      ]
+    },
+    {
+      "name": "FolioLineItem",
+      "fieldCount": 9,
+      "relations": [
+        "folio"
+      ]
+    },
+    {
+      "name": "RoutingRule",
+      "fieldCount": 7,
+      "relations": [
+        "sourceFolio",
+        "targetFolio"
+      ]
+    },
+    {
+      "name": "RevenuePosting",
+      "fieldCount": 6,
+      "relations": [
+        "nightAuditLog"
+      ]
+    },
+    {
+      "name": "CompanyProfile",
+      "fieldCount": 9,
+      "relations": []
+    },
+    {
+      "name": "TransactionCode",
+      "fieldCount": 5,
+      "relations": []
+    },
+    {
+      "name": "Task",
+      "fieldCount": 26,
+      "relations": [
+        "assignedEmployee",
+        "booking",
+        "creator",
+        "property",
+        "room"
+      ]
+    },
+    {
+      "name": "YieldRule",
+      "fieldCount": 13,
+      "relations": []
+    },
+    {
+      "name": "POSOutlet",
+      "fieldCount": 9,
+      "relations": []
+    },
+    {
+      "name": "POSProduct",
+      "fieldCount": 10,
+      "relations": [
+        "outlet"
+      ]
+    },
+    {
+      "name": "EventSpace",
+      "fieldCount": 9,
+      "relations": []
+    },
+    {
+      "name": "BanquetingEvent",
+      "fieldCount": 13,
+      "relations": []
+    },
+    {
+      "name": "EventBooking",
+      "fieldCount": 9,
+      "relations": [
+        "event",
+        "space"
+      ]
+    },
+    {
+      "name": "GroupBlock",
+      "fieldCount": 10,
+      "relations": [
+        "event",
+        "roomType"
+      ]
+    },
+    {
+      "name": "FoodMenu",
+      "fieldCount": 10,
+      "relations": []
+    },
+    {
+      "name": "User",
+      "fieldCount": 36,
+      "relations": [
+        "guestBookings",
+        "internalOrders",
+        "createdTasks",
+        "corporateAccount",
+        "property",
+        "role",
+        "travelAgent"
+      ]
+    },
+    {
+      "name": "GuestPreference",
+      "fieldCount": 6,
+      "relations": [
+        "user"
+      ]
+    },
+    {
+      "name": "GuestProfile",
+      "fieldCount": 6,
+      "relations": [
+        "user"
+      ]
+    },
+    {
+      "name": "CorporateAccount",
+      "fieldCount": 10,
+      "relations": []
+    },
+    {
+      "name": "TravelAgent",
+      "fieldCount": 11,
+      "relations": []
+    },
+    {
+      "name": "GuestHistory",
+      "fieldCount": 10,
+      "relations": [
+        "user"
+      ]
+    },
+    {
+      "name": "Role",
+      "fieldCount": 7,
+      "relations": []
+    },
+    {
+      "name": "Permission",
+      "fieldCount": 6,
+      "relations": []
+    },
+    {
+      "name": "RolePermission",
+      "fieldCount": 4,
+      "relations": [
+        "permission",
+        "role"
+      ]
+    },
+    {
+      "name": "Amenity",
+      "fieldCount": 9,
+      "relations": []
+    },
+    {
+      "name": "Knowledge",
+      "fieldCount": 8,
+      "relations": []
+    },
+    {
+      "name": "EmbeddingCache",
+      "fieldCount": 5,
+      "relations": []
+    },
+    {
+      "name": "Notification",
+      "fieldCount": 10,
+      "relations": [
+        "user"
+      ]
+    },
+    {
+      "name": "Outbox",
+      "fieldCount": 7,
+      "relations": []
+    },
+    {
+      "name": "SyncLog",
+      "fieldCount": 10,
+      "relations": []
+    },
+    {
+      "name": "AuditLog",
+      "fieldCount": 9,
+      "relations": [
+        "user"
+      ]
+    },
+    {
+      "name": "ChannelConfig",
+      "fieldCount": 5,
+      "relations": []
+    },
+    {
+      "name": "RoomMapping",
+      "fieldCount": 6,
+      "relations": []
+    },
+    {
+      "name": "Gallery",
+      "fieldCount": 6,
+      "relations": []
+    },
+    {
+      "name": "HeroSlide",
+      "fieldCount": 11,
+      "relations": []
+    },
+    {
+      "name": "Inventory",
+      "fieldCount": 9,
+      "relations": []
+    },
+    {
+      "name": "LoyaltyPoint",
+      "fieldCount": 10,
+      "relations": [
+        "user"
+      ]
+    },
+    {
+      "name": "LoyaltyTransaction",
+      "fieldCount": 8,
+      "relations": [
+        "loyaltyPoint"
+      ]
+    },
+    {
+      "name": "NavigationLink",
+      "fieldCount": 9,
+      "relations": []
+    },
+    {
+      "name": "Conversation",
+      "fieldCount": 6,
+      "relations": []
+    },
+    {
+      "name": "ChatCustomer",
+      "fieldCount": 7,
+      "relations": []
+    },
+    {
+      "name": "Setting",
+      "fieldCount": 5,
+      "relations": []
+    },
+    {
+      "name": "SocialLink",
+      "fieldCount": 8,
+      "relations": []
+    },
+    {
+      "name": "TableBooking",
+      "fieldCount": 13,
+      "relations": [
+        "user"
+      ]
+    },
+    {
+      "name": "Complaint",
+      "fieldCount": 13,
+      "relations": [
+        "booking",
+        "user"
+      ]
+    },
+    {
+      "name": "Testimonial",
+      "fieldCount": 9,
+      "relations": []
+    },
+    {
+      "name": "FooterLink",
+      "fieldCount": 8,
+      "relations": []
+    },
+    {
+      "name": "ContactMessage",
+      "fieldCount": 8,
+      "relations": []
+    },
+    {
+      "name": "FAQ",
+      "fieldCount": 8,
+      "relations": []
+    },
+    {
+      "name": "Vendor",
+      "fieldCount": 11,
+      "relations": []
+    },
+    {
+      "name": "InventoryItem",
+      "fieldCount": 14,
+      "relations": [
+        "vendor"
+      ]
+    },
+    {
+      "name": "InventoryStock",
+      "fieldCount": 8,
+      "relations": [
+        "item"
+      ]
+    },
+    {
+      "name": "PurchaseOrder",
+      "fieldCount": 13,
+      "relations": [
+        "vendor"
+      ]
+    },
+    {
+      "name": "PurchaseOrderItem",
+      "fieldCount": 10,
+      "relations": [
+        "item",
+        "purchaseOrder"
+      ]
+    },
+    {
+      "name": "InventoryMovement",
+      "fieldCount": 7,
+      "relations": [
+        "item"
+      ]
+    },
+    {
+      "name": "GoodsReceipt",
+      "fieldCount": 5,
+      "relations": [
+        "purchaseOrder"
+      ]
+    },
+    {
+      "name": "VendorInvoice",
+      "fieldCount": 6,
+      "relations": [
+        "purchaseOrder"
+      ]
+    },
+    {
+      "name": "Employee",
+      "fieldCount": 20,
+      "relations": [
+        "user",
+        "tasks"
+      ]
+    },
+    {
+      "name": "Shift",
+      "fieldCount": 10,
+      "relations": [
+        "employee"
+      ]
+    },
+    {
+      "name": "LeaveRequest",
+      "fieldCount": 11,
+      "relations": [
+        "employee"
+      ]
+    },
+    {
+      "name": "PayrollRecord",
+      "fieldCount": 14,
+      "relations": [
+        "employee"
+      ]
+    },
+    {
+      "name": "Attendance",
+      "fieldCount": 9,
+      "relations": [
+        "employee"
+      ]
+    },
+    {
+      "name": "PayrollRun",
+      "fieldCount": 8,
+      "relations": []
+    },
+    {
+      "name": "PayrollLineItem",
+      "fieldCount": 11,
+      "relations": [
+        "employee",
+        "payrollRun"
+      ]
+    },
+    {
+      "name": "Asset",
+      "fieldCount": 14,
+      "relations": []
+    },
+    {
+      "name": "MaintenanceSchedule",
+      "fieldCount": 11,
+      "relations": [
+        "asset"
+      ]
+    },
+    {
+      "name": "InspectionLog",
+      "fieldCount": 9,
+      "relations": [
+        "asset"
+      ]
+    },
+    {
+      "name": "MaintenanceWorkOrder",
+      "fieldCount": 9,
+      "relations": [
+        "asset",
+        "room"
+      ]
+    },
+    {
+      "name": "OutOfOrderRecord",
+      "fieldCount": 7,
+      "relations": [
+        "room"
+      ]
+    },
+    {
+      "name": "Property",
+      "fieldCount": 17,
+      "relations": []
+    },
+    {
+      "name": "GuestConversation",
+      "fieldCount": 9,
+      "relations": [
+        "guest"
+      ]
+    },
+    {
+      "name": "GuestMessage",
+      "fieldCount": 7,
+      "relations": [
+        "conversation"
+      ]
+    },
+    {
+      "name": "Integration",
+      "fieldCount": 8,
+      "relations": []
+    },
+    {
+      "name": "WebhookEndpoint",
+      "fieldCount": 9,
+      "relations": []
+    },
+    {
+      "name": "WebhookDelivery",
+      "fieldCount": 8,
+      "relations": [
+        "webhookEndpoint"
+      ]
+    },
+    {
+      "name": "WebhookSubscription",
+      "fieldCount": 5,
+      "relations": [
+        "webhookEndpoint"
+      ]
+    },
+    {
+      "name": "ResortFacility",
+      "fieldCount": 9,
+      "relations": []
+    },
+    {
+      "name": "ResortService",
+      "fieldCount": 7,
+      "relations": [
+        "facility"
+      ]
+    },
+    {
+      "name": "ResortBooking",
+      "fieldCount": 10,
+      "relations": [
+        "facility",
+        "guest"
+      ]
+    },
+    {
+      "name": "Incident",
+      "fieldCount": 11,
+      "relations": []
+    },
+    {
+      "name": "InternalOrder",
+      "fieldCount": 20,
+      "relations": [
+        "folio",
+        "guest",
+        "outlet",
+        "room"
+      ]
+    },
+    {
+      "name": "InternalOrderItem",
+      "fieldCount": 13,
+      "relations": [
+        "menuItem",
+        "order",
+        "product"
+      ]
+    },
+    {
+      "name": "Feedback",
+      "fieldCount": 17,
+      "relations": [
+        "booking",
+        "room",
+        "user"
+      ]
+    },
+    {
+      "name": "WebhookDLQ",
+      "fieldCount": 7,
+      "relations": []
+    }
+  ],
+  "enums": [
+    {
+      "name": "RoomStatus",
+      "values": [
+        "AVAILABLE",
+        "OCCUPIED",
+        "DIRTY",
+        "CLEANING",
+        "INSPECTION_PENDING",
+        "MAINTENANCE",
+        "OUT_OF_ORDER"
+      ]
+    },
+    {
+      "name": "StayStatus",
+      "values": [
+        "EXPECTED",
+        "CHECKED_IN",
+        "CHECKED_OUT",
+        "NO_SHOW"
+      ]
+    },
+    {
+      "name": "EventStatus",
+      "values": [
+        "upcoming",
+        "ongoing",
+        "completed",
+        "cancelled"
+      ]
+    },
+    {
+      "name": "BookingStatus",
+      "values": [
+        "PENDING",
+        "CONFIRMED",
+        "CHECKED_IN",
+        "CHECKED_OUT",
+        "CANCELLED",
+        "NO_SHOW"
+      ]
+    },
+    {
+      "name": "BookingSource",
+      "values": [
+        "WALK_IN",
+        "WEBSITE",
+        "BOOKING_COM",
+        "AGODA",
+        "EXPEDIA"
+      ]
+    },
+    {
+      "name": "PaymentStatus",
+      "values": [
+        "pending",
+        "completed",
+        "failed",
+        "refunded",
+        "unpaid",
+        "partial"
+      ]
+    },
+    {
+      "name": "PaymentMethod",
+      "values": [
+        "cash",
+        "card",
+        "bank_transfer",
+        "crypto",
+        "other"
+      ]
+    },
+    {
+      "name": "TaskType",
+      "values": [
+        "HOUSEKEEPING",
+        "MAINTENANCE",
+        "ROOM_SERVICE",
+        "GUEST_REQUEST",
+        "ADMINISTRATIVE"
+      ]
+    },
+    {
+      "name": "TaskStatus",
+      "values": [
+        "PENDING",
+        "ACCEPTED",
+        "IN_PROGRESS",
+        "COMPLETED",
+        "VERIFIED",
+        "CANCELLED"
+      ]
+    },
+    {
+      "name": "Priority",
+      "values": [
+        "LOW",
+        "MEDIUM",
+        "HIGH",
+        "URGENT"
+      ]
+    },
+    {
+      "name": "LoyaltyTransactionType",
+      "values": [
+        "earned",
+        "spent",
+        "expired"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,938 @@
+{
+  "pages": [
+    {
+      "route": "/",
+      "file": "page.tsx"
+    },
+    {
+      "route": "/terms",
+      "file": "terms/page.tsx"
+    },
+    {
+      "route": "/spa",
+      "file": "spa/page.tsx"
+    },
+    {
+      "route": "/rooms",
+      "file": "rooms/page.tsx"
+    },
+    {
+      "route": "/rooms/[id]",
+      "file": "rooms/[id]/page.tsx"
+    },
+    {
+      "route": "/reception/pos",
+      "file": "reception/pos/page.tsx"
+    },
+    {
+      "route": "/privacy",
+      "file": "privacy/page.tsx"
+    },
+    {
+      "route": "/portals/travel-agent",
+      "file": "portals/travel-agent/page.tsx"
+    },
+    {
+      "route": "/portals/corporate",
+      "file": "portals/corporate/page.tsx"
+    },
+    {
+      "route": "/onboarding",
+      "file": "onboarding/page.tsx"
+    },
+    {
+      "route": "/mobile/housekeeping",
+      "file": "mobile/housekeeping/page.tsx"
+    },
+    {
+      "route": "/mobile/guest-super-app",
+      "file": "mobile/guest-super-app/page.tsx"
+    },
+    {
+      "route": "/kitchen",
+      "file": "kitchen/page.tsx"
+    },
+    {
+      "route": "/kitchen/pos",
+      "file": "kitchen/pos/page.tsx"
+    },
+    {
+      "route": "/kitchen/dashboard",
+      "file": "kitchen/dashboard/page.tsx"
+    },
+    {
+      "route": "/kitchen/complain",
+      "file": "kitchen/complain/page.tsx"
+    },
+    {
+      "route": "/gallery",
+      "file": "gallery/page.tsx"
+    },
+    {
+      "route": "/facilities",
+      "file": "facilities/page.tsx"
+    },
+    {
+      "route": "/cookies",
+      "file": "cookies/page.tsx"
+    },
+    {
+      "route": "/contact",
+      "file": "contact/page.tsx"
+    },
+    {
+      "route": "/booking-flow",
+      "file": "booking-flow/page.tsx"
+    },
+    {
+      "route": "/booking",
+      "file": "booking/page.tsx"
+    },
+    {
+      "route": "/auth/signup",
+      "file": "auth/signup/page.tsx"
+    },
+    {
+      "route": "/auth/signin",
+      "file": "auth/signin/page.tsx"
+    },
+    {
+      "route": "/auth/reset-password",
+      "file": "auth/reset-password/page.tsx"
+    },
+    {
+      "route": "/auth/forgot-password",
+      "file": "auth/forgot-password/page.tsx"
+    },
+    {
+      "route": "/admin",
+      "file": "admin/page.tsx"
+    },
+    {
+      "route": "/admin/yield",
+      "file": "admin/yield/page.tsx"
+    },
+    {
+      "route": "/admin/timeline",
+      "file": "admin/timeline/page.tsx"
+    },
+    {
+      "route": "/admin/tasks",
+      "file": "admin/tasks/page.tsx"
+    },
+    {
+      "route": "/admin/tape-chart",
+      "file": "admin/tape-chart/page.tsx"
+    },
+    {
+      "route": "/admin/staff",
+      "file": "admin/staff/page.tsx"
+    },
+    {
+      "route": "/admin/sre",
+      "file": "admin/sre/page.tsx"
+    },
+    {
+      "route": "/admin/social-links",
+      "file": "admin/social-links/page.tsx"
+    },
+    {
+      "route": "/admin/settings",
+      "file": "admin/settings/page.tsx"
+    },
+    {
+      "route": "/admin/settings/integrations",
+      "file": "admin/settings/integrations/page.tsx"
+    },
+    {
+      "route": "/admin/rooms",
+      "file": "admin/rooms/page.tsx"
+    },
+    {
+      "route": "/admin/room-rack",
+      "file": "admin/room-rack/page.tsx"
+    },
+    {
+      "route": "/admin/roles",
+      "file": "admin/roles/page.tsx"
+    },
+    {
+      "route": "/admin/resort",
+      "file": "admin/resort/page.tsx"
+    },
+    {
+      "route": "/admin/reports",
+      "file": "admin/reports/page.tsx"
+    },
+    {
+      "route": "/admin/receptionist",
+      "file": "admin/receptionist/page.tsx"
+    },
+    {
+      "route": "/admin/qr-codes",
+      "file": "admin/qr-codes/page.tsx"
+    },
+    {
+      "route": "/admin/procurement/vendors",
+      "file": "admin/procurement/vendors/page.tsx"
+    },
+    {
+      "route": "/admin/procurement/orders",
+      "file": "admin/procurement/orders/page.tsx"
+    },
+    {
+      "route": "/admin/procurement/items",
+      "file": "admin/procurement/items/page.tsx"
+    },
+    {
+      "route": "/admin/pricing",
+      "file": "admin/pricing/page.tsx"
+    },
+    {
+      "route": "/admin/pos",
+      "file": "admin/pos/page.tsx"
+    },
+    {
+      "route": "/admin/platform-tools",
+      "file": "admin/platform-tools/page.tsx"
+    },
+    {
+      "route": "/admin/ota",
+      "file": "admin/ota/page.tsx"
+    },
+    {
+      "route": "/admin/organization",
+      "file": "admin/organization/page.tsx"
+    },
+    {
+      "route": "/admin/orders",
+      "file": "admin/orders/page.tsx"
+    },
+    {
+      "route": "/admin/observability/traces",
+      "file": "admin/observability/traces/page.tsx"
+    },
+    {
+      "route": "/admin/night-audit",
+      "file": "admin/night-audit/page.tsx"
+    },
+    {
+      "route": "/admin/navigation",
+      "file": "admin/navigation/page.tsx"
+    },
+    {
+      "route": "/admin/menu",
+      "file": "admin/menu/page.tsx"
+    },
+    {
+      "route": "/admin/manager",
+      "file": "admin/manager/page.tsx"
+    },
+    {
+      "route": "/admin/maintenance",
+      "file": "admin/maintenance/page.tsx"
+    },
+    {
+      "route": "/admin/maintenance/tickets",
+      "file": "admin/maintenance/tickets/page.tsx"
+    },
+    {
+      "route": "/admin/maintenance/schedules",
+      "file": "admin/maintenance/schedules/page.tsx"
+    },
+    {
+      "route": "/admin/maintenance/inspections",
+      "file": "admin/maintenance/inspections/page.tsx"
+    },
+    {
+      "route": "/admin/maintenance/assets",
+      "file": "admin/maintenance/assets/page.tsx"
+    },
+    {
+      "route": "/admin/inventory",
+      "file": "admin/inventory/page.tsx"
+    },
+    {
+      "route": "/admin/incidents",
+      "file": "admin/incidents/page.tsx"
+    },
+    {
+      "route": "/admin/hr",
+      "file": "admin/hr/page.tsx"
+    },
+    {
+      "route": "/admin/hr/shifts",
+      "file": "admin/hr/shifts/page.tsx"
+    },
+    {
+      "route": "/admin/hr/payroll",
+      "file": "admin/hr/payroll/page.tsx"
+    },
+    {
+      "route": "/admin/hr/leaves",
+      "file": "admin/hr/leaves/page.tsx"
+    },
+    {
+      "route": "/admin/hr/employees",
+      "file": "admin/hr/employees/page.tsx"
+    },
+    {
+      "route": "/admin/housekeeping",
+      "file": "admin/housekeeping/page.tsx"
+    },
+    {
+      "route": "/admin/housekeeping/board",
+      "file": "admin/housekeeping/board/page.tsx"
+    },
+    {
+      "route": "/admin/hero-slides",
+      "file": "admin/hero-slides/page.tsx"
+    },
+    {
+      "route": "/admin/groups",
+      "file": "admin/groups/page.tsx"
+    },
+    {
+      "route": "/admin/governance",
+      "file": "admin/governance/page.tsx"
+    },
+    {
+      "route": "/admin/global-command-center",
+      "file": "admin/global-command-center/page.tsx"
+    },
+    {
+      "route": "/admin/gallery",
+      "file": "admin/gallery/page.tsx"
+    },
+    {
+      "route": "/admin/footer-links",
+      "file": "admin/footer-links/page.tsx"
+    },
+    {
+      "route": "/admin/faq",
+      "file": "admin/faq/page.tsx"
+    },
+    {
+      "route": "/admin/executive-intelligence",
+      "file": "admin/executive-intelligence/page.tsx"
+    },
+    {
+      "route": "/admin/executive",
+      "file": "admin/executive/page.tsx"
+    },
+    {
+      "route": "/admin/events/dashboard",
+      "file": "admin/events/dashboard/page.tsx"
+    },
+    {
+      "route": "/admin/dashboard",
+      "file": "admin/dashboard/page.tsx"
+    },
+    {
+      "route": "/admin/dashboard/checkin-checkout",
+      "file": "admin/dashboard/checkin-checkout/page.tsx"
+    },
+    {
+      "route": "/admin/crm",
+      "file": "admin/crm/page.tsx"
+    },
+    {
+      "route": "/admin/crm/travel-agents",
+      "file": "admin/crm/travel-agents/page.tsx"
+    },
+    {
+      "route": "/admin/crm/messaging",
+      "file": "admin/crm/messaging/page.tsx"
+    },
+    {
+      "route": "/admin/crm/guests",
+      "file": "admin/crm/guests/page.tsx"
+    },
+    {
+      "route": "/admin/crm/corporate",
+      "file": "admin/crm/corporate/page.tsx"
+    },
+    {
+      "route": "/admin/crm/[id]",
+      "file": "admin/crm/[id]/page.tsx"
+    },
+    {
+      "route": "/admin/corporate/properties",
+      "file": "admin/corporate/properties/page.tsx"
+    },
+    {
+      "route": "/admin/corporate/loyalty",
+      "file": "admin/corporate/loyalty/page.tsx"
+    },
+    {
+      "route": "/admin/collaboration",
+      "file": "admin/collaboration/page.tsx"
+    },
+    {
+      "route": "/admin/channels",
+      "file": "admin/channels/page.tsx"
+    },
+    {
+      "route": "/admin/calendar",
+      "file": "admin/calendar/page.tsx"
+    },
+    {
+      "route": "/admin/bookings",
+      "file": "admin/bookings/page.tsx"
+    },
+    {
+      "route": "/admin/bookings/[id]/folio",
+      "file": "admin/bookings/[id]/folio/page.tsx"
+    },
+    {
+      "route": "/admin/automation",
+      "file": "admin/automation/page.tsx"
+    },
+    {
+      "route": "/admin/audit-logs",
+      "file": "admin/audit-logs/page.tsx"
+    },
+    {
+      "route": "/admin/attractions",
+      "file": "admin/attractions/page.tsx"
+    },
+    {
+      "route": "/admin/app-marketplace",
+      "file": "admin/app-marketplace/page.tsx"
+    },
+    {
+      "route": "/admin/analytics",
+      "file": "admin/analytics/page.tsx"
+    },
+    {
+      "route": "/admin/analytics/bi",
+      "file": "admin/analytics/bi/page.tsx"
+    },
+    {
+      "route": "/admin/amenities",
+      "file": "admin/amenities/page.tsx"
+    },
+    {
+      "route": "/admin/accounting",
+      "file": "admin/accounting/page.tsx"
+    },
+    {
+      "route": "/admin/accounting/night-audit",
+      "file": "admin/accounting/night-audit/page.tsx"
+    },
+    {
+      "route": "/about",
+      "file": "about/page.tsx"
+    },
+    {
+      "route": "/(dashboard)/profile",
+      "file": "(dashboard)/profile/page.tsx"
+    },
+    {
+      "route": "/(dashboard)/my-bookings",
+      "file": "(dashboard)/my-bookings/page.tsx"
+    },
+    {
+      "route": "/(dashboard)/dashboard",
+      "file": "(dashboard)/dashboard/page.tsx"
+    },
+    {
+      "route": "/(dashboard)/dashboard/spending",
+      "file": "(dashboard)/dashboard/spending/page.tsx"
+    },
+    {
+      "route": "/(dashboard)/dashboard/reviews",
+      "file": "(dashboard)/dashboard/reviews/page.tsx"
+    },
+    {
+      "route": "/(dashboard)/dashboard/requests",
+      "file": "(dashboard)/dashboard/requests/page.tsx"
+    },
+    {
+      "route": "/(dashboard)/dashboard/loyalty",
+      "file": "(dashboard)/dashboard/loyalty/page.tsx"
+    },
+    {
+      "route": "/(dashboard)/dashboard/dining",
+      "file": "(dashboard)/dashboard/dining/page.tsx"
+    },
+    {
+      "route": "/(dashboard)/dashboard/dining/tracking/[id]",
+      "file": "(dashboard)/dashboard/dining/tracking/[id]/page.tsx"
+    },
+    {
+      "route": "/(dashboard)/dashboard/complaints",
+      "file": "(dashboard)/dashboard/complaints/page.tsx"
+    }
+  ],
+  "components": [
+    {
+      "name": "web-vitals-tracker",
+      "file": "web-vitals-tracker.tsx"
+    },
+    {
+      "name": "theme-provider",
+      "file": "theme-provider.tsx"
+    },
+    {
+      "name": "sticky-header",
+      "file": "sticky-header.tsx"
+    },
+    {
+      "name": "service-worker-register",
+      "file": "service-worker-register.tsx"
+    },
+    {
+      "name": "room-comparison",
+      "file": "room-comparison.tsx"
+    },
+    {
+      "name": "pwa-install-prompt",
+      "file": "pwa-install-prompt.tsx"
+    },
+    {
+      "name": "providers",
+      "file": "providers.tsx"
+    },
+    {
+      "name": "protected-route",
+      "file": "protected-route.tsx"
+    },
+    {
+      "name": "notification-bell",
+      "file": "notification-bell.tsx"
+    },
+    {
+      "name": "navigation",
+      "file": "navigation.tsx"
+    },
+    {
+      "name": "hotel-navigation",
+      "file": "hotel-navigation.tsx"
+    },
+    {
+      "name": "hotel-footer",
+      "file": "hotel-footer.tsx"
+    },
+    {
+      "name": "hero-video-background",
+      "file": "hero-video-background.tsx"
+    },
+    {
+      "name": "hero-section",
+      "file": "hero-section.tsx"
+    },
+    {
+      "name": "global-hotkeys",
+      "file": "global-hotkeys.tsx"
+    },
+    {
+      "name": "global-cinematic-background",
+      "file": "global-cinematic-background.tsx"
+    },
+    {
+      "name": "error-boundary",
+      "file": "error-boundary.tsx"
+    },
+    {
+      "name": "error-boundary-enhanced",
+      "file": "error-boundary-enhanced.tsx"
+    },
+    {
+      "name": "enhanced-hero-section",
+      "file": "enhanced-hero-section.tsx"
+    },
+    {
+      "name": "conditional-footer",
+      "file": "conditional-footer.tsx"
+    },
+    {
+      "name": "command-palette",
+      "file": "command-palette.tsx"
+    },
+    {
+      "name": "client-scripts",
+      "file": "client-scripts.tsx"
+    },
+    {
+      "name": "cinematic-context",
+      "file": "cinematic-context.tsx"
+    },
+    {
+      "name": "trust-badges",
+      "file": "ui/trust-badges.tsx"
+    },
+    {
+      "name": "trend-indicator",
+      "file": "ui/trend-indicator.tsx"
+    },
+    {
+      "name": "toaster",
+      "file": "ui/toaster.tsx"
+    },
+    {
+      "name": "toast",
+      "file": "ui/toast.tsx"
+    },
+    {
+      "name": "textarea",
+      "file": "ui/textarea.tsx"
+    },
+    {
+      "name": "stepper",
+      "file": "ui/stepper.tsx"
+    },
+    {
+      "name": "sparkline-chart",
+      "file": "ui/sparkline-chart.tsx"
+    },
+    {
+      "name": "skeleton-loader",
+      "file": "ui/skeleton-loader.tsx"
+    },
+    {
+      "name": "select",
+      "file": "ui/select.tsx"
+    },
+    {
+      "name": "search-bar",
+      "file": "ui/search-bar.tsx"
+    },
+    {
+      "name": "quantity-controls",
+      "file": "ui/quantity-controls.tsx"
+    },
+    {
+      "name": "price-breakdown",
+      "file": "ui/price-breakdown.tsx"
+    },
+    {
+      "name": "premium-spinner",
+      "file": "ui/premium-spinner.tsx"
+    },
+    {
+      "name": "premium-search",
+      "file": "ui/premium-search.tsx"
+    },
+    {
+      "name": "premium-empty-state",
+      "file": "ui/premium-empty-state.tsx"
+    },
+    {
+      "name": "premium-button",
+      "file": "ui/premium-button.tsx"
+    },
+    {
+      "name": "pagination",
+      "file": "ui/pagination.tsx"
+    },
+    {
+      "name": "optimized-image",
+      "file": "ui/optimized-image.tsx"
+    },
+    {
+      "name": "modal",
+      "file": "ui/modal.tsx"
+    },
+    {
+      "name": "menu-item",
+      "file": "ui/menu-item.tsx"
+    },
+    {
+      "name": "loading-spinner",
+      "file": "ui/loading-spinner.tsx"
+    },
+    {
+      "name": "label",
+      "file": "ui/label.tsx"
+    },
+    {
+      "name": "kpi-card",
+      "file": "ui/kpi-card.tsx"
+    },
+    {
+      "name": "input",
+      "file": "ui/input.tsx"
+    },
+    {
+      "name": "filter-panel",
+      "file": "ui/filter-panel.tsx"
+    },
+    {
+      "name": "file-upload",
+      "file": "ui/file-upload.tsx"
+    },
+    {
+      "name": "fallback-image",
+      "file": "ui/fallback-image.tsx"
+    },
+    {
+      "name": "enhanced-room-card-optimized",
+      "file": "ui/enhanced-room-card-optimized.tsx"
+    },
+    {
+      "name": "enhanced-menu-item",
+      "file": "ui/enhanced-menu-item.tsx"
+    },
+    {
+      "name": "enhanced-kpi-card",
+      "file": "ui/enhanced-kpi-card.tsx"
+    },
+    {
+      "name": "empty-state",
+      "file": "ui/empty-state.tsx"
+    },
+    {
+      "name": "dietary-tag",
+      "file": "ui/dietary-tag.tsx"
+    },
+    {
+      "name": "dialog",
+      "file": "ui/dialog.tsx"
+    },
+    {
+      "name": "data-table",
+      "file": "ui/data-table.tsx"
+    },
+    {
+      "name": "chart-card",
+      "file": "ui/chart-card.tsx"
+    },
+    {
+      "name": "card",
+      "file": "ui/card.tsx"
+    },
+    {
+      "name": "button",
+      "file": "ui/button.tsx"
+    },
+    {
+      "name": "breadcrumbs",
+      "file": "ui/breadcrumbs.tsx"
+    },
+    {
+      "name": "booking-card",
+      "file": "ui/booking-card.tsx"
+    },
+    {
+      "name": "badge",
+      "file": "ui/badge.tsx"
+    },
+    {
+      "name": "amenity-icon",
+      "file": "ui/amenity-icon.tsx"
+    },
+    {
+      "name": "hotel-schema",
+      "file": "seo/hotel-schema.tsx"
+    },
+    {
+      "name": "unified-pos",
+      "file": "pos/unified-pos.tsx"
+    },
+    {
+      "name": "thermal-receipt",
+      "file": "pos/thermal-receipt.tsx"
+    },
+    {
+      "name": "room-selector",
+      "file": "pos/room-selector.tsx"
+    },
+    {
+      "name": "product-grid",
+      "file": "pos/product-grid.tsx"
+    },
+    {
+      "name": "order-feed",
+      "file": "pos/order-feed.tsx"
+    },
+    {
+      "name": "cart-panel",
+      "file": "pos/cart-panel.tsx"
+    },
+    {
+      "name": "order-tracking",
+      "file": "ordering/order-tracking.tsx"
+    },
+    {
+      "name": "order-portal",
+      "file": "ordering/order-portal.tsx"
+    },
+    {
+      "name": "kitchen-dashboard",
+      "file": "ordering/kitchen-dashboard.tsx"
+    },
+    {
+      "name": "checkout-modal",
+      "file": "ordering/checkout-modal.tsx"
+    },
+    {
+      "name": "motion-primitives",
+      "file": "motion/motion-primitives.tsx"
+    },
+    {
+      "name": "CinematicHero",
+      "file": "marketing/CinematicHero.tsx"
+    },
+    {
+      "name": "chat-wrapper",
+      "file": "live-chat/chat-wrapper.tsx"
+    },
+    {
+      "name": "chat-widget",
+      "file": "live-chat/chat-widget.tsx"
+    },
+    {
+      "name": "testimonial-section",
+      "file": "landing/testimonial-section.tsx"
+    },
+    {
+      "name": "menu-modal",
+      "file": "dining/menu-modal.tsx"
+    },
+    {
+      "name": "booking-modal",
+      "file": "dining/booking-modal.tsx"
+    },
+    {
+      "name": "tape-chart",
+      "file": "dashboard/tape-chart.tsx"
+    },
+    {
+      "name": "staff-task-panel",
+      "file": "dashboard/staff-task-panel.tsx"
+    },
+    {
+      "name": "room-status-grid",
+      "file": "dashboard/room-status-grid.tsx"
+    },
+    {
+      "name": "room-action-desk",
+      "file": "dashboard/room-action-desk.tsx"
+    },
+    {
+      "name": "revenue-analytics",
+      "file": "dashboard/revenue-analytics.tsx"
+    },
+    {
+      "name": "property-switcher",
+      "file": "dashboard/property-switcher.tsx"
+    },
+    {
+      "name": "operational-alert-center",
+      "file": "dashboard/operational-alert-center.tsx"
+    },
+    {
+      "name": "live-order-feed",
+      "file": "dashboard/live-order-feed.tsx"
+    },
+    {
+      "name": "express-checkin-modal",
+      "file": "dashboard/express-checkin-modal.tsx"
+    },
+    {
+      "name": "dashboard-sidebar",
+      "file": "dashboard/dashboard-sidebar.tsx"
+    },
+    {
+      "name": "dashboard-overview",
+      "file": "dashboard/dashboard-overview.tsx"
+    },
+    {
+      "name": "dashboard-header",
+      "file": "dashboard/dashboard-header.tsx"
+    },
+    {
+      "name": "booking-analytics",
+      "file": "dashboard/booking-analytics.tsx"
+    },
+    {
+      "name": "arrivals-departures-grid",
+      "file": "dashboard/arrivals-departures-grid.tsx"
+    },
+    {
+      "name": "stay-journey-timeline",
+      "file": "dashboard/guest/stay-journey-timeline.tsx"
+    },
+    {
+      "name": "guest-stay-details",
+      "file": "dashboard/guest/guest-stay-details.tsx"
+    },
+    {
+      "name": "guest-spending",
+      "file": "dashboard/guest/guest-spending.tsx"
+    },
+    {
+      "name": "guest-room-service",
+      "file": "dashboard/guest/guest-room-service.tsx"
+    },
+    {
+      "name": "guest-reviews",
+      "file": "dashboard/guest/guest-reviews.tsx"
+    },
+    {
+      "name": "guest-requests",
+      "file": "dashboard/guest/guest-requests.tsx"
+    },
+    {
+      "name": "guest-page-shell",
+      "file": "dashboard/guest/guest-page-shell.tsx"
+    },
+    {
+      "name": "guest-dining-hub",
+      "file": "dashboard/guest/guest-dining-hub.tsx"
+    },
+    {
+      "name": "guest-dashboard-view",
+      "file": "dashboard/guest/guest-dashboard-view.tsx"
+    },
+    {
+      "name": "guest-concierge-island",
+      "file": "dashboard/guest/guest-concierge-island.tsx"
+    },
+    {
+      "name": "guest-complaints",
+      "file": "dashboard/guest/guest-complaints.tsx"
+    },
+    {
+      "name": "dining-module",
+      "file": "dashboard/guest/dining-module.tsx"
+    },
+    {
+      "name": "occupancy-pacing-gauge",
+      "file": "dashboard/executive/occupancy-pacing-gauge.tsx"
+    },
+    {
+      "name": "admin-page-shell",
+      "file": "dashboard/admin/admin-page-shell.tsx"
+    },
+    {
+      "name": "booking-flow",
+      "file": "booking/booking-flow.tsx"
+    },
+    {
+      "name": "booking-confirmation",
+      "file": "booking/booking-confirmation.tsx"
+    },
+    {
+      "name": "idle-timer",
+      "file": "auth/idle-timer.tsx"
+    },
+    {
+      "name": "PermissionGate",
+      "file": "auth/PermissionGate.tsx"
+    },
+    {
+      "name": "image-upload",
+      "file": "admin/image-upload.tsx"
+    },
+    {
+      "name": "booking-calendar",
+      "file": "admin/booking-calendar.tsx"
+    },
+    {
+      "name": "admin-sidebar",
+      "file": "admin/admin-sidebar.tsx"
+    }
+  ]
+}

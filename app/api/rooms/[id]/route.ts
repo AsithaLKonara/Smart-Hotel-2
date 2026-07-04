@@ -6,7 +6,7 @@ import { z } from 'zod'
 
 const roomUpdateSchema = z.object({
   number: z.string().min(1, 'Room number is required').optional(),
-  type: z.enum(['STANDARD', 'DELUXE', 'SUITE', 'PRESIDENTIAL']).optional(),
+  type: z.string().optional(),
   capacity: z.number().min(1, 'Capacity must be at least 1').optional(),
   price: z.number().min(0, 'Price must be non-negative').optional(),
   description: z.string().optional(),
@@ -31,7 +31,7 @@ export async function PATCH(
     }
 
     const userRole = (session.user as any).roleName as string;
-    const allowedRoles = ['SUPER_ADMIN', 'MANAGER', 'HOUSEKEEPING', 'MAINTENANCE'];
+    const allowedRoles = ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'HOUSEKEEPING', 'MAINTENANCE'];
     
     if (!allowedRoles.includes(userRole)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -39,6 +39,16 @@ export async function PATCH(
 
     const body = await request.json()
     const validatedData = roomUpdateSchema.parse(body)
+
+    // Restrict updates for operational staff to only status/availability
+    if (!['SUPER_ADMIN', 'MANAGER'].includes(userRole)) {
+      const allowedKeys = ['status', 'isAvailable'];
+      const providedKeys = Object.keys(validatedData);
+      const invalidKeys = providedKeys.filter(k => !allowedKeys.includes(k));
+      if (invalidKeys.length > 0) {
+        return NextResponse.json({ error: `Forbidden: Your role can only update ${allowedKeys.join(', ')}` }, { status: 403 });
+      }
+    }
 
     const existingRoom = await prisma.room.findUnique({ where: { id } })
     if (!existingRoom) {
@@ -156,7 +166,35 @@ export async function PUT(
       }
     }
 
-    const updateData: any = { ...validatedData }
+    // Process RoomType upsert if type is provided
+    let roomTypeId: string | undefined = undefined;
+    if (validatedData.type) {
+      const roomType = await prisma.roomType.upsert({
+        where: { name: validatedData.type },
+        update: {
+          ...(validatedData.price !== undefined && { baseRate: validatedData.price }),
+          ...(validatedData.capacity !== undefined && { capacity: validatedData.capacity }),
+          ...(validatedData.description !== undefined && { description: validatedData.description }),
+          ...(validatedData.amenities !== undefined && { amenities: validatedData.amenities }),
+        },
+        create: {
+          name: validatedData.type,
+          baseRate: validatedData.price || 0,
+          capacity: validatedData.capacity || 2,
+          description: validatedData.description || '',
+          amenities: validatedData.amenities || [],
+        }
+      });
+      roomTypeId = roomType.id;
+    }
+
+    const updateData: any = {};
+    if (validatedData.number) updateData.number = validatedData.number;
+    if (validatedData.floor !== undefined) updateData.floor = validatedData.floor;
+    if (validatedData.size !== undefined) updateData.size = validatedData.size;
+    if (validatedData.capacity !== undefined) updateData.capacity = validatedData.capacity;
+    if (validatedData.status) updateData.status = validatedData.status;
+    if (roomTypeId) updateData.roomTypeId = roomTypeId;
     
     // Handle relational updates for images if provided
     if (validatedData.images) {
@@ -166,7 +204,6 @@ export async function PUT(
           imageUrl: url
         }))
       }
-      delete updateData.images // Remove the flat array before sending to prisma for Room model
     }
 
     const room = await prisma.room.update({
@@ -203,7 +240,7 @@ export async function DELETE(
     const { id } = await params
     const session = await getServerSession(authOptions)
     
-    if (!session || (session.user as any).roleName !== 'SUPER_ADMIN') {
+    if (!session || !['SUPER_ADMIN', 'MANAGER'].includes((session.user as any).roleName as string)) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }

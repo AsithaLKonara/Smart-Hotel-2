@@ -47,3 +47,5 @@ export function getDefaultDashboardUrl(granularRole: string): string {
       return '/dashboard'
   }
 }
+
+

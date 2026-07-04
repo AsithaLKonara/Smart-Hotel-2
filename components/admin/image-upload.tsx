@@ -71,37 +71,62 @@ export function ImageUpload({
   return (
     <div className="space-y-4 w-full">
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {value.map((url) => (
-          <div 
-            key={url} 
-            className="relative group aspect-square rounded-xl overflow-hidden border-2 border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 shadow-sm transition-all hover:shadow-md"
-          >
-            <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-              <Button
-                type="button"
-                onClick={() => onRemove(url)}
-                variant="destructive"
-                size="icon"
-                className="h-7 w-7 rounded-full shadow-lg"
-              >
-                <X className="h-4 w-4" />
-              </Button>
+        {value.map((url) => {
+          const isVideo = /\.(mp4|webm|ogg)$/i.test(url);
+          
+          return (
+            <div 
+              key={url} 
+              className="relative group aspect-square rounded-xl overflow-hidden border-2 border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 shadow-sm transition-all hover:shadow-md"
+            >
+              <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Button
+                  type="button"
+                  onClick={() => onRemove(url)}
+                  variant="destructive"
+                  size="icon"
+                  className="h-7 w-7 rounded-full shadow-lg"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              {isVideo ? (
+                <video 
+                  src={url} 
+                  className="w-full h-full object-cover" 
+                  controls 
+                  muted 
+                />
+              ) : (
+                <Image
+                  className="object-cover transition-transform duration-300 group-hover:scale-110"
+                  alt="Room Media"
+                  src={url}
+                  fill
+                  sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+                />
+              )}
             </div>
-            <Image
-              className="object-cover transition-transform duration-300 group-hover:scale-110"
-              alt="Room Image"
-              src={url}
-              fill
-              sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-            />
-          </div>
-        ))}
+          )
+        })}
 
         {value.length < maxImages && (
           <div
+            tabIndex={0}
+            role="button"
+            aria-label="Upload media"
             onClick={() => !disabled && !isUploading && fileInputRef.current?.click()}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                if (!disabled && !isUploading) {
+                  fileInputRef.current?.click()
+                }
+              }
+            }}
             className={cn(
-              "relative aspect-square flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50 cursor-pointer transition-all hover:bg-gray-100 dark:hover:bg-gray-800/80 hover:border-primary-400 group",
+              "relative aspect-square flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50 cursor-pointer transition-all hover:bg-gray-100 dark:hover:bg-gray-800/80 hover:border-primary-400 group focus:outline-none focus:ring-2 focus:ring-primary-500",
               disabled || isUploading ? "opacity-50 cursor-not-allowed" : ""
             )}
           >
@@ -113,14 +138,14 @@ export function ImageUpload({
                   <Plus className="h-6 w-6 text-primary-600" />
                 </div>
                 <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                  {value.length === 0 ? "Add Images" : "Add More"}
+                  {value.length === 0 ? "Add Media" : "Add More"}
                 </span>
               </>
             )}
             <input
               type="file"
               multiple
-              accept="image/*"
+              accept="image/*, video/*"
               className="hidden"
               ref={fileInputRef}
               onChange={onUpload}
@@ -133,7 +158,7 @@ export function ImageUpload({
       {value.length === 0 && !isUploading && (
         <div className="flex items-center gap-2 text-sm text-amber-600 bg-amber-50 dark:bg-amber-900/20 p-3 rounded-lg border border-amber-100 dark:border-amber-900/30">
           <ImageIcon className="h-4 w-4" />
-          <span>At least one image is recommended for best guest experience.</span>
+          <span>At least one image or video is recommended for best guest experience.</span>
         </div>
       )}
     </div>

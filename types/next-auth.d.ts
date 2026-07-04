@@ -9,7 +9,7 @@ declare module 'next-auth' {
       roleId?: string | null
       roleName?: string
       permissions: string[]
-      hotelId?: string | null
+      propertyId?: string | null
     }
   }
 
@@ -20,7 +20,7 @@ declare module 'next-auth' {
     roleId?: string | null
     roleName?: string
     permissions: string[]
-    hotelId?: string | null
+    propertyId?: string | null
   }
 }
 
@@ -30,6 +30,6 @@ declare module 'next-auth/jwt' {
     roleId?: string | null
     roleName?: string
     permissions?: string[]
-    hotelId?: string | null
+    propertyId?: string | null
   }
 }

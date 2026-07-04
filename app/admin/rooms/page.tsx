@@ -55,14 +55,8 @@ export default function AdminRoomsPage() {
 
   useEffect(() => {
     if (status === 'loading') return
-    
-    if (!canAccessManagerFeatures(session)) {
-      router.push('/auth/signin')
-      return
-    }
-
     fetchRooms()
-  }, [session, status, router])
+  }, [status, router])
 
   const fetchRooms = async () => {
     try {

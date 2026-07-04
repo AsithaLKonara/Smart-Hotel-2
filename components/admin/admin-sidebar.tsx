@@ -43,6 +43,8 @@ export default function AdminSidebar() {
       { name: 'Receptionist', href: '/admin/receptionist', icon: UserCheck, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'] },
       { name: 'Housekeeping', href: '/admin/housekeeping', icon: ClipboardList, roles: ['HOUSEKEEPING', 'MANAGER', 'SUPER_ADMIN'] },
       { name: 'Kitchen', href: '/kitchen/dashboard', icon: UtensilsCrossed, roles: ['KITCHEN', 'MANAGER', 'SUPER_ADMIN'] },
+      { name: 'Kitchen Menu', href: '/admin/menu', icon: UtensilsCrossed, roles: ['KITCHEN', 'MANAGER', 'SUPER_ADMIN'] },
+      { name: 'Kitchen Orders', href: '/admin/orders', icon: ShoppingCart, roles: ['KITCHEN', 'MANAGER', 'SUPER_ADMIN', 'RECEPTIONIST'] },
       { name: 'Rooms', href: '/admin/rooms', icon: Bed, roles: ['SUPER_ADMIN', 'MANAGER'] },
       { name: 'Bookings', href: '/admin/bookings', icon: Calendar, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'] },
       { name: 'Staff', href: '/admin/staff', icon: Users, roles: ['SUPER_ADMIN', 'MANAGER'] },

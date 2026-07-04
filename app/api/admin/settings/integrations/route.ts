@@ -1,8 +1,14 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 
 export async function GET() {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session || !['SUPER_ADMIN', 'MANAGER'].includes((session.user as any).roleName as string)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     const integrations = await prisma.integration.findMany()
     return NextResponse.json(integrations)
   } catch (error) {
@@ -12,6 +18,11 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session || !['SUPER_ADMIN'].includes((session.user as any).roleName as string)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const data = await req.json()
     const integration = await prisma.integration.create({
       data: {
@@ -29,6 +40,11 @@ export async function POST(req: Request) {
 
 export async function PATCH(req: Request) {
     try {
+        const session = await getServerSession(authOptions);
+        if (!session || !['SUPER_ADMIN'].includes((session.user as any).roleName as string)) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
         const data = await req.json()
         const integration = await prisma.integration.update({
             where: { id: data.id },

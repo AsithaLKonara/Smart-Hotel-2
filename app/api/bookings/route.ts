@@ -6,6 +6,7 @@ import { logAction, AUDIT_ACTIONS } from '@/lib/audit'
 import Stripe from 'stripe'
 import { sendBookingConfirmation, sendAdminBookingAlert } from '@/lib/email'
 import { getRequestSession } from '@/lib/session'
+import { getEffectivePropertyId } from '@/lib/server-rbac'
 import { isDatabaseConfigured } from '@/lib/db-helpers'
 import { InventoryLockEngine } from '@/lib/inventory-lock'
 import { RealtimeEvents } from '@/lib/realtime'
@@ -114,6 +115,7 @@ export async function POST(request: NextRequest) {
             paymentMethod: validated.paymentMethod === 'pay_now' ? 'card' : 'cash',
             paymentProvider: validated.paymentMethod === 'pay_now' ? 'STRIPE' : 'OFFLINE',
             confirmationCode,
+            propertyId: room.propertyId, // Inherit from the assigned room
             createdAt: new Date(),
             updatedAt: new Date(),
             source: 'WEBSITE'
@@ -254,11 +256,13 @@ export async function GET(request: NextRequest) {
 
   const { searchParams } = new URL(request.url)
   const status = searchParams.get('status') as any
+  const propertyId = await getEffectivePropertyId(request)
   
   const bookings = await prisma.booking.findMany({
     where: {
       ...((session.user as any).roleName === 'GUEST' ? { primaryGuestId: session.user.id } : {}),
-      ...(status ? { status } : {})
+      ...(status ? { status } : {}),
+      ...(propertyId ? { propertyId } : {})
     },
     select: {
       id: true,

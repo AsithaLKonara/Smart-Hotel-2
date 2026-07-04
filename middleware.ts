@@ -10,6 +10,13 @@ const PROTECTED_ROUTES = [
   { prefix: '/admin/corporate', roles: ['SUPER_ADMIN'] }, // Global properties, Loyalty
   { prefix: '/admin/settings/integrations', roles: ['SUPER_ADMIN'] },
 
+  // API equivalents for SUPER ADMIN ONLY
+  { prefix: '/api/admin/roles', roles: ['SUPER_ADMIN'] },
+  { prefix: '/api/admin/audit-logs', roles: ['SUPER_ADMIN'] },
+  { prefix: '/api/admin/settings/integrations', roles: ['SUPER_ADMIN'] },
+  { prefix: '/api/admin/corporate/loyalty', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'] },
+  { prefix: '/api/admin/corporate', roles: ['SUPER_ADMIN', 'MANAGER'] },
+
   // 🔴 MANAGER & SUPER ADMIN (Business Operations, HR, Finance)
   { prefix: '/admin/dashboard', roles: ['SUPER_ADMIN', 'MANAGER'] },
   { prefix: '/admin/hr', roles: ['SUPER_ADMIN', 'MANAGER'] },
@@ -46,8 +53,12 @@ const PROTECTED_ROUTES = [
   // SHARED & APIs
   { prefix: '/admin/tasks', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'HOUSEKEEPING', 'MAINTENANCE'] },
   { prefix: '/api/tasks', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'HOUSEKEEPING', 'MAINTENANCE'] },
-  { prefix: '/api/admin', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'HOUSEKEEPING', 'MAINTENANCE'] },
+  { prefix: '/api/admin/events', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'KITCHEN', 'HOUSEKEEPING', 'MAINTENANCE'] },
   { prefix: '/api/admin/users', roles: ['SUPER_ADMIN', 'MANAGER'] },
+  { prefix: '/api/admin/settings/integrations', roles: ['SUPER_ADMIN'] },
+  { prefix: '/api/admin/corporate/loyalty', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'] },
+  { prefix: '/api/admin/corporate', roles: ['SUPER_ADMIN', 'MANAGER'] },
+  { prefix: '/api/admin', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'HOUSEKEEPING', 'MAINTENANCE'] },
   { prefix: '/api/bookings', roles: ['GUEST', 'SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'KITCHEN'] },
   { prefix: '/api/restaurant', roles: ['GUEST', 'SUPER_ADMIN', 'MANAGER', 'KITCHEN', 'RECEPTIONIST'] },
   { prefix: '/api/portals/b2b', roles: ['SUPER_ADMIN', 'MANAGER'] },
@@ -61,7 +72,7 @@ const PROTECTED_ROUTES = [
 
   // GENERIC ADMIN FALLBACK (Blocks GUESTS/KITCHEN from randomly probing /admin/*)
   { prefix: '/admin', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'HOUSEKEEPING', 'MAINTENANCE'] },
-]
+].sort((a, b) => b.prefix.length - a.prefix.length)
 
 export async function middleware(request: NextRequest) {
   // 0. Reject WebSocket upgrades to mitigate SSRF (CVE-2026-44578)

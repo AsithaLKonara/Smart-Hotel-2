@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { getEffectivePropertyId } from '@/lib/server-rbac';
 import { z } from 'zod';
 
 export const dynamic = 'force-dynamic';
@@ -17,11 +18,15 @@ export async function GET(req: Request) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '50');
     const skip = (page - 1) * limit;
+    
+    const propertyId = await getEffectivePropertyId(req);
+    const whereClause = propertyId ? { propertyId } : {};
 
     const [rooms, total] = await Promise.all([
       prisma.room.findMany({
         skip,
         take: limit,
+        where: whereClause,
         include: {
           roomType: true,
           stays: {
@@ -31,7 +36,7 @@ export async function GET(req: Request) {
         },
         orderBy: { number: 'asc' }
       }),
-      prisma.room.count()
+      prisma.room.count({ where: whereClause })
     ]);
 
     return NextResponse.json({ 

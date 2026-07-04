@@ -5,6 +5,7 @@ import prisma from '@/lib/db'
 import { z } from 'zod'
 import { logAction, AUDIT_ACTIONS } from '@/lib/audit'
 import { Prisma, TaskStatus, TaskType, Task } from '@prisma/client'
+import { getEffectivePropertyId } from '@/lib/server-rbac'
 
 const taskSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -39,6 +40,11 @@ export async function GET(request: NextRequest) {
 
     if (type && type !== 'all') {
       whereClause.type = type as TaskType
+    }
+
+    const propertyId = await getEffectivePropertyId(request)
+    if (propertyId) {
+      whereClause.propertyId = propertyId
     }
 
     // Enforce role-based visibility
@@ -112,6 +118,8 @@ export async function POST(request: NextRequest) {
        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
+    const propertyId = await getEffectivePropertyId(request)
+
     const task = await prisma.task.create({
       data: {
         title: validatedData.title,
@@ -121,6 +129,7 @@ export async function POST(request: NextRequest) {
         assignedTo: validatedData.assignedTo || null, 
         dueDate: validatedData.dueDate ? new Date(validatedData.dueDate) : null,
         createdBy: session.user.id,
+        propertyId: propertyId,
         status: 'PENDING',
       }
     })

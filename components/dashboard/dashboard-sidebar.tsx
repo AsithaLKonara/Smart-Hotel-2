@@ -82,6 +82,7 @@ export default function DashboardSidebar() {
       { name: 'Night Audit', href: '/admin/accounting/night-audit', icon: Moon, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Financials & Revenue' },
 
       // 🧹 OPERATIONS & INVENTORY
+      { name: 'Room Directory', href: '/admin/rooms', icon: Bed, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Operations & Inventory' },
       { name: 'Housekeeping', href: '/admin/housekeeping', icon: Brush, roles: ['HOUSEKEEPING', 'MANAGER', 'SUPER_ADMIN'], group: 'Operations & Inventory' },
       { name: 'Service Tickets', href: '/admin/maintenance', icon: Wrench, roles: ['MAINTENANCE', 'MANAGER', 'SUPER_ADMIN'], group: 'Operations & Inventory' },
       { name: 'Preventative Schedules', href: '/admin/maintenance/schedules', icon: CalendarClock, roles: ['MAINTENANCE', 'MANAGER', 'SUPER_ADMIN'], group: 'Operations & Inventory' },

@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (roomNumber) {
-      where.roomNumber = roomNumber
+      where.room = { number: roomNumber }
     }
 
     if (guestId) {
@@ -39,16 +39,37 @@ export async function GET(request: NextRequest) {
       where.guestId = session.user.id
     }
 
-    // Note: InternalOrder model doesn't have relations defined in schema
-    // Items would need to be fetched separately if stored in a separate collection
     const orders = await prisma.internalOrder.findMany({
       where,
+      include: {
+        room: true,
+        items: {
+          include: {
+            menuItem: true
+          }
+        }
+      },
       orderBy: {
         createdAt: 'desc'
       }
     })
 
-    return NextResponse.json(orders)
+    const formattedOrders = orders.map((order: any) => ({
+      ...order,
+      roomNumber: order.room?.number || null,
+      items: order.items.map((item: any) => ({
+        id: item.id,
+        quantity: item.quantity,
+        unitPrice: item.price,
+        notes: item.notes,
+        menu: {
+          name: item.menuItem?.name || 'Unknown Item',
+          category: item.menuItem?.category || 'Unknown'
+        }
+      }))
+    }))
+
+    return NextResponse.json(formattedOrders)
   } catch (error) {
     console.error('Error fetching orders:', error)
     return NextResponse.json(
@@ -91,10 +112,11 @@ export async function POST(request: NextRequest) {
         primaryGuestId: resolvedGuestId,
         room: { number: roomNumber },
         status: 'CHECKED_IN'
-      }
+      },
+      include: { room: true }
     })
 
-    if (!activeBooking) {
+    if (!activeBooking || !activeBooking.roomId) {
       return NextResponse.json({ 
         error: 'Forbidden: Room Verification Failed', 
         message: `Guest is not currently checked into Room ${roomNumber}. Orders can only be placed for active suites.` 
@@ -126,7 +148,7 @@ export async function POST(request: NextRequest) {
     // Create order with associated order items
     const order = await prisma.internalOrder.create({
       data: {
-        roomNumber,
+        roomId: activeBooking.roomId,
         guestId: resolvedGuestId,
         idempotencyKey,
         totalAmount,
@@ -158,7 +180,7 @@ export async function POST(request: NextRequest) {
     await RealtimeEvents.emitOpsMessage({
       type: 'KITCHEN_ORDER_NEW',
       orderId: order.id,
-      roomNumber: order.roomNumber,
+      roomNumber: roomNumber,
       total: normalizedTotal,
       items: order.items.map((i: any) => ({ name: i.menuItem.name, qty: i.quantity }))
     })

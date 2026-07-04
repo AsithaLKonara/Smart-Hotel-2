@@ -35,39 +35,10 @@ export function Modal({
 }: ModalProps) {
   const modalRef = useRef<HTMLDivElement>(null)
 
-  // Handle ESC key press and focus trap
+  // Handle initial focus and body scroll
   useEffect(() => {
     if (!open) return
 
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose()
-        return
-      }
-
-      if (e.key === 'Tab' && modalRef.current) {
-        const focusableElements = modalRef.current.querySelectorAll(
-          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-        )
-        
-        const firstElement = focusableElements[0] as HTMLElement
-        const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement
-
-        if (e.shiftKey) {
-          if (document.activeElement === firstElement) {
-            lastElement?.focus()
-            e.preventDefault()
-          }
-        } else {
-          if (document.activeElement === lastElement) {
-            firstElement?.focus()
-            e.preventDefault()
-          }
-        }
-      }
-    }
-
-    document.addEventListener('keydown', handleKeyDown)
     // Prevent body scroll when modal is open
     document.body.style.overflow = 'hidden'
 
@@ -80,10 +51,9 @@ export function Modal({
     }, 10)
 
     return () => {
-      document.removeEventListener('keydown', handleKeyDown)
       document.body.style.overflow = 'unset'
     }
-  }, [open, onClose])
+  }, [open])
 
   // Handle backdrop click
   if (!open) return null;
@@ -94,11 +64,45 @@ export function Modal({
     }
   }
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Escape') {
+      onClose()
+      return
+    }
+
+    if (e.key === 'Tab' && modalRef.current) {
+      // Find all focusable elements, excluding disabled and hidden ones
+      const focusableElements = Array.from(
+        modalRef.current.querySelectorAll(
+          'button:not([disabled]), [href], input:not([disabled]):not([type="hidden"]):not(.hidden), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        )
+      ) as HTMLElement[]
+
+      if (focusableElements.length === 0) return
+
+      const firstElement = focusableElements[0]
+      const lastElement = focusableElements[focusableElements.length - 1]
+
+      if (e.shiftKey) {
+        if (document.activeElement === firstElement) {
+          lastElement?.focus()
+          e.preventDefault()
+        }
+      } else {
+        if (document.activeElement === lastElement) {
+          firstElement?.focus()
+          e.preventDefault()
+        }
+      }
+    }
+  }
+
   return (
     <div
       ref={modalRef}
       className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
       onClick={handleBackdropClick}
+      onKeyDown={handleKeyDown}
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-title"

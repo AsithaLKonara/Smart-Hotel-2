@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { isDatabaseConfigured, getDatabaseErrorMessage } from '@/lib/db-helpers'
+import { getEffectivePropertyId } from '@/lib/server-rbac'
 import { z } from 'zod'
 import { unstable_cache } from 'next/cache'
 /**
@@ -10,14 +11,18 @@ import { unstable_cache } from 'next/cache'
  */
 const roomSchema = z.object({
   number: z.string().min(1, 'Room number is required'),
-  roomTypeId: z.string().min(1, 'Room Type is required'),
-  floor: z.number().int().min(0),
+  type: z.string().min(1, 'Room Type is required'),
+  floor: z.number().int().min(0).optional().default(0),
+  size: z.number().int().min(0).optional().default(25),
+  capacity: z.number().int().min(1).optional().default(2),
+  price: z.number().min(0).optional().default(0),
+  description: z.string().optional().default(''),
+  amenities: z.array(z.string()).optional().default([]),
   status: z.enum(['AVAILABLE', 'OCCUPIED', 'DIRTY', 'CLEANING', 'INSPECTION_PENDING', 'MAINTENANCE', 'OUT_OF_ORDER']).default('AVAILABLE'),
-  images: z.array(z.string()).optional(),
+  images: z.array(z.string()).optional().default([]),
 })
 
 export async function GET(request: NextRequest) {
-
   if (!isDatabaseConfigured()) {
     return NextResponse.json({ error: 'Database not configured', rooms: [] }, { status: 503 })
   }
@@ -27,13 +32,15 @@ export async function GET(request: NextRequest) {
     const typeId = searchParams.get('roomTypeId')
     const status = searchParams.get('status')
     const availableOnly = searchParams.get('available') === 'true'
+    const propertyId = await getEffectivePropertyId(request)
 
     const getCachedRooms = unstable_cache(
-      async (tId: string | null, stat: string | null, availOnly: boolean) => {
+      async (tId: string | null, stat: string | null, availOnly: boolean, pId: string | null) => {
         const whereClause: any = {}
         if (tId) whereClause.roomTypeId = tId
         if (stat) whereClause.status = stat
         if (availOnly) whereClause.status = 'AVAILABLE'
+        if (pId) whereClause.propertyId = pId
 
         return prisma.room.findMany({
           where: whereClause,
@@ -45,10 +52,10 @@ export async function GET(request: NextRequest) {
         })
       },
       ['public-rooms-list'],
-      { revalidate: 60 }
+      { revalidate: 60, tags: ['rooms'] }
     )
 
-    const rooms = await getCachedRooms(typeId, status, availableOnly)
+    const rooms = await getCachedRooms(typeId, status, availableOnly, propertyId)
 
     // Flatten for legacy frontend compatibility with strict null handling
     const serializedRooms = rooms.map((room: any) => {
@@ -60,19 +67,18 @@ export async function GET(request: NextRequest) {
         amenities: []
       }
 
-      // Ensure at least one image exists for hydration stability
       const images = room.roomImages?.length > 0 
-        ? room.roomImages 
-        : [{ imageUrl: 'https://images.unsplash.com/photo-1590490359683-658d3d23f972?auto=format&fit=crop&q=80&w=800' }]
+        ? room.roomImages.map((img: any) => img.imageUrl)
+        : []
 
       return {
         ...room,
         type: typeInfo.name,
         price: typeInfo.baseRate,
-        capacity: typeInfo.capacity,
+        capacity: room.capacity || typeInfo.capacity, // Room overrides Type
         description: typeInfo.description,
         amenities: typeInfo.amenities,
-        roomImages: images, // Standardized for the Image component
+        images: images, // Map back to flat array for frontend
       }
     })
 
@@ -95,26 +101,53 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json()
     const validatedData = roomSchema.parse(body)
+    const propertyId = await getEffectivePropertyId(request)
 
     const existingRoom = await prisma.room.findFirst({
-      where: { number: validatedData.number }
+      where: { 
+        number: validatedData.number,
+        propertyId: propertyId 
+      }
     })
 
     if (existingRoom) {
       return NextResponse.json({ error: 'Room number already exists' }, { status: 400 })
     }
 
+    // Upsert the RoomType based on the provided string
+    const roomType = await prisma.roomType.upsert({
+      where: { name: validatedData.type },
+      update: {
+        baseRate: validatedData.price,
+        capacity: validatedData.capacity,
+        description: validatedData.description,
+        amenities: validatedData.amenities,
+      },
+      create: {
+        name: validatedData.type,
+        baseRate: validatedData.price,
+        capacity: validatedData.capacity,
+        description: validatedData.description,
+        amenities: validatedData.amenities,
+      }
+    })
+
     const room = await prisma.room.create({
       data: {
         number: validatedData.number,
         floor: validatedData.floor,
-        roomTypeId: validatedData.roomTypeId,
-        status: validatedData.status,
+        size: validatedData.size,
+        capacity: validatedData.capacity,
+        status: validatedData.status as any,
         version: 1,
+        propertyId: propertyId,
+        roomType: {
+          connect: { id: roomType.id }
+        },
         roomImages: {
-          create: validatedData.images?.map(url => ({
+          create: validatedData.images.map(url => ({
             imageUrl: url
-          })) || []
+          }))
         }
       } as any,
       include: { 
