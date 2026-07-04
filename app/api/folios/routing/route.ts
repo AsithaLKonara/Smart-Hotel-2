@@ -18,15 +18,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Must specify category or transactionCodeId for routing' }, { status: 400 })
     }
 
-    const rule = await prisma.routingRule.create({
-      data: {
-        sourceFolioId: data.sourceFolioId,
-        targetFolioId: data.targetFolioId,
-        criteria: {
-          category: data.category,
-          transactionCodeId: data.transactionCodeId
+    const rule = await prisma.$transaction(async (tx: any) => {
+      return await tx.routingRule.create({
+        data: {
+          sourceFolioId: data.sourceFolioId,
+          targetFolioId: data.targetFolioId,
+          criteria: {
+            category: data.category,
+            transactionCodeId: data.transactionCodeId
+          }
         }
-      }
+      })
     })
 
     return NextResponse.json({ rule }, { status: 201 })
