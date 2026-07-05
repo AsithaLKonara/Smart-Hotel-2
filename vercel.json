@@ -8,5 +8,23 @@
     "app/api/**/*.ts": {
       "maxDuration": 30
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/night-audit/roll-forward",
+      "schedule": "0 2 * * *"
+    },
+    {
+      "path": "/api/cron/generate-preventive-maintenance",
+      "schedule": "0 1 1 * *"
+    },
+    {
+      "path": "/api/cron/archive-db",
+      "schedule": "0 3 1 * *"
+    },
+    {
+      "path": "/api/cron/keepalive",
+      "schedule": "0 * * * *"
+    }
+  ]
 }

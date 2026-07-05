@@ -84,8 +84,8 @@ export async function GET(request: NextRequest) {
     const availableRooms = candidateRooms
       .filter((room: any) => !bookedRoomIds.has(room.id))
       .map((room: any) => {
-        const avgRating = room.reviews.length > 0
-          ? room.reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / room.reviews.length
+        const avgRating = room.feedback && room.feedback.length > 0
+          ? room.feedback.reduce((sum: number, r: any) => sum + r.rating, 0) / room.feedback.length
           : 0
 
         return {
@@ -100,7 +100,7 @@ export async function GET(request: NextRequest) {
           totalPrice: room.roomType.baseRate * nights,
           nights,
           averageRating: Math.round(avgRating * 10) / 10,
-          reviewCount: room.reviews.length,
+          reviewCount: room.feedback ? room.feedback.length : 0,
           roomImages: room.roomImages,
           mainImage: room.roomImages[0]?.imageUrl || room.roomType.images[0] || '/images/placeholder.jpg'
         }
