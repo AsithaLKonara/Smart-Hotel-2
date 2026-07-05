@@ -28,7 +28,7 @@ export default function PaymentsLedgerPage() {
       {loading ? (
         <div className="py-20 flex justify-center"><PremiumSpinner /></div>
       ) : (
-        <>
+        <div className="space-y-8">
           <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
           <table className="w-full text-left text-sm text-white">
             <thead className="bg-white/5 text-white/50 text-xs uppercase">
@@ -117,7 +117,7 @@ export default function PaymentsLedgerPage() {
             </button>
           </div>
         </div>
-        </>
+        </div>
       )}
     </AdminPageShell>
   )
