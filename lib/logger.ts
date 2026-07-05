@@ -4,7 +4,6 @@
  */
 
 import * as Sentry from '@sentry/nextjs';
-import { headers } from 'next/headers';
 
 type LogLevel = 'info' | 'warn' | 'error' | 'debug';
 
@@ -13,18 +12,15 @@ interface LogContext {
 }
 
 class Logger {
-  private getRequestId(): string | undefined {
-    try {
-      const headersList = headers();
-      return headersList.get('x-request-id') || undefined;
-    } catch (e) {
-      // headers() can only be called in Server Components/Actions/Route Handlers
-      return undefined;
+  private getRequestId(context?: LogContext): string | undefined {
+    if (context && context.requestId) {
+      return String(context.requestId);
     }
+    return undefined;
   }
 
   private formatMessage(level: LogLevel, message: string, context?: LogContext, error?: Error) {
-    const requestId = this.getRequestId();
+    const requestId = this.getRequestId(context);
     const logPayload = {
       timestamp: new Date().toISOString(),
       level: level.toUpperCase(),
@@ -63,7 +59,7 @@ class Logger {
       contextObj = { ...(errorOrContext as object), ...context };
     }
 
-    const requestId = this.getRequestId();
+    const requestId = this.getRequestId(contextObj);
     if (requestId) {
       Sentry.setTag('request_id', requestId);
     }
