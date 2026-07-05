@@ -3,6 +3,9 @@
  * Generates JSON-formatted logs that can be ingested by Datadog, Sentry, or ELK.
  */
 
+import * as Sentry from '@sentry/nextjs';
+import { headers } from 'next/headers';
+
 type LogLevel = 'info' | 'warn' | 'error' | 'debug';
 
 interface LogContext {
@@ -10,11 +13,23 @@ interface LogContext {
 }
 
 class Logger {
+  private getRequestId(): string | undefined {
+    try {
+      const headersList = headers();
+      return headersList.get('x-request-id') || undefined;
+    } catch (e) {
+      // headers() can only be called in Server Components/Actions/Route Handlers
+      return undefined;
+    }
+  }
+
   private formatMessage(level: LogLevel, message: string, context?: LogContext, error?: Error) {
+    const requestId = this.getRequestId();
     const logPayload = {
       timestamp: new Date().toISOString(),
       level: level.toUpperCase(),
       message,
+      requestId,
       context,
       error: error ? {
         message: error.message,
@@ -23,12 +38,10 @@ class Logger {
       } : undefined
     };
 
-    // In production, we output raw JSON for log aggregators to parse.
-    // In development, we can format it nicely.
     if (process.env.NODE_ENV === 'production') {
       return JSON.stringify(logPayload);
     } else {
-      return `[${logPayload.timestamp}] ${logPayload.level}: ${message} ${context ? JSON.stringify(context) : ''} ${error ? `\n${error.stack}` : ''}`;
+      return `[${logPayload.timestamp}] ${requestId ? `[${requestId}] ` : ''}${logPayload.level}: ${message} ${context ? JSON.stringify(context) : ''} ${error ? `\n${error.stack}` : ''}`;
     }
   }
 
@@ -48,6 +61,25 @@ class Logger {
       errorObj = errorOrContext;
     } else if (errorOrContext) {
       contextObj = { ...(errorOrContext as object), ...context };
+    }
+
+    const requestId = this.getRequestId();
+    if (requestId) {
+      Sentry.setTag('request_id', requestId);
+    }
+
+    if (contextObj) {
+      Sentry.setContext('custom_context', contextObj);
+      // Tag specific resource IDs for easy querying in Sentry
+      if (contextObj.bookingId) Sentry.setTag('bookingId', String(contextObj.bookingId));
+      if (contextObj.userId) Sentry.setTag('userId', String(contextObj.userId));
+      if (contextObj.roomId) Sentry.setTag('roomId', String(contextObj.roomId));
+    }
+
+    if (errorObj) {
+      Sentry.captureException(errorObj);
+    } else {
+      Sentry.captureMessage(message, 'error');
     }
 
     console.error(this.formatMessage('error', message, contextObj, errorObj));

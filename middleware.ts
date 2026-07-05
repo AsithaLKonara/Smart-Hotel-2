@@ -110,6 +110,10 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  const requestHeaders = new Headers(request.headers)
+  const requestId = requestHeaders.get('x-request-id') ?? crypto.randomUUID()
+  requestHeaders.set('x-request-id', requestId)
+
   // 1. Bypass Public Assets, Public APIs, and Public Pages
   const isPublicPage = [
     '/', '/about', '/booking', '/booking-flow', '/contact', '/cookies', 
@@ -127,7 +131,11 @@ export async function middleware(request: NextRequest) {
     isPublicPage ||
     PUBLIC_API_PREFIXES.some(p => path.startsWith(p))
   ) {
-    return NextResponse.next()
+    const response = NextResponse.next({
+      request: { headers: requestHeaders }
+    })
+    response.headers.set('x-request-id', requestId)
+    return response
   }
 
   // 2. Resolve Session
@@ -188,7 +196,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/auth/signin', request.url))
   }
 
-  return NextResponse.next()
+  const finalResponse = NextResponse.next({
+    request: { headers: requestHeaders }
+  })
+  finalResponse.headers.set('x-request-id', requestId)
+  return finalResponse
 }
 
 export const config = {
