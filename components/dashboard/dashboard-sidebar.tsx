@@ -79,6 +79,7 @@ export default function DashboardSidebar() {
 
       // 🟢 FINANCIALS & REVENUE
       { name: 'Yield Engine', href: '/admin/yield', icon: TrendingUp, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Financials & Revenue' },
+      { name: 'Folios & Billing', href: '/admin/accounting/folios', icon: CreditCard, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Financials & Revenue' },
       { name: 'Night Audit', href: '/admin/accounting/night-audit', icon: Moon, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Financials & Revenue' },
 
       // 🧹 OPERATIONS & INVENTORY

@@ -16,7 +16,7 @@ export default function AccountingIndexPage() {
       router.replace('/auth/signin')
       return
     }
-    router.replace('/admin/accounting/payments')
+    router.replace('/admin/accounting/folios')
   }, [session, status, router])
 
   return (

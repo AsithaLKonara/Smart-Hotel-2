@@ -13,15 +13,27 @@ export async function GET(req: Request) {
 
     const { searchParams } = new URL(req.url);
     const bookingId = searchParams.get('bookingId');
+    const status = searchParams.get('status');
 
-    if (!bookingId) {
-      return NextResponse.json({ error: 'bookingId is required' }, { status: 400 });
-    }
+    let whereClause: any = {};
+    if (bookingId) whereClause.bookingId = bookingId;
+    if (status) whereClause.status = status;
 
     const folios = await prisma.folio.findMany({
-      where: { bookingId },
-      include: { lineItems: true },
-      orderBy: { createdAt: 'asc' }
+      where: whereClause,
+      include: { 
+        lineItems: true,
+        payments: true,
+        booking: {
+          include: {
+            guest: true,
+            roomAssignments: {
+              include: { room: true }
+            }
+          }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
     });
 
     return NextResponse.json({ folios });
