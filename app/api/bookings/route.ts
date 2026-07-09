@@ -298,7 +298,20 @@ export async function GET(request: NextRequest) {
     orderBy: { createdAt: 'desc' }
   })
 
+  // Map roomType to type to match the frontend expectations
+  const formattedBookings = bookings.map(booking => ({
+    ...booking,
+    roomAssignments: booking.roomAssignments.map(assignment => ({
+      ...assignment,
+      room: assignment.room ? {
+        ...assignment.room,
+        type: assignment.room.roomType?.name,
+        price: assignment.room.roomType?.baseRate
+      } : null
+    }))
+  }))
+
   return NextResponse.json({
-    bookings
+    bookings: formattedBookings
   })
 }

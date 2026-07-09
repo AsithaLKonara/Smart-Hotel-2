@@ -14,6 +14,7 @@ export default function UnifiedPOS({ role }: { role: string }) {
   const [selectedBooking, setSelectedBooking] = useState<any>(null)
   const [posCart, setPosCart] = useState<any[]>([])
   const [searchPos, setSearchPos] = useState('')
+  const [searchGuest, setSearchGuest] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('All')
 
   // 1. Fetch POS Products
@@ -36,21 +37,17 @@ export default function UnifiedPOS({ role }: { role: string }) {
     }
   })
 
-  // 3. Fetch Folios for Selected Booking
-  const { data: foliosData } = useQuery({
-    queryKey: ['folios', selectedBooking?.id],
-    queryFn: async () => {
-      if (!selectedBooking) return { folios: [] }
-      const res = await fetch(`/api/admin/accounting/folios?bookingId=${selectedBooking.id}`)
-      if (!res.ok) throw new Error('Failed to fetch folios')
-      return res.json()
-    },
-    enabled: !!selectedBooking
-  })
-
   const INVENTORY = productsData?.products || []
   const bookings = bookingsData?.bookings || []
-  const folios = foliosData?.folios || []
+
+  // Guest Filtering
+  const filteredBookings = bookings.filter((booking: any) => {
+    if (!searchGuest) return true
+    const term = searchGuest.toLowerCase()
+    const name = booking.guest?.name?.toLowerCase() || ''
+    const room = booking.roomAssignments?.[0]?.room?.number?.toLowerCase() || ''
+    return name.includes(term) || room.includes(term)
+  })
 
   // POS Logic
   const allCategories = ['All', ...Array.from(new Set<string>(INVENTORY.map((item: any) => item.category)))]
@@ -87,9 +84,7 @@ export default function UnifiedPOS({ role }: { role: string }) {
 
   const cartSubtotal = posCart.reduce((sum, item) => sum + (item.price * item.quantity), 0)
   
-  // Calculate existing folio total if applicable
-  const existingFolioTotal = folios.reduce((sum: number, folio: any) => sum + folio.grandTotal, 0)
-  const finalTotal = cartSubtotal + (selectedBooking ? existingFolioTotal : 0)
+  const finalTotal = cartSubtotal
 
   const handleChargeToRoom = async () => {
     if (!selectedBooking) return toast.error("Select a guest to charge to room")
@@ -109,7 +104,6 @@ export default function UnifiedPOS({ role }: { role: string }) {
     if (res.ok) {
       toast.success(`Charged $${cartSubtotal.toFixed(2)} to Room ${selectedBooking.roomAssignments?.[0]?.room?.number || 'TBD'}`)
       setPosCart([])
-      queryClient.invalidateQueries({ queryKey: ['folios', selectedBooking.id] })
     } else {
       toast.error("Failed to charge room")
     }
@@ -154,15 +148,33 @@ export default function UnifiedPOS({ role }: { role: string }) {
           <h2 className="text-lg font-bold flex items-center gap-2">
             <Bed className="w-5 h-5 text-primary" /> Active Guests
           </h2>
-          <p className="text-xs text-white/50 mt-1">{bookings.length} rooms checked in</p>
+          <p className="text-xs text-white/50 mt-1">{filteredBookings.length} rooms checked in</p>
+        </div>
+        <div className="p-3 border-b border-white/10">
+          <div className="relative mb-3">
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-white/50" />
+            <Input 
+              placeholder="Search room or guest..." 
+              value={searchGuest}
+              onChange={(e) => setSearchGuest(e.target.value)}
+              className="pl-9 h-9 bg-white/5 border-white/10 text-white text-sm w-full"
+            />
+          </div>
+          <Button 
+            variant="outline" 
+            className="w-full bg-primary/10 border-primary/30 text-primary hover:bg-primary/20 hover:text-primary transition-colors"
+            onClick={() => setSelectedBooking(null)}
+          >
+            Walk-in (Clear Selection)
+          </Button>
         </div>
         <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 custom-scrollbar">
           {bookingsLoading ? (
             <div className="text-center text-white/30 text-sm mt-4">Loading guests...</div>
-          ) : bookings.length === 0 ? (
-            <div className="text-center text-white/30 text-sm mt-4">No active check-ins.</div>
+          ) : filteredBookings.length === 0 ? (
+            <div className="text-center text-white/30 text-sm mt-4">No matching guests.</div>
           ) : (
-            bookings.map((booking: any) => {
+            filteredBookings.map((booking: any) => {
               const assignment = booking.roomAssignments?.[0]
               const roomNumber = assignment?.room?.number || 'N/A'
               const roomTypeName = assignment?.room?.roomType?.name || 'Standard'
@@ -186,15 +198,6 @@ export default function UnifiedPOS({ role }: { role: string }) {
               )
             })
           )}
-        </div>
-        <div className="p-4 border-t border-white/10">
-          <Button 
-            variant="outline" 
-            className="w-full bg-transparent border-white/20 text-white hover:bg-white/10"
-            onClick={() => setSelectedBooking(null)}
-          >
-            Walk-in (Clear Selection)
-          </Button>
         </div>
       </div>
 
@@ -285,32 +288,6 @@ export default function UnifiedPOS({ role }: { role: string }) {
             </div>
           ) : (
             <div className="space-y-6">
-              
-              {/* Existing Folio Charges (If Guest Selected) */}
-              {selectedBooking && folios.length > 0 && (
-                <div>
-                  <h3 className="text-sm font-bold text-white/50 uppercase tracking-wider mb-3 print:text-black">Existing Folio Charges</h3>
-                  <div className="space-y-3">
-                    {folios.map((folio: any) => (
-                      <div key={folio.id} className="space-y-2">
-                        {folio.lineItems?.map((item: any) => (
-                          <div key={item.id} className="flex justify-between items-start text-sm">
-                            <div>
-                              <p className="text-white/90 print:text-black">{item.description}</p>
-                              <p className="text-xs text-white/50 print:text-gray-500" suppressHydrationWarning>{new Date(folio.issuedAt).toLocaleDateString()}</p>
-                            </div>
-                            <span className="font-medium print:text-black">${item.totalPrice.toFixed(2)}</span>
-                          </div>
-                        ))}
-                      </div>
-                    ))}
-                    <div className="flex justify-between border-t border-white/10 pt-2 text-sm font-medium print:border-gray-300 print:text-black">
-                      <span>Folio Total</span>
-                      <span>${existingFolioTotal.toFixed(2)}</span>
-                    </div>
-                  </div>
-                </div>
-              )}
 
               {/* Current POS Cart */}
               {posCart.length > 0 && (
@@ -362,7 +339,7 @@ export default function UnifiedPOS({ role }: { role: string }) {
               onClick={handleSettleFolio}
               className="w-full bg-primary hover:bg-primary/90 text-white h-12"
             >
-              Settle Total Bill
+              Pay Direct (Cash/Card)
             </Button>
           </div>
         </div>

@@ -67,6 +67,23 @@ export async function POST(req: Request) {
         });
       }
 
+      // Record direct payment if not charged to room
+      if (paymentType === 'CARD' || paymentType === 'CASH') {
+        await tx.payment.create({
+          data: {
+            bookingId: bookingId || null,
+            orderId: order.id,
+            folioId: targetFolioId,
+            amount: totalAmount,
+            currency: 'LKR',
+            paymentMethod: paymentType === 'CARD' ? 'card' : 'cash',
+            paymentProvider: 'POS',
+            status: 'completed',
+            capturedAt: new Date(),
+          }
+        });
+      }
+
       return order;
     });
 

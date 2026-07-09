@@ -281,7 +281,7 @@ function BookingPageContent() {
                       <div key={room.id} className={`flex-none w-[85%] md:w-[48%] snap-center group bg-white/5 backdrop-blur-md border rounded-2xl overflow-hidden transition-all duration-300 ${idx === carouselIdx ? 'border-primary/30 shadow-luxury' : 'border-white/10'}`}>
                         <div className="relative aspect-video overflow-hidden">
                           <Image
-                            src={room.roomImages?.[0]?.imageUrl || "https://images.unsplash.com/photo-1590490359683-658d3d23f972?auto=format&fit=crop&q=80&w=800"}
+                            src={room.mainImage || "https://images.unsplash.com/photo-1590490359683-658d3d23f972?auto=format&fit=crop&q=80&w=800"}
                             alt={room.type} fill className="object-cover group-hover:scale-105 transition-transform duration-700"
                           />
                           <div className="absolute top-4 right-4 bg-black/70 backdrop-blur-md px-3 py-1.5 rounded-lg border border-primary/20">
@@ -338,6 +338,13 @@ function BookingPageContent() {
               className="grid grid-cols-1 lg:grid-cols-12 gap-12"
             >
               <div className="lg:col-span-8 space-y-10">
+
+                {/* Back Button */}
+                <div className="flex items-center">
+                  <Button variant="ghost" onClick={() => setStep(2)} className="text-white/40 hover:text-white px-0 hover:bg-transparent -mt-4 -mb-4">
+                    <ArrowLeft className="w-4 h-4 mr-2" /> Back to Suites
+                  </Button>
+                </div>
 
                 {/* Auth guard */}
                 {!session?.user && (
@@ -480,7 +487,7 @@ function BookingPageContent() {
           >
             <div className="relative h-64 shrink-0">
               <Image 
-                src={detailsModalRoom.roomImages?.[0]?.imageUrl || "https://images.unsplash.com/photo-1590490359683-658d3d23f972?auto=format&fit=crop&q=80&w=1200"}
+                src={detailsModalRoom.mainImage || "https://images.unsplash.com/photo-1590490359683-658d3d23f972?auto=format&fit=crop&q=80&w=1200"}
                 alt={detailsModalRoom.type}
                 fill
                 className="object-cover"
