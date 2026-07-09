@@ -26,6 +26,7 @@ function BookingPageContent() {
   const [searchData, setSearchData] = useState({ checkIn: '', checkOut: '', guests: 2, roomType: 'all' })
   const [availableRooms, setAvailableRooms] = useState<any[]>([])
   const [selectedRoom, setSelectedRoom] = useState<any>(null)
+  const [detailsModalRoom, setDetailsModalRoom] = useState<any>(null)
   const [bookingData, setBookingData] = useState({
     roomId: '', specialRequests: '',
     paymentMethod: 'pay_later' as 'pay_now' | 'pay_later',
@@ -303,11 +304,9 @@ function BookingPageContent() {
                             <div className="flex items-center gap-1"><Wifi className="w-3 h-3" />WiFi</div>
                           </div>
                           <div className="flex gap-3 pt-2">
-                            <Link href={`/rooms/${room.id}`} target="_blank" className="flex-1">
-                              <Button variant="outline" className="w-full border-white/20 text-white rounded-xl h-11 uppercase tracking-widest text-[9px] font-bold hover:bg-white/10 transition-all">
-                                View Details
-                              </Button>
-                            </Link>
+                            <Button onClick={() => setDetailsModalRoom(room)} variant="outline" className="flex-1 border-white/20 text-white rounded-xl h-11 uppercase tracking-widest text-[9px] font-bold hover:bg-white/10 transition-all">
+                              View Details
+                            </Button>
                             <Button onClick={() => { setSelectedRoom(room); setStep(3) }} className="flex-1 bg-gold-gradient text-white rounded-xl h-11 uppercase tracking-[0.15em] text-[9px] font-bold border-none shadow-luxury">
                               Select Suite
                             </Button>
@@ -469,6 +468,81 @@ function BookingPageContent() {
           )}
         </div>
       </section>
+
+      {/* Room Details Modal */}
+      {detailsModalRoom && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setDetailsModalRoom(null)} />
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="relative w-full max-w-2xl bg-[#0a0a0a] border border-white/10 rounded-3xl overflow-hidden shadow-2xl z-10 max-h-[90vh] flex flex-col"
+          >
+            <div className="relative h-64 shrink-0">
+              <Image 
+                src={detailsModalRoom.roomImages?.[0]?.imageUrl || "https://images.unsplash.com/photo-1590490359683-658d3d23f972?auto=format&fit=crop&q=80&w=1200"}
+                alt={detailsModalRoom.type}
+                fill
+                className="object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] to-transparent" />
+              <button 
+                onClick={() => setDetailsModalRoom(null)}
+                className="absolute top-4 right-4 w-8 h-8 bg-black/50 hover:bg-black/80 rounded-full flex items-center justify-center text-white backdrop-blur-md transition-colors border border-white/10"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="p-8 overflow-y-auto">
+              <div className="flex justify-between items-end mb-6">
+                <div>
+                  <p className="text-primary text-[10px] uppercase tracking-widest font-bold mb-1">Floor {detailsModalRoom.floor}</p>
+                  <h3 className="text-3xl font-serif font-bold text-white">{detailsModalRoom.type} Suite</h3>
+                </div>
+                <div className="text-right">
+                  <span className="text-2xl font-serif font-bold text-primary">{formatPrice(detailsModalRoom.totalPrice)}</span>
+                  <p className="text-white/40 text-[9px] uppercase tracking-widest">Total for {nights} night{nights !== 1 ? 's' : ''}</p>
+                </div>
+              </div>
+
+              <p className="text-white/60 font-light text-sm leading-relaxed mb-8">
+                {detailsModalRoom.description || 'Experience the pinnacle of luxury with stunning views, bespoke furnishings, and unparalleled comfort in this exquisite suite.'}
+              </p>
+
+              <div className="grid grid-cols-3 gap-4 mb-8">
+                <div className="bg-white/5 border border-white/5 rounded-xl p-4 text-center">
+                  <Users className="w-5 h-5 text-primary mx-auto mb-2" />
+                  <p className="text-white font-bold text-sm">{detailsModalRoom.capacity}</p>
+                  <p className="text-white/40 text-[9px] uppercase tracking-widest">Guests</p>
+                </div>
+                <div className="bg-white/5 border border-white/5 rounded-xl p-4 text-center">
+                  <Wind className="w-5 h-5 text-primary mx-auto mb-2" />
+                  <p className="text-white font-bold text-sm">{detailsModalRoom.size} m²</p>
+                  <p className="text-white/40 text-[9px] uppercase tracking-widest">Size</p>
+                </div>
+                <div className="bg-white/5 border border-white/5 rounded-xl p-4 text-center">
+                  <Wifi className="w-5 h-5 text-primary mx-auto mb-2" />
+                  <p className="text-white font-bold text-sm">Included</p>
+                  <p className="text-white/40 text-[9px] uppercase tracking-widest">WiFi</p>
+                </div>
+              </div>
+
+              <div className="flex gap-4 pt-4 border-t border-white/10">
+                <Button onClick={() => setDetailsModalRoom(null)} variant="outline" className="flex-1 border-white/20 text-white h-14 rounded-xl uppercase tracking-widest text-xs font-bold hover:bg-white/10">
+                  Close
+                </Button>
+                <Button 
+                  onClick={() => { setSelectedRoom(detailsModalRoom); setStep(3); setDetailsModalRoom(null); }} 
+                  className="flex-1 bg-gold-gradient text-white h-14 rounded-xl uppercase tracking-widest text-xs font-bold border-none shadow-luxury"
+                >
+                  Select Suite
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
 
       <style jsx global>{`
         .scrollbar-hide::-webkit-scrollbar { display: none; }

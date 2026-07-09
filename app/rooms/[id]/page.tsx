@@ -174,7 +174,7 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
         <div className="absolute inset-0 bg-black/60 backdrop-blur-xl" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/60" />
         <div className="relative z-10 container mx-auto px-4 h-full flex flex-col justify-end pb-10">
-          <Link href="/rooms" className="inline-flex items-center gap-2 mb-4 text-white/50 hover:text-primary transition-colors text-sm uppercase tracking-widest font-bold">
+          <Link href="/rooms" className="relative z-50 w-fit inline-flex items-center gap-2 mb-4 text-white/50 hover:text-primary transition-colors text-sm uppercase tracking-widest font-bold">
             <ArrowLeft className="w-4 h-4" />Back to Rooms
           </Link>
           <div className="flex items-end justify-between gap-4">

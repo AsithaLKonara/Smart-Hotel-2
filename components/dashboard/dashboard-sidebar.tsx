@@ -73,7 +73,7 @@ export default function DashboardSidebar() {
 
       // 🔵 FRONT DESK & BOOKINGS
       { name: 'Front Desk', href: '/admin/receptionist', icon: UserCheck, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'], group: 'Front Desk & Bookings' },
-      { name: 'Point of Sale', href: '/reception/pos', icon: ShoppingCart, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'], group: 'Front Desk & Bookings' },
+      { name: 'Point of Sale', href: '/admin/pos', icon: ShoppingCart, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'], group: 'Front Desk & Bookings' },
       { name: 'Reservations', href: '/admin/bookings', icon: CalendarDays, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'], group: 'Front Desk & Bookings' },
       { name: 'Resort & Spa', href: '/admin/resort', icon: Palmtree, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'], group: 'Front Desk & Bookings' },
 

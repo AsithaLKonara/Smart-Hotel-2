@@ -5,7 +5,7 @@ import { getRequestSession } from '@/lib/session'
 export async function GET(req: NextRequest) {
   try {
     const session = await getRequestSession(req)
-    if (!session || !['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'].includes((session.user as any).roleName as string)) {
+    if (!session || !['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN', 'KITCHEN'].includes((session.user as any).roleName as string)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     const bookings = await prisma.booking.findMany({

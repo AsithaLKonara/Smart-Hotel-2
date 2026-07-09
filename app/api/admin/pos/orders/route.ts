@@ -19,26 +19,38 @@ export async function POST(req: Request) {
 
     let folioId = null;
 
-    if (paymentType === 'ROOM_CHARGE' && roomNumber) {
-      const room = await prisma.room.findUnique({
-        where: { number: roomNumber },
-        include: {
-          bookings: {
-            where: { status: 'CHECKED_IN' },
-            include: { folios: { where: { folioType: 'MASTER' } } }
-          }
-        }
-      });
+    if (paymentType === 'ROOM_CHARGE') {
+      let masterFolio = null;
 
-      if (!room || room.bookings.length === 0) {
-        return NextResponse.json({ error: 'No active booking found for this room' }, { status: 404 });
+      if (data.bookingId) {
+        // Find by specific booking ID
+        const booking = await prisma.booking.findUnique({
+          where: { id: data.bookingId },
+          include: { folios: { where: { type: 'GUEST' } } } // Changed from folioType: 'MASTER'
+        });
+        
+        if (booking && booking.folios.length > 0) {
+          masterFolio = booking.folios[0];
+        }
+      } else if (roomNumber) {
+        // Fallback: Find by room number
+        const room = await prisma.room.findUnique({
+          where: { number: roomNumber },
+          include: {
+            bookings: {
+              where: { status: 'CHECKED_IN' },
+              include: { folios: { where: { type: 'GUEST' } } }
+            }
+          }
+        });
+
+        if (room && room.bookings.length > 0 && room.bookings[0].folios.length > 0) {
+          masterFolio = room.bookings[0].folios[0];
+        }
       }
 
-      const activeBooking = room.bookings[0];
-      const masterFolio = activeBooking.folios[0];
-
       if (!masterFolio) {
-        return NextResponse.json({ error: 'No open master folio (invoice) found for the guest' }, { status: 404 });
+        return NextResponse.json({ error: 'No active booking or open folio found for this guest' }, { status: 404 });
       }
 
       folioId = masterFolio.id;
@@ -46,22 +58,13 @@ export async function POST(req: Request) {
       const outlet = await prisma.pOSOutlet.findUnique({ where: { id: outletId } });
       const description = `POS Charge: ${outlet?.name || 'Outlet'}`;
 
+      // FolioLineItem uses 'amount', not 'quantity'/'unitPrice'
       await prisma.folioLineItem.create({
         data: {
           folioId,
           description,
-          quantity: 1,
-          unitPrice: totalAmount,
-          totalPrice: totalAmount,
+          amount: totalAmount,
           category: 'POS'
-        }
-      });
-      
-      await prisma.folio.update({
-        where: { id: folioId },
-        data: { 
-            subtotal: masterFolio.subtotal + totalAmount,
-            grandTotal: masterFolio.grandTotal + totalAmount 
         }
       });
     }

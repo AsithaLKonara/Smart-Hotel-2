@@ -62,6 +62,7 @@ const PROTECTED_ROUTES = [
   { prefix: '/api/admin', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'HOUSEKEEPING', 'MAINTENANCE'] },
   { prefix: '/api/bookings', roles: ['GUEST', 'SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'KITCHEN'] },
   { prefix: '/api/restaurant', roles: ['GUEST', 'SUPER_ADMIN', 'MANAGER', 'KITCHEN', 'RECEPTIONIST'] },
+  { prefix: '/api/pos', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'KITCHEN'] },
   { prefix: '/api/portals/b2b', roles: ['SUPER_ADMIN', 'MANAGER'] },
   { prefix: '/api/analytics', roles: ['SUPER_ADMIN', 'MANAGER'] },
   { prefix: '/api/night-audit', roles: ['SUPER_ADMIN', 'MANAGER'] },

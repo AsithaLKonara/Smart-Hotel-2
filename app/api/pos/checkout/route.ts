@@ -19,47 +19,35 @@ export async function POST(req: Request) {
         });
       }
 
-      let targetInvoiceId = null;
+      let targetFolioId = null;
 
       if (paymentType === 'ROOM_CHARGE' && bookingId) {
-        const invoice = await tx.invoice.findFirst({
+        const folio = await tx.folio.findFirst({
           where: { bookingId, status: { not: 'PAID' } },
-          orderBy: { issuedAt: 'desc' }
+          orderBy: { createdAt: 'desc' }
         });
         
-        if (invoice) {
-          targetInvoiceId = invoice.id;
+        if (folio) {
+          targetFolioId = folio.id;
           
-          // Add to InvoiceLineItems
+          // Add to FolioLineItem
           for (const item of cart) {
-            await tx.invoiceLineItem.create({
+            await tx.folioLineItem.create({
               data: {
-                invoiceId: invoice.id,
+                folioId: folio.id,
                 description: `POS: ${item.name}`,
-                quantity: item.quantity,
-                unitPrice: item.price,
-                totalPrice: item.price * item.quantity,
+                amount: item.price * item.quantity,
                 category: 'FOOD_AND_BEVERAGE',
-                sourceModule: 'POS'
               }
             });
           }
-
-          // Update Invoice Totals
-          await tx.invoice.update({
-            where: { id: invoice.id },
-            data: {
-              subtotal: { increment: totalAmount },
-              grandTotal: { increment: totalAmount } // For simplicity not calculating tax here
-            }
-          });
         }
       }
 
       const order = await tx.internalOrder.create({
         data: {
           outletId: defaultOutlet.id,
-          invoiceId: targetInvoiceId,
+          folioId: targetFolioId,
           status: 'COMPLETED',
           totalAmount,
           paymentType,
