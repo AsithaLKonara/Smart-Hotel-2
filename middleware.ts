@@ -56,6 +56,7 @@ const PROTECTED_ROUTES = [
   { prefix: '/api/admin/events', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'KITCHEN', 'HOUSEKEEPING', 'MAINTENANCE'] },
   { prefix: '/api/admin/users', roles: ['SUPER_ADMIN', 'MANAGER'] },
   { prefix: '/api/admin/settings/integrations', roles: ['SUPER_ADMIN'] },
+  { prefix: '/api/upload', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'KITCHEN'] },
   { prefix: '/api/admin/corporate/loyalty', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'] },
   { prefix: '/api/admin/corporate', roles: ['SUPER_ADMIN', 'MANAGER'] },
   { prefix: '/api/admin', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'HOUSEKEEPING', 'MAINTENANCE'] },
@@ -205,7 +206,7 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|images|videos|favicon.ico).*)',
+    '/((?!_next/static|_next/image|images|videos|uploads|favicon.ico).*)',
   ],
 }
 

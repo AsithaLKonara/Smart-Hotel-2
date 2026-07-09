@@ -140,7 +140,7 @@ export async function POST(request: NextRequest) {
         capacity: validatedData.capacity,
         status: validatedData.status as any,
         version: 1,
-        propertyId: propertyId,
+        ...(propertyId ? { property: { connect: { id: propertyId } } } : {}),
         roomType: {
           connect: { id: roomType.id }
         },
@@ -162,6 +162,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Validation error', details: error.errors }, { status: 400 })
     }
     console.error('Error creating room:', error)
-    return NextResponse.json({ error: 'Failed to create room' }, { status: 500 })
+    return NextResponse.json({ 
+      error: 'Failed to create room', 
+      details: error instanceof Error ? error.message : String(error)
+    }, { status: 500 })
   }
 }

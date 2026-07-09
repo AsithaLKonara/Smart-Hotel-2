@@ -28,10 +28,7 @@ const envSchema = z.object({
   STRIPE_PUBLISHABLE_KEY: z.string().startsWith('pk_'),
   STRIPE_WEBHOOK_SECRET: z.string().startsWith('whsec_').optional(),
 
-  // Storage (Cloudinary)
-  CLOUDINARY_CLOUD_NAME: z.string().optional(),
-  CLOUDINARY_API_KEY: z.string().optional(),
-  CLOUDINARY_API_SECRET: z.string().optional(),
+
 
   // Messaging (Email)
   SMTP_HOST: z.string().optional(),

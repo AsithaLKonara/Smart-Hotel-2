@@ -74,7 +74,10 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
   try {
     room = await prisma.room.findUnique({ 
       where: { id: id.trim() },
-      include: { roomType: true }
+      include: { 
+        roomType: true,
+        roomImages: { orderBy: { isMain: 'desc' } }
+      }
     })
   } catch {
     return <ErrorState title="Room Not Found" message="We encountered an error while loading this room." />
@@ -94,6 +97,7 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
     description: room.roomType.description,
     amenities: room.roomType.amenities,
     images: room.roomType.images,
+    roomImagesUrls: room.roomImages?.map((img: any) => img.imageUrl) || [],
   }
 
   // Build a 5-image gallery using available images + curated fallbacks
@@ -132,14 +136,12 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
   const fallbackKey = Object.keys(roomTypeImages).find(k => typeLower.includes(k)) || 'deluxe'
   const fallbackImages = roomTypeImages[fallbackKey]
 
-  const dbImages = Array.isArray(serializedRoom.images) ? serializedRoom.images as string[] : []
-  // Merge DB images with fallbacks to always have 5
-  const gallery: string[] = [
-    ...(dbImages.length > 0 ? dbImages : []),
-    ...fallbackImages,
-  ].slice(0, 5)
-  // Pad to exactly 5 if needed
-  while (gallery.length < 5) gallery.push(fallbackImages[gallery.length % fallbackImages.length])
+  const dbImages = serializedRoom.roomImagesUrls.length > 0 
+    ? serializedRoom.roomImagesUrls 
+    : (Array.isArray(serializedRoom.images) && serializedRoom.images.length > 0 ? serializedRoom.images as string[] : [])
+
+  // If we have DB images, use them. Otherwise use fallbacks.
+  const gallery: string[] = dbImages.length > 0 ? dbImages : fallbackImages
 
   const amenities = Array.isArray(serializedRoom.amenities) ? serializedRoom.amenities as string[] : []
 
@@ -216,20 +218,22 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
                     {[...Array(5)].map((_, i) => <Star key={i} className="w-3 h-3 fill-primary text-primary" />)}
                   </div>
                 </div>
-                {/* 4 thumbnail images */}
-                <div className="grid grid-cols-4 gap-3">
-                  {gallery.slice(1, 5).map((img, idx) => (
-                    <div key={idx} className="relative aspect-video overflow-hidden rounded-xl">
-                      <Image
-                        src={img}
-                        alt={`${serializedRoom.type} view ${idx + 2}`}
-                        fill
-                        className="object-cover hover:scale-110 transition-transform duration-500"
-                        unoptimized
-                      />
-                    </div>
-                  ))}
-                </div>
+                {/* thumbnails */}
+                {gallery.length > 1 && (
+                  <div className="grid grid-cols-4 gap-3">
+                    {gallery.slice(1, 5).map((img, idx) => (
+                      <div key={idx} className="relative aspect-video overflow-hidden rounded-xl bg-black/20">
+                        <Image
+                          src={img}
+                          alt={`${serializedRoom.type} view ${idx + 2}`}
+                          fill
+                          className="object-cover hover:scale-110 transition-transform duration-500"
+                          unoptimized
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* About */}

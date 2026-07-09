@@ -20,7 +20,7 @@ interface Room {
   size: number | null
   description: string | null
   amenities: string[] | any
-  roomImages?: Array<{ url: string; isMain?: boolean }>
+  roomImages?: Array<{ imageUrl: string; isMain?: boolean }>
   images?: string[]
   reviews?: Array<{ rating: number }>
 }
@@ -141,7 +141,7 @@ export default function RoomsPage() {
                   {/* Image container */}
                   <div className="relative aspect-[3/4] overflow-hidden rounded-2xl shadow-2xl">
                     <Image 
-                      src={room.roomImages?.[0]?.url || 'https://images.unsplash.com/photo-1590490359683-658d3d23f972?auto=format&fit=crop&q=80&w=800'} 
+                      src={room.roomImages?.[0]?.imageUrl || 'https://images.unsplash.com/photo-1590490359683-658d3d23f972?auto=format&fit=crop&q=80&w=800'} 
                       alt={room.type} 
                       fill 
                       className="object-cover group-hover:scale-110 transition-transform duration-1000" 

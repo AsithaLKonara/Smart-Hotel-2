@@ -280,7 +280,7 @@ function BookingPageContent() {
                       <div key={room.id} className={`flex-none w-[85%] md:w-[48%] snap-center group bg-white/5 backdrop-blur-md border rounded-2xl overflow-hidden transition-all duration-300 ${idx === carouselIdx ? 'border-primary/30 shadow-luxury' : 'border-white/10'}`}>
                         <div className="relative aspect-video overflow-hidden">
                           <Image
-                            src={room.roomImages?.[0]?.url || "https://images.unsplash.com/photo-1590490359683-658d3d23f972?auto=format&fit=crop&q=80&w=800"}
+                            src={room.roomImages?.[0]?.imageUrl || "https://images.unsplash.com/photo-1590490359683-658d3d23f972?auto=format&fit=crop&q=80&w=800"}
                             alt={room.type} fill className="object-cover group-hover:scale-105 transition-transform duration-700"
                           />
                           <div className="absolute top-4 right-4 bg-black/70 backdrop-blur-md px-3 py-1.5 rounded-lg border border-primary/20">

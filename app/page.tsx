@@ -145,36 +145,43 @@ export default async function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-            {(featuredRooms.length > 0 ? featuredRooms : [1, 2, 3]).map((room, i) => (
-              <div key={i} className="group cursor-pointer bg-black/40 border border-white/10 p-5 rounded-2xl transition-all duration-500 hover:-translate-y-2 hover:border-primary/40 hover:shadow-luxury">
-                <div className="relative aspect-[3/4] overflow-hidden rounded-xl mb-6">
-                  <Image 
-                    src={room.roomImages?.[0]?.url || `https://images.unsplash.com/photo-1590490359683-658d3d23f972?auto=format&fit=crop&q=80&w=800&sig=${i}`}
-                    alt={room.type || "Luxury Room"} 
-                    fill 
-                    className="object-cover group-hover:scale-110 transition-transform duration-1000"
-                  />
-                  <div className="absolute top-4 left-4">
-                    <div className="bg-black/85 px-4 py-2 border border-white/10 rounded-xl">
-                      <span className="text-primary font-serif italic text-lg">{formatPrice(Number(room.roomType?.baseRate || '450'))}+</span>
+            {featuredRooms.length > 0 ? (
+              featuredRooms.map((room, i) => (
+                <div key={room.id || i} className="group cursor-pointer bg-black/40 border border-white/10 p-5 rounded-2xl transition-all duration-500 hover:-translate-y-2 hover:border-primary/40 hover:shadow-luxury">
+                  <div className="relative aspect-[3/4] overflow-hidden rounded-xl mb-6">
+                    <Image 
+                      src={room.roomImages?.[0]?.imageUrl || `https://images.unsplash.com/photo-1590490359683-658d3d23f972?auto=format&fit=crop&q=80&w=800&sig=${i}`}
+                      alt={room.type || "Luxury Room"} 
+                      fill 
+                      className="object-cover group-hover:scale-110 transition-transform duration-1000"
+                    />
+                    <div className="absolute top-4 left-4">
+                      <div className="bg-black/85 px-4 py-2 border border-white/10 rounded-xl">
+                        <span className="text-primary font-serif italic text-lg">{formatPrice(Number(room.roomType?.baseRate || '450'))}+</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-1">
-                    {[...Array(5)].map((_, idx) => <Star key={idx} className="w-3 h-3 fill-primary text-primary" />)}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-1">
+                      {[...Array(5)].map((_, idx) => <Star key={idx} className="w-3 h-3 fill-primary text-primary" />)}
+                    </div>
+                    <h3 className="text-2xl font-serif font-bold group-hover:text-primary transition-colors">{room.roomType?.name || "Presidential Suite"}</h3>
+                    <p className="text-white/60 text-sm font-light leading-relaxed line-clamp-2">
+                      {room.roomType?.description || "Experience the pinnacle of luxury with panoramic city views and bespoke services."}
+                    </p>
+                    <Link href={`/rooms/${room.id || '#'}`} className="inline-flex items-center space-x-2 text-xs uppercase tracking-widest font-bold pt-2 group-hover:translate-x-2 transition-transform text-white/80 hover:text-primary">
+                      <span>Reserve Now</span>
+                      <ChevronRight className="w-3 h-3" />
+                    </Link>
                   </div>
-                  <h3 className="text-2xl font-serif font-bold group-hover:text-primary transition-colors">{room.roomType?.name || "Presidential Suite"}</h3>
-                  <p className="text-white/60 text-sm font-light leading-relaxed line-clamp-2">
-                    {room.roomType?.description || "Experience the pinnacle of luxury with panoramic city views and bespoke services."}
-                  </p>
-                  <Link href={`/rooms/${room.id || '#'}`} className="inline-flex items-center space-x-2 text-xs uppercase tracking-widest font-bold pt-2 group-hover:translate-x-2 transition-transform text-white/80 hover:text-primary">
-                    <span>Reserve Now</span>
-                    <ChevronRight className="w-3 h-3" />
-                  </Link>
                 </div>
+              ))
+            ) : (
+              <div className="col-span-1 md:col-span-3 text-center py-16 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl">
+                <p className="text-white/60 font-light text-xl">Our luxury suites are currently being prepared for online booking.</p>
+                <p className="text-white/40 font-light text-md mt-2">Please check back soon.</p>
               </div>
-            ))}
+            )}
           </div>
         </div>
       </section>
