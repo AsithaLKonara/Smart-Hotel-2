@@ -10,6 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Modal } from '@/components/ui/modal'
 import { Breadcrumbs } from '@/components/ui/breadcrumbs'
+import * as Dialog from '@radix-ui/react-dialog'
+import { Input } from '@/components/ui/input'
 import toast from 'react-hot-toast'
 
 interface InventoryItem {
@@ -34,6 +36,9 @@ export default function AdminInventoryPage() {
   const [showModal, setShowModal] = useState(false)
   const [editingItem, setEditingItem] = useState<InventoryItem | null>(null)
   const [adjustingItemId, setAdjustingItemId] = useState<string | null>(null)
+  const [adjustModal, setAdjustModal] = useState<InventoryItem | null>(null)
+  const [adjustForm, setAdjustForm] = useState({ newQuantity: '', location: 'Storeroom A', reason: 'Manual Count' })
+  const [submittingAdjust, setSubmittingAdjust] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -385,35 +390,13 @@ export default function AdminInventoryPage() {
                         <Button
                           size="sm"
                           variant="outline"
-                          disabled={adjustingItemId === item.id}
-                          onClick={async () => {
-                            const location = prompt('Location (e.g. Storeroom A):', 'Storeroom A')
-                            if (!location) return
-                            const newQty = prompt(`New quantity for "${item.name}":`)
-                            if (newQty === null || newQty === '') return
-                            const reason = prompt('Reason for adjustment (e.g. Manual Count, Spillage):', 'Manual Count')
-                            if (!reason) return
-                            setAdjustingItemId(item.id)
-                            try {
-                              const res = await fetch(`/api/inventory/${item.id}/adjust`, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ location, newQuantity: parseInt(newQty), reason })
-                              })
-                              const data = await res.json()
-                              if (res.ok) {
-                                toast.success(`Stock adjusted to ${newQty} at ${location}`)
-                                fetchInventory()
-                              } else {
-                                toast.error(data.error || 'Adjustment failed')
-                              }
-                            } finally {
-                              setAdjustingItemId(null)
-                            }
+                          onClick={() => {
+                            setAdjustModal(item)
+                            setAdjustForm({ newQuantity: String(item.quantity), location: 'Storeroom A', reason: 'Manual Count' })
                           }}
                           title="Adjust Stock"
                         >
-                          {adjustingItemId === item.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <SlidersHorizontal className="w-4 h-4" />}
+                          <SlidersHorizontal className="w-4 h-4" />
                         </Button>
                       </div>
                     </td>
@@ -571,6 +554,75 @@ export default function AdminInventoryPage() {
           </Card>
         </div>
       )}
+
+      {/* Adjust Stock Modal */}
+      <Dialog.Root open={!!adjustModal} onOpenChange={(o) => !o && setAdjustModal(null)}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50" />
+          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-[#0a0a0f] border border-white/10 rounded-2xl shadow-2xl p-6 z-50">
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h2 className="text-xl font-bold text-white">Adjust Stock</h2>
+                <p className="text-sm text-white/50 mt-1">{adjustModal?.name}</p>
+              </div>
+              <button onClick={() => setAdjustModal(null)} className="text-white/40 hover:text-white transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <form onSubmit={async (e) => {
+              e.preventDefault()
+              if (!adjustModal) return
+              setSubmittingAdjust(true)
+              try {
+                const res = await fetch(`/api/inventory/${adjustModal.id}/adjust`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    location: adjustForm.location,
+                    newQuantity: parseInt(adjustForm.newQuantity),
+                    reason: adjustForm.reason
+                  })
+                })
+                const data = await res.json()
+                if (res.ok) {
+                  toast.success(`Stock adjusted to ${adjustForm.newQuantity} at ${adjustForm.location}`)
+                  setAdjustModal(null)
+                  fetchInventory()
+                } else {
+                  toast.error(data.error || 'Adjustment failed')
+                }
+              } finally {
+                setSubmittingAdjust(false)
+              }
+            }} className="space-y-4">
+              <div>
+                <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-2 block">New Quantity ({adjustModal?.unit})</label>
+                <Input type="number" required min="0" value={adjustForm.newQuantity}
+                  onChange={e => setAdjustForm({ ...adjustForm, newQuantity: e.target.value })}
+                  className="bg-[#1a1a24] border-white/10 text-white text-lg font-bold" />
+              </div>
+              <div>
+                <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-2 block">Location</label>
+                <Input value={adjustForm.location} onChange={e => setAdjustForm({ ...adjustForm, location: e.target.value })}
+                  className="bg-[#1a1a24] border-white/10 text-white" placeholder="e.g. Storeroom A" />
+              </div>
+              <div>
+                <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-2 block">Reason</label>
+                <Input value={adjustForm.reason} onChange={e => setAdjustForm({ ...adjustForm, reason: e.target.value })}
+                  className="bg-[#1a1a24] border-white/10 text-white" placeholder="e.g. Manual Count, Spillage" />
+              </div>
+              <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+                <Button type="button" variant="ghost" onClick={() => setAdjustModal(null)}>Cancel</Button>
+                <Button type="submit" disabled={submittingAdjust} className="bg-primary text-white">
+                  {submittingAdjust ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <SlidersHorizontal className="w-4 h-4 mr-2" />}
+                  Apply Adjustment
+                </Button>
+              </div>
+            </form>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+
     </div>
   )
 }

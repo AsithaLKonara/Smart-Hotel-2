@@ -3,19 +3,27 @@
 import { useState, use } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { 
-  FileText, Plus, SplitSquareHorizontal, MoveRight, Receipt, PlusCircle, Building2 
+  FileText, Plus, SplitSquareHorizontal, MoveRight, Receipt, PlusCircle, Building2, X 
 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 import { PremiumSpinner } from '@/components/ui/premium-spinner'
+import * as Dialog from '@radix-ui/react-dialog'
 
 export default function AdvancedFolioPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params)
   const bookingId = resolvedParams.id
   const queryClient = useQueryClient()
+
+  // Modal state
+  const [chargeModal, setChargeModal] = useState(false)
+  const [chargeForm, setChargeForm] = useState({ amount: '', category: 'MINIBAR', description: '' })
+  const [routingModal, setRoutingModal] = useState<any>(null) // holds the source folio
+  const [routingForm, setRoutingForm] = useState({ category: 'ROOM_CHARGE', targetWindow: '2' })
 
   // Fetch Folios
   const { data: folios, isLoading } = useQuery({
@@ -95,29 +103,11 @@ export default function AdvancedFolioPage({ params }: { params: Promise<{ id: st
         </div>
         <div className="flex gap-2 mt-4 md:mt-0">
           <Button variant="outline" className="bg-white/5 border-white/10 text-white hover:bg-white/10" 
-            onClick={() => {
-              addWindowMut.mutate({})
-            }}
+            onClick={() => addWindowMut.mutate({})}
           >
             <SplitSquareHorizontal className="w-4 h-4 mr-2" /> New Window
           </Button>
-          <Button className="bg-primary text-white" 
-            onClick={() => {
-              const amountStr = prompt('Amount ($):')
-              if (!amountStr) return
-              const category = prompt('Category (e.g. ROOM_CHARGE, MINIBAR, SPA):', 'MINIBAR')
-              if (!category) return
-              const desc = prompt('Description:')
-              if (!desc) return
-
-              postChargeMut.mutate({
-                bookingId,
-                amount: parseFloat(amountStr),
-                category,
-                description: desc
-              })
-            }}
-          >
+          <Button className="bg-primary text-white" onClick={() => setChargeModal(true)}>
             <Plus className="w-4 h-4 mr-2" /> Post Charge
           </Button>
         </div>
@@ -155,20 +145,7 @@ export default function AdvancedFolioPage({ params }: { params: Promise<{ id: st
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-xs font-bold text-blue-400 uppercase tracking-wider">Routing Instructions</span>
                       <Button variant="ghost" size="sm" className="h-6 text-[10px] text-blue-400"
-                        onClick={() => {
-                          const cat = prompt('Category to route (e.g. ROOM_CHARGE):', 'ROOM_CHARGE')
-                          if (!cat) return
-                          const wnd = prompt('Target Window Number:', '2')
-                          if (!wnd) return
-                          const target = folios.find((f: any) => f.windowNumber === parseInt(wnd))
-                          if (!target) { toast.error('Target window not found'); return }
-                          
-                          addRoutingMut.mutate({
-                            sourceFolioId: folio.id,
-                            targetFolioId: target.id,
-                            category: cat
-                          })
-                        }}
+                        onClick={() => { setRoutingModal(folio); setRoutingForm({ category: 'ROOM_CHARGE', targetWindow: '2' }) }}
                       >
                         <PlusCircle className="w-3 h-3 mr-1" /> Add Rule
                       </Button>
@@ -234,6 +211,90 @@ export default function AdvancedFolioPage({ params }: { params: Promise<{ id: st
           )
         })}
       </div>
+
+      {/* Post Charge Modal */}
+      <Dialog.Root open={chargeModal} onOpenChange={(o) => !o && setChargeModal(false)}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50" />
+          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-[#0a0a0f] border border-white/10 rounded-2xl shadow-2xl p-6 z-50">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold text-white">Post Charge</h2>
+              <button onClick={() => setChargeModal(false)} className="text-white/40 hover:text-white"><X className="w-5 h-5" /></button>
+            </div>
+            <form onSubmit={(e) => {
+              e.preventDefault()
+              postChargeMut.mutate({ bookingId, amount: parseFloat(chargeForm.amount), category: chargeForm.category, description: chargeForm.description })
+              setChargeModal(false)
+              setChargeForm({ amount: '', category: 'MINIBAR', description: '' })
+            }} className="space-y-4">
+              <div>
+                <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-2 block">Amount ($)</label>
+                <Input type="number" step="0.01" required value={chargeForm.amount} onChange={e => setChargeForm({ ...chargeForm, amount: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white" />
+              </div>
+              <div>
+                <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-2 block">Category</label>
+                <select value={chargeForm.category} onChange={e => setChargeForm({ ...chargeForm, category: e.target.value })} className="w-full bg-[#1a1a24] border border-white/10 rounded-lg p-2.5 text-sm text-white">
+                  <option value="MINIBAR">Minibar</option>
+                  <option value="ROOM_CHARGE">Room Charge</option>
+                  <option value="SPA">Spa</option>
+                  <option value="RESTAURANT">Restaurant</option>
+                  <option value="PHONE">Phone</option>
+                  <option value="LAUNDRY">Laundry</option>
+                  <option value="OTHER">Other</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-2 block">Description</label>
+                <Input required value={chargeForm.description} onChange={e => setChargeForm({ ...chargeForm, description: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white" placeholder="e.g. Minibar consumption" />
+              </div>
+              <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+                <Button type="button" variant="ghost" onClick={() => setChargeModal(false)}>Cancel</Button>
+                <Button type="submit" className="bg-primary text-white"><Plus className="w-4 h-4 mr-2" /> Post Charge</Button>
+              </div>
+            </form>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+
+      {/* Add Routing Rule Modal */}
+      <Dialog.Root open={!!routingModal} onOpenChange={(o) => !o && setRoutingModal(null)}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50" />
+          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-[#0a0a0f] border border-white/10 rounded-2xl shadow-2xl p-6 z-50">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold text-white">Add Routing Rule</h2>
+              <button onClick={() => setRoutingModal(null)} className="text-white/40 hover:text-white"><X className="w-5 h-5" /></button>
+            </div>
+            <form onSubmit={(e) => {
+              e.preventDefault()
+              const target = folios?.find((f: any) => f.windowNumber === parseInt(routingForm.targetWindow))
+              if (!target) { toast.error('Target window not found'); return }
+              addRoutingMut.mutate({ sourceFolioId: routingModal.id, targetFolioId: target.id, category: routingForm.category })
+              setRoutingModal(null)
+            }} className="space-y-4">
+              <div>
+                <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-2 block">Charge Category to Route</label>
+                <select value={routingForm.category} onChange={e => setRoutingForm({ ...routingForm, category: e.target.value })} className="w-full bg-[#1a1a24] border border-white/10 rounded-lg p-2.5 text-sm text-white">
+                  <option value="ROOM_CHARGE">Room Charge</option>
+                  <option value="MINIBAR">Minibar</option>
+                  <option value="SPA">Spa</option>
+                  <option value="RESTAURANT">Restaurant</option>
+                  <option value="LAUNDRY">Laundry</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-2 block">Target Window Number</label>
+                <Input type="number" min="2" required value={routingForm.targetWindow} onChange={e => setRoutingForm({ ...routingForm, targetWindow: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white" />
+              </div>
+              <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+                <Button type="button" variant="ghost" onClick={() => setRoutingModal(null)}>Cancel</Button>
+                <Button type="submit" className="bg-primary text-white"><MoveRight className="w-4 h-4 mr-2" /> Add Rule</Button>
+              </div>
+            </form>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+
     </div>
   )
 }
