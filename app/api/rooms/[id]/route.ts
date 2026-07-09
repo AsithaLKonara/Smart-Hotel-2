@@ -6,12 +6,7 @@ import { z } from 'zod'
 
 const roomUpdateSchema = z.object({
   number: z.string().min(1, 'Room number is required').optional(),
-  type: z.string().optional(),
-  capacity: z.number().min(1, 'Capacity must be at least 1').optional(),
-  price: z.number().min(0, 'Price must be non-negative').optional(),
-  description: z.string().optional(),
-  amenities: z.array(z.string()).optional(),
-  images: z.array(z.string()).optional(),
+  roomTypeId: z.string().optional(),
   isAvailable: z.boolean().optional(),
   floor: z.number().optional(),
   size: z.number().optional(),
@@ -108,10 +103,11 @@ export async function GET(
 ) {
   try {
     const { id } = await params
-    // Note: Room model doesn't have bookings relation defined in schema
-    // Bookings would need to be fetched separately if needed
     const room = await prisma.room.findUnique({
-      where: { id }
+      where: { id },
+      include: {
+        roomType: true
+      } as any
     })
 
     if (!room) {
@@ -121,7 +117,25 @@ export async function GET(
       )
     }
 
-    return NextResponse.json(room)
+    // Map for legacy frontend
+    const typeInfo = (room as any).roomType || {
+      id: '',
+      name: 'Standard',
+      baseRate: 0,
+      description: '',
+      capacity: 2,
+      amenities: []
+    }
+    
+    return NextResponse.json({
+      ...room,
+      roomTypeId: typeInfo.id,
+      type: typeInfo.name, // keep for backward compat
+      price: typeInfo.baseRate, // keep for backward compat
+      capacity: typeInfo.capacity,
+      description: typeInfo.description,
+      amenities: typeInfo.amenities,
+    })
   } catch (error) {
     console.error('Error fetching room:', error)
     return NextResponse.json(
@@ -166,52 +180,18 @@ export async function PUT(
       }
     }
 
-    // Process RoomType upsert if type is provided
-    let roomTypeId: string | undefined = undefined;
-    if (validatedData.type) {
-      const roomType = await prisma.roomType.upsert({
-        where: { name: validatedData.type },
-        update: {
-          ...(validatedData.price !== undefined && { baseRate: validatedData.price }),
-          ...(validatedData.capacity !== undefined && { capacity: validatedData.capacity }),
-          ...(validatedData.description !== undefined && { description: validatedData.description }),
-          ...(validatedData.amenities !== undefined && { amenities: validatedData.amenities }),
-        },
-        create: {
-          name: validatedData.type,
-          baseRate: validatedData.price || 0,
-          capacity: validatedData.capacity || 2,
-          description: validatedData.description || '',
-          amenities: validatedData.amenities || [],
-        }
-      });
-      roomTypeId = roomType.id;
-    }
-
     const updateData: any = {};
     if (validatedData.number) updateData.number = validatedData.number;
     if (validatedData.floor !== undefined) updateData.floor = validatedData.floor;
     if (validatedData.size !== undefined) updateData.size = validatedData.size;
-    if (validatedData.capacity !== undefined) updateData.capacity = validatedData.capacity;
     if (validatedData.status) updateData.status = validatedData.status;
-    if (roomTypeId) updateData.roomTypeId = roomTypeId;
-    
-    // Handle relational updates for images if provided
-    if (validatedData.images) {
-      updateData.roomImages = {
-        deleteMany: {}, // Simplest approach: clear and recreation for relational images
-        create: validatedData.images.map(url => ({
-          imageUrl: url
-        }))
-      }
-    }
+    if (validatedData.roomTypeId) updateData.roomTypeId = validatedData.roomTypeId;
 
     const room = await prisma.room.update({
       where: { id: id },
       data: updateData,
       include: {
         roomType: true,
-        roomImages: true
       } as any
     })
 

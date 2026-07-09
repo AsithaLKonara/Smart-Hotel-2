@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { canAccessManagerFeatures } from '@/lib/rbac-helpers'
 import { Plus, Edit, Trash2, Search, Filter, Bed, Users, DollarSign, Loader2, Save, X, Image as ImageIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -14,11 +13,17 @@ import { Breadcrumbs } from '@/components/ui/breadcrumbs'
 import toast from 'react-hot-toast'
 import { PremiumSpinner } from '@/components/ui/premium-spinner'
 import { formatPrice } from '@/lib/utils'
-import { ImageUpload } from '@/components/admin/image-upload'
+
+interface RoomType {
+  id: string;
+  name: string;
+  baseRate: number;
+}
 
 interface Room {
   id: string
   number: string
+  roomTypeId: string
   type: string
   price: number
   capacity: number
@@ -34,33 +39,30 @@ export default function AdminRoomsPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [rooms, setRooms] = useState<Room[]>([])
+  const [roomTypes, setRoomTypes] = useState<RoomType[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
   const [filterType, setFilterType] = useState('all')
   const [showModal, setShowModal] = useState(false)
   const [editingRoom, setEditingRoom] = useState<Room | null>(null)
+  
   const [formData, setFormData] = useState({
     number: '',
-    type: '',
-    price: '',
-    capacity: '',
-    description: '',
-    amenities: '',
+    roomTypeId: '',
     floor: '',
     size: '',
     status: 'AVAILABLE',
-    images: [] as string[]
   })
 
   useEffect(() => {
     if (status === 'loading') return
     fetchRooms()
+    fetchRoomTypes()
   }, [status, router])
 
   const fetchRooms = async () => {
     try {
-      // Regular admin pages: 2.5-3.0s timeout
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), 3000)
       const response = await fetch('/api/rooms', {
@@ -72,9 +74,6 @@ export default function AdminRoomsPage() {
       if (!response.ok) throw new Error('Failed to fetch rooms')
       const data = await response.json()
 
-      // Normalise API response shape:
-      // - API currently returns { rooms: [...], count }
-      // - In case of legacy behaviour or unexpected shape, fall back safely to an array
       const roomsArray: Room[] = Array.isArray(data)
         ? data
         : Array.isArray(data?.rooms)
@@ -85,27 +84,35 @@ export default function AdminRoomsPage() {
     } catch (error) {
       console.error('Error fetching rooms:', error)
       toast.error('Failed to load rooms')
-      // Ensure we always reset rooms to a safe default array on error
       setRooms([])
     } finally {
       setLoading(false)
     }
   }
 
+  const fetchRoomTypes = async () => {
+    try {
+      const response = await fetch('/api/room-types')
+      if (!response.ok) return;
+      const data = await response.json()
+      setRoomTypes(data || [])
+    } catch (error) {
+      console.error('Error fetching room types:', error)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
+    if (!formData.roomTypeId) {
+      toast.error("Please select a Room Type");
+      return;
+    }
+
     try {
-      const amenitiesArray = formData.amenities.split(',').map(a => a.trim()).filter(Boolean)
-      
       const roomData = {
         number: formData.number,
-        type: formData.type,
-        price: parseFloat(formData.price),
-        capacity: parseInt(formData.capacity),
-        description: formData.description || undefined,
-        amenities: amenitiesArray,
-        images: formData.images,
+        roomTypeId: formData.roomTypeId,
         status: formData.status,
         floor: formData.floor ? parseInt(formData.floor) : undefined,
         size: formData.size ? parseInt(formData.size) : undefined
@@ -120,16 +127,19 @@ export default function AdminRoomsPage() {
         body: JSON.stringify(roomData)
       })
 
-      if (!response.ok) throw new Error(editingRoom ? 'Failed to update room' : 'Failed to create room')
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || (editingRoom ? 'Failed to update room' : 'Failed to create room'))
+      }
 
       toast.success(editingRoom ? 'Room updated successfully' : 'Room created successfully')
       setShowModal(false)
       setEditingRoom(null)
       resetForm()
       fetchRooms()
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving room:', error)
-      toast.error(editingRoom ? 'Failed to update room' : 'Failed to create room')
+      toast.error(error.message || 'Failed to save room')
     }
   }
 
@@ -137,15 +147,10 @@ export default function AdminRoomsPage() {
     setEditingRoom(room)
     setFormData({
       number: room.number,
-      type: room.type,
-      price: room.price.toString(),
-      capacity: room.capacity.toString(),
-      description: room.description || '',
-      amenities: room.amenities.join(', '),
+      roomTypeId: room.roomTypeId || '',
       floor: room.floor?.toString() || '',
       size: room.size?.toString() || '',
       status: room.status,
-      images: room.images || []
     })
     setShowModal(true)
   }
@@ -171,19 +176,13 @@ export default function AdminRoomsPage() {
   const resetForm = () => {
     setFormData({
       number: '',
-      type: '',
-      price: '',
-      capacity: '',
-      description: '',
-      amenities: '',
+      roomTypeId: '',
       floor: '',
       size: '',
       status: 'AVAILABLE',
-      images: []
     })
   }
 
-  // Guard against any unexpected non-array state at runtime
   const safeRoomsArray = Array.isArray(rooms) ? rooms : []
 
   const filteredRooms = safeRoomsArray.filter(room => {
@@ -226,11 +225,17 @@ export default function AdminRoomsPage() {
         ]}
         className="mb-4"
       />
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">Room Management</h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          Manage hotel rooms, pricing, and availability
-        </p>
+      <div className="mb-6 flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">Room Directory</h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            Manage physical rooms and their availability
+          </p>
+        </div>
+        <Button onClick={() => router.push('/admin/room-types')} variant="outline" className="mr-2 border-primary/30 text-primary">
+          <ImageIcon className="w-4 h-4 mr-2" />
+          Manage Room Types
+        </Button>
       </div>
 
       {/* Filters and Actions */}
@@ -243,14 +248,14 @@ export default function AdminRoomsPage() {
               placeholder="Search rooms..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2 border rounded-lg w-full focus:ring-2 focus:ring-primary-500"
+              className="pl-10 pr-4 py-2 border rounded-lg w-full focus:ring-2 focus:ring-primary-500 bg-black/40 text-white"
             />
           </div>
 
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
+            className="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 bg-black/40 text-white"
           >
             <option value="all">All Status</option>
             <option value="AVAILABLE">Available</option>
@@ -262,13 +267,12 @@ export default function AdminRoomsPage() {
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
-            className="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
+            className="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 bg-black/40 text-white"
           >
             <option value="all">All Types</option>
-            <option value="standard">Standard</option>
-            <option value="deluxe">Deluxe</option>
-            <option value="suite">Suite</option>
-            <option value="presidential">Presidential</option>
+            {roomTypes.map(rt => (
+              <option key={rt.id} value={rt.name.toLowerCase()}>{rt.name}</option>
+            ))}
           </select>
         </div>
 
@@ -287,61 +291,61 @@ export default function AdminRoomsPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <Card>
+        <Card className="bg-[#0f0f13] border-white/5">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Total Rooms</p>
-                <p className="text-2xl font-bold">{rooms.length}</p>
+                <p className="text-sm text-gray-400">Total Rooms</p>
+                <p className="text-2xl font-bold text-white">{rooms.length}</p>
               </div>
-              <Bed className="w-8 h-8 text-primary-600" />
+              <Bed className="w-8 h-8 text-primary/60" />
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-[#0f0f13] border-white/5">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Available</p>
-                <p className="text-2xl font-bold text-green-600">
+                <p className="text-sm text-gray-400">Available</p>
+                <p className="text-2xl font-bold text-emerald-400">
                   {rooms.filter(r => r.status === 'AVAILABLE').length}
                 </p>
               </div>
-              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                <Bed className="w-5 h-5 text-green-600" />
+              <div className="w-8 h-8 bg-emerald-500/10 rounded-full flex items-center justify-center">
+                <Bed className="w-5 h-5 text-emerald-500" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-[#0f0f13] border-white/5">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Occupied</p>
-                <p className="text-2xl font-bold text-blue-600">
+                <p className="text-sm text-gray-400">Occupied</p>
+                <p className="text-2xl font-bold text-blue-400">
                   {rooms.filter(r => r.status === 'OCCUPIED').length}
                 </p>
               </div>
-              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                <Users className="w-5 h-5 text-blue-600" />
+              <div className="w-8 h-8 bg-blue-500/10 rounded-full flex items-center justify-center">
+                <Users className="w-5 h-5 text-blue-500" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-[#0f0f13] border-white/5">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Maintenance</p>
-                <p className="text-2xl font-bold text-red-600">
+                <p className="text-sm text-gray-400">Maintenance</p>
+                <p className="text-2xl font-bold text-rose-400">
                   {rooms.filter(r => r.status === 'MAINTENANCE').length}
                 </p>
               </div>
-              <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
-                <Bed className="w-5 h-5 text-red-600" />
+              <div className="w-8 h-8 bg-rose-500/10 rounded-full flex items-center justify-center">
+                <Bed className="w-5 h-5 text-rose-500" />
               </div>
             </div>
           </CardContent>
@@ -349,71 +353,43 @@ export default function AdminRoomsPage() {
       </div>
 
       {/* Rooms Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {filteredRooms.map((room) => (
-          <Card key={room.id} className="hover:shadow-lg transition-shadow">
-            <CardHeader className="pb-3">
-              <div className="aspect-video w-full overflow-hidden rounded-md bg-gray-100 mb-3">
-                {room.images && room.images.length > 0 ? (
-                  <Image 
-                    src={room.images[0]} 
-                    alt={`Room ${room.number}`}
-                    width={400}
-                    height={300}
-                    className="w-full h-full object-cover transition-transform hover:scale-105"
-                  />
-                ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center text-gray-400">
-                    <ImageIcon className="w-8 h-8 mb-1" />
-                    <span className="text-xs">No image</span>
-                  </div>
-                )}
-              </div>
+          <Card key={room.id} className="hover:shadow-lg transition-shadow bg-[#0f0f13] border-white/5">
+            <CardHeader className="pb-3 border-b border-white/5">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">Room {room.number}</CardTitle>
+                <CardTitle className="text-lg text-white">Room {room.number}</CardTitle>
                 <Badge className={getStatusColor(room.status)}>
                   {room.status}
                 </Badge>
               </div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">{room.type}</p>
+              <p className="text-sm text-slate-400">{room.type}</p>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-3">
               <div className="space-y-3">
                 <div className="flex items-center justify-between text-sm">
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-primary-600">{formatPrice(room.price)}/night</span>
+                    <span className="font-semibold text-emerald-400">{formatPrice(room.price)}</span>
+                    <span className="text-xs text-slate-500">/night</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4 text-gray-500" />
-                    <span>{room.capacity} guests</span>
+                    <Users className="w-4 h-4 text-slate-500" />
+                    <span className="text-slate-300">{room.capacity}</span>
                   </div>
                 </div>
 
-                {room.size && (
-                  <p className="text-sm text-gray-600">Size: {room.size}m²</p>
-                )}
-
-                {room.amenities.length > 0 && (
-                  <div className="flex flex-wrap gap-1">
-                    {room.amenities.slice(0, 3).map((amenity, idx) => (
-                      <Badge key={idx} variant="secondary" className="text-xs">
-                        {amenity}
-                      </Badge>
-                    ))}
-                    {room.amenities.length > 3 && (
-                      <Badge variant="secondary" className="text-xs">
-                        +{room.amenities.length - 3}
-                      </Badge>
-                    )}
-                  </div>
-                )}
+                <div className="text-xs text-slate-500">
+                  {room.floor !== undefined && <span>Floor {room.floor}</span>}
+                  {room.floor !== undefined && room.size !== undefined && <span> &bull; </span>}
+                  {room.size !== undefined && <span>{room.size} m²</span>}
+                </div>
 
                 <div className="flex gap-2 pt-2">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => handleEdit(room)}
-                    className="flex-1"
+                    className="flex-1 border-white/10 text-slate-300 hover:text-white"
                   >
                     <Edit className="w-4 h-4 mr-1" />
                     Edit
@@ -422,7 +398,7 @@ export default function AdminRoomsPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => handleDelete(room.id)}
-                    className="flex-1 text-red-600 hover:text-red-700"
+                    className="flex-1 border-rose-500/20 text-rose-400 hover:bg-rose-500/10 hover:text-rose-300"
                   >
                     <Trash2 className="w-4 h-4 mr-1" />
                     Delete
@@ -435,10 +411,10 @@ export default function AdminRoomsPage() {
       </div>
 
       {filteredRooms.length === 0 && (
-        <Card className="p-12 text-center">
-          <Bed className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-          <h3 className="text-xl font-semibold mb-2">No rooms found</h3>
-          <p className="text-gray-600 dark:text-gray-400 mb-4">
+        <Card className="p-12 text-center bg-[#0f0f13] border-white/5">
+          <Bed className="w-16 h-16 mx-auto text-slate-600 mb-4" />
+          <h3 className="text-xl font-semibold text-white mb-2">No rooms found</h3>
+          <p className="text-slate-400 mb-4">
             {searchTerm || filterStatus !== 'all' || filterType !== 'all'
               ? 'Try adjusting your filters'
               : 'Get started by adding your first room'}
@@ -454,179 +430,110 @@ export default function AdminRoomsPage() {
 
       {/* Add/Edit Room Modal */}
       <Modal
-        open={showModal}
+        isOpen={showModal}
         onClose={() => {
           setShowModal(false)
           setEditingRoom(null)
           resetForm()
         }}
         title={editingRoom ? 'Edit Room' : 'Add New Room'}
-        maxWidth="2xl"
       >
         <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Room Number *
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.number}
-                      onChange={(e) => setFormData({ ...formData, number: e.target.value })}
-                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
-                      required
-                    />
-                  </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5 block">
+                Room Number *
+              </label>
+              <input
+                type="text"
+                value={formData.number}
+                onChange={(e) => setFormData({ ...formData, number: e.target.value })}
+                className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-primary/50 text-sm"
+                required
+              />
+            </div>
 
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Room Type *
-                    </label>
-                    <select
-                      value={formData.type}
-                      onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
-                      required
-                    >
-                      <option value="">Select type</option>
-                      <option value="Standard">Standard</option>
-                      <option value="Deluxe">Deluxe</option>
-                      <option value="Suite">Suite</option>
-                      <option value="Presidential">Presidential</option>
-                    </select>
-                  </div>
-                </div>
+            <div>
+              <label className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5 block">
+                Room Type *
+              </label>
+              <select
+                value={formData.roomTypeId}
+                onChange={(e) => setFormData({ ...formData, roomTypeId: e.target.value })}
+                className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-primary/50 text-sm"
+                required
+              >
+                <option value="">Select type</option>
+                {roomTypes.map(rt => (
+                  <option key={rt.id} value={rt.id}>{rt.name}</option>
+                ))}
+              </select>
+            </div>
+          </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Price per Night *
-                    </label>
-                    <input
-                      type="number"
-                      value={formData.price}
-                      onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
-                      required
-                      min="0"
-                      step="0.01"
-                    />
-                  </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5 block">
+                Floor
+              </label>
+              <input
+                type="number"
+                value={formData.floor}
+                onChange={(e) => setFormData({ ...formData, floor: e.target.value })}
+                className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-primary/50 text-sm"
+                min="0"
+              />
+            </div>
 
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Capacity (Guests) *
-                    </label>
-                    <input
-                      type="number"
-                      value={formData.capacity}
-                      onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
-                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
-                      required
-                      min="1"
-                    />
-                  </div>
-                </div>
+            <div>
+              <label className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5 block">
+                Size (m²)
+              </label>
+              <input
+                type="number"
+                value={formData.size}
+                onChange={(e) => setFormData({ ...formData, size: e.target.value })}
+                className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-primary/50 text-sm"
+                min="0"
+              />
+            </div>
+          </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Floor
-                    </label>
-                    <input
-                      type="number"
-                      value={formData.floor}
-                      onChange={(e) => setFormData({ ...formData, floor: e.target.value })}
-                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
-                      min="0"
-                    />
-                  </div>
+          <div>
+            <label className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5 block">
+              Status *
+            </label>
+            <select
+              value={formData.status}
+              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+              className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-primary/50 text-sm"
+              required
+            >
+              <option value="AVAILABLE">Available</option>
+              <option value="OCCUPIED">Occupied</option>
+              <option value="MAINTENANCE">Maintenance</option>
+              <option value="RESERVED">Reserved</option>
+            </select>
+          </div>
 
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Size (m²)
-                    </label>
-                    <input
-                      type="number"
-                      value={formData.size}
-                      onChange={(e) => setFormData({ ...formData, size: e.target.value })}
-                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
-                      min="0"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Status *
-                  </label>
-                  <select
-                    value={formData.status}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
-                    required
-                  >
-                    <option value="AVAILABLE">Available</option>
-                    <option value="OCCUPIED">Occupied</option>
-                    <option value="MAINTENANCE">Maintenance</option>
-                    <option value="RESERVED">Reserved</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Description
-                  </label>
-                  <textarea
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
-                    rows={3}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-3">
-                    Room Images
-                  </label>
-                  <ImageUpload 
-                    value={formData.images}
-                    onChange={(urls) => setFormData({ ...formData, images: urls })}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Amenities (comma-separated)
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.amenities}
-                    onChange={(e) => setFormData({ ...formData, amenities: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
-                    placeholder="WiFi, TV, Mini Bar, Air Conditioning"
-                  />
-                </div>
-
-                <div className="flex gap-3 pt-4">
-                  <Button type="submit" className="flex-1">
-                    <Save className="w-4 h-4 mr-2" />
-                    {editingRoom ? 'Update Room' : 'Create Room'}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      setShowModal(false)
-                      setEditingRoom(null)
-                      resetForm()
-                    }}
-                    className="flex-1"
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </form>
+          <div className="flex justify-end gap-3 pt-4 border-t border-white/5 mt-6">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => {
+                setShowModal(false)
+                setEditingRoom(null)
+                resetForm()
+              }}
+              className="text-slate-400 hover:text-white hover:bg-white/5"
+            >
+              Cancel
+            </Button>
+            <Button type="submit" className="bg-primary hover:bg-primary/90 text-white min-w-[100px]">
+              {editingRoom ? 'Update Room' : 'Create Room'}
+            </Button>
+          </div>
+        </form>
       </Modal>
     </div>
   )
