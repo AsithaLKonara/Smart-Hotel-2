@@ -176,6 +176,7 @@ model Booking {
   @@index([primaryGuestId, paymentStatus])
   @@index([source, status])
   @@index([status, checkIn, checkOut])
+  @@unique([source, otaReference])
 }
 
 model Event {

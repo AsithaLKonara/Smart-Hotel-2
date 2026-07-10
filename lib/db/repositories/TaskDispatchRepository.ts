@@ -1,5 +1,4 @@
-import { PoolClient } from 'pg'
-import { DatabaseClient } from '../database-client'
+import { DatabaseClient, SqlTransactionClient } from '../database-client'
 
 export interface TaskRecord {
   id: string
@@ -21,7 +20,7 @@ export interface TaskRecord {
 
 export class TaskDispatchRepository {
   // Create task in persistent database
-  static async createTask(task: TaskRecord, client: PoolClient): Promise<void> {
+  static async createTask(task: TaskRecord, client: SqlTransactionClient): Promise<void> {
     await client.query(`
       INSERT INTO operational_tasks (id, property_id, domain, priority, state, title, description, location, assigned_staff_id, sla_minutes, created_at)
       VALUES ($1, $2, $3, $4, 'CREATED', $5, $6, $7, '', $8, $9)
@@ -29,7 +28,7 @@ export class TaskDispatchRepository {
   }
 
   // Dispatch task to operator
-  static async dispatchTask(id: string, assignedStaffId: string, client: PoolClient): Promise<void> {
+  static async dispatchTask(id: string, assignedStaffId: string, client: SqlTransactionClient): Promise<void> {
     const timestamp = new Date().toISOString()
     await client.query(`
       UPDATE operational_tasks 
@@ -39,7 +38,7 @@ export class TaskDispatchRepository {
   }
 
   // Record task accepted state
-  static async acceptTask(id: string, client: PoolClient): Promise<void> {
+  static async acceptTask(id: string, client: SqlTransactionClient): Promise<void> {
     await client.query(`
       UPDATE operational_tasks 
       SET state = 'ACCEPTED'
@@ -48,7 +47,7 @@ export class TaskDispatchRepository {
   }
 
   // Complete task locking compliance evidence and GPS signatures
-  static async completeTask(id: string, evidenceUrl: string, gpsLocation: string, client: PoolClient): Promise<void> {
+  static async completeTask(id: string, evidenceUrl: string, gpsLocation: string, client: SqlTransactionClient): Promise<void> {
     const timestamp = new Date().toISOString()
     const res = await client.query(`
       UPDATE operational_tasks 
@@ -62,7 +61,7 @@ export class TaskDispatchRepository {
   }
 
   // Escalate breached task
-  static async escalateTask(id: string, reason: string, client: PoolClient): Promise<void> {
+  static async escalateTask(id: string, reason: string, client: SqlTransactionClient): Promise<void> {
     await client.query(`
       UPDATE operational_tasks 
       SET state = 'SLA_BREACHED', priority = 'VIP_CRITICAL', assigned_staff_id = 'supervisor_on_duty'

@@ -1,5 +1,4 @@
-import { PoolClient } from 'pg'
-import { DatabaseClient } from '../database-client'
+import { DatabaseClient, SqlTransactionClient } from '../database-client'
 
 export interface LedgerLine {
   accountCode: string
@@ -9,7 +8,7 @@ export interface LedgerLine {
 
 export class LedgerRepository {
   // Ensure that account posting does not write into locked/frozen periods
-  static async checkPeriodLock(propertyId: string, businessDate: string, client: PoolClient): Promise<void> {
+  static async checkPeriodLock(propertyId: string, businessDate: string, client: SqlTransactionClient): Promise<void> {
     const res = await client.query(`
       SELECT 1 FROM financial_period_locks 
       WHERE property_id = $1 AND business_date = $2 AND is_locked = TRUE
@@ -27,7 +26,7 @@ export class LedgerRepository {
     businessDate: string,
     description: string,
     lines: LedgerLine[],
-    client: PoolClient
+    client: SqlTransactionClient
   ): Promise<void> {
     // 1. Enforce period locking invariants
     await this.checkPeriodLock(propertyId, businessDate, client)
@@ -59,7 +58,7 @@ export class LedgerRepository {
   }
 
   // Calculate balance totals for audits
-  static async getAccountBalance(propertyId: string, accountCode: string, client?: PoolClient): Promise<number> {
+  static async getAccountBalance(propertyId: string, accountCode: string, client?: SqlTransactionClient): Promise<number> {
     const query = `
       SELECT COALESCE(SUM(debit - credit), 0) as balance 
       FROM ledger_entries le

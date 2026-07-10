@@ -1,4 +1,4 @@
-import { PoolClient } from 'pg'
+import { SqlTransactionClient } from '../db/database-client'
 import { MessageBroker } from './message-broker'
 import prisma from '../db'
 import { DomainEventType } from './domain-events'
@@ -24,7 +24,7 @@ export class OutboxPublisher {
   }
 
   // Polls pending outbox queue, publishes to broker, and transitions statuses atomically
-  static async processOutboxBatch(client: PoolClient, limit: number = 10): Promise<number> {
+  static async processOutboxBatch(client: SqlTransactionClient, limit: number = 10): Promise<number> {
     // 1. Fetch pending outbox records
     const res = await client.query(`
       SELECT outbox_id, event_type, payload, metadata, retry_count

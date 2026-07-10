@@ -2,8 +2,8 @@
 
 | ID | Priority | Status | Owner | Title |
 |---|---|---|---|---|
-| [DB-001](database/DB-001.md) | Sprint 1 | Open | Unassigned | PostgreSQL / MongoDB Configuration Mismatch |
-| [DB-002](database/DB-002.md) | Sprint 2 | Open | Unassigned | Dual Connection Pooling (Prisma + raw pg) |
+| [DB-001](database/DB-001.md) | Sprint 1 | Resolved | Antigravity | PostgreSQL / MongoDB Configuration Mismatch |
+| [DB-002](database/DB-002.md) | Sprint 2 | Resolved | Antigravity | Dual Connection Pooling (Prisma + raw pg) |
 | [DB-003](database/DB-003.md) | Sprint 1 | Open | Unassigned | Missing OTA Idempotency Constraints |
 | [DB-004](database/DB-004.md) | Sprint 2 | Open | Unassigned | Missing Overlapping Assignments Constraints |
 | [DB-005](database/DB-005.md) | Sprint 2 | Open | Unassigned | Missing Transactions for Outbox/Events |

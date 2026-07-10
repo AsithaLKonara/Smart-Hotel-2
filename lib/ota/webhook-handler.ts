@@ -118,6 +118,11 @@ export async function processOtaReservation(payload: OtaReservationPayload) {
     });
 
   } catch (error: any) {
+    if (error.code === 'P2002') {
+      log.info('Idempotent OTA Reservation (Duplicate Detected)', { ota_reservation_code });
+      return { status: 'IGNORED', reason: 'DUPLICATE' };
+    }
+
     log.error('OTA Reservation Processing Failed', { error: error.message, ota_reservation_code });
     
     await prisma.syncLog.create({

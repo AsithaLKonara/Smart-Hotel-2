@@ -1,4 +1,4 @@
-import { PoolClient } from 'pg'
+import { SqlTransactionClient } from '../db/database-client'
 import { EventStoreRepository } from '../db/repositories/EventStoreRepository'
 
 export interface IncomingMessage {
@@ -12,8 +12,8 @@ export class InboxConsumer {
   // Consumes incoming stream messages idempotently, suppressing duplicates and saving message IDs
   static async consumeIdempotently(
     msg: IncomingMessage,
-    client: PoolClient,
-    handler: (payload: any, client: PoolClient) => Promise<void>
+    client: SqlTransactionClient,
+    handler: (payload: any, client: SqlTransactionClient) => Promise<void>
   ): Promise<boolean> {
     // 1. Audit deduplication inbox cache
     const alreadyProcessed = await EventStoreRepository.hasProcessedMessage(

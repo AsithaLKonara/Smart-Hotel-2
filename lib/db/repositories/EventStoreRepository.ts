@@ -1,5 +1,4 @@
-import { PoolClient } from 'pg'
-import { DatabaseClient } from '../database-client'
+import { DatabaseClient, SqlTransactionClient } from '../database-client'
 
 export interface EventRecord {
   eventId: string
@@ -14,7 +13,7 @@ export interface EventRecord {
 
 export class EventStoreRepository {
   // Check if message has already been processed by the Inbox (Idempotency Audit)
-  static async hasProcessedMessage(messageId: string, consumerGroup: string, client?: PoolClient): Promise<boolean> {
+  static async hasProcessedMessage(messageId: string, consumerGroup: string, client?: SqlTransactionClient): Promise<boolean> {
     const query = `
       SELECT 1 FROM transactional_inbox 
       WHERE message_id = $1 AND consumer_group = $2
@@ -33,7 +32,7 @@ export class EventStoreRepository {
   }
 
   // Register message processed inside the Inbox
-  static async registerInboxMessage(messageId: string, consumerGroup: string, client: PoolClient): Promise<void> {
+  static async registerInboxMessage(messageId: string, consumerGroup: string, client: SqlTransactionClient): Promise<void> {
     await client.query(`
       INSERT INTO transactional_inbox (message_id, consumer_group, processed_at)
       VALUES ($1, $2, NOW())
@@ -46,7 +45,7 @@ export class EventStoreRepository {
     tenantId: string,
     expectedSequence: number,
     events: Array<{ eventId: string; eventType: string; payload: any; metadata: any }>,
-    client: PoolClient
+    client: SqlTransactionClient
   ): Promise<void> {
     // 1. Validate Optimistic Concurrency Control (OCC)
     const maxSeqRes = await client.query(`
@@ -82,7 +81,7 @@ export class EventStoreRepository {
   }
 
   // Load events for a stream (re-projection source)
-  static async loadStream(streamId: string, tenantId: string, client?: PoolClient): Promise<EventRecord[]> {
+  static async loadStream(streamId: string, tenantId: string, client?: SqlTransactionClient): Promise<EventRecord[]> {
     const query = `
       SELECT event_id, stream_id, tenant_id, sequence_number, event_type, payload, metadata, created_at
       FROM operational_event_journal
