@@ -53,3 +53,36 @@
 | [CFG-003](configuration/CFG-003.md) | Sprint 3 | Open | Unassigned | Optional Variables Incorrectly Required |
 | [CFG-004](configuration/CFG-004.md) | Sprint 1 | Open | Unassigned | Unsafe System Defaults (Cron, Groq) |
 | [CFG-005](configuration/CFG-005.md) | Sprint 4 | Open | Unassigned | Differing Development vs. Production Behavior |
+
+
+
+
+Audit the implementation of API-006.
+
+Do not trust previous work.
+
+Use codebase-memory-mcp.
+
+Verify:
+
+✓ Root cause removed
+
+✓ No regression
+
+✓ No duplicated logic
+
+✓ Types updated
+
+✓ APIs compatible
+
+✓ Database consistent
+
+✓ Documentation updated
+
+✓ Tests updated
+
+If anything remains,
+
+list remaining problems.
+
+Do not modify code.
