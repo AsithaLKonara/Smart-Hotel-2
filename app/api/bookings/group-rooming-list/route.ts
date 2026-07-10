@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client'
 import { z } from 'zod'
 import { parse } from 'csv-parse/sync'
 import { getRequestSession } from '@/lib/session'
+import { getEffectivePropertyId } from '@/lib/server-rbac'
 import { realtime } from '@/lib/realtime'
 
 const prisma = new PrismaClient()
@@ -34,6 +35,11 @@ export async function POST(req: NextRequest) {
         { error: 'File and groupBlockId are required' },
         { status: 400 }
       )
+    }
+
+    const propertyId = await getEffectivePropertyId(req)
+    if (!propertyId) {
+      return NextResponse.json({ error: 'Property ID could not be resolved' }, { status: 400 })
     }
 
     // 1. Verify Group Block exists
@@ -109,7 +115,8 @@ export async function POST(req: NextRequest) {
               email: row.email || `${row.firstName.toLowerCase()}.${row.lastName.toLowerCase()}.${Math.random().toString(36).substring(7)}@guest.smarthotel.local`,
               phone: row.phone,
               password: 'CHANGE_ME_123',
-              roleId: 'GUEST_ROLE_MOCK' // In real app, look up the GUEST role ID
+              roleId: 'GUEST_ROLE_MOCK', // In real app, look up the GUEST role ID
+              propertyId: propertyId
             }
           })
         }
@@ -124,7 +131,8 @@ export async function POST(req: NextRequest) {
             groupBlockId: groupBlock.id,
             totalAmount: groupBlock.contractedRate,
             paymentStatus: 'pending',
-            confirmationCode: `GRP-${Math.random().toString(36).substring(2, 8).toUpperCase()}`
+            confirmationCode: `GRP-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
+            propertyId: propertyId
           }
         })
         createdCount++

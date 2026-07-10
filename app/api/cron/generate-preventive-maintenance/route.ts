@@ -23,7 +23,7 @@ export async function GET(req: Request) {
 
     // Find all rooms
     const rooms = await prisma.room.findMany({
-      select: { id: true, number: true }
+      select: { id: true, number: true, propertyId: true }
     })
 
     const generatedTasks = []
@@ -47,7 +47,8 @@ export async function GET(req: Request) {
             type: 'MAINTENANCE',
             priority: 'MEDIUM',
             status: 'PENDING',
-            roomId: room.id
+            roomId: room.id,
+            propertyId: room.propertyId
           }
         })
         generatedTasks.push(newTask.id)

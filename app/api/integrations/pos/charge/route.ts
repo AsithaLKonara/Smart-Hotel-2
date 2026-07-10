@@ -25,21 +25,21 @@ export async function POST(req: Request) {
     const validated = PosChargeSchema.parse(body)
 
     // Verify room and guest
-    const room = await prisma.room.findUnique({
+    const room = await prisma.room.findFirst({
       where: { number: validated.roomNumber },
       include: {
-        stays: {
+        roomAssignments: {
           where: { status: 'CHECKED_IN' },
           include: { booking: { include: { guest: true, folios: true } } }
         }
       }
     })
 
-    if (!room || room.stays.length === 0) {
+    if (!room || room.roomAssignments.length === 0) {
       return NextResponse.json({ error: 'Room is not checked in' }, { status: 400 })
     }
 
-    const currentStay = room.stays[0]
+    const currentStay = room.roomAssignments[0]
     const guest = currentStay.booking.guest
 
     // Simple verification (in real system, check fuzzy matching or strict ID)

@@ -44,7 +44,8 @@ export async function POST(
     const newFolio = await prisma.folio.create({
       data: {
         bookingId: folio.bookingId,
-        status: 'OPEN'
+        status: 'OPEN',
+        propertyId: folio.propertyId
       }
     })
 

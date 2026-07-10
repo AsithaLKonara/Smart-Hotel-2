@@ -26,6 +26,9 @@ test.describe('🧬 Security Audit - Ownership & Cross-User Isolation', () => {
       where: { email: 'guestB@example.com' }
     })
     if (!guestB) {
+      const property = await prisma.property.findFirst()
+      if (!property) throw new Error('No property found in DB')
+      
       guestB = await prisma.user.create({
         data: {
           name: 'Guest B Isolation Test',
@@ -33,6 +36,7 @@ test.describe('🧬 Security Audit - Ownership & Cross-User Isolation', () => {
           password: hashedPassword,
           phone: '0987654321',
           role: { connect: { name: 'GUEST' } },
+          propertyId: property.id,
           createdAt: new Date(),
           updatedAt: new Date()
         }
@@ -53,8 +57,8 @@ test.describe('🧬 Security Audit - Ownership & Cross-User Isolation', () => {
       }
       bookingA = await prisma.booking.create({
         data: {
-          roomId: room.id,
           primaryGuestId: guestA.id,
+          propertyId: room.propertyId,
           checkIn: new Date(),
           checkOut: new Date(Date.now() + 24 * 60 * 60 * 1000),
           guests: 2,

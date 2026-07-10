@@ -48,13 +48,13 @@ model Room {
   deletedAt             DateTime?
   createdAt             DateTime               @default(now())
   updatedAt             DateTime               @updatedAt
-  propertyId            String?
+  propertyId            String
   ownerId               String?
   feedback              Feedback[]
   internalOrders        InternalOrder[]
   maintenanceWorkOrders MaintenanceWorkOrder[]
   outOfOrderRecords     OutOfOrderRecord[]
-  property              Property?              @relation(fields: [propertyId], references: [id])
+  property              Property               @relation(fields: [propertyId], references: [id])
   roomType              RoomType               @relation(fields: [roomTypeId], references: [id])
   roomAssignments       RoomAssignment[]
   roomImages            RoomImage[]
@@ -156,11 +156,11 @@ model Booking {
   deletedAt           DateTime?
   createdAt           DateTime         @default(now())
   updatedAt           DateTime         @updatedAt
-  propertyId          String?
+  propertyId          String
   groupBlockId        String?
   groupBlock          GroupBlock?      @relation(fields: [groupBlockId], references: [id])
   guest               User             @relation("PrimaryGuest", fields: [primaryGuestId], references: [id])
-  property            Property?        @relation(fields: [propertyId], references: [id])
+  property            Property         @relation(fields: [propertyId], references: [id])
   additionalGuests    BookingGuest[]
   complaints          Complaint[]
   feedback            Feedback[]
@@ -319,10 +319,10 @@ model Folio {
   createdAt          DateTime        @default(now())
   updatedAt          DateTime        @updatedAt
   deletedAt          DateTime?
-  propertyId         String?
+  propertyId         String
   booking            Booking?        @relation(fields: [bookingId], references: [id], onDelete: Cascade)
   company            CompanyProfile? @relation(fields: [companyId], references: [id])
-  property           Property?       @relation(fields: [propertyId], references: [id])
+  property           Property        @relation(fields: [propertyId], references: [id])
   lineItems          FolioLineItem[]
   internalOrders     InternalOrder[]
   payments           Payment[]
@@ -407,11 +407,11 @@ model Task {
   verifiedAt       DateTime?
   elapsedMinutes   Int?
   deletedAt        DateTime?
-  propertyId       String?
+  propertyId       String
   assignedEmployee Employee?  @relation("EmployeeTasks", fields: [assignedTo], references: [id])
   booking          Booking?   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
   creator          User?      @relation("CreatedTasks", fields: [createdBy], references: [id])
-  property         Property?  @relation(fields: [propertyId], references: [id])
+  property         Property   @relation(fields: [propertyId], references: [id])
   room             Room?      @relation(fields: [roomId], references: [id])
 
   @@index([assignedTo])
@@ -541,7 +541,7 @@ model User {
   blacklistReason    String?
   corporateAccountId String?
   travelAgentId      String?
-  propertyId         String?
+  propertyId         String
   auditLogs          AuditLog[]
   guestBookings      Booking[]           @relation("PrimaryGuest")
   complaints         Complaint[]
@@ -560,7 +560,7 @@ model User {
   tableBookings      TableBooking[]
   createdTasks       Task[]              @relation("CreatedTasks")
   corporateAccount   CorporateAccount?   @relation(fields: [corporateAccountId], references: [id])
-  property           Property?           @relation(fields: [propertyId], references: [id])
+  property           Property            @relation(fields: [propertyId], references: [id])
   role               Role?               @relation(fields: [roleId], references: [id])
   travelAgent        TravelAgent?        @relation(fields: [travelAgentId], references: [id])
 
