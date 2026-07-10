@@ -34,7 +34,7 @@ model RoomType {
 model Room {
   id                    String                 @id @default(uuid())
   version               Int                    @default(1)
-  number                String                 @unique
+  number                String
   floor                 Int
   capacity              Int                    @default(2)
   size                  Int                    @default(25)
@@ -64,6 +64,8 @@ model Room {
 
   @@index([status])
   @@index([roomTypeId])
+  @@index([propertyId])
+  @@index([number])
 }
 
 model RoomStatusHistory {
@@ -130,14 +132,14 @@ model Stay {
   checkOutTime DateTime?
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
-  booking      Booking    @relation(fields: [bookingId], references: [id])
+  booking      Booking    @relation(fields: [bookingId], references: [id], onDelete: Cascade)
   room         Room       @relation(fields: [roomId], references: [id])
 }
 
 model Booking {
   id                  String           @id @default(uuid())
   version             Int              @default(1)
-  confirmationCode    String           @unique
+  confirmationCode    String
   checkIn             DateTime         @db.Date
   checkOut            DateTime         @db.Date
   status              BookingStatus    @default(CONFIRMED)
@@ -149,7 +151,7 @@ model Booking {
   paymentStatus       PaymentStatus    @default(unpaid)
   paymentMethod       String?
   paymentProvider     String?
-  checkoutRequestId   String?          @unique
+  checkoutRequestId   String?
   checkoutFinalizedAt DateTime?
   deletedAt           DateTime?
   createdAt           DateTime         @default(now())
@@ -176,7 +178,9 @@ model Booking {
   @@index([primaryGuestId, paymentStatus])
   @@index([source, status])
   @@index([status, checkIn, checkOut])
-  @@unique([source, otaReference])
+  @@index([source, otaReference])
+  @@index([confirmationCode])
+  @@index([checkoutRequestId])
 }
 
 model Event {
@@ -206,7 +210,7 @@ model BookingGuest {
   phone     String?
   identity  String?
   isMinor   Boolean @default(false)
-  booking   Booking @relation(fields: [bookingId], references: [id])
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 }
 
 model RoomAssignment {
@@ -218,7 +222,7 @@ model RoomAssignment {
   status    String   @default("ACTIVE")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  booking   Booking  @relation(fields: [bookingId], references: [id])
+  booking   Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
   room      Room     @relation(fields: [roomId], references: [id])
 
   @@index([bookingId])
@@ -232,7 +236,7 @@ model StayEvent {
   timestamp DateTime @default(now())
   notes     String?
   actorId   String?
-  booking   Booking  @relation(fields: [bookingId], references: [id])
+  booking   Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
   @@index([bookingId])
 }
@@ -272,7 +276,7 @@ model Payment {
   currency        String                @default("LKR")
   paymentMethod   PaymentMethod         @default(card)
   paymentProvider String?
-  providerId      String?               @unique
+  providerId      String?
   status          PaymentStatus         @default(pending)
   capturedAt      DateTime?
   refundedAt      DateTime?
@@ -280,7 +284,7 @@ model Payment {
   createdAt       DateTime              @default(now())
   updatedAt       DateTime              @updatedAt
   adjustments     FinancialAdjustment[]
-  booking         Booking?              @relation(fields: [bookingId], references: [id])
+  booking         Booking?              @relation(fields: [bookingId], references: [id], onDelete: Cascade)
   folio           Folio?                @relation(fields: [folioId], references: [id])
   internalOrder   InternalOrder?        @relation(fields: [orderId], references: [id])
   user            User?                 @relation(fields: [userId], references: [id])
@@ -292,6 +296,7 @@ model Payment {
   @@index([orderId])
   @@index([bookingId])
   @@index([folioId])
+  @@index([providerId])
 }
 
 model FinancialAdjustment {
@@ -315,7 +320,7 @@ model Folio {
   updatedAt          DateTime        @updatedAt
   deletedAt          DateTime?
   propertyId         String?
-  booking            Booking?        @relation(fields: [bookingId], references: [id])
+  booking            Booking?        @relation(fields: [bookingId], references: [id], onDelete: Cascade)
   company            CompanyProfile? @relation(fields: [companyId], references: [id])
   property           Property?       @relation(fields: [propertyId], references: [id])
   lineItems          FolioLineItem[]
@@ -404,7 +409,7 @@ model Task {
   deletedAt        DateTime?
   propertyId       String?
   assignedEmployee Employee?  @relation("EmployeeTasks", fields: [assignedTo], references: [id])
-  booking          Booking?   @relation(fields: [bookingId], references: [id])
+  booking          Booking?   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
   creator          User?      @relation("CreatedTasks", fields: [createdBy], references: [id])
   property         Property?  @relation(fields: [propertyId], references: [id])
   room             Room?      @relation(fields: [roomId], references: [id])
@@ -523,7 +528,7 @@ model FoodMenu {
 
 model User {
   id                 String              @id @default(uuid())
-  email              String              @unique
+  email              String
   name               String
   phone              String?
   password           String
@@ -558,6 +563,8 @@ model User {
   property           Property?           @relation(fields: [propertyId], references: [id])
   role               Role?               @relation(fields: [roleId], references: [id])
   travelAgent        TravelAgent?        @relation(fields: [travelAgentId], references: [id])
+
+  @@index([email])
 }
 
 model GuestPreference {
@@ -897,7 +904,7 @@ model Complaint {
   resolvedAt  DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  booking     Booking?  @relation(fields: [bookingId], references: [id])
+  booking     Booking?  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
   user        User      @relation(fields: [userId], references: [id])
 }
 
@@ -1414,7 +1421,7 @@ model Feedback {
   createdAt         DateTime @default(now())
   roomId            String?
   bookingId         String?
-  booking           Booking? @relation(fields: [bookingId], references: [id])
+  booking           Booking? @relation(fields: [bookingId], references: [id], onDelete: Cascade)
   room              Room?    @relation(fields: [roomId], references: [id])
   user              User     @relation(fields: [userId], references: [id])
 }

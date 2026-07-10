@@ -5,7 +5,7 @@ import bcrypt from 'bcryptjs'
 export async function POST() {
   try {
     const vipEmail = 'johndoe.vip@smarthotel.com'
-    let user = await prisma.user.findUnique({ where: { email: vipEmail } })
+    let user = await prisma.user.findFirst({ where: { email: vipEmail, deletedAt: null } })
 
     if (!user) {
       const hashedPassword = await bcrypt.hash('password123', 10)

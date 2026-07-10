@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 2. Resolve or Create User (Guest)
-    let user = await prisma.user.findUnique({ where: { email: guestEmail } })
+    let user = await prisma.user.findFirst({ where: { email: guestEmail, deletedAt: null } })
     if (!user) {
       let role = await prisma.role.findFirst({ where: { name: 'GUEST' } })
       user = await prisma.user.create({

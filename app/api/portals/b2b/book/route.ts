@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
 
     const booking = await prisma.$transaction(async (tx: any) => {
       // 1. Create or find Guest
-      let guest = await tx.user.findUnique({ where: { email: guestEmail } });
+      let guest = await tx.user.findFirst({ where: { email: guestEmail, deletedAt: null } });
       
       if (!guest) {
         guest = await tx.user.create({

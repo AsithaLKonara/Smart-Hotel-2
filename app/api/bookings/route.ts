@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
 
         let guestId = session?.user?.id
         if (!guestId && validated.guestEmail) {
-          const existing = await tx.user.findUnique({ where: { email: validated.guestEmail } })
+          const existing = await tx.user.findFirst({ where: { email: validated.guestEmail, deletedAt: null } })
           if (existing) { guestId = existing.id }
           else {
             const guestRole = await tx.role.findUnique({ where: { name: 'GUEST' } })

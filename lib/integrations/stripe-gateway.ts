@@ -71,7 +71,7 @@ export class StripeGateway {
   static async capturePayment(chargeId: string, amountToCapture: number): Promise<PaymentTx> {
     if (!stripe) throw new Error('STRIPE_NOT_CONFIGURED');
     
-    const payment = await prisma.payment.findUnique({ where: { providerId: chargeId } })
+    const payment = await prisma.payment.findFirst({ where: { providerId: chargeId, deletedAt: null } })
     if (!payment) throw new Error('STRIPE_CHARGE_NOT_FOUND')
 
     const intent = await stripe.paymentIntents.capture(chargeId, {
@@ -95,7 +95,7 @@ export class StripeGateway {
   static async refundPayment(chargeId: string, amountToRefund: number): Promise<PaymentTx> {
     if (!stripe) throw new Error('STRIPE_NOT_CONFIGURED');
     
-    const payment = await prisma.payment.findUnique({ where: { providerId: chargeId } })
+    const payment = await prisma.payment.findFirst({ where: { providerId: chargeId, deletedAt: null } })
     if (!payment) throw new Error('STRIPE_CHARGE_NOT_FOUND')
 
     await stripe.refunds.create({
@@ -179,7 +179,7 @@ export class StripeGateway {
   }
 
   static async getCharge(chargeId: string): Promise<PaymentTx | undefined> {
-    const payment = await prisma.payment.findUnique({ where: { providerId: chargeId } })
+    const payment = await prisma.payment.findFirst({ where: { providerId: chargeId, deletedAt: null } })
     if (!payment) return undefined;
     
     return {

@@ -99,7 +99,7 @@ export async function POST(req: NextRequest) {
         // In real app, we would search by email or name+phone robustly
         let guest = null
         if (row.email) {
-          guest = await tx.user.findUnique({ where: { email: row.email } })
+          guest = await tx.user.findFirst({ where: { email: row.email, deletedAt: null } })
         }
         
         if (!guest) {
