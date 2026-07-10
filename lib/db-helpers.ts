@@ -10,11 +10,11 @@ export function isDatabaseConfigured(): boolean {
   
   // Check if the URL is a known placeholder
   const isPlaceholder = 
-    url.includes('placeholder.mongodb.net') || 
-    url.includes('your-mongodb-connection-string') ||
-    url.includes('YOUR_MONGODB_URI_HERE') ||
+    url.includes('your-database-connection-string') || 
+    url.includes('postgresql://username:password@localhost:5432/smarthotel') ||
+    url.includes('YOUR_DATABASE_URI_HERE') ||
     url.includes('example.com') ||
-    url.includes('mongodb+srv://guest:guest')
+    url.includes('postgresql://guest:guest')
   
   return !isPlaceholder
 }

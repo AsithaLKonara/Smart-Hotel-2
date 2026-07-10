@@ -11,7 +11,7 @@ Complete, validated reference for every environment variable the SmartHotel stac
 These nine values are mandatory. The validator script, CI pipelines, and local smoke tests will fail immediately if any are missing or malformed.
 
 ```env
-DATABASE_URL=mongodb+srv://username:password@cluster0.xxxxx.mongodb.net/smarthotel?retryWrites=true&w=majority
+DATABASE_URL=postgresql://username:password@localhost:5432/smarthotel
 NEXTAUTH_URL=http://localhost:3000
 NEXTAUTH_SECRET=generate-a-32-char-secret
 STRIPE_SECRET_KEY=sk_test_your_secret_key
@@ -22,7 +22,7 @@ SMTP_USER=your_smtp_username
 SMTP_PASS=your_smtp_password
 ```
 
-- **DATABASE_URL** – MongoDB connection string (Atlas or on-prem). Accepted prefixes: `mongodb://` or `mongodb+srv://`.
+- **DATABASE_URL** – PostgreSQL connection string (Supabase, Neon, or on-prem). Accepted prefixes: `postgresql://` or `postgres://`.
 - **NEXTAUTH_URL** – Base URL used by NextAuth for callbacks and absolute routes. Use production domain (`https://app.example.com`) in live environments.
 - **NEXTAUTH_SECRET** – 32+ character cryptographic secret (generate with `openssl rand -base64 32`).
 - **STRIPE_SECRET_KEY / STRIPE_PUBLISHABLE_KEY** – Stripe credentials for payment processing (test keys start with `sk_test_` / `pk_test_`).
@@ -170,7 +170,7 @@ The validator reports missing or malformed values and reminds you of example for
 
 | Service | Link | Notes |
 |---------|------|-------|
-| MongoDB Atlas | https://www.mongodb.com/cloud/atlas/register | Connection string for `DATABASE_URL`. |
+| PostgreSQL Provider (e.g., Supabase) | https://supabase.com | Connection string for `DATABASE_URL`. |
 | Stripe | https://stripe.com | Test/live API keys and webhook secret. |
 | Mailtrap (or SMTP provider) | https://mailtrap.io | SMTP credentials for outbound email. |
 | Google Cloud Console | https://console.cloud.google.com | OAuth, Maps, Analytics IDs. |

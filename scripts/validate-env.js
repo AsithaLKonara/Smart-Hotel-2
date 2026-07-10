@@ -14,9 +14,9 @@ const envFilePath = path.join(process.cwd(), '.env.local');
 const requiredVars = {
   DATABASE_URL: {
     required: true,
-    description: 'MongoDB connection string',
-    validate: (value) => value.startsWith('mongodb://') || value.startsWith('mongodb+srv://'),
-    example: 'mongodb://localhost:27017/smarthotel'
+    description: 'PostgreSQL connection string',
+    validate: (value) => value.startsWith('postgresql://') || value.startsWith('postgres://'),
+    example: 'postgresql://localhost:5432/smarthotel'
   },
   NEXTAUTH_URL: {
     required: true,
@@ -85,7 +85,8 @@ const optionalVars = {
   SMTP_FROM_NAME: {
     description: 'Default sender name',
     example: 'SmartHotel'
-  },
+  }
+};
 // Production-specific required variables
 const productionRequiredVars = {
   SENTRY_DSN: {
