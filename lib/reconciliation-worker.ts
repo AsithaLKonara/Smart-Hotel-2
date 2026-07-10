@@ -103,7 +103,11 @@ export class ReconciliationWorker {
     for (const event of pendingEvents) {
       try {
         // Distribute event via internal bus or external webhook
-        await RealtimeEvents.emitOpsMessage(event.payload)
+        if (event.topic === 'BOOKING_UPDATED') {
+          await RealtimeEvents.emitBookingUpdated(event.payload as any)
+        } else {
+          await RealtimeEvents.emitOpsMessage(event.payload as any)
+        }
 
         await prisma.outbox.update({
           where: { id: event.id },

@@ -54,31 +54,39 @@ export async function POST(req: Request) {
         });
       }
 
-      await prisma.booking.upsert({
-        where: { confirmationCode: res.id },
-        create: {
-          confirmationCode: res.id,
-          otaReference: res.id,
-          source: 'BOOKING_COM',
-          checkIn: new Date(res.checkin),
-          checkOut: new Date(res.checkout),
-          primaryGuestId: user.id,
-          totalAmount: res.total_price,
-          status: res.status === 'confirmed' ? 'CONFIRMED' : (res.status === 'cancelled' ? 'CANCELLED' : 'CONFIRMED'),
-          roomAssignments: {
-            create: {
-              roomId: availableRoom.id,
-              startDate: new Date(res.checkin),
-              endDate: new Date(res.checkout),
-              status: 'ACTIVE'
+      try {
+        await prisma.booking.upsert({
+          where: { confirmationCode: res.id },
+          create: {
+            confirmationCode: res.id,
+            otaReference: res.id,
+            source: 'BOOKING_COM',
+            checkIn: new Date(res.checkin),
+            checkOut: new Date(res.checkout),
+            primaryGuestId: user.id,
+            totalAmount: res.total_price,
+            status: res.status === 'confirmed' ? 'CONFIRMED' : (res.status === 'cancelled' ? 'CANCELLED' : 'CONFIRMED'),
+            roomAssignments: {
+              create: {
+                roomId: availableRoom.id,
+                startDate: new Date(res.checkin),
+                endDate: new Date(res.checkout),
+                status: 'ACTIVE'
+              }
             }
+          },
+          update: {
+            status: res.status === 'confirmed' ? 'CONFIRMED' : (res.status === 'cancelled' ? 'CANCELLED' : 'CONFIRMED'),
           }
-        },
-        update: {
-          status: res.status === 'confirmed' ? 'CONFIRMED' : (res.status === 'cancelled' ? 'CANCELLED' : 'CONFIRMED'),
+        });
+        syncedCount++;
+      } catch (upsertErr: any) {
+        if (['P2002', 'P2004', 'P2010'].includes(upsertErr.code)) {
+          logger.warn(`OTA Sync: Double booking prevented for reservation ${res.id}`, upsertErr);
+        } else {
+          throw upsertErr;
         }
-      });
-      syncedCount++;
+      }
     }
 
     // 2. Push Current Availability

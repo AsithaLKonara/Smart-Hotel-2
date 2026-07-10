@@ -47,18 +47,41 @@ const generateOtaXml = (otaResCode: string, roomTypeId: string, checkIn: string,
 async function testConcurrency() {
   console.log('--- OTA Webhook Concurrency Audit ---\n');
   
-  // 1. Find a mapped room type
-  const mapping = await prisma.roomMapping.findFirst({
-    include: { roomType: true }
-  });
+  // 1. Setup test data if needed
+  let mapping = await prisma.roomMapping.findFirst();
+  let roomType = mapping ? await prisma.roomType.findUnique({ where: { id: mapping.localRoomTypeId } }) : null;
 
-  if (!mapping) {
-    console.log('⚠️  No RoomMapping found. Cannot execute concurrency test.');
-    await prisma.$disconnect();
-    return;
+  if (!mapping || !roomType) {
+    console.log('⚠️  No RoomMapping found. Creating mock data...');
+    roomType = await prisma.roomType.create({
+      data: {
+        name: 'Concurrency Test Room Type',
+        description: 'Mock',
+        baseRate: 250,
+        capacity: 2,
+        amenities: [],
+        images: []
+      }
+    });
+
+    await prisma.room.create({
+      data: {
+        number: `TEST-${Date.now()}`,
+        roomTypeId: roomType.id,
+        status: 'AVAILABLE',
+        floor: 1
+      }
+    });
+
+    mapping = await prisma.roomMapping.create({
+      data: {
+        localRoomTypeId: roomType.id,
+        otaRoomTypeId: `OTA_MOCK_${Date.now()}`
+      }
+    });
   }
 
-  console.log(`Targeting Room Type: ${mapping.roomType.name} (OTA ID: ${mapping.otaRoomTypeId})`);
+  console.log(`Targeting Room Type: ${roomType.name} (OTA ID: ${mapping.otaRoomTypeId})`);
 
   // Future dates
   const nextMonth = new Date();
@@ -94,7 +117,7 @@ async function testConcurrency() {
     where: {
       otaReference: { startsWith: 'CONC_TEST_' }
     },
-    select: { id: true, roomId: true, otaReference: true }
+    select: { id: true, otaReference: true, roomAssignments: { select: { roomId: true } } }
   });
 
   console.log(`\nFound ${testBookings.length} bookings created by the test.`);
@@ -102,9 +125,10 @@ async function testConcurrency() {
   // Group by room ID
   const roomCounts: Record<string, string[]> = {};
   for (const b of testBookings) {
-    if (b.roomId) {
-      if (!roomCounts[b.roomId]) roomCounts[b.roomId] = [];
-      roomCounts[b.roomId].push(b.otaReference!);
+    if (b.roomAssignments && b.roomAssignments.length > 0) {
+      const rId = b.roomAssignments[0].roomId;
+      if (!roomCounts[rId]) roomCounts[rId] = [];
+      roomCounts[rId].push(b.otaReference!);
     }
   }
 

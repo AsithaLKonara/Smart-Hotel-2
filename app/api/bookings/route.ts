@@ -8,7 +8,6 @@ import { sendBookingConfirmation, sendAdminBookingAlert } from '@/lib/email'
 import { getRequestSession } from '@/lib/session'
 import { getEffectivePropertyId } from '@/lib/server-rbac'
 import { isDatabaseConfigured } from '@/lib/db-helpers'
-import { InventoryLockEngine } from '@/lib/inventory-lock'
 import { RealtimeEvents } from '@/lib/realtime'
 import { pushAvailabilityToOTA } from '@/lib/ota/ota-service'
 import { checkIdempotency, saveIdempotency, clearIdempotency } from '@/lib/idempotency'
@@ -47,18 +46,12 @@ export async function POST(request: NextRequest) {
     const checkIn = new Date(validated.checkIn)
     const checkOut = new Date(validated.checkOut)
 
-    // 1. DISTRIBUTED INVENTORY LOCK (Redis)
-    const currentVersion = await InventoryLockEngine.getVersion(validated.roomId)
-    const hold = await InventoryLockEngine.acquireHold(
-      validated.roomId, 
-      'TBD', // Number will be fetched in TX
-      currentVersion, 
-      session?.user?.id || 'guest-checkout'
-    )
-
     try {
-      // 2. ATOMIC DB TRANSACTION
+      // 1. ATOMIC DB TRANSACTION WITH PESSIMISTIC LOCKING
       const txResult = await prisma.$transaction(async (tx: any) => {
+        // Acquire Row-Level Lock immediately
+        await tx.$executeRaw`SELECT id FROM "Room" WHERE id = ${validated.roomId} FOR UPDATE`;
+        
         const room = await tx.room.findUnique({ 
           where: { id: validated.roomId },
           include: { roomType: true }
@@ -163,9 +156,7 @@ export async function POST(request: NextRequest) {
           }
         });
 
-        // 3. ATOMIC COMMIT: Advance room version and clear lock INSIDE TX
-        await InventoryLockEngine.commitHold(hold, tx)
-
+        // Lock will automatically be released by PostgreSQL upon transaction commit
         return { booking, folioId: folio.id }
       }, { isolationLevel: 'Serializable', maxWait: 10000, timeout: 30000 })
 
@@ -247,8 +238,13 @@ export async function POST(request: NextRequest) {
       
       return NextResponse.json(responseBody, { status: 201 })
 
-    } catch (txErr) {
-      await InventoryLockEngine.rollbackHold(hold)
+    } catch (txErr: any) {
+      // Catch PostgreSQL Exclusion Constraint / Unique Constraint Violations (P2002/P2004/P2010)
+      if (['P2002', 'P2004', 'P2010'].includes(txErr.code)) {
+        if (txErr.message?.includes('RoomAssignment_no_overlap_excl') || txErr.message?.includes('overlapping')) {
+          throw new Error('DOUBLE_BOOKING')
+        }
+      }
       throw txErr
     }
 

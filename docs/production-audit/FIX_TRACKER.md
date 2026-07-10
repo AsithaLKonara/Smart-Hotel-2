@@ -4,10 +4,10 @@
 |---|---|---|---|---|
 | [DB-001](database/DB-001.md) | Sprint 1 | Resolved | Antigravity | PostgreSQL / MongoDB Configuration Mismatch |
 | [DB-002](database/DB-002.md) | Sprint 2 | Resolved | Antigravity | Dual Connection Pooling (Prisma + raw pg) |
-| [DB-003](database/DB-003.md) | Sprint 1 | Open | Unassigned | Missing OTA Idempotency Constraints |
-| [DB-004](database/DB-004.md) | Sprint 2 | Open | Unassigned | Missing Overlapping Assignments Constraints |
-| [DB-005](database/DB-005.md) | Sprint 2 | Open | Unassigned | Missing Transactions for Outbox/Events |
-| [DB-006](database/DB-006.md) | Sprint 1 | Open | Unassigned | Distributed Locking Bypassing DB Constraints |
+| [DB-003](database/DB-003.md) | Sprint 1 | Resolved | Antigravity | Missing OTA Idempotency Constraints |
+| [DB-004](database/DB-004.md) | Sprint 2 | Resolved | Antigravity | Missing Overlapping Assignments Constraints |
+| [DB-005](database/DB-005.md) | Sprint 2 | Resolved | Antigravity | Missing Transactions for Outbox/Events |
+| [DB-006](database/DB-006.md) | Sprint 1 | Resolved | Antigravity | Distributed Locking Bypassing DB Constraints |
 | [DB-007](database/DB-007.md) | Sprint 3 | Open | Unassigned | Unsafe Soft Deletes vs Unique Constraints |
 | [DB-008](database/DB-008.md) | Sprint 3 | Open | Unassigned | Missing Cascade Deletion Rules |
 | [DB-009](database/DB-009.md) | Sprint 1 | Open | Unassigned | Nullable Multi-Tenant Fields (propertyId) |

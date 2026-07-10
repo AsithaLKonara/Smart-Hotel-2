@@ -92,14 +92,21 @@ export async function processOtaReservation(payload: OtaReservationPayload) {
           guests: 2,
           paymentMethod: 'OTA_COLLECT',
           paymentStatus: 'completed',
-          roomId: availableRoom.id,
           status: 'CONFIRMED',
           totalAmount: total_price,
           updatedAt: new Date(),
           primaryGuestId: 'SYSTEM',
           source: BookingSource.BOOKING_COM,
           otaReference: ota_reservation_code,
-          confirmationCode: `OTA-${ota_reservation_code.slice(-6)}`
+          confirmationCode: `OTA-${ota_reservation_code.slice(-6)}`,
+          roomAssignments: {
+            create: {
+              roomId: availableRoom.id,
+              startDate: new Date(check_in),
+              endDate: new Date(check_out),
+              status: 'ACTIVE'
+            }
+          }
         }
       });
 
@@ -118,9 +125,19 @@ export async function processOtaReservation(payload: OtaReservationPayload) {
     });
 
   } catch (error: any) {
-    if (error.code === 'P2002') {
-      log.info('Idempotent OTA Reservation (Duplicate Detected)', { ota_reservation_code });
-      return { status: 'IGNORED', reason: 'DUPLICATE' };
+    if (['P2002', 'P2004', 'P2010'].includes(error.code)) {
+      if (error.message?.includes('RoomAssignment_no_overlap_excl') || error.message?.includes('overlapping')) {
+        log.error('OTA Reservation Rejected: Room Already Assigned (Overbooking Prevented by DB)', { ota_reservation_code });
+        // Instead of completely failing, an OTA overbooking means we cannot fulfill it with the targeted room.
+        // In a real system, we might re-assign to another room. For now, fail the webhook.
+        throw new Error('OVERBOOKING_DETECTED_DB_CONSTRAINT');
+      }
+      
+      // If it's a generic P2002 on Booking, it's idempotency
+      if (error.code === 'P2002') {
+        log.info('Idempotent OTA Reservation (Duplicate Detected)', { ota_reservation_code });
+        return { status: 'IGNORED', reason: 'DUPLICATE' };
+      }
     }
 
     log.error('OTA Reservation Processing Failed', { error: error.message, ota_reservation_code });
@@ -144,14 +161,19 @@ export async function processOtaReservation(payload: OtaReservationPayload) {
  * Finds an available physical room of a specific type for the given dates
  */
 async function findAvailablePhysicalRoom(roomTypeId: string, start: Date, end: Date, tx: any = prisma) {
-  const rooms = await tx.room.findMany({
-    where: { roomTypeId, status: 'AVAILABLE' }
-  });
+  // We find rooms of the given type, order them (arbitrary), and try to lock one that is available
+  const rooms: any[] = await tx.$queryRaw`
+    SELECT id FROM "Room" 
+    WHERE "roomTypeId" = ${roomTypeId} AND status = 'AVAILABLE' 
+    ORDER BY "number" ASC
+    FOR UPDATE SKIP LOCKED
+  `;
 
-  for (const room of rooms) {
+  for (const r of rooms) {
+    // Check for double booking using the existing logic
     const overlap = await tx.booking.findFirst({
       where: {
-        roomId: room.id,
+        roomId: r.id,
         status: { not: 'CANCELLED' },
         OR: [
           { checkIn: { lt: end }, checkOut: { gt: start } }
@@ -159,7 +181,10 @@ async function findAvailablePhysicalRoom(roomTypeId: string, start: Date, end: D
       }
     });
 
-    if (!overlap) return room;
+    if (!overlap) {
+      // Re-fetch the full room model to return it
+      return await tx.room.findUnique({ where: { id: r.id } });
+    }
   }
 
   return null;

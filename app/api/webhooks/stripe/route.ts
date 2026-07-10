@@ -53,10 +53,14 @@ export async function POST(request: NextRequest) {
           prisma.payment.update({
             where: { providerId: intent.id },
             data: { status: 'completed', capturedAt: new Date() }
+          }),
+          prisma.outbox.create({
+            data: {
+              topic: 'BOOKING_UPDATED',
+              payload: { id: bookingId, paymentStatus: 'completed' }
+            }
           })
         ])
-        
-        await RealtimeEvents.emitBookingUpdated({ id: bookingId, paymentStatus: 'completed' })
         break
       }
 
@@ -89,6 +93,12 @@ export async function POST(request: NextRequest) {
             prisma.payment.update({
               where: { providerId: intentId },
               data: { status: 'refunded', refundedAt: new Date() }
+            }),
+            prisma.outbox.create({
+              data: {
+                topic: 'BOOKING_UPDATED',
+                payload: { id: payment.bookingId, status: 'CANCELLED', paymentStatus: 'refunded' }
+              }
             })
           ]
 
@@ -102,8 +112,6 @@ export async function POST(request: NextRequest) {
           }
 
           await prisma.$transaction(updates)
-          
-          await RealtimeEvents.emitBookingUpdated({ id: payment.bookingId, status: 'CANCELLED', paymentStatus: 'refunded' })
         }
         break
       }
