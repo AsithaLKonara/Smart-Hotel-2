@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
       })
 
       // Use folio total if available, otherwise fallback to booking total
-      const effectiveTotal = folioTotal > 0 ? folioTotal : b.totalAmount
+      const effectiveTotal = folioTotal > 0 ? folioTotal : b.totalAmount.toNumber()
       
       totalRoomCharges += effectiveTotal
       if (b.paymentStatus !== 'completed') {
@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
 
     internalOrders.forEach((o: any) => {
       totalFoodCharges += o.totalAmount
-      const paidAmount = o.payments.reduce((sum: number, p: any) => sum + (p.status === 'completed' ? p.amount : 0), 0)
+      const paidAmount = o.payments.reduce((sum: number, p: any) => sum + (p.status === 'completed' ? p.amount.toNumber() : 0), 0)
       pendingPayments += (o.totalAmount - paidAmount)
     })
 
@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
         id: b.id,
         category: 'ROOM',
         description: `Stay: ${b.checkIn.toLocaleDateString()} - ${b.checkOut.toLocaleDateString()}`,
-        amount: b.totalAmount,
+        amount: b.totalAmount.toNumber(),
         date: b.createdAt,
         status: b.paymentStatus
       })),

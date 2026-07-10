@@ -154,8 +154,8 @@ async function testUserFeatures() {
       
       if (Array.isArray(rooms) && rooms.length > 0) {
         const room = rooms[0];
-        const hasRequiredFields = room.id && room.name && room.price;
-        logTest('User Features', 'Room data structure', hasRequiredFields,
+        const hasRequiredFields = room.id && room.number && room.roomType;
+        logTest('User Features', 'Room data structure', !!hasRequiredFields,
           hasRequiredFields ? 'Valid room structure' : 'Missing required fields');
       }
     }

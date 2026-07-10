@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import prisma from '@/lib/db'
 import { z } from 'zod'
+import { handleZodError } from '@/lib/api-utils'
 
 const roomUpdateSchema = z.object({
   number: z.string().min(1, 'Room number is required').optional(),
@@ -91,7 +92,7 @@ export async function PATCH(
     return NextResponse.json(room)
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Validation error', details: error.errors }, { status: 400 })
+      return handleZodError(error)
     }
     return NextResponse.json({ error: 'Failed to update room' }, { status: 500 })
   }
@@ -117,25 +118,18 @@ export async function GET(
       )
     }
 
-    // Map for legacy frontend
-    const typeInfo = (room as any).roomType || {
-      id: '',
-      name: 'Standard',
-      baseRate: 0,
-      description: '',
-      capacity: 2,
-      amenities: []
-    }
+    const session = await getServerSession(authOptions)
     
-    return NextResponse.json({
-      ...room,
-      roomTypeId: typeInfo.id,
-      type: typeInfo.name, // keep for backward compat
-      price: typeInfo.baseRate, // keep for backward compat
-      capacity: typeInfo.capacity,
-      description: typeInfo.description,
-      amenities: typeInfo.amenities,
-    })
+    // Strip operational fields for unauthenticated/unauthorized users
+    const isAuthenticatedStaff = session && ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'HOUSEKEEPING', 'MAINTENANCE'].includes((session.user as any).roleName as string)
+    
+    if (!isAuthenticatedStaff) {
+      const publicRoom = { ...room }
+      delete (publicRoom as any).status
+      return NextResponse.json(publicRoom)
+    }
+
+    return NextResponse.json(room)
   } catch (error) {
     console.error('Error fetching room:', error)
     return NextResponse.json(
@@ -153,10 +147,17 @@ export async function PUT(
     const { id } = await params
     const session = await getServerSession(authOptions)
     
-    if (!session || !['SUPER_ADMIN', 'MANAGER'].includes((session.user as any).roleName as string)) {
+    if (!session) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
+      )
+    }
+    
+    if (!['SUPER_ADMIN', 'MANAGER'].includes((session.user as any).roleName as string)) {
+      return NextResponse.json(
+        { error: 'Forbidden' },
+        { status: 403 }
       )
     }
 
@@ -198,10 +199,7 @@ export async function PUT(
     return NextResponse.json(room)
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
-        { status: 400 }
-      )
+      return handleZodError(error)
     }
 
     console.error('Error updating room:', error)
@@ -220,17 +218,28 @@ export async function DELETE(
     const { id } = await params
     const session = await getServerSession(authOptions)
     
-    if (!session || !['SUPER_ADMIN', 'MANAGER'].includes((session.user as any).roleName as string)) {
+    if (!session) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
+      )
+    }
+    
+    if (!['SUPER_ADMIN', 'MANAGER'].includes((session.user as any).roleName as string)) {
+      return NextResponse.json(
+        { error: 'Forbidden' },
+        { status: 403 }
       )
     }
 
     // Check if room has active bookings
     const activeBookings = await prisma.booking.findFirst({
       where: {
-        roomId: id,
+        roomAssignments: {
+          some: {
+            roomId: id
+          }
+        },
         status: {
           in: ['CONFIRMED', 'CHECKED_IN']
         }

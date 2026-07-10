@@ -1,5 +1,6 @@
 // Booking API integration for the premium booking flow
-import { Room, Booking } from '@prisma/client'
+import { Room, Booking, RoomType } from '@prisma/client'
+
 
 export interface BookingFilters {
   location: string
@@ -39,7 +40,7 @@ export interface BookingResponse {
 }
 
 // Search for available rooms
-export async function searchRooms(filters: BookingFilters): Promise<Room[]> {
+export async function searchRooms(filters: BookingFilters): Promise<(Room & { roomType: RoomType })[]> {
   try {
     const params = new URLSearchParams({
       location: filters.location,
@@ -65,7 +66,7 @@ export async function searchRooms(filters: BookingFilters): Promise<Room[]> {
 }
 
 // Get room details
-export async function getRoomDetails(roomId: string): Promise<Room> {
+export async function getRoomDetails(roomId: string): Promise<Room & { roomType: RoomType }> {
   try {
     const response = await fetch(`/api/rooms/${roomId}`)
     
@@ -81,14 +82,26 @@ export async function getRoomDetails(roomId: string): Promise<Room> {
 }
 
 // Create a new booking
-export async function createBooking(bookingData: BookingRequest): Promise<BookingResponse> {
+export async function createBooking(bookingData: BookingRequest, idempotencyKey?: string): Promise<BookingResponse> {
   try {
+    const payload = {
+      ...bookingData,
+      guestName: bookingData.guestInfo?.firstName ? `${bookingData.guestInfo.firstName} ${bookingData.guestInfo.lastName}` : undefined,
+      guestEmail: bookingData.guestInfo?.email,
+      guestPhone: bookingData.guestInfo?.phone,
+    }
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    }
+    if (idempotencyKey) {
+      headers['idempotency-key'] = idempotencyKey
+    }
+
     const response = await fetch('/api/bookings', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(bookingData),
+      headers,
+      body: JSON.stringify(payload),
     })
 
     const result = await response.json()
@@ -173,7 +186,8 @@ export async function getUserBookings(userId: string): Promise<Booking[]> {
       throw new Error('Failed to get user bookings')
     }
 
-    return await response.json()
+    const data = await response.json()
+    return data.bookings || []
   } catch (error) {
     console.error('Error getting user bookings:', error)
     throw error
@@ -240,11 +254,11 @@ export function validateBookingData(data: Partial<BookingRequest>): string[] {
 }
 
 // Format booking confirmation data
-export function formatBookingConfirmation(booking: Booking, room: Room, guestInfo: any) {
+export function formatBookingConfirmation(booking: Booking, room: Room & { roomType?: RoomType }, guestInfo: any) {
   return {
     id: booking.id,
     room: {
-      type: (room as any).type || room.roomTypeId,
+      type: room.roomType?.name || room.roomTypeId,
       number: room.number,
       floor: room.floor
     },

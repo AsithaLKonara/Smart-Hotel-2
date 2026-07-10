@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { realtime } from '@/lib/realtime';
@@ -41,20 +42,20 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     }
 
     // Process Folio balances
-    let totalCharges = 0;
-    let totalPayments = 0;
+    let totalCharges = new Prisma.Decimal(0);
+    let totalPayments = new Prisma.Decimal(0);
     for (const folio of booking.folios) {
       for (const item of folio.lineItems) {
-        totalCharges += item.amount;
+        totalCharges = totalCharges.add(item.amount);
       }
       for (const payment of folio.payments) {
         if (payment.status === 'completed') {
-          totalPayments += payment.amount;
+          totalPayments = totalPayments.add(payment.amount);
         }
       }
     }
 
-    const balance = totalCharges - totalPayments;
+    const balance = totalCharges.sub(totalPayments).toNumber();
     
     // In a real application, you might prevent checkout if balance > 0
     // We allow it here but you could add a 'force' flag check if needed
@@ -72,7 +73,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         });
 
         // Calculate total charges for this specific folio
-        const folioCharges = folio.lineItems.reduce((acc: number, item: any) => acc + item.amount, 0);
+        const folioCharges = folio.lineItems.reduce((acc, item) => acc.add(item.amount), new Prisma.Decimal(0)).toNumber();
 
         if (folioCharges > 0) {
           // Double-entry settlement log

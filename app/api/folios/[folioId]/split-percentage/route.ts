@@ -59,16 +59,16 @@ export async function POST(
     
     await prisma.$transaction(async (tx) => {
       for (const item of folio.lineItems) {
-        if (item.amount <= 0) continue // Skip payments/rebates
+        if (item.amount.toNumber() <= 0) continue // Skip payments/rebates
 
-        const transferAmount = item.amount * splitRatio
+        const transferAmount = item.amount.mul(splitRatio)
 
         // Rebate the original folio
         await tx.folioLineItem.create({
           data: {
             folioId: folio.id,
             description: `Split Transfer Out: ${item.description}`,
-            amount: -transferAmount,
+            amount: transferAmount.mul(-1),
             category: 'ADJUSTMENT'
           }
         })

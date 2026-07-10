@@ -14,6 +14,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { PremiumSpinner } from '@/components/ui/premium-spinner'
 import { motion } from 'framer-motion'
+import { createBooking } from '@/lib/booking-api'
 
 function BookingPageContent() {
   const searchParams = useSearchParams()
@@ -112,31 +113,33 @@ function BookingPageContent() {
     try {
       const payload = {
         roomId: selectedRoom.id, 
-        checkIn: new Date(searchData.checkIn).toISOString(), 
-        checkOut: new Date(searchData.checkOut).toISOString(),
-        guests: searchData.guests, totalAmount, specialRequests: bookingData.specialRequests,
-        paymentMethod: bookingData.paymentMethod,
-        ...(session ? {} : { guestName: bookingData.guestName, guestEmail: bookingData.guestEmail, guestPhone: bookingData.guestPhone })
+        userId: session?.user?.id || '',
+        checkIn: new Date(searchData.checkIn), 
+        checkOut: new Date(searchData.checkOut),
+        guests: searchData.guests, 
+        totalAmount, 
+        specialRequests: bookingData.specialRequests,
+        extras: { breakfast: false, lateCheckout: false, airportShuttle: false, spaAccess: false },
+        paymentMethod: bookingData.paymentMethod as 'pay_now' | 'pay_later',
+        guestInfo: {
+          firstName: bookingData.guestName.split(' ')[0] || '',
+          lastName: bookingData.guestName.split(' ').slice(1).join(' ') || '',
+          email: bookingData.guestEmail,
+          phone: bookingData.guestPhone
+        }
       }
-      const res = await fetch('/api/bookings', { 
-        method: 'POST', 
-        headers: { 
-          'Content-Type': 'application/json',
-          'idempotency-key': idempotencyKey
-        }, 
-        body: JSON.stringify(payload) 
-      })
       
-      if (res.ok) {
-        const data = await res.json()
-        if (data.paymentFailed) {
+      const data = await createBooking(payload, idempotencyKey)
+      
+      if (data.success || data.booking) {
+        if ((data as any).paymentFailed) {
           toast.error('Booking confirmed, but payment initialization failed. Please pay at the front desk.', { duration: 6000 })
         }
         setStep(4)
       } else {
-        toast.error('Failed to create booking')
+        toast.error(data.error || 'Failed to create booking')
       }
-    } catch { toast.error('Failed to create booking') }
+    } catch (e: any) { toast.error(e.message || 'Failed to create booking') }
     finally { setIsLoading(false) }
   }
 

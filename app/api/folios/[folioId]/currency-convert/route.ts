@@ -46,8 +46,8 @@ export async function GET(
     // Default base currency is assumed to be USD
     const rate = MOCK_EXCHANGE_RATES[targetCurrency]
 
-    const totalCharges = folio.lineItems.reduce((acc, item) => acc + item.amount, 0)
-    const totalPayments = folio.payments.reduce((acc, pay) => acc + pay.amount, 0)
+    const totalCharges = folio.lineItems.reduce((acc, item) => acc + item.amount.toNumber(), 0)
+    const totalPayments = folio.payments.reduce((acc, pay) => acc + pay.amount.toNumber(), 0)
     const balance = totalCharges - totalPayments
 
     const converted = {
@@ -58,7 +58,8 @@ export async function GET(
       balance: parseFloat((balance * rate).toFixed(2)),
       lineItems: folio.lineItems.map(item => ({
         ...item,
-        convertedAmount: parseFloat((item.amount * rate).toFixed(2))
+        amount: item.amount.toNumber(),
+        convertedAmount: parseFloat((item.amount.toNumber() * rate).toFixed(2))
       }))
     }
 

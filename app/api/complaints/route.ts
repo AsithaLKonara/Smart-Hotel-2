@@ -2,6 +2,21 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { z } from 'zod'
+
+const createComplaintSchema = z.object({
+  subject: z.string().min(3, "Subject must be at least 3 characters").max(100),
+  description: z.string().min(10, "Description must be at least 10 characters"),
+  category: z.string().min(2),
+  bookingId: z.string().uuid().optional().nullable(),
+  priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).optional()
+})
+
+const updateComplaintSchema = z.object({
+  id: z.string().uuid(),
+  status: z.enum(['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED']),
+  resolvedAt: z.string().datetime().optional().nullable()
+})
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,10 +29,12 @@ export async function GET(request: NextRequest) {
     const userId = searchParams.get('userId')
 
     const where: any = {}
-    if (userId) {
-      where.userId = userId
-    } else if (!['SUPER_ADMIN', 'MANAGER'].includes((session.user as any).roleName as string)) {
+    const isAdmin = ['SUPER_ADMIN', 'MANAGER'].includes((session.user as any).roleName as string)
+
+    if (!isAdmin) {
       where.userId = session.user.id
+    } else if (userId) {
+      where.userId = userId
     }
 
     const complaints = await prisma.complaint.findMany({
@@ -43,11 +60,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await request.json()
-    const { subject, description, category, bookingId, priority } = body
+    const validation = createComplaintSchema.safeParse(await request.json())
+    if (!validation.success) {
+      return NextResponse.json({ error: 'Validation Error', details: validation.error.flatten().fieldErrors }, { status: 400 })
+    }
 
-    if (!subject || !description || !category) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    const { subject, description, category, bookingId, priority } = validation.data
+
+    if (bookingId) {
+      const booking = await prisma.booking.findUnique({
+        where: { id: bookingId }
+      })
+      if (!booking || booking.primaryGuestId !== session.user.id) {
+        return NextResponse.json({ error: 'Forbidden: Cannot link complaint to this booking' }, { status: 403 })
+      }
     }
 
     const complaint = await prisma.complaint.create({
@@ -76,18 +102,18 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await request.json()
-    const { id, status, resolvedAt } = body
-
-    if (!id || !status) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    const validation = updateComplaintSchema.safeParse(await request.json())
+    if (!validation.success) {
+      return NextResponse.json({ error: 'Validation Error', details: validation.error.flatten().fieldErrors }, { status: 400 })
     }
+
+    const { id, status, resolvedAt } = validation.data
 
     const complaint = await prisma.complaint.update({
       where: { id },
       data: { 
         status,
-        resolvedAt: status === 'RESOLVED' ? new Date() : resolvedAt
+        resolvedAt: status === 'RESOLVED' ? new Date() : (resolvedAt ? new Date(resolvedAt) : null)
       }
     })
 

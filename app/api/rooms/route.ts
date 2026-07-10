@@ -49,31 +49,9 @@ export async function GET(request: NextRequest) {
 
     const rooms = await getCachedRooms(typeId, status, availableOnly, propertyId)
 
-    // Flatten for legacy frontend compatibility, but map fields properly
-    const serializedRooms = rooms.map((room: any) => {
-      const typeInfo = room.roomType || {
-        id: '',
-        name: 'Standard',
-        baseRate: 0,
-        description: '',
-        capacity: 2,
-        amenities: []
-      }
-
-      return {
-        ...room,
-        roomTypeId: typeInfo.id,
-        type: typeInfo.name, // keep for backward compat
-        price: typeInfo.baseRate, // keep for backward compat
-        capacity: typeInfo.capacity,
-        description: typeInfo.description,
-        amenities: typeInfo.amenities,
-      }
-    })
-
     return NextResponse.json({
-      rooms: serializedRooms,
-      count: serializedRooms.length
+      rooms,
+      count: rooms.length
     })
   } catch (error: any) {
     console.error('Error fetching rooms:', error)

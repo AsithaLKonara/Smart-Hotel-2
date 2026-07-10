@@ -24,12 +24,14 @@ interface Room {
   id: string
   number: string
   roomTypeId: string
-  type: string
-  price: number
-  capacity: number
-  description?: string
-  amenities: string[]
-  images: string[]
+  roomType: {
+    name: string
+    baseRate: number
+    capacity: number
+    description: string
+    amenities: string[]
+    images: string[]
+  }
   status: 'AVAILABLE' | 'OCCUPIED' | 'MAINTENANCE' | 'RESERVED'
   floor?: number
   size?: number
@@ -187,9 +189,9 @@ export default function AdminRoomsPage() {
 
   const filteredRooms = safeRoomsArray.filter(room => {
     const matchesSearch = room.number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         room.type.toLowerCase().includes(searchTerm.toLowerCase())
+                         room.roomType?.name.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = filterStatus === 'all' || room.status === filterStatus
-    const matchesType = filterType === 'all' || room.type.toLowerCase() === filterType.toLowerCase()
+    const matchesType = filterType === 'all' || room.roomType?.name.toLowerCase() === filterType.toLowerCase()
     return matchesSearch && matchesStatus && matchesType
   })
 
@@ -363,18 +365,18 @@ export default function AdminRoomsPage() {
                   {room.status}
                 </Badge>
               </div>
-              <p className="text-sm text-slate-400">{room.type}</p>
+              <p className="text-sm text-slate-400">{room.roomType?.name}</p>
             </CardHeader>
             <CardContent className="pt-3">
               <div className="space-y-3">
                 <div className="flex items-center justify-between text-sm">
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-emerald-400">{formatPrice(room.price)}</span>
+                    <span className="font-semibold text-emerald-400">{formatPrice(room.roomType?.baseRate || 0)}</span>
                     <span className="text-xs text-slate-500">/night</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Users className="w-4 h-4 text-slate-500" />
-                    <span className="text-slate-300">{room.capacity}</span>
+                    <span className="text-slate-300">{room.roomType?.capacity}</span>
                   </div>
                 </div>
 

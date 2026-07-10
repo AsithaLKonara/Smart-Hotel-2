@@ -147,7 +147,7 @@ model Booking {
   otaReference        String?
   primaryGuestId      String
   guests              Int              @default(1)
-  totalAmount         Float
+  totalAmount         Decimal
   paymentStatus       PaymentStatus    @default(unpaid)
   paymentMethod       String?
   paymentProvider     String?
@@ -272,7 +272,7 @@ model Payment {
   orderId         String?
   folioId         String?
   userId          String?
-  amount          Float
+  amount          Decimal
   currency        String                @default("LKR")
   paymentMethod   PaymentMethod         @default(card)
   paymentProvider String?
@@ -337,7 +337,7 @@ model FolioLineItem {
   folioId           String
   transactionCodeId String?
   description       String
-  amount            Float
+  amount            Decimal
   category          String
   isRouted          Boolean  @default(false)
   createdAt         DateTime @default(now())

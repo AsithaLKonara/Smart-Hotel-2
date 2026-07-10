@@ -108,7 +108,7 @@ export function SearchBar({
         // Process bookings
         if (bookingsRes?.ok) {
           const bookingsData = await bookingsRes.json()
-          const bookings = Array.isArray(bookingsData) ? bookingsData : bookingsData.items || []
+          const bookings = Array.isArray(bookingsData) ? bookingsData : bookingsData.bookings || bookingsData.items || []
           bookings.forEach((booking: any) => {
             searchResults.push({
               id: booking.id,

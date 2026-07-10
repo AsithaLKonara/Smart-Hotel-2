@@ -20,15 +20,37 @@ describe('Booking CRUD Verification', () => {
   });
 
   describe('Authorization & Validation', () => {
-    it('allows anonymous guest checkouts', async () => {
+    it('allows anonymous guest checkouts and processes guest info properly', async () => {
       (getServerSession as jest.Mock).mockResolvedValueOnce(null);
 
-      // Need to provide valid room and dates to get a 400 vs 401 or 404
-      // We will just verify it does not throw 401 Authorization error
-      const req = createNextRequest('/api/bookings', 'POST', { checkIn: new Date().toISOString() });
-      const res = await POST(req);
+      const roomType = await prisma.roomType.create({
+        data: { name: 'Anonymous Suite', baseRate: 150, capacity: 2, amenities: [] }
+      });
+      const room = await RoomFactory.create({ status: 'AVAILABLE', roomType: { connect: { id: roomType.id } } });
+
+      const req = createNextRequest('/api/bookings', 'POST', { 
+        roomId: room.id,
+        checkIn: new Date().toISOString(),
+        checkOut: new Date(Date.now() + 86400000).toISOString(),
+        guests: 2,
+        guestName: 'John Doe',
+        guestEmail: 'john.doe@example.com',
+        guestPhone: '+1234567890'
+      });
       
-      expect(res.status).not.toBe(401);
+      const res = await POST(req);
+      expect(res.status).toBe(201);
+      
+      const json = await res.json();
+      expect(json.booking).toBeDefined();
+      expect(json.booking.guest).toBeDefined();
+      expect(json.booking.guest.name).toBe('John Doe');
+      expect(json.booking.guest.email).toBe('john.doe@example.com');
+      
+      // Verify user was created in DB
+      const dbUser = await prisma.user.findUnique({ where: { email: 'john.doe@example.com' } });
+      expect(dbUser).toBeDefined();
+      expect(dbUser?.name).toBe('John Doe');
     });
 
     it('validates booking payload dates', async () => {

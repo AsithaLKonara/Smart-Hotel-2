@@ -11,18 +11,18 @@
 | [DB-007](database/DB-007.md) | Sprint 3 | Resolved | Antigravity | Unsafe Soft Deletes vs Unique Constraints |
 | [DB-008](database/DB-008.md) | Sprint 3 | Resolved | Antigravity | Missing Cascade Deletion Rules |
 | [DB-009](database/DB-009.md) | Sprint 1 | Resolved | Antigravity | Nullable Multi-Tenant Fields (propertyId) |
-| [DB-010](database/DB-010.md) | Sprint 2 | Open | Unassigned | Floating Point Currency Precision Loss |
-| [API-001](api/API-001.md) | Sprint 1 | Open | Unassigned | Bookings Array Response Mismatch |
-| [API-002](api/API-002.md) | Sprint 2 | Open | Unassigned | Flattened Room Models Mismatch |
-| [API-003](api/API-003.md) | Sprint 1 | Open | Unassigned | Missing Complaints Schema Validation |
-| [API-004](api/API-004.md) | Sprint 1 | Open | Unassigned | Bookings Payload Disconnect (Zod Strip) |
-| [API-005](api/API-005.md) | Sprint 2 | Open | Unassigned | Schema Relation Crash (DELETE room) |
-| [API-006](api/API-006.md) | Sprint 3 | Open | Unassigned | Varying HTTP Status Codes for AuthZ |
-| [API-007](api/API-007.md) | Sprint 3 | Open | Unassigned | Inconsistent Zod Error Formatting |
-| [API-008](api/API-008.md) | Sprint 2 | Open | Unassigned | Public Room Details Missing Authentication |
-| [API-009](api/API-009.md) | Sprint 1 | Open | Unassigned | Complaints IDOR Vulnerability |
-| [API-010](api/API-010.md) | Sprint 1 | Open | Unassigned | Cross-Property Housekeeping IDOR |
-| [API-011](api/API-011.md) | Sprint 2 | Open | Unassigned | Orphaned Complaint Bindings |
+| [DB-010](database/DB-010.md) | Sprint 2 | Resolved | Antigravity | Floating Point Currency Precision Loss | Migrated to Prisma Decimal |
+| [API-001](api/API-001.md) | Sprint 1 | Resolved | Antigravity | Bookings Array Response Mismatch | Fixed booking-api.ts to handle object payload |
+| [API-002](api/API-002.md) | Sprint 2 | Resolved | Antigravity | Flattened Room Models Mismatch | Refactored room endpoints to return nested relations, updated booking-api and UI |
+| [API-003](api/API-003.md) | Sprint 1 | Resolved | Antigravity | Missing Complaints Schema Validation | Added Zod schema validation to POST/PATCH |
+| [API-004](api/API-004.md) | Sprint 1 | Resolved | Antigravity | Bookings Payload Disconnect (Zod Strip) | Payload flattened in booking-api.ts before POST |
+| [API-005](api/API-005.md) | Sprint 2 | Resolved | Antigravity | Schema Relation Crash (DELETE room) | Updated Prisma query to use roomAssignments |
+| [API-006](api/API-006.md) | Sprint 3 | Resolved | Antigravity | Varying HTTP Status Codes for AuthZ | Standardized 401 and 403 checks in PUT and DELETE |
+| [API-007](api/API-007.md) | Sprint 3 | Resolved | Antigravity | Inconsistent Zod Error Formatting | Created unified handleZodError in api-utils.ts |
+| [API-008](api/API-008.md) | Sprint 2 | Resolved | Antigravity | Public Room Details Missing Authentication | Stripped operational status field from public GET room requests |
+| [API-009](api/API-009.md) | Sprint 1 | Resolved | Antigravity | Complaints IDOR Vulnerability | Enforced non-admin user restriction on GET requests |
+| [API-010](api/API-010.md) | Sprint 1 | Resolved | Antigravity | Cross-Property Housekeeping IDOR | Validated room.propertyId against effective session propertyId |
+| [API-011](api/API-011.md) | Sprint 2 | Resolved | Antigravity | Orphaned Complaint Bindings | Verified booking.primaryGuestId matches session user before linking |
 | [BOOK-001](booking/BOOK-001.md) | Sprint 1 | Open | Unassigned | Lock Bypassing Race Condition (Double Bookings) |
 | [BOOK-002](booking/BOOK-002.md) | Sprint 1 | Open | Unassigned | Idempotency Key Poisoning (Soft-lock) |
 | [BOOK-003](booking/BOOK-003.md) | Sprint 2 | Open | Unassigned | Orphaned Stripe Payments Creation |

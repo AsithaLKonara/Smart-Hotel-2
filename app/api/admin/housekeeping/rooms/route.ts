@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { getEffectivePropertyId } from '@/lib/server-rbac';
 import { z } from 'zod';
+import { handleZodError } from '@/lib/api-utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -73,13 +74,19 @@ export async function PUT(req: Request) {
     const result = updateRoomStatusSchema.safeParse(json);
 
     if (!result.success) {
-      return NextResponse.json({ error: 'Validation Error', details: result.error.format() }, { status: 400 });
+      return handleZodError(result.error);
     }
 
     const { roomId, newStatus } = result.data;
 
+    const propertyId = await getEffectivePropertyId(req);
+
     const oldRoom = await prisma.room.findUnique({ where: { id: roomId } });
     if (!oldRoom) return NextResponse.json({ error: 'Room not found' }, { status: 404 });
+
+    if (propertyId && oldRoom.propertyId !== propertyId) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
 
     const updatedRoom = await prisma.room.update({
       where: { id: roomId },

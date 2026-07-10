@@ -64,16 +64,23 @@ async function analyzeDatabase() {
       select: {
         id: true,
         number: true,
-        type: true,
-        price: true,
         capacity: true,
         status: true,
-        floor: true
+        floor: true,
+        roomType: {
+          select: {
+            name: true,
+            baseRate: true
+          }
+        }
       }
     })
     console.log(`\n🏨 ROOMS (${roomCount} records):`)
     rooms.forEach(room => {
-      console.log(`  - Room ${room.number} (${room.type}) - $${room.price}/night - ${room.capacity} guests - Floor ${room.floor} - Status: ${room.status}`)
+      const type = room.roomType?.name || room.type;
+      const price = room.roomType?.baseRate || room.price;
+      const capacity = room.capacity;
+      console.log(`  - Room ${room.number} (${type}) - $${price}/night - ${capacity} guests - Floor ${room.floor} - Status: ${room.status}`)
     })
     
     // Bookings Collection
