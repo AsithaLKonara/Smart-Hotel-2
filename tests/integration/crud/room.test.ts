@@ -92,6 +92,43 @@ describe('Room CRUD Verification', () => {
   });
 
   describe('Persistence & Delete', () => {
+    it('returns 400 when attempting to delete a room with active bookings', async () => {
+      (getServerSession as jest.Mock).mockResolvedValue({
+        user: { roleName: 'MANAGER', id: 'mock-admin-id' }
+      });
+
+      const room = await RoomFactory.create({ number: '888' });
+      
+      // Create an active booking connected to this room
+      const booking = await prisma.booking.create({
+        data: {
+          primaryGuestId: 'mock-guest-id',
+          checkIn: new Date(),
+          checkOut: new Date(Date.now() + 86400000),
+          status: 'CONFIRMED',
+          guests: 1,
+          totalAmount: 100,
+          confirmationCode: 'TEST-123',
+          propertyId: room.propertyId,
+          roomAssignments: {
+            create: {
+              roomId: room.id,
+              startDate: new Date(),
+              endDate: new Date(Date.now() + 86400000),
+              status: 'ACTIVE'
+            }
+          }
+        }
+      });
+
+      const req = createNextRequest(`/api/rooms/${room.id}`, 'DELETE');
+      const res = await DELETE(req, { params: Promise.resolve({ id: room.id }) } as any);
+      
+      expect(res.status).toBe(400);
+      const json = await res.json();
+      expect(json.error).toMatch(/active bookings/i);
+    });
+
     it('soft deletes a room instead of hard delete', async () => {
       (getServerSession as jest.Mock).mockResolvedValueOnce({
         user: { roleName: 'MANAGER', id: 'mock-admin-id' }

@@ -253,8 +253,9 @@ export async function DELETE(
       )
     }
 
-    await prisma.room.delete({
-      where: { id: id }
+    await prisma.room.update({
+      where: { id: id },
+      data: { deletedAt: new Date() }
     })
 
     return NextResponse.json({ message: 'Room deleted successfully' })
