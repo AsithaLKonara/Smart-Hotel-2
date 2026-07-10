@@ -34,8 +34,8 @@ function question(query) {
 const REQUIRED_ENV_VARS = [
   {
     key: 'DATABASE_URL',
-    description: 'MongoDB Atlas connection string',
-    example: 'mongodb+srv://username:password@cluster.mongodb.net/smarthotel?retryWrites=true&w=majority',
+    description: 'PostgreSQL connection string',
+    example: 'postgresql://username:password@localhost:5432/smarthotel',
     required: true
   },
   {

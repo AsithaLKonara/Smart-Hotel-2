@@ -9,7 +9,7 @@
 You need to manually sign up for these services (they're all FREE):
 1. **Mailtrap** (5 min) - Email testing
 2. **Stripe** (5 min) - Payment processing (test mode)
-3. **MongoDB Atlas** (10 min) - Database
+3. **postgresql Atlas** (10 min) - Database
 4. **Google Cloud** (10 min, optional) - OAuth/Maps
 
 **Total Time: ~30 minutes**
@@ -77,15 +77,15 @@ STRIPE_PUBLISHABLE_KEY=pk_test_<your-publishable-key>
 
 ---
 
-## 🗄️ Step 3: MongoDB Atlas (Database)
+## 🗄️ Step 3: postgresql Atlas (Database)
 
-### Why MongoDB Atlas?
+### Why postgresql Atlas?
 - FREE tier (512MB)
 - Managed database
 - Perfect for demos
 
 ### Steps:
-1. Go to: **https://www.mongodb.com/cloud/atlas/register**
+1. Go to: **https://www.postgresql.com/cloud/atlas/register**
 2. Click **"Try Free"**
 3. Sign up with email or Google
 4. Choose **"Free" (M0) Shared** cluster
@@ -107,16 +107,16 @@ STRIPE_PUBLISHABLE_KEY=pk_test_<your-publishable-key>
    - Choose **"Connect your application"**
    - Driver: **Node.js**
    - Version: **5.5 or later**
-   - Copy the connection string (looks like: `mongodb+srv://...`)
+   - Copy the connection string (looks like: `postgresql://user:pass@host:5432/db
 
 ### Copy This to `.env.local`:
 ```env
-DATABASE_URL=mongodb+srv://<username>:<password>@cluster0.xxxxx.mongodb.net/smarthotel?retryWrites=true&w=majority
+DATABASE_URL=postgresql://user:pass@host:5432/db
 ```
 
 **Important:** Replace:
-- `<username>` with your MongoDB username
-- `<password>` with your MongoDB password
+- `<username>` with your postgresql username
+- `<password>` with your postgresql password
 - `cluster0.xxxxx` is already in the string (don't change)
 - Add `/smarthotel` before the `?` to specify database name
 
@@ -249,7 +249,7 @@ After seeding database, use these to login:
 
 1. **Mailtrap** - Perfect for showing customers email notifications
 2. **Stripe** - Use test card `4242 4242 4242 4242` for demos
-3. **MongoDB Atlas** - Free tier is enough for demos
+3. **postgresql Atlas** - Free tier is enough for demos
 4. **Google OAuth** - Makes demo more impressive
 5. Keep all credentials secure - never commit `.env.local` to git
 
@@ -265,7 +265,7 @@ After seeding database, use these to login:
 - Ensure you're using TEST mode keys (sk_test_...)
 - Check test card number is correct: `4242 4242 4242 4242`
 
-### MongoDB connection error?
+### postgresql connection error?
 - Check IP is whitelisted (allow `0.0.0.0/0` for development)
 - Verify username/password in connection string
 - Ensure cluster is running (green status)

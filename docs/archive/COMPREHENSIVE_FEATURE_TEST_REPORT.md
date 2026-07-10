@@ -136,7 +136,7 @@ The SmartHotel application demonstrates **exceptional functionality** with nearl
 
 | Feature | Status | Details |
 |---------|--------|---------|
-| **Database Connectivity** | ✅ Working | MongoDB Atlas connected |
+| **Database Connectivity** | ✅ Working | postgresql Atlas connected |
 | **Rooms Data** | ✅ Working | 5 rooms with complete data |
 | **Menu Data** | ✅ Working | 8 menu items across categories |
 | **Data Validation** | ✅ Working | Proper JSON responses |
@@ -232,7 +232,7 @@ The SmartHotel application demonstrates **exceptional functionality** with nearl
 
 - **Frontend**: Next.js 15 with React
 - **Backend**: Next.js API Routes
-- **Database**: MongoDB Atlas with Prisma ORM
+- **Database**: postgresql Atlas with Prisma ORM
 - **Authentication**: NextAuth.js
 - **Deployment**: Vercel (Production)
 - **Security**: HTTPS, CSP, Authentication
@@ -244,7 +244,7 @@ The SmartHotel application demonstrates **exceptional functionality** with nearl
 | Component | Technology | Status |
 |-----------|------------|--------|
 | **Frontend Framework** | Next.js 15 | ✅ Latest |
-| **Database** | MongoDB Atlas | ✅ Production |
+| **Database** | postgresql Atlas | ✅ Production |
 | **ORM** | Prisma | ✅ Configured |
 | **Authentication** | NextAuth.js | ✅ Working |
 | **Styling** | Tailwind CSS | ✅ Implemented |

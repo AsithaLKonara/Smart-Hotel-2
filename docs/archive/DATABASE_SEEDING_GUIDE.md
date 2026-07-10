@@ -7,7 +7,7 @@
 
 ## 📋 Prerequisites
 
-1. **DATABASE_URL** - MongoDB Atlas connection string
+1. **DATABASE_URL** - postgresql Atlas connection string
 2. **Node.js** - v18+ installed
 3. **Dependencies** - All npm packages installed
 
@@ -19,7 +19,7 @@
 
 ```bash
 # Set DATABASE_URL
-export DATABASE_URL="mongodb+srv://username:password@cluster.mongodb.net/smarthotel?retryWrites=true&w=majority"
+export DATABASE_URL="postgresql://user:pass@host:5432/db
 
 # Generate Prisma client
 npx prisma generate
@@ -32,7 +32,7 @@ npm run db:seed:demo
 
 ```bash
 # Create .env file
-echo 'DATABASE_URL="mongodb+srv://username:password@cluster.mongodb.net/smarthotel?retryWrites=true&w=majority"' > .env
+echo 'DATABASE_URL="postgresql://user:pass@host:5432/db > .env
 
 # Generate Prisma client
 npx prisma generate
@@ -205,7 +205,7 @@ After seeding, verify the data:
 
 **Solution:**
 - Verify DATABASE_URL is correct
-- Check MongoDB Atlas IP whitelist includes `0.0.0.0/0`
+- Check postgresql Atlas IP whitelist includes `0.0.0.0/0`
 - Verify network connectivity
 
 ### Error: "Transform failed"
@@ -218,7 +218,7 @@ After seeding, verify the data:
 ### Error: "Cannot connect to database"
 
 **Solution:**
-- Verify MongoDB Atlas cluster is running
+- Verify postgresql Atlas cluster is running
 - Check connection string credentials
 - Verify network firewall settings
 
@@ -230,7 +230,7 @@ After seeding, verify the data:
 2. **Use environment variables** for sensitive data
 3. **Restrict database access** to necessary IPs only
 4. **Use strong passwords** for database users
-5. **Enable MongoDB Atlas authentication** and encryption
+5. **Enable postgresql Atlas authentication** and encryption
 
 ---
 

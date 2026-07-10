@@ -71,7 +71,7 @@ The SmartHotel application has been successfully deployed with stunning visual e
 - **Next.js 15** with App Router
 - **TypeScript** for type safety
 - **Tailwind CSS** for styling
-- **Prisma** with MongoDB
+- **Prisma** with postgresql
 - **NextAuth.js** for authentication
 - **Socket.IO** for real-time features
 - **Nodemailer** for email services
@@ -254,7 +254,7 @@ The SmartHotel application has been successfully deployed with stunning visual e
 - **Next.js 15** with App Router
 - **TypeScript** for type safety
 - **Tailwind CSS** for styling
-- **Prisma** with MongoDB
+- **Prisma** with postgresql
 - **NextAuth.js** for authentication
 - **Socket.IO** for real-time features
 - **Nodemailer** for email services

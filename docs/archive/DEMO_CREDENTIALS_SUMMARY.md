@@ -13,7 +13,7 @@
 ## 🔑 Services to Configure
 
 ### Essential (Required)
-- [ ] MongoDB Atlas (Database)
+- [ ] postgresql Atlas (Database)
 - [ ] Mailtrap (Email)
 - [ ] Stripe (Payments - Test Mode)
 - [x] NextAuth Secret (✅ Auto-generated)

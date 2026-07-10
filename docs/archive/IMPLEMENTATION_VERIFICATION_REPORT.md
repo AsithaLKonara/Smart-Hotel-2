@@ -22,7 +22,7 @@ All implementations have been reviewed line-by-line and verified for correctness
 **Verification:**
 - ✅ Both fields are optional (nullable)
 - ✅ Proper syntax and formatting
-- ✅ Compatible with MongoDB (using `@db.ObjectId` where needed)
+- ✅ Compatible with postgresql (using `@db.ObjectId` where needed)
 - ✅ No conflicts with existing relations
 - ✅ Prisma client regenerated successfully
 

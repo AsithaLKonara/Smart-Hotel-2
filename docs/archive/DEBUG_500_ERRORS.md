@@ -59,7 +59,7 @@ curl -v https://smarthotel-demo.vercel.app/api/settings/contact
 **Fix:**
 ```bash
 # Set in Vercel Dashboard → Settings → Environment Variables
-DATABASE_URL=mongodb+srv://asviaai2025_db_user:1234@cluster0.1tpj8te.mongodb.net/smarthotel?retryWrites=true&w=majority
+DATABASE_URL=postgresql://user:pass@host:5432/db
 NEXTAUTH_URL=https://smarthotel-demo.vercel.app
 NEXTAUTH_SECRET=<your-secret>
 ```
@@ -71,8 +71,8 @@ NEXTAUTH_SECRET=<your-secret>
 - Network access denied
 
 **Fix:**
-1. Check MongoDB Atlas Network Access
-   - Go to MongoDB Atlas → Network Access
+1. Check postgresql Atlas Network Access
+   - Go to postgresql Atlas → Network Access
    - Ensure **0.0.0.0/0** is allowed (or add Vercel IPs)
 2. Verify connection string format
 3. Check database user permissions
@@ -120,7 +120,7 @@ vercel env ls
 ### Step 3: Test Database Connection
 ```bash
 # Test locally with production connection string
-export DATABASE_URL="mongodb+srv://asviaai2025_db_user:1234@cluster0.1tpj8te.mongodb.net/smarthotel?retryWrites=true&w=majority"
+export DATABASE_URL="postgresql://user:pass@host:5432/db
 npx prisma db pull
 # Should succeed without errors
 ```
@@ -145,7 +145,7 @@ npx prisma db pull
 - [ ] Set `DATABASE_URL` in Vercel (Production environment)
 - [ ] Set `NEXTAUTH_URL` in Vercel (Production environment)
 - [ ] Set `NEXTAUTH_SECRET` in Vercel (Production environment)
-- [ ] Verify MongoDB Atlas Network Access allows 0.0.0.0/0
+- [ ] Verify postgresql Atlas Network Access allows 0.0.0.0/0
 - [ ] Redeploy application after setting environment variables
 - [ ] Check build logs for errors
 - [ ] Check runtime logs for errors

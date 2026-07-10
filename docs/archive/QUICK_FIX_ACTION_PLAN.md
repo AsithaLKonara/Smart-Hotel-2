@@ -2,16 +2,16 @@
 
 **Status:** DATABASE_URL is configured in Vercel ✅  
 **Issue:** Application still returns 500 errors  
-**Most Likely Cause:** MongoDB Atlas IP Whitelist
+**Most Likely Cause:** postgresql Atlas IP Whitelist
 
 ---
 
 ## 🎯 Immediate Action (5 minutes)
 
-### Step 1: Fix MongoDB Atlas IP Whitelist
+### Step 1: Fix postgresql Atlas IP Whitelist
 
-1. **Go to MongoDB Atlas:**
-   - Visit: https://cloud.mongodb.com/
+1. **Go to postgresql Atlas:**
+   - Visit: https://cloud.postgresql.com/
    - Login to your account
 
 2. **Navigate to Network Access:**
@@ -24,7 +24,7 @@
    - Click **"Confirm"**
 
 4. **Wait 2-3 minutes:**
-   - MongoDB Atlas needs time to propagate the change
+   - postgresql Atlas needs time to propagate the change
    - You'll see a green checkmark when it's active
 
 ### Step 2: Redeploy Vercel Application
@@ -63,7 +63,7 @@ curl -I https://smarthotel-demo.vercel.app/
 1. Vercel Dashboard → **Settings** → **Environment Variables**
 2. Verify `DATABASE_URL` exists
 3. Check it's set for **Production** environment
-4. Verify the value matches your MongoDB Atlas connection string
+4. Verify the value matches your postgresql Atlas connection string
 
 ### Check 2: Test Connection String Locally
 
@@ -96,7 +96,7 @@ If this fails locally, the issue is with:
 
 | Error Message | Cause | Fix |
 |--------------|-------|-----|
-| "Network access denied" | IP not whitelisted | Add `0.0.0.0/0` to MongoDB Atlas |
+| "Network access denied" | IP not whitelisted | Add `0.0.0.0/0` to postgresql Atlas |
 | "Authentication failed" | Wrong credentials | Check username/password in connection string |
 | "Connection timeout" | IP whitelist or network | Add `0.0.0.0/0` and wait 2-3 minutes |
 | "Environment variable not found" | DATABASE_URL not set | Set in Vercel environment variables |
@@ -132,8 +132,8 @@ After applying the fix, you should see:
 
 ## 📋 Verification Checklist
 
-- [ ] MongoDB Atlas → Network Access → `0.0.0.0/0` added
-- [ ] Waited 2-3 minutes for MongoDB changes to propagate
+- [ ] postgresql Atlas → Network Access → `0.0.0.0/0` added
+- [ ] Waited 2-3 minutes for postgresql changes to propagate
 - [ ] Redeployed Vercel application
 - [ ] Tested `/api/debug` endpoint (returns JSON)
 - [ ] Tested `/api/rooms` endpoint (returns JSON)
@@ -143,20 +143,20 @@ After applying the fix, you should see:
 
 ## 🎯 Most Likely Solution
 
-**90% of cases:** MongoDB Atlas IP Whitelist
+**90% of cases:** postgresql Atlas IP Whitelist
 
 **The Fix:**
-1. MongoDB Atlas → Security → Network Access
+1. postgresql Atlas → Security → Network Access
 2. Add `0.0.0.0/0` (Allow Access from Anywhere)
 3. Wait 2-3 minutes
 4. Redeploy Vercel
 
 **Why this works:**
-- MongoDB Atlas blocks all IPs by default
+- postgresql Atlas blocks all IPs by default
 - Vercel uses dynamic IPs that change on every deployment
 - `0.0.0.0/0` allows connections from any IP (required for serverless)
 
 ---
 
-**Next Step:** Go to MongoDB Atlas and add `0.0.0.0/0` to Network Access! 🚀
+**Next Step:** Go to postgresql Atlas and add `0.0.0.0/0` to Network Access! 🚀
 

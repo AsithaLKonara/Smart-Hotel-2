@@ -236,7 +236,7 @@ npm run dev
 > "Notice the real-time statistics, search filtering, and professional design throughout. Everything is mobile-responsive with dark mode support."
 
 **Technical Points:**
-> "Built with Next.js 15, TypeScript, and MongoDB. Zero linter errors. Production-grade code quality. Deployed on Vercel with 99.9% uptime."
+> "Built with Next.js 15, TypeScript, and postgresql. Zero linter errors. Production-grade code quality. Deployed on Vercel with 99.9% uptime."
 
 **Close:**
 > "The system is 95% production-ready. Just add email and payment credentials - which takes 90 minutes - and we can go live with a real hotel."

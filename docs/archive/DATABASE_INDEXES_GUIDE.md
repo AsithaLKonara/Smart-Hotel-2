@@ -51,7 +51,7 @@ npx prisma db push
 **For Local Development:**
 Create or update `.env.local`:
 ```env
-DATABASE_URL="mongodb+srv://username:password@cluster.mongodb.net/smarthotel?retryWrites=true&w=majority"
+DATABASE_URL="postgresql://user:pass@host:5432/db
 ```
 
 **For Production (Vercel):**
@@ -68,8 +68,8 @@ node -e "console.log(process.env.DATABASE_URL ? 'Set' : 'Not set')"
 
 ### 2. Database Connection
 
-Ensure you can connect to your MongoDB database:
-- MongoDB Atlas cluster is running
+Ensure you can connect to your postgresql database:
+- postgresql Atlas cluster is running
 - Network access is configured (IP whitelist)
 - Database user has write permissions
 
@@ -90,7 +90,7 @@ npx prisma db push
 - Creates indexes automatically
 - Non-destructive (doesn't delete data)
 
-**Note:** For MongoDB, `db push` is the recommended method.
+**Note:** For postgresql, `db push` is the recommended method.
 
 ### Method 2: Production (migrations)
 
@@ -187,15 +187,15 @@ npx prisma migrate deploy
 
 ## ✅ Verification
 
-### Check Indexes in MongoDB
+### Check Indexes in postgresql
 
-**Using MongoDB Compass:**
+**Using postgresql Compass:**
 1. Connect to your database
 2. Select a collection (e.g., `Booking`)
 3. Go to "Indexes" tab
 4. Verify indexes are listed
 
-**Using MongoDB Shell:**
+**Using postgresql Shell:**
 ```javascript
 // Connect to database
 use smarthotel
@@ -247,27 +247,27 @@ db.Task.getIndexes()
 
 **Solution:**
 1. Verify database credentials
-2. Check IP whitelist in MongoDB Atlas
+2. Check IP whitelist in postgresql Atlas
 3. Ensure database user has read/write permissions
 
 ### Error: "Network timeout"
 
 **Solution:**
 1. Check internet connection
-2. Verify MongoDB Atlas cluster is running
+2. Verify postgresql Atlas cluster is running
 3. Check firewall settings
-4. Try connecting from MongoDB Compass first
+4. Try connecting from postgresql Compass first
 
 ### Indexes Not Created
 
-**For MongoDB:**
-- MongoDB creates indexes automatically with `db push`
-- If indexes don't appear, check MongoDB Atlas logs
+**For postgresql:**
+- postgresql creates indexes automatically with `db push`
+- If indexes don't appear, check postgresql Atlas logs
 - Some indexes may take time to build on large collections
 
 **Manual Creation (if needed):**
 ```javascript
-// MongoDB Shell
+// postgresql Shell
 db.Booking.createIndex({ status: 1 })
 db.Booking.createIndex({ checkIn: 1 })
 // ... etc
@@ -300,7 +300,7 @@ db.Booking.createIndex({ checkIn: 1 })
 If you need to remove indexes:
 
 ```javascript
-// MongoDB Shell
+// postgresql Shell
 db.Booking.dropIndex("status_1")
 db.Booking.dropIndex("checkIn_1")
 // ... etc
@@ -312,16 +312,16 @@ Or revert Prisma schema and run `npx prisma db push` again.
 
 ## 📝 Notes
 
-### MongoDB Index Behavior
+### postgresql Index Behavior
 
-1. **Automatic Creation:** MongoDB creates indexes automatically when using `prisma db push`
+1. **Automatic Creation:** postgresql creates indexes automatically when using `prisma db push`
 2. **Background Building:** Large collections may take time to build indexes
 3. **Storage:** Indexes use additional storage space (~10-20% of collection size)
 4. **Write Performance:** More indexes = slightly slower writes, but much faster reads
 
 ### Best Practices
 
-1. **Monitor Index Usage:** Use MongoDB Atlas to see which indexes are used
+1. **Monitor Index Usage:** Use postgresql Atlas to see which indexes are used
 2. **Remove Unused Indexes:** If an index isn't used, consider removing it
 3. **Compound Indexes:** For complex queries, consider compound indexes
 4. **Regular Maintenance:** Review indexes quarterly
@@ -333,7 +333,7 @@ Or revert Prisma schema and run `npx prisma db push` again.
 - [ ] DATABASE_URL is set in `.env.local` or environment
 - [ ] Database connection is working
 - [ ] Run `npm run db:apply-indexes` or manual steps
-- [ ] Verify indexes in MongoDB Compass or shell
+- [ ] Verify indexes in postgresql Compass or shell
 - [ ] Test API performance improvements
 - [ ] Monitor database performance
 

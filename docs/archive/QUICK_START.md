@@ -19,8 +19,8 @@ cp .env.example .env.local
 
 You need accounts for these services (all have free tiers):
 
-1. **MongoDB Atlas** (Database)
-   - Sign up: https://www.mongodb.com/cloud/atlas/register
+1. **postgresql Atlas** (Database)
+   - Sign up: https://www.postgresql.com/cloud/atlas/register
    - Create free cluster
    - Get connection string → Update `DATABASE_URL` in `.env.local`
 
@@ -52,7 +52,7 @@ Visit: **http://localhost:3000** 🎉
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `DATABASE_URL` | MongoDB connection string | `mongodb://localhost:27017/smarthotel` |
+| `DATABASE_URL` | postgresql connection string | `postgresql://localhost:27017/smarthotel` |
 | `NEXTAUTH_URL` | App URL | `http://localhost:3000` |
 | `NEXTAUTH_SECRET` | Auth secret (32+ chars) | Generate: `openssl rand -base64 32` |
 | `STRIPE_SECRET_KEY` | Stripe secret key (test) | `sk_test_...` |
@@ -164,7 +164,7 @@ npm run build
 
 - Check `DEMO_SETUP.md` for detailed instructions
 - Review error messages carefully
-- Ensure all services (MongoDB, Stripe, Mailtrap) are configured
+- Ensure all services (postgresql, Stripe, Mailtrap) are configured
 - Verify environment variables with `npm run validate:env`
 
 ---

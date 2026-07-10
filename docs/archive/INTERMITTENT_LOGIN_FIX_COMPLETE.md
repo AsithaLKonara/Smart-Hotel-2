@@ -2,7 +2,7 @@
 
 **Problem:** Login works sometimes but fails intermittently, especially after periods of inactivity.
 
-**Root Cause:** MongoDB Atlas free tier (M0) sleeps after 30 minutes of inactivity, causing connection timeouts.
+**Root Cause:** postgresql Atlas free tier (M0) sleeps after 30 minutes of inactivity, causing connection timeouts.
 
 ---
 
@@ -11,7 +11,7 @@
 ### 1. ✅ Connection Retry Logic (`lib/db.ts`)
 - Added `connectWithRetry()` function
 - Automatically retries failed connections up to 3 times
-- Handles MongoDB Atlas wake-up delays gracefully
+- Handles postgresql Atlas wake-up delays gracefully
 - Progressive retry delays (1s, 2s, 3s)
 
 ### 2. ✅ Enhanced Connection String (`lib/db.ts`)
@@ -32,7 +32,7 @@
 
 ### 5. ✅ Vercel Cron Job (`vercel.json`)
 - Automatically calls keepalive every 15 minutes
-- Keeps MongoDB Atlas connection active
+- Keeps postgresql Atlas connection active
 - No manual intervention needed
 
 ---
@@ -43,7 +43,7 @@
 
 ```bash
 git add lib/db.ts lib/auth.ts app/api/cron/keepalive/route.ts vercel.json DATABASE_SLEEP_FIX_SUMMARY.md DATABASE_CONNECTION_FIX.md
-git commit -m "fix: Add database connection retry and keepalive to prevent MongoDB Atlas sleeping"
+git commit -m "fix: Add database connection retry and keepalive to prevent postgresql Atlas sleeping"
 git push
 ```
 
@@ -135,7 +135,7 @@ Should return:
 
 ## 💡 Long-Term Recommendation
 
-**For production, upgrade MongoDB Atlas M0 → M10:**
+**For production, upgrade postgresql Atlas M0 → M10:**
 
 **Current (M0 - Free):**
 - ❌ Sleeps after 30 minutes
@@ -149,7 +149,7 @@ Should return:
 - ✅ Production SLA
 
 **Upgrade Steps:**
-1. [MongoDB Atlas Dashboard](https://cloud.mongodb.com/)
+1. [postgresql Atlas Dashboard](https://cloud.postgresql.com/)
 2. Clusters → Your Cluster → **Edit Configuration**
 3. Change tier to **M10**
 4. Confirm upgrade (~5 minutes)
@@ -158,7 +158,7 @@ Should return:
 
 ## 🆘 If Issues Persist
 
-### Check MongoDB Atlas
+### Check postgresql Atlas
 
 1. **Network Access:**
    - Security → Network Access
@@ -192,7 +192,7 @@ Should return:
 
 The code will:
 - ✅ Automatically retry failed connections
-- ✅ Handle MongoDB Atlas wake-up delays
+- ✅ Handle postgresql Atlas wake-up delays
 - ✅ Keep database alive with cron job
 - ✅ Work consistently across all browsers
 

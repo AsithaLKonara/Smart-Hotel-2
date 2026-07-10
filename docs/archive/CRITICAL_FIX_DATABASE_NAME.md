@@ -16,7 +16,7 @@ From `/api/test-db` endpoint:
 }
 ```
 
-**MongoDB Atlas Error Code:** `8000 (AtlasError)`
+**postgresql Atlas Error Code:** `8000 (AtlasError)`
 
 ---
 
@@ -26,7 +26,7 @@ The connection string in Vercel has a **line break** in it, which is causing the
 
 **Current (WRONG) format in Vercel:**
 ```
-mongodb+srv://SmartHotel:1234@cluster0.1savcxg.mongodb.net/smarthotel?
+postgresql://user:pass@host:5432/db
 retryWrites=true&w=majority&appName=Cluster0
 ```
 
@@ -47,7 +47,7 @@ retryWrites=true&w=majority&appName=Cluster0
 **Replace the current value with this (ALL ON ONE LINE, NO LINE BREAKS):**
 
 ```
-mongodb+srv://SmartHotel:1234@cluster0.1savcxg.mongodb.net/smarthotel?retryWrites=true&w=majority&appName=Cluster0
+postgresql://user:pass@host:5432/db
 ```
 
 **Important:**
@@ -85,14 +85,14 @@ curl https://smarthotel-demo.vercel.app/api/rooms
 ## 📋 Correct Connection String Format
 
 ```
-mongodb+srv://SmartHotel:1234@cluster0.1savcxg.mongodb.net/smarthotel?retryWrites=true&w=majority&appName=Cluster0
+postgresql://user:pass@host:5432/db
 ```
 
 **Components:**
-- Protocol: `mongodb+srv://`
+- Protocol: `postgresql://user:pass@host:5432/db
 - Username: `SmartHotel`
 - Password: `1234`
-- Host: `cluster0.1savcxg.mongodb.net`
+- Host: `cluster0.1savcxg.postgresql.net`
 - Database: `/smarthotel` ← **THIS MUST BE PRESENT**
 - Options: `?retryWrites=true&w=majority&appName=Cluster0`
 
@@ -100,7 +100,7 @@ mongodb+srv://SmartHotel:1234@cluster0.1savcxg.mongodb.net/smarthotel?retryWrite
 
 ## 🚨 Why This Happens
 
-Vercel's environment variable text area allows multi-line input, but connection strings **MUST** be on a single line. If you paste a connection string that has line breaks, MongoDB Atlas can't parse it correctly and reports "empty database name".
+Vercel's environment variable text area allows multi-line input, but connection strings **MUST** be on a single line. If you paste a connection string that has line breaks, postgresql Atlas can't parse it correctly and reports "empty database name".
 
 ---
 

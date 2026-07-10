@@ -43,16 +43,16 @@
 3. If it doesn't exist:
    - Click **Add New**
    - Name: `DATABASE_URL`
-   - Value: Your MongoDB connection string
+   - Value: Your postgresql connection string
      ```
-     mongodb+srv://username:password@cluster.mongodb.net/database-name?retryWrites=true&w=majority
+     postgresql://user:pass@host:5432/db
      ```
    - Check **Production** environment
    - Click **Save**
 
 #### Step 3: Verify Variable Name
 - Must be exactly: `DATABASE_URL` (case-sensitive)
-- Common mistakes: `DATABASE_URI`, `DB_URL`, `MONGODB_URL`
+- Common mistakes: `DATABASE_URI`, `DB_URL`, `postgresql_URL`
 
 #### Step 4: Redeploy Application
 **CRITICAL**: Environment variables only apply to new deployments!
@@ -69,8 +69,8 @@ git commit --allow-empty -m "Trigger redeploy for DATABASE_URL"
 git push origin main
 ```
 
-#### Step 5: Verify MongoDB Atlas Network Access
-1. Go to [MongoDB Atlas Dashboard](https://cloud.mongodb.com/)
+#### Step 5: Verify postgresql Atlas Network Access
+1. Go to [postgresql Atlas Dashboard](https://cloud.postgresql.com/)
 2. Navigate to **Security** → **Network Access**
 3. Check if `0.0.0.0/0` is in the allowed IPs list
 4. If not:
@@ -107,7 +107,7 @@ After redeployment, test the configuration:
 - [ ] Ensure DATABASE_URL is set for Production environment
 - [ ] Verify variable name is exactly `DATABASE_URL`
 - [ ] Redeploy application after setting variable
-- [ ] Verify MongoDB Atlas Network Access allows `0.0.0.0/0`
+- [ ] Verify postgresql Atlas Network Access allows `0.0.0.0/0`
 
 ### Verification
 - [ ] Test `/api/debug-env` endpoint
@@ -214,13 +214,13 @@ The application is ready for handover when:
 1. Double-check variable is set for **Production** (not just Preview/Development)
 2. Verify variable name is exactly `DATABASE_URL`
 3. Check Vercel deployment logs for errors
-4. Verify MongoDB Atlas connection string format
+4. Verify postgresql Atlas connection string format
 
 ### Issue: Database connection timeout
 **Solution**:
-1. Check MongoDB Atlas Network Access allows `0.0.0.0/0`
+1. Check postgresql Atlas Network Access allows `0.0.0.0/0`
 2. Verify connection string is correct
-3. Check MongoDB Atlas cluster is running
+3. Check postgresql Atlas cluster is running
 
 ### Issue: API returns 503 even after fix
 **Solution**:

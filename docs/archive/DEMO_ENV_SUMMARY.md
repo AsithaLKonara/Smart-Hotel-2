@@ -17,9 +17,9 @@
 
 To run the demo, you need accounts for these services (all have free tiers):
 
-### 1. MongoDB Atlas (Database)
+### 1. postgresql Atlas (Database)
 **Status:** ⚠️  Needs setup
-- Sign up: https://www.mongodb.com/cloud/atlas/register
+- Sign up: https://www.postgresql.com/cloud/atlas/register
 - Create free cluster (M0 tier)
 - Create database user
 - Whitelist IP (0.0.0.0/0 for development)
@@ -75,7 +75,7 @@ Run `npm run validate:env` to see:
 
 ## 🚀 Next Steps
 
-1. **Set up MongoDB Atlas**
+1. **Set up postgresql Atlas**
    - Get connection string
    - Update `DATABASE_URL`
 

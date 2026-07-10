@@ -9,11 +9,11 @@
 ## 🎯 What This API Tests
 
 ### 1. **Prisma Client Connection**
-- Tests if Prisma Client can connect to MongoDB
+- Tests if Prisma Client can connect to postgresql
 - Verifies DATABASE_URL is valid
 
 ### 2. **Database Ping**
-- Tests if MongoDB server is reachable
+- Tests if postgresql server is reachable
 - Verifies network connectivity
 
 ### 3. **All Collections/Models**
@@ -119,7 +119,7 @@ GET http://localhost:3000/api/test-db-comprehensive
     // ... more tests
   ],
   "databaseInfo": {
-    "connectionString": "mongodb+srv://***:***@cluster0.xxxxx.mongodb.net/smarthotel?...",
+    "connectionString": "postgresql://user:pass@host:5432/db
     "databaseName": "smarthotel"
   }
 }
@@ -237,25 +237,25 @@ BASE_URL=http://localhost:3000 node scripts/test-db-comprehensive.js
 1. Go to Vercel → Settings → Environment Variables
 2. Edit `DATABASE_URL`
 3. Ensure it's **ALL ON ONE LINE**
-4. Format: `mongodb+srv://user:pass@host/database?options`
+4. Format: `postgresql://user:pass@host:5432/db
 5. Save and redeploy
 
 ### Issue 2: "Network access denied"
 
-**Cause:** MongoDB Atlas IP whitelist blocking Vercel
+**Cause:** postgresql Atlas IP whitelist blocking Vercel
 
 **Fix:**
-1. MongoDB Atlas → Security → Network Access
+1. postgresql Atlas → Security → Network Access
 2. Add `0.0.0.0/0`
 3. Wait 2-3 minutes
 4. Redeploy Vercel
 
 ### Issue 3: "Connection timeout"
 
-**Cause:** Network connectivity issues or MongoDB Atlas down
+**Cause:** Network connectivity issues or postgresql Atlas down
 
 **Fix:**
-1. Check MongoDB Atlas cluster status
+1. Check postgresql Atlas cluster status
 2. Verify connection string is correct
 3. Check network connectivity
 
@@ -323,7 +323,7 @@ BASE_URL=http://localhost:3000 node scripts/test-db-comprehensive.js
 }
 ```
 
-**Meaning:** ❌ IP whitelist issue - add `0.0.0.0/0` to MongoDB Atlas
+**Meaning:** ❌ IP whitelist issue - add `0.0.0.0/0` to postgresql Atlas
 
 ---
 

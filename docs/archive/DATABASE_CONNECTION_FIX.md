@@ -1,8 +1,8 @@
 # 🔧 Database Connection Fix for Intermittent Login Issues
 
-**Issue:** Intermittent login failures due to MongoDB Atlas free tier sleeping
+**Issue:** Intermittent login failures due to postgresql Atlas free tier sleeping
 
-**Root Cause:** MongoDB Atlas free tier clusters sleep after 30 minutes of inactivity, causing connection timeouts on first request.
+**Root Cause:** postgresql Atlas free tier clusters sleep after 30 minutes of inactivity, causing connection timeouts on first request.
 
 ---
 
@@ -14,9 +14,9 @@
 - `connectTimeoutMS=30000` - Connection timeout (30 seconds)
 - `socketTimeoutMS=45000` - Socket timeout (45 seconds)  
 - `serverSelectionTimeoutMS=30000` - Server selection timeout
-- `heartbeatFrequencyMS=10000` - Keep MongoDB connection alive (10 seconds)
+- `heartbeatFrequencyMS=10000` - Keep postgresql connection alive (10 seconds)
 
-These parameters prevent MongoDB Atlas from closing idle connections and help wake sleeping clusters faster.
+These parameters prevent postgresql Atlas from closing idle connections and help wake sleeping clusters faster.
 
 ### 2. Connection Retry Logic
 
@@ -30,16 +30,16 @@ These parameters prevent MongoDB Atlas from closing idle connections and help wa
 
 **Modified `lib/auth.ts`:**
 - Uses `connectWithRetry()` wrapper around database queries
-- Handles MongoDB Atlas wake-up delays gracefully
+- Handles postgresql Atlas wake-up delays gracefully
 - Prevents login failures due to sleeping database
 
 ---
 
 ## 📋 Additional Recommendations
 
-### Option A: Upgrade MongoDB Atlas (Recommended for Production)
+### Option A: Upgrade postgresql Atlas (Recommended for Production)
 
-**MongoDB Atlas M0 (Free) Limitations:**
+**postgresql Atlas M0 (Free) Limitations:**
 - Sleeps after 30 minutes of inactivity
 - Shared resources (can be slow)
 - No guaranteed uptime
@@ -50,7 +50,7 @@ These parameters prevent MongoDB Atlas from closing idle connections and help wa
 - Better performance
 - Production-ready
 
-**MongoDB Atlas → Clusters → "Edit Configuration" → Upgrade to M10**
+**postgresql Atlas → Clusters → "Edit Configuration" → Upgrade to M10**
 
 ---
 
@@ -101,7 +101,7 @@ export async function GET(request: Request) {
 **Update `DATABASE_URL` in Vercel Dashboard** with enhanced parameters:
 
 ```
-mongodb+srv://user:pass@cluster.mongodb.net/smarthotel?retryWrites=true&w=majority&connectTimeoutMS=30000&socketTimeoutMS=45000&serverSelectionTimeoutMS=30000&heartbeatFrequencyMS=10000&appName=SmartHotel
+postgresql://user:pass@host:5432/db
 ```
 
 **Steps:**
@@ -146,7 +146,7 @@ After deploying these fixes:
 
 **After Fix:**
 - ✅ Login retries automatically (up to 3 times)
-- ✅ Handles MongoDB Atlas wake-up delay
+- ✅ Handles postgresql Atlas wake-up delay
 - ✅ More reliable login experience
 - ⚠️ First request after sleep may take 2-5 seconds (waking cluster)
 
@@ -164,10 +164,10 @@ Watch for these patterns in logs:
 **Warning Signs:**
 - `Database connection attempt X failed, retrying...` (appears frequently)
 - Multiple retries needed for every request
-- **Action:** Consider upgrading MongoDB Atlas or adding keepalive
+- **Action:** Consider upgrading postgresql Atlas or adding keepalive
 
 ---
 
 ## 💡 Long-Term Solution
 
-For production applications, **upgrade to MongoDB Atlas M10** to eliminate sleeping issues entirely.
+For production applications, **upgrade to postgresql Atlas M10** to eliminate sleeping issues entirely.

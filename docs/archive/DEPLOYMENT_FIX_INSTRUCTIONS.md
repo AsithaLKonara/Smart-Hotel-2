@@ -4,11 +4,11 @@
 All APIs are returning 500 errors because `DATABASE_URL` is not set in Vercel production environment.
 
 ## Solution
-Set the MongoDB connection string in Vercel environment variables.
+Set the postgresql connection string in Vercel environment variables.
 
-## Your MongoDB Connection String
+## Your postgresql Connection String
 ```
-mongodb+srv://asviaai2025_db_user:1234@cluster0.1tpj8te.mongodb.net/smarthotel?retryWrites=true&w=majority
+postgresql://user:pass@host:5432/db
 ```
 
 ## Steps to Fix (5 minutes)
@@ -25,7 +25,7 @@ mongodb+srv://asviaai2025_db_user:1234@cluster0.1tpj8te.mongodb.net/smarthotel?r
 3. **Add DATABASE_URL**
    - Click **Add New**
    - **Key**: `DATABASE_URL`
-   - **Value**: `mongodb+srv://asviaai2025_db_user:1234@cluster0.1tpj8te.mongodb.net/smarthotel?retryWrites=true&w=majority`
+   - **Value**: `postgresql://user:pass@host:5432/db
    - **Environment**: Select **Production** (and optionally Preview/Development)
    - Click **Save**
 
@@ -46,15 +46,15 @@ vercel login
 
 # Add DATABASE_URL for production
 vercel env add DATABASE_URL production
-# When prompted, paste: mongodb+srv://asviaai2025_db_user:1234@cluster0.1tpj8te.mongodb.net/smarthotel?retryWrites=true&w=majority
+# When prompted, paste: postgresql://user:pass@host:5432/db
 
 # Redeploy
 vercel --prod
 ```
 
-## Verify MongoDB Atlas Network Access
+## Verify postgresql Atlas Network Access
 
-1. Go to [MongoDB Atlas](https://cloud.mongodb.com/)
+1. Go to [postgresql Atlas](https://cloud.postgresql.com/)
 2. Navigate to **Network Access**
 3. Ensure **0.0.0.0/0** is in the IP whitelist (allows all IPs)
    - Or add Vercel's IP ranges if you prefer more restrictive access
@@ -99,12 +99,12 @@ openssl rand -base64 32
 
 3. **Test Connection Locally**
    ```bash
-   export DATABASE_URL="mongodb+srv://asviaai2025_db_user:1234@cluster0.1tpj8te.mongodb.net/smarthotel?retryWrites=true&w=majority"
+   export DATABASE_URL="postgresql://user:pass@host:5432/db
    npm run dev
    # Visit http://localhost:3000 - should work!
    ```
 
-4. **Check MongoDB Atlas**
+4. **Check postgresql Atlas**
    - Verify cluster is running
    - Check network access allows 0.0.0.0/0
    - Verify database user has read/write permissions

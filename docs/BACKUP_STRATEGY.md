@@ -2,18 +2,18 @@
 
 ## Overview
 
-This document outlines the backup and recovery strategy for SmartHotel's MongoDB database and application data.
+This document outlines the backup and recovery strategy for SmartHotel's PostgreSQL database and application data.
 
 ## Database Backups
 
-### MongoDB Atlas Automated Backups
+### PostgreSQL Automated Backups
 
-MongoDB Atlas provides automated backups for all clusters. Configure backups in the Atlas dashboard:
+PostgreSQL providers (e.g. Supabase, Neon) provide automated backups for all clusters. Configure backups in the provider dashboard:
 
 1. **Enable Continuous Backups**:
-   - Go to Atlas Dashboard → Clusters → Your Cluster
+   - Go to Dashboard → Database
    - Navigate to "Backup" tab
-   - Enable "Cloud Backup" (recommended: Continuous)
+   - Enable "Point-in-Time Recovery" (PITR)
    - Retention: 7 days minimum (recommended: 30 days)
 
 2. **Snapshot Schedule**:
@@ -30,8 +30,8 @@ node scripts/backup-db.js
 ```
 
 This script:
-- Creates a timestamped backup
-- Exports all collections
+- Creates a timestamped backup using pg_dump
+- Exports all tables
 - Compresses the backup
 - Uploads to cloud storage (if configured)
 
@@ -50,7 +50,7 @@ node scripts/verify-backup.js
 - [ ] Backup file exists and is not empty
 - [ ] Backup file size is reasonable (> 1MB for production)
 - [ ] Backup can be restored to test database
-- [ ] All collections are present in backup
+- [ ] All tables are present in backup
 - [ ] Data integrity checks pass
 
 ## Recovery Procedures
@@ -63,8 +63,8 @@ node scripts/verify-backup.js
    pm2 stop smarthotel
    ```
 
-2. **Restore from MongoDB Atlas**:
-   - Go to Atlas Dashboard → Backup
+2. **Restore from Database Provider**:
+   - Go to Provider Dashboard → Backup
    - Select restore point
    - Click "Restore" → Choose target cluster
    - Wait for restore to complete
@@ -84,11 +84,11 @@ node scripts/verify-backup.js
    pm2 start smarthotel
    ```
 
-### Partial Restore (Single Collection)
+### Partial Restore (Single Table)
 
 ```bash
-# Restore specific collection
-mongorestore --uri="$DATABASE_URL" --collection=bookings backups/bookings.bson
+# Restore specific table
+pg_restore -d "$DATABASE_URL" -t bookings backups/bookings.dump
 ```
 
 ## Disaster Recovery Plan
@@ -99,12 +99,12 @@ mongorestore --uri="$DATABASE_URL" --collection=bookings backups/bookings.bson
 ### Recovery Steps
 
 1. **Assess Damage**:
-   - Identify affected collections
+   - Identify affected tables
    - Determine data loss window
    - Check backup availability
 
 2. **Choose Recovery Method**:
-   - **Point-in-Time Recovery**: Use MongoDB Atlas continuous backups
+   - **Point-in-Time Recovery**: Use Provider continuous backups
    - **Snapshot Recovery**: Use daily/weekly snapshots
    - **Manual Backup**: Use script-generated backups
 
@@ -122,7 +122,7 @@ mongorestore --uri="$DATABASE_URL" --collection=bookings backups/bookings.bson
 ## Backup Storage
 
 ### Primary Storage
-- MongoDB Atlas Cloud Backup (automated)
+- Database Provider Cloud Backup (automated)
 - Location: Same region as database cluster
 
 ### Secondary Storage (Optional)
@@ -161,7 +161,7 @@ node scripts/backup-report.js
 
 - **Database Admin**: [Contact Info]
 - **DevOps Team**: [Contact Info]
-- **MongoDB Atlas Support**: support@mongodb.com
+- **Database Provider Support**: Contact your hosting provider
 
 ## Related Documentation
 

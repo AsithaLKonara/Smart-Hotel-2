@@ -130,7 +130,7 @@
 3. **Verify Prisma Client**
    - Check if Prisma client initialization fails in production
    - Verify DATABASE_URL format in Vercel
-   - Check MongoDB Atlas IP whitelist
+   - Check postgresql Atlas IP whitelist
 
 4. **Test Other Endpoints**
    - Test `/api/rooms` in production

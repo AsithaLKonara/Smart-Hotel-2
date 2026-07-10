@@ -7,7 +7,7 @@ This guide outlines our production deployment configurations, dockerization pipe
 ---
 
 ## 🐳 1. Docker Multi-Container Composition
-SmartHotel OS compiles inside optimized lightweight Docker images. Below is our production-ready `docker-compose.yml` layout orchestrating Next.js, clustered MongoDB replicas, and Upstash Redis configurations:
+SmartHotel OS compiles inside optimized lightweight Docker images. Below is our production-ready `docker-compose.yml` layout orchestrating Next.js, clustered PostgreSQL replicas, and Upstash Redis configurations:
 
 ```yaml
 version: '3.8'
@@ -22,7 +22,7 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=production
-      - DATABASE_URL=mongodb+srv://smarthotel-cluster.mongodb.net/production
+      - DATABASE_URL=postgresql://user:password@postgres-cluster.example.com:5432/production
       - NEXTAUTH_URL=https://smarthotel.example.com
     restart: always
     healthcheck:

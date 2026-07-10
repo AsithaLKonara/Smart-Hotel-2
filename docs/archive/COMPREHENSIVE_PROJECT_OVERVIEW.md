@@ -2,7 +2,7 @@
 
 ## **📋 EXECUTIVE SUMMARY**
 
-SmartHotel is a **complete, enterprise-ready hotel management system** built with modern web technologies. It provides comprehensive functionality for hotel operations, guest services, staff management, and administrative tasks. The system is **100% functional**, **production-deployed**, and **fully operational** on Vercel with MongoDB Atlas integration.
+SmartHotel is a **complete, enterprise-ready hotel management system** built with modern web technologies. It provides comprehensive functionality for hotel operations, guest services, staff management, and administrative tasks. The system is **100% functional**, **production-deployed**, and **fully operational** on Vercel with postgresql Atlas integration.
 
 ---
 
@@ -32,7 +32,7 @@ SmartHotel is a **complete, enterprise-ready hotel management system** built wit
 
 ### **🔧 Backend Technology Stack**
 - **Runtime**: Node.js with Next.js API Routes
-- **Database**: MongoDB Atlas (Cloud-hosted)
+- **Database**: postgresql Atlas (Cloud-hosted)
 - **ORM**: Prisma 5.7.1 (Type-safe database access)
 - **Authentication**: NextAuth.js (OAuth + credentials)
 - **Validation**: Zod schemas (runtime type checking)
@@ -42,7 +42,7 @@ SmartHotel is a **complete, enterprise-ready hotel management system** built wit
 
 ### **🚀 Deployment & Infrastructure**
 - **Platform**: Vercel (Serverless deployment)
-- **Database**: MongoDB Atlas (Managed cloud database)
+- **Database**: postgresql Atlas (Managed cloud database)
 - **CDN**: Vercel Edge Network (Global content delivery)
 - **SSL**: Automatic HTTPS with Let's Encrypt
 - **Monitoring**: Built-in health checks and logging
@@ -72,7 +72,7 @@ SmartHotel is a **complete, enterprise-ready hotel management system** built wit
 - **Relationships**: Properly linked with foreign keys
 - **Indexing**: Optimized for performance
 - **Validation**: Schema-level data validation
-- **Backup**: Automatic MongoDB Atlas backups
+- **Backup**: Automatic postgresql Atlas backups
 - **Scalability**: Cloud-native horizontal scaling
 
 ---
@@ -266,7 +266,7 @@ SmartHotel is a **complete, enterprise-ready hotel management system** built wit
 
 ### **☁️ Production Deployment**
 - **Platform**: Vercel (Serverless)
-- **Database**: MongoDB Atlas (Managed)
+- **Database**: postgresql Atlas (Managed)
 - **Domain**: Custom domain ready
 - **SSL**: Automatic HTTPS
 - **CDN**: Global content delivery
@@ -328,7 +328,7 @@ SmartHotel is a **complete, enterprise-ready hotel management system** built wit
 
 ### **📊 Scalability Features**
 - **Serverless Architecture**: Auto-scaling with Vercel
-- **Database Scaling**: MongoDB Atlas horizontal scaling
+- **Database Scaling**: postgresql Atlas horizontal scaling
 - **CDN Distribution**: Global content delivery
 - **Load Balancing**: Automatic load distribution
 - **Resource Optimization**: Efficient resource usage

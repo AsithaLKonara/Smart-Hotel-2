@@ -28,26 +28,26 @@ cp .env.example .env.local
 
 ## Required Environment Variables
 
-### 1. Database (MongoDB)
+### 1. Database (postgresql)
 
-**Option A: MongoDB Atlas (Recommended for Demo)**
+**Option A: postgresql Atlas (Recommended for Demo)**
 
-1. Sign up for free tier: https://www.mongodb.com/cloud/atlas/register
+1. Sign up for free tier: https://www.postgresql.com/cloud/atlas/register
 2. Create a new cluster (free tier available)
 3. Create a database user
 4. Get connection string and update `DATABASE_URL`
 
-**Option B: Local MongoDB**
+**Option B: Local postgresql**
 
 ```bash
-# Install MongoDB locally (macOS)
-brew install mongodb-community
+# Install postgresql locally (macOS)
+brew install postgresql-community
 
-# Start MongoDB
-brew services start mongodb-community
+# Start postgresql
+brew services start postgresql-community
 
 # Use local connection string
-DATABASE_URL=mongodb://localhost:27017/smarthotel
+DATABASE_URL=postgresql://localhost:27017/smarthotel
 ```
 
 ### 2. NextAuth (Authentication)
@@ -134,7 +134,7 @@ SOCKET_IO_URL=http://localhost:3000
 
 ```env
 # Database
-DATABASE_URL=mongodb+srv://username:password@cluster.mongodb.net/smarthotel?retryWrites=true&w=majority&appName=Cluster0
+DATABASE_URL=postgresql://user:pass@host:5432/db
 
 # NextAuth
 NEXTAUTH_URL=http://localhost:3000
@@ -197,7 +197,7 @@ npm run dev
 ## Troubleshooting
 
 ### Database Connection Errors
-- Ensure MongoDB is running (if local)
+- Ensure postgresql is running (if local)
 - Verify connection string format
 - Check network access (for Atlas)
 

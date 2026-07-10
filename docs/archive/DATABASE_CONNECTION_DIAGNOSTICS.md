@@ -11,9 +11,9 @@
 
 ## 🎯 Most Likely Causes (When DATABASE_URL is Set)
 
-### 1. MongoDB Atlas IP Whitelist ⚠️ **MOST COMMON**
+### 1. postgresql Atlas IP Whitelist ⚠️ **MOST COMMON**
 
-**Problem:** MongoDB Atlas blocks connections from Vercel's IP addresses.
+**Problem:** postgresql Atlas blocks connections from Vercel's IP addresses.
 
 **Symptoms:**
 - 500 errors on all endpoints
@@ -21,7 +21,7 @@
 - "Network access denied" errors
 
 **Fix:**
-1. Go to [MongoDB Atlas Dashboard](https://cloud.mongodb.com/)
+1. Go to [postgresql Atlas Dashboard](https://cloud.postgresql.com/)
 2. Navigate to **Security** → **Network Access**
 3. Click **"Add IP Address"**
 4. Add **`0.0.0.0/0`** (allows all IPs) - **Required for Vercel**
@@ -42,7 +42,7 @@
 
 ### 2. Connection Timeout
 
-**Problem:** MongoDB Atlas connection is timing out (default Prisma timeout is 10 seconds).
+**Problem:** postgresql Atlas connection is timing out (default Prisma timeout is 10 seconds).
 
 **Symptoms:**
 - Requests hang for 10+ seconds then fail
@@ -65,7 +65,7 @@ const prismaLogger = globalForPrisma.prisma ?? new PrismaClient({
 
 Or add timeout to connection string:
 ```env
-DATABASE_URL=mongodb+srv://user:pass@cluster.mongodb.net/smarthotel?retryWrites=true&w=majority&connectTimeoutMS=30000&socketTimeoutMS=30000
+DATABASE_URL=postgresql://user:pass@host:5432/db
 ```
 
 ---
@@ -113,7 +113,7 @@ DATABASE_URL=mongodb+srv://user:pass@cluster.mongodb.net/smarthotel?retryWrites=
 **Fix:**
 1. Verify connection string format:
    ```
-   mongodb+srv://username:password@cluster.mongodb.net/database?retryWrites=true&w=majority
+   postgresql://user:pass@host:5432/db
    ```
 
 2. Check for special characters in password:
@@ -136,7 +136,7 @@ DATABASE_URL=mongodb+srv://user:pass@cluster.mongodb.net/smarthotel?retryWrites=
 
 ### 5. Database User Permissions
 
-**Problem:** MongoDB user might not have correct permissions.
+**Problem:** postgresql user might not have correct permissions.
 
 **Symptoms:**
 - Authentication succeeds but queries fail
@@ -144,7 +144,7 @@ DATABASE_URL=mongodb+srv://user:pass@cluster.mongodb.net/smarthotel?retryWrites=
 - Can connect but can't read/write
 
 **Fix:**
-1. Go to MongoDB Atlas → **Database Access**
+1. Go to postgresql Atlas → **Database Access**
 2. Find your database user
 3. Ensure user has **"Atlas admin"** or **"Read and write to any database"** permissions
 4. If using custom role, ensure it has:
@@ -220,9 +220,9 @@ async function connectWithRetry(retries = 3): Promise<void> {
 
 ## 🔧 Diagnostic Steps
 
-### Step 1: Check MongoDB Atlas Network Access
+### Step 1: Check postgresql Atlas Network Access
 
-1. Go to [MongoDB Atlas](https://cloud.mongodb.com/)
+1. Go to [postgresql Atlas](https://cloud.postgresql.com/)
 2. Navigate to **Security** → **Network Access**
 3. Check if **0.0.0.0/0** is in the list
 4. If not, add it and wait 2-3 minutes
@@ -231,12 +231,12 @@ async function connectWithRetry(retries = 3): Promise<void> {
 
 ```bash
 # Set the connection string (from Vercel)
-export DATABASE_URL="mongodb+srv://asviaai2025_db_user:1234@cluster0.1tpj8te.mongodb.net/smarthotel?retryWrites=true&w=majority"
+export DATABASE_URL="postgresql://user:pass@host:5432/db
 
 # Test connection
 npm run db:test
 
-# If this fails, the issue is with the connection string or MongoDB Atlas
+# If this fails, the issue is with the connection string or postgresql Atlas
 ```
 
 ### Step 3: Check Vercel Build Logs
@@ -281,7 +281,7 @@ curl https://smarthotel-demo.vercel.app/api/debug
 
 If `DATABASE_URL` is already set in Vercel, check these in order:
 
-- [ ] **MongoDB Atlas IP Whitelist** - Add `0.0.0.0/0` (MOST COMMON FIX)
+- [ ] **postgresql Atlas IP Whitelist** - Add `0.0.0.0/0` (MOST COMMON FIX)
 - [ ] **Redeploy Vercel** - Environment variables only apply to new deployments
 - [ ] **Test connection string locally** - Verify it works outside Vercel
 - [ ] **Check Vercel build logs** - Look for Prisma generation errors
@@ -293,18 +293,18 @@ If `DATABASE_URL` is already set in Vercel, check these in order:
 
 ## 🎯 Most Likely Solution
 
-**90% of cases:** MongoDB Atlas IP Whitelist issue
+**90% of cases:** postgresql Atlas IP Whitelist issue
 
 **Fix:**
-1. MongoDB Atlas → Security → Network Access
+1. postgresql Atlas → Security → Network Access
 2. Add `0.0.0.0/0`
 3. Wait 2-3 minutes
 4. Redeploy Vercel application
 
 **Why this is the most common issue:**
-- MongoDB Atlas blocks all IPs by default
+- postgresql Atlas blocks all IPs by default
 - Vercel uses dynamic IPs that change frequently
-- Without `0.0.0.0/0`, Vercel can't connect to MongoDB
+- Without `0.0.0.0/0`, Vercel can't connect to postgresql
 
 ---
 
@@ -331,7 +331,7 @@ All should return **JSON responses**, not HTML error pages.
 
 If the issue persists, check:
 
-1. **MongoDB Atlas Cluster Status**
+1. **postgresql Atlas Cluster Status**
    - Is the cluster running?
    - Any maintenance windows?
 
@@ -340,7 +340,7 @@ If the issue persists, check:
    - Look for stack traces
 
 3. **Network Connectivity**
-   - Can Vercel reach MongoDB Atlas?
+   - Can Vercel reach postgresql Atlas?
    - Any firewall rules blocking?
 
 4. **Prisma Client Version**
@@ -351,12 +351,12 @@ If the issue persists, check:
 
 ## 📝 Next Steps
 
-1. **First:** Check MongoDB Atlas IP whitelist (add `0.0.0.0/0`)
+1. **First:** Check postgresql Atlas IP whitelist (add `0.0.0.0/0`)
 2. **Second:** Redeploy Vercel application
 3. **Third:** Test endpoints and verify JSON responses
 4. **Fourth:** If still failing, check Vercel runtime logs for specific errors
 
 ---
 
-**Most Common Fix:** MongoDB Atlas → Network Access → Add `0.0.0.0/0` → Redeploy Vercel
+**Most Common Fix:** postgresql Atlas → Network Access → Add `0.0.0.0/0` → Redeploy Vercel
 

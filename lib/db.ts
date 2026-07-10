@@ -42,7 +42,7 @@ globalForPrisma.prisma = prisma as any
 
 /**
  * Standard execution wrapper with connection retry logic.
- * Essential for serverless environments where MongoDB Atlas may be cold-starting.
+ * Essential for serverless environments where the database provider may be cold-starting.
  */
 export async function connectWithRetry<T>(
   fn: () => Promise<T>,

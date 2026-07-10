@@ -120,7 +120,7 @@ The SmartHotel application has **complete test infrastructure** covering all 10 
 
 | Requirement | Status | Implementation |
 |------------|--------|----------------|
-| MongoDB connection testing | ✅ | `scripts/db:test`, Prisma validation |
+| postgresql connection testing | ✅ | `scripts/db:test`, Prisma validation |
 | Prisma client generation | ✅ | Verified in build |
 | Schema migrations | ✅ | `npm run db:push` working |
 | Data integrity tests | ✅ | Tested in integration tests |

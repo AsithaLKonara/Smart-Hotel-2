@@ -209,7 +209,7 @@ All collections include high-quality, matching images from Unsplash:
 
 ### **✅ Production Infrastructure**
 - **Platform**: Vercel (Serverless)
-- **Database**: MongoDB Atlas
+- **Database**: postgresql Atlas
 - **Authentication**: NextAuth.js
 - **Images**: Unsplash CDN
 - **Domain**: Custom Vercel domain

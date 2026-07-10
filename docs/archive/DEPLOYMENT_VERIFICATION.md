@@ -32,7 +32,7 @@
 **Possible Causes:**
 1. **DATABASE_URL format issue** - May still have line breaks in Vercel
 2. **Deployment still building** - May need more time
-3. **MongoDB Atlas IP whitelist** - May not be configured correctly
+3. **postgresql Atlas IP whitelist** - May not be configured correctly
 
 ---
 
@@ -47,12 +47,12 @@
 
 **Correct Format:**
 ```
-mongodb+srv://SmartHotel:1234@cluster0.1savcxg.mongodb.net/smarthotel?retryWrites=true&w=majority&appName=Cluster0
+postgresql://user:pass@host:5432/db
 ```
 
-### Step 2: Check MongoDB Atlas IP Whitelist
+### Step 2: Check postgresql Atlas IP Whitelist
 
-1. Go to MongoDB Atlas → Security → Network Access
+1. Go to postgresql Atlas → Security → Network Access
 2. **VERIFY:** `0.0.0.0/0` is in the list
 3. **IF MISSING:** Add it and wait 2-3 minutes
 
@@ -106,7 +106,7 @@ curl -I https://smarthotel-demo.vercel.app/
 ```bash
 # Set DATABASE_URL correctly (ONE LINE)
 vercel env rm DATABASE_URL production --yes
-echo "mongodb+srv://SmartHotel:1234@cluster0.1savcxg.mongodb.net/smarthotel?retryWrites=true&w=majority&appName=Cluster0" | vercel env add DATABASE_URL production
+echo "postgresql://user:pass@host:5432/db | vercel env add DATABASE_URL production
 ```
 
 ### Redeploy After Fix
@@ -126,7 +126,7 @@ npm run db:test:production
 ## 🔧 Next Steps
 
 1. **Verify DATABASE_URL format** in Vercel dashboard
-2. **Check MongoDB Atlas IP whitelist**
+2. **Check postgresql Atlas IP whitelist**
 3. **Redeploy** if DATABASE_URL was fixed
 4. **Test endpoints** again
 5. **Check Vercel logs** for specific errors
@@ -135,5 +135,5 @@ npm run db:test:production
 
 **Current Status:** Environment variables set ✅ | Deployment complete ✅ | Endpoints still failing ⚠️
 
-**Action Required:** Verify DATABASE_URL format and MongoDB Atlas IP whitelist
+**Action Required:** Verify DATABASE_URL format and postgresql Atlas IP whitelist
 

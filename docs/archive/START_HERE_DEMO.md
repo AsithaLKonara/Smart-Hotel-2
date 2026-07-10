@@ -10,7 +10,7 @@ All services below have **FREE tiers** - perfect for demos:
 
 1. ✅ **Mailtrap** (Email) - FREE
 2. ✅ **Stripe** (Payments - Test Mode) - FREE
-3. ✅ **MongoDB Atlas** (Database) - FREE
+3. ✅ **postgresql Atlas** (Database) - FREE
 4. ✅ **Google Cloud** (OAuth/Maps) - FREE (optional)
 
 **Total Cost: $0** 🎉
@@ -74,7 +74,7 @@ Once configured, you'll have:
 | Create environment file | 2 min |
 | Get Mailtrap credentials | 5 min |
 | Get Stripe test keys | 5 min |
-| Setup MongoDB Atlas | 10 min |
+| Setup postgresql Atlas | 10 min |
 | Configure Google OAuth (optional) | 10 min |
 | Setup & test | 5 min |
 | **Total (Essential)** | **~30 min** |
@@ -103,7 +103,7 @@ After setup, you can show customers:
 
 - **Mailtrap (Email)**: https://mailtrap.io
 - **Stripe (Payments)**: https://stripe.com
-- **MongoDB Atlas (Database)**: https://www.mongodb.com/cloud/atlas/register
+- **postgresql Atlas (Database)**: https://www.postgresql.com/cloud/atlas/register
 - **Google Cloud (OAuth/Maps)**: https://console.cloud.google.com
 
 ### Test Credentials:

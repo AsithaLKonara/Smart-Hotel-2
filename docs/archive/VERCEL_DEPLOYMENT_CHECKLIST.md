@@ -17,7 +17,7 @@ Add these environment variables in Vercel dashboard:
 
 #### **Required Variables:**
 ```
-DATABASE_URL=mongodb+srv://username:password@cluster.mongodb.net/smarthotel
+DATABASE_URL=postgresql://user:pass@host:5432/db
 NEXTAUTH_SECRET=your-super-secure-production-secret-key-32-chars-minimum
 NEXTAUTH_URL=https://your-smarthotel-domain.vercel.app
 ```
@@ -107,7 +107,7 @@ GOOGLE_MAPS_API_KEY=your_production_google_maps_api_key
 
 **Database Connection:**
 - Verify DATABASE_URL is correct
-- Check MongoDB Atlas network access
+- Check postgresql Atlas network access
 - Ensure database exists
 
 **Authentication Issues:**

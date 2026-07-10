@@ -85,7 +85,7 @@ The SmartHotel application is **functionally complete** and **code-ready** for p
 2. Ensure it's set for **Production** environment (not just Development/Preview)
 3. Verify variable name is exactly `DATABASE_URL`
 4. **Redeploy** the application (environment variables only apply to new deployments)
-5. Verify MongoDB Atlas Network Access allows `0.0.0.0/0` for Vercel
+5. Verify postgresql Atlas Network Access allows `0.0.0.0/0` for Vercel
 
 **Estimated Time**: 15-30 minutes
 
@@ -198,7 +198,7 @@ The SmartHotel application is **functionally complete** and **code-ready** for p
 #### Optional (Nice to Have)
 - [ ] Add autocomplete attributes to password fields
 - [ ] Set up error monitoring (e.g., Sentry)
-- [ ] Configure MongoDB Atlas IP whitelist properly
+- [ ] Configure postgresql Atlas IP whitelist properly
 - [ ] Create user documentation
 
 ---
@@ -213,7 +213,7 @@ The SmartHotel application is **functionally complete** and **code-ready** for p
    - NEXTAUTH_URL should match production URL
 
 2. **Database Setup**:
-   - MongoDB Atlas connection string required
+   - postgresql Atlas connection string required
    - Network Access must allow `0.0.0.0/0` for Vercel
    - Database must be initialized with Prisma
 

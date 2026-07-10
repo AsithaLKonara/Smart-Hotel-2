@@ -99,7 +99,7 @@
 - ✅ All 23 collections using real Prisma
 - ✅ Comprehensive seeding (10+ records each)
 - ✅ Professional images from Unsplash
-- ✅ MongoDB Atlas connected
+- ✅ postgresql Atlas connected
 
 #### **API Endpoints** (20+ routes)
 - ✅ Authentication (`/api/auth/*`)
@@ -191,12 +191,12 @@
 - **URL:** https://smarthotel-demo.vercel.app
 - **SSL:** ✅ Active (HTTPS)
 - **CDN:** ✅ Vercel Edge Network
-- **Database:** ✅ MongoDB Atlas
+- **Database:** ✅ postgresql Atlas
 - **Auth:** ✅ NextAuth.js configured
 - **Build:** ✅ Latest deployment successful
 
 ### **Environment Variables Set**
-- ✅ `DATABASE_URL` - MongoDB connection
+- ✅ `DATABASE_URL` - postgresql connection
 - ✅ `NEXTAUTH_SECRET` - Auth encryption
 - ✅ `NEXTAUTH_URL` - Custom domain
 - ⏳ `SMTP_*` - Email service (needs config)

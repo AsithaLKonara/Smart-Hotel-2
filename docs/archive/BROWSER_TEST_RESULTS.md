@@ -218,7 +218,7 @@
      1. Verify DATABASE_URL in Vercel Dashboard
      2. Ensure it's set for **Production** environment
      3. Redeploy application after setting variable
-     4. Verify MongoDB Atlas Network Access allows `0.0.0.0/0`
+     4. Verify postgresql Atlas Network Access allows `0.0.0.0/0`
 
 ### High Priority Issues
 - **None** (all related to DATABASE_URL)

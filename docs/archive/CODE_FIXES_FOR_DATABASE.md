@@ -162,7 +162,7 @@ If problems continue after these fixes:
    - Go to Vercel Dashboard → Deployments → Latest
    - Check Runtime Logs for errors
 
-2. **Verify MongoDB Atlas:**
+2. **Verify postgresql Atlas:**
    - Network Access: Should include `0.0.0.0/0`
    - Database User: Should have read/write permissions
    - Connection String: Should be correct format

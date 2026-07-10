@@ -7,7 +7,7 @@
 
 ### **Database Configuration**
 ```bash
-DATABASE_URL="mongodb+srv://asviaai2025_db_user:1234@cluster0.1tpj8te.mongodb.net/smarthotel?retryWrites=true&w=majority"
+DATABASE_URL="postgresql://user:pass@host:5432/db
 ```
 
 **✅ Verified**: Connection string tested and working!
@@ -152,7 +152,7 @@ vercel env add VARIABLE_NAME production
 3. **CSRF Token Errors**: Verify `NEXTAUTH_SECRET` is set correctly
 
 ### **Database Connection Issues**
-1. **Connection String**: Verify MongoDB Atlas connection string
+1. **Connection String**: Verify postgresql Atlas connection string
 2. **Network Access**: Ensure IP whitelist includes Vercel IPs
 3. **Authentication**: Check database user credentials
 
@@ -170,7 +170,7 @@ vercel env add VARIABLE_NAME production
 - ✅ Configure CORS and CSP headers
 
 ### **Database Security**
-- ✅ Use MongoDB Atlas with IP whitelisting
+- ✅ Use postgresql Atlas with IP whitelisting
 - ✅ Enable authentication and encryption
 - ✅ Use connection string with SSL
 

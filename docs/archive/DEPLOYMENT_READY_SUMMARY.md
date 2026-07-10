@@ -143,7 +143,7 @@ Your SmartHotel application is **production-ready** with the following:
 
 ### **Environment Variables (Ready)**
 ```env
-✅ DATABASE_URL - MongoDB connection
+✅ DATABASE_URL - postgresql connection
 ✅ NEXTAUTH_SECRET - Authentication secret
 ✅ NEXTAUTH_URL - Application URL
 ✅ SMTP_HOST/PORT/USER/PASS - Email service
@@ -157,7 +157,7 @@ Your SmartHotel application is **production-ready** with the following:
 - ✅ **Payment Processing** - Stripe integration complete
 - ✅ **Analytics** - Google Analytics 4 configured
 - ✅ **Maps** - Google Maps API ready
-- ✅ **Database** - MongoDB Atlas or local ready
+- ✅ **Database** - postgresql Atlas or local ready
 
 ---
 

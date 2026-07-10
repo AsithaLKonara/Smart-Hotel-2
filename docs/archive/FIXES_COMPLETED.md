@@ -55,7 +55,7 @@
 1. Go to Vercel Dashboard → Settings → Environment Variables
 2. Verify/Add `DATABASE_URL` for **Production** environment
 3. Redeploy the application
-4. Verify MongoDB Atlas Network Access
+4. Verify postgresql Atlas Network Access
 
 **Estimated Time**: 15-30 minutes
 

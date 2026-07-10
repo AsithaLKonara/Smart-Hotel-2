@@ -114,7 +114,7 @@
 
 1. **Re-seed Database** (to apply room images fix)
    ```bash
-   DATABASE_URL="mongodb+srv://..." npm run db:seed:demo
+   DATABASE_URL="postgresql://user:pass@host:5432/db npm run db:seed:demo
    ```
 
 2. **Continue P0 Testing**

@@ -49,18 +49,18 @@ DATABASE_URL
 **Common mistakes**:
 - ❌ `DATABASE_URI`
 - ❌ `DB_URL`
-- ❌ `MONGODB_URL`
+- ❌ `postgresql_URL`
 - ❌ `DATABASE_CONNECTION_STRING`
 
 ### Step 4: Check Variable Value Format
 
 Your `DATABASE_URL` should look like:
 ```
-mongodb+srv://username:password@cluster.mongodb.net/database-name?retryWrites=true&w=majority
+postgresql://user:pass@host:5432/db
 ```
 
 **Important checks**:
-- ✅ Starts with `mongodb+srv://`
+- ✅ Starts with `postgresql://user:pass@host:5432/db
 - ✅ Contains username and password
 - ✅ Contains cluster address
 - ✅ Contains database name
@@ -151,11 +151,11 @@ cat .env.production | grep DATABASE_URL
 - Set for Production environment
 - Redeploy
 
-### Issue 4: MongoDB Atlas Network Access
+### Issue 4: postgresql Atlas Network Access
 **Symptom**: DATABASE_URL is set but connection still fails
 
 **Solution**:
-1. Go to [MongoDB Atlas](https://cloud.mongodb.com/)
+1. Go to [postgresql Atlas](https://cloud.postgresql.com/)
 2. Navigate to **Security** → **Network Access**
 3. Click **"Add IP Address"**
 4. Add `0.0.0.0/0` (allows all IPs - required for Vercel)
@@ -170,9 +170,9 @@ cat .env.production | grep DATABASE_URL
 - [ ] DATABASE_URL exists in Vercel Dashboard
 - [ ] DATABASE_URL is set for **Production** environment
 - [ ] Variable name is exactly `DATABASE_URL` (case-sensitive)
-- [ ] Variable value is a valid MongoDB connection string
+- [ ] Variable value is a valid postgresql connection string
 - [ ] Application has been **redeployed** after setting variable
-- [ ] MongoDB Atlas Network Access allows `0.0.0.0/0`
+- [ ] postgresql Atlas Network Access allows `0.0.0.0/0`
 - [ ] Tested API endpoint returns data (not 503 error)
 
 ---
@@ -195,8 +195,8 @@ The application will gracefully handle database errors, but with `DATABASE_URL` 
 If the issue persists after following these steps:
 
 1. Check Vercel deployment logs for errors
-2. Verify MongoDB Atlas connection string is correct
-3. Test connection string locally with MongoDB Compass
+2. Verify postgresql Atlas connection string is correct
+3. Test connection string locally with postgresql Compass
 4. Check Vercel function logs for detailed error messages
 
 ---

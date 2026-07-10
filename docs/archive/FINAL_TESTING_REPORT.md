@@ -239,7 +239,7 @@ Added `autocomplete="new-password"` to password fields:
 ### Production Environment
 - **URL:** https://smarthotel-demo.vercel.app/
 - **Status:** ✅ Deployed and accessible
-- **Database:** ✅ Connected (MongoDB Atlas)
+- **Database:** ✅ Connected (postgresql Atlas)
 - **Authentication:** ✅ Working
 - **Environment Variables:** ✅ Configured
 

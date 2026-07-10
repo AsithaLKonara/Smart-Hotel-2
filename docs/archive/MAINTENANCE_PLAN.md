@@ -326,7 +326,7 @@ Maintained By: ___________
 
 ### **Vendor Support:**
 - **Vercel:** support@vercel.com
-- **MongoDB:** support@mongodb.com
+- **postgresql:** support@postgresql.com
 - **Stripe:** support@stripe.com
 - **SendGrid:** support@sendgrid.com
 

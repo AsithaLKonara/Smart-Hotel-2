@@ -11,7 +11,7 @@ All production nodes must run with fully validated environment schemas. Below ar
 
 | Variable Name | Required Production Format | Security Verification Rule |
 | :--- | :--- | :--- |
-| `DATABASE_URL` | `mongodb+srv://...` | Absolute isolation (do not use default localhost). Must point to clustered replica set. |
+| `DATABASE_URL` | `postgresql://...` | Absolute isolation (do not use default localhost). Must point to clustered replica set. |
 | `NEXTAUTH_SECRET` | 32+ character Base64 | Cryptographic signature safety. Must be generated using secure random sources. |
 | `STRIPE_SECRET_KEY` | `sk_live_...` | Strictly live keys (verify `sk_test_` keys are blocked on production checkouts). |
 | `UPSTASH_REDIS_REST_URL` | `https://...` | Secure REST end-point of distributed Redis lock memory. |

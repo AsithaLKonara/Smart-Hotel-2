@@ -171,7 +171,7 @@ While the code is complete, **production deployment requires critical configurat
 
 **MUST CONFIGURE BEFORE PRODUCTION:**
 1. **NEXTAUTH_SECRET** - Generate secure secret (2 min)
-2. **DATABASE_URL** - Set up MongoDB Atlas (15-30 min)
+2. **DATABASE_URL** - Set up postgresql Atlas (15-30 min)
 3. **SMTP credentials** - Configure email service (30 min)
 4. **Database seeding** - Populate initial data (5 min)
 

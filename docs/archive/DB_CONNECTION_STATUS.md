@@ -50,9 +50,9 @@ Even though there are try-catch blocks, if Prisma initialization fails, the erro
 
 ## 🎯 Most Likely Causes
 
-### 1. MongoDB Atlas IP Whitelist (90% probability)
+### 1. postgresql Atlas IP Whitelist (90% probability)
 
-**Problem:** MongoDB Atlas is blocking Vercel's IP addresses.
+**Problem:** postgresql Atlas is blocking Vercel's IP addresses.
 
 **Symptoms:**
 - All endpoints return 500
@@ -60,7 +60,7 @@ Even though there are try-catch blocks, if Prisma initialization fails, the erro
 - Works locally but fails in production
 
 **Fix:**
-1. MongoDB Atlas → Security → Network Access
+1. postgresql Atlas → Security → Network Access
 2. Add `0.0.0.0/0` (Allow Access from Anywhere)
 3. Wait 2-3 minutes
 4. Redeploy Vercel
@@ -84,19 +84,19 @@ Even though there are try-catch blocks, if Prisma initialization fails, the erro
 
 ### 4. Database User Permissions (2% probability)
 
-**Problem:** MongoDB user doesn't have correct permissions.
+**Problem:** postgresql user doesn't have correct permissions.
 
 **Fix:**
-- MongoDB Atlas → Database Access
+- postgresql Atlas → Database Access
 - Ensure user has "Atlas admin" or "Read and write" permissions
 
 ---
 
 ## 🔧 Immediate Actions Required
 
-### Step 1: Check MongoDB Atlas IP Whitelist ⚠️ **DO THIS FIRST**
+### Step 1: Check postgresql Atlas IP Whitelist ⚠️ **DO THIS FIRST**
 
-1. Go to: https://cloud.mongodb.com/
+1. Go to: https://cloud.postgresql.com/
 2. Navigate to: **Security** → **Network Access**
 3. Check if `0.0.0.0/0` is in the list
 4. If not:
@@ -129,8 +129,8 @@ curl -I https://smarthotel-demo.vercel.app/
 
 ## 📋 Verification Checklist
 
-- [ ] MongoDB Atlas → Network Access → `0.0.0.0/0` added
-- [ ] Waited 2-3 minutes for MongoDB changes
+- [ ] postgresql Atlas → Network Access → `0.0.0.0/0` added
+- [ ] Waited 2-3 minutes for postgresql changes
 - [ ] Redeployed Vercel application
 - [ ] `/api/debug` returns JSON (not HTML)
 - [ ] `/api/rooms` returns JSON (not HTML)
@@ -208,12 +208,12 @@ If this fails locally, the issue is with:
 
 ## 📝 Next Steps
 
-1. **Fix MongoDB Atlas IP Whitelist** (add `0.0.0.0/0`)
+1. **Fix postgresql Atlas IP Whitelist** (add `0.0.0.0/0`)
 2. **Redeploy Vercel**
 3. **Test endpoints** (should return JSON)
 4. **If still failing**, check Vercel runtime logs for specific error
 
 ---
 
-**Most Likely Fix:** MongoDB Atlas → Network Access → Add `0.0.0.0/0` → Redeploy Vercel
+**Most Likely Fix:** postgresql Atlas → Network Access → Add `0.0.0.0/0` → Redeploy Vercel
 

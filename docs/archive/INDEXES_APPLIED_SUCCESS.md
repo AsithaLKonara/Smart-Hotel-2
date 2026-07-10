@@ -7,9 +7,9 @@
 
 ## 🎉 Success Summary
 
-All performance indexes have been successfully applied to your MongoDB database!
+All performance indexes have been successfully applied to your postgresql database!
 
-**Database:** `smarthotel` at `cluster0.1savcxg.mongodb.net`  
+**Database:** `smarthotel` at `cluster0.1savcxg.postgresql.net`  
 **Time Taken:** 16.54 seconds  
 **Status:** ✅ Complete
 
@@ -71,9 +71,9 @@ All performance indexes have been successfully applied to your MongoDB database!
 
 ## 🔍 Verification
 
-### Check Indexes in MongoDB Atlas
+### Check Indexes in postgresql Atlas
 
-1. Go to [MongoDB Atlas](https://cloud.mongodb.com)
+1. Go to [postgresql Atlas](https://cloud.postgresql.com)
 2. Select cluster: `Cluster0`
 3. Click **Browse Collections**
 4. Select collection (e.g., `Booking`)
@@ -127,7 +127,7 @@ The following collections were also created (if they didn't exist):
    - Monitor response times
 
 2. **Monitor Improvements**
-   - Check MongoDB Atlas performance metrics
+   - Check postgresql Atlas performance metrics
    - Monitor API response times
    - Track user experience improvements
 

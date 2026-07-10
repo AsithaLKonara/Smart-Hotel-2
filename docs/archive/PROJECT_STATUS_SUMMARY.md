@@ -30,7 +30,7 @@ Overall Project          ███████████████░░░�
 ## ✅ WHAT'S WORKING (95% of Backend)
 
 ### **Infrastructure** ✅
-- MongoDB Atlas connected and operational
+- postgresql Atlas connected and operational
 - Prisma ORM fully configured  
 - NextAuth.js authentication working
 - Production deployed on Vercel

@@ -1,10 +1,10 @@
 # Vercel Database Configuration Guide
 
-## MongoDB Connection String
+## postgresql Connection String
 
-Your MongoDB Atlas connection string:
+Your postgresql Atlas connection string:
 ```
-mongodb+srv://asviaai2025_db_user:1234@cluster0.1tpj8te.mongodb.net/smarthotel?retryWrites=true&w=majority
+postgresql://user:pass@host:5432/db
 ```
 
 ## Steps to Configure in Vercel
@@ -16,7 +16,7 @@ mongodb+srv://asviaai2025_db_user:1234@cluster0.1tpj8te.mongodb.net/smarthotel?r
 3. Navigate to **Settings** → **Environment Variables**
 4. Add the following variable:
    - **Name**: `DATABASE_URL`
-   - **Value**: `mongodb+srv://asviaai2025_db_user:1234@cluster0.1tpj8te.mongodb.net/smarthotel?retryWrites=true&w=majority`
+   - **Value**: `postgresql://user:pass@host:5432/db
    - **Environment**: Select all (Production, Preview, Development)
 5. Click **Save**
 6. **Redeploy** your application (go to Deployments → click "..." → Redeploy)
@@ -32,7 +32,7 @@ vercel login
 
 # Set the DATABASE_URL environment variable
 vercel env add DATABASE_URL production
-# When prompted, paste: mongodb+srv://asviaai2025_db_user:1234@cluster0.1tpj8te.mongodb.net/smarthotel?retryWrites=true&w=majority
+# When prompted, paste: postgresql://user:pass@host:5432/db
 
 # Also set for preview and development environments
 vercel env add DATABASE_URL preview
@@ -42,9 +42,9 @@ vercel env add DATABASE_URL development
 vercel --prod
 ```
 
-## Verify MongoDB Atlas Network Access
+## Verify postgresql Atlas Network Access
 
-1. Go to [MongoDB Atlas Dashboard](https://cloud.mongodb.com/)
+1. Go to [postgresql Atlas Dashboard](https://cloud.postgresql.com/)
 2. Navigate to **Network Access**
 3. Ensure **0.0.0.0/0** is allowed (or add Vercel's IP ranges)
 4. This allows Vercel servers to connect to your database
@@ -54,7 +54,7 @@ vercel --prod
 Make sure these are also set in Vercel:
 
 ```env
-DATABASE_URL=mongodb+srv://asviaai2025_db_user:1234@cluster0.1tpj8te.mongodb.net/smarthotel?retryWrites=true&w=majority
+DATABASE_URL=postgresql://user:pass@host:5432/db
 NEXTAUTH_URL=https://smarthotel-demo.vercel.app
 NEXTAUTH_SECRET=<your-secret-key-minimum-32-characters>
 ```
@@ -76,7 +76,7 @@ If you still see 500 errors after setting DATABASE_URL:
    - Go to Deployments → Latest deployment → Build Logs
    - Look for database connection errors
 
-2. **Verify MongoDB Atlas**:
+2. **Verify postgresql Atlas**:
    - Check cluster is running
    - Verify network access allows 0.0.0.0/0
    - Check database user has correct permissions
@@ -84,7 +84,7 @@ If you still see 500 errors after setting DATABASE_URL:
 3. **Test Connection Locally**:
    ```bash
    # Set DATABASE_URL in your terminal
-   export DATABASE_URL="mongodb+srv://asviaai2025_db_user:1234@cluster0.1tpj8te.mongodb.net/smarthotel?retryWrites=true&w=majority"
+   export DATABASE_URL="postgresql://user:pass@host:5432/db
    
    # Test connection
    npx prisma db pull

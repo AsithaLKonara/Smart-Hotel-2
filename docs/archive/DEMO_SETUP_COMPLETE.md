@@ -153,7 +153,7 @@ All 27+ UI components exist and working:
 ### **✅ Ready for Demo**
 
 **Backend:**
-- ✅ Database connected (MongoDB Atlas)
+- ✅ Database connected (postgresql Atlas)
 - ✅ Sample data populated
 - ✅ All APIs operational
 - ✅ Authentication working
@@ -417,7 +417,7 @@ vercel --prod
 **Platform:** Vercel  
 **URL:** https://smarthotel-demo.vercel.app  
 **Status:** ✅ Live and Operational  
-**Database:** ✅ Connected (MongoDB Atlas)  
+**Database:** ✅ Connected (postgresql Atlas)  
 **All Pages:** ✅ Deployed  
 **All APIs:** ✅ Working  
 

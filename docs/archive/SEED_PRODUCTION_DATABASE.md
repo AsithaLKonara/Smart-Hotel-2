@@ -83,9 +83,9 @@ npm run db:seed:demo
 - Check the connection string format
 
 ### Error: "Can't reach database server"
-- Check MongoDB Atlas Network Access (should include `0.0.0.0/0`)
+- Check postgresql Atlas Network Access (should include `0.0.0.0/0`)
 - Verify connection string is correct
-- Check MongoDB Atlas cluster is running
+- Check postgresql Atlas cluster is running
 
 ### Error: "Authentication failed"
 - Verify database user credentials in connection string

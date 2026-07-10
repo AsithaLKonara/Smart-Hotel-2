@@ -12,7 +12,7 @@ Your `.env.local` file has been created with the following structure:
 
 ```env
 # SmartHotel Environment Variables
-DATABASE_URL="mongodb://localhost:27017/smarthotel"
+DATABASE_URL="postgresql://localhost:27017/smarthotel"
 NEXTAUTH_SECRET="your-super-secret-key-change-this-in-production"
 NEXTAUTH_URL="http://localhost:3000"
 
@@ -32,7 +32,7 @@ GOOGLE_MAPS_API_KEY="your_google_maps_api_key"
 ```
 
 ### **Required Actions:**
-1. ✅ Replace `DATABASE_URL` with your MongoDB Atlas connection string
+1. ✅ Replace `DATABASE_URL` with your postgresql Atlas connection string
 2. ✅ Generate a secure `NEXTAUTH_SECRET` (32+ characters)
 3. ✅ Update `NEXTAUTH_URL` to your production domain
 4. ✅ Configure email service credentials
@@ -119,18 +119,18 @@ GOOGLE_MAPS_API_KEY="your_google_maps_api_key"
 
 ## 🗄️ **Step 5: Database Setup**
 
-### **MongoDB Atlas (Recommended):**
-1. Create MongoDB Atlas account
+### **postgresql Atlas (Recommended):**
+1. Create postgresql Atlas account
 2. Create cluster and database
 3. Get connection string
 4. Update `.env.local`:
    ```env
-   DATABASE_URL="mongodb+srv://username:password@cluster.mongodb.net/smarthotel"
+   DATABASE_URL="postgresql://user:pass@host:5432/db
    ```
 
-### **Local MongoDB:**
+### **Local postgresql:**
 ```env
-DATABASE_URL="mongodb://localhost:27017/smarthotel"
+DATABASE_URL="postgresql://localhost:27017/smarthotel"
 ```
 
 ---
@@ -147,7 +147,7 @@ DATABASE_URL="mongodb://localhost:27017/smarthotel"
 ```env
 # Production URLs
 NEXTAUTH_URL="https://your-domain.vercel.app"
-DATABASE_URL="your-production-mongodb-url"
+DATABASE_URL="your-production-postgresql-url"
 NEXTAUTH_SECRET="your-production-secret-key"
 
 # Production Services

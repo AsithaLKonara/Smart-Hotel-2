@@ -9,7 +9,7 @@
 
 ### Step 1: Get DATABASE_URL
 
-You need the MongoDB Atlas connection string. You can get it from:
+You need the postgresql Atlas connection string. You can get it from:
 
 1. **Vercel Dashboard:**
    - Go to: https://vercel.com/dashboard
@@ -17,8 +17,8 @@ You need the MongoDB Atlas connection string. You can get it from:
    - Go to Settings → Environment Variables
    - Copy `DATABASE_URL` value
 
-2. **MongoDB Atlas:**
-   - Go to: https://cloud.mongodb.com/
+2. **postgresql Atlas:**
+   - Go to: https://cloud.postgresql.com/
    - Select your cluster
    - Click "Connect"
    - Choose "Connect your application"
@@ -161,10 +161,10 @@ User Flow Testing:
 
 1. **Check DATABASE_URL format:**
    ```
-   mongodb+srv://username:password@cluster.mongodb.net/smarthotel?retryWrites=true&w=majority
+   postgresql://user:pass@host:5432/db
    ```
 
-2. **Verify MongoDB Atlas:**
+2. **Verify postgresql Atlas:**
    - Cluster is running
    - IP whitelist includes `0.0.0.0/0` (or your IP)
    - Database user has correct permissions
@@ -175,7 +175,7 @@ User Flow Testing:
 
 4. **Check network:**
    - Internet connection is active
-   - Firewall allows MongoDB connections
+   - Firewall allows postgresql connections
 
 ---
 

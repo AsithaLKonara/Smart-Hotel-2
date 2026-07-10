@@ -105,7 +105,7 @@ Create `.env.local`:
 
 ```bash
 # Database (already configured)
-DATABASE_URL="your-mongodb-url"
+DATABASE_URL="your-postgresql-url"
 
 # Auth (already configured)  
 NEXTAUTH_SECRET="your-secret"
@@ -267,7 +267,7 @@ curl https://your-domain.com/api/health/ready
    - "Nothing is missing or placeholder"
 
 2. **Modern Technology**
-   - "Built with Next.js 15, TypeScript, MongoDB"
+   - "Built with Next.js 15, TypeScript, postgresql"
    - "Serverless architecture on Vercel"
 
 3. **Professional Quality**

@@ -14,7 +14,7 @@ SmartHotel is a **95% complete** hotel management system with a solid foundation
 ## ✅ WHAT'S COMPLETE & WORKING
 
 ### **1. Backend Infrastructure (100% Complete)**
-- ✅ MongoDB Atlas database connected and operational
+- ✅ postgresql Atlas database connected and operational
 - ✅ Prisma ORM configured with complete schema (11+ models)
 - ✅ NextAuth.js authentication working
 - ✅ All database collections populated with sample data
@@ -415,7 +415,7 @@ According to placeholders list:
 ## ✅ STRENGTHS
 
 1. **Solid Foundation** - Database, APIs, and auth are excellent
-2. **Modern Tech Stack** - Next.js 15, TypeScript, Prisma, MongoDB
+2. **Modern Tech Stack** - Next.js 15, TypeScript, Prisma, postgresql
 3. **Well-Structured** - Clean code organization
 4. **Comprehensive Schema** - Database design is excellent
 5. **Production Deployed** - Already on Vercel with live URL

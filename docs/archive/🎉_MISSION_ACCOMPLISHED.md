@@ -196,7 +196,7 @@ All pages exist. All components built. All APIs work. Just needs database seedin
 
 ### **Quick Deploy (15 minutes):**
 
-1. **Set up .env file** with MongoDB URL
+1. **Set up .env file** with postgresql URL
 2. **Run:** `npm run db:seed:demo`
 3. **Test:** `npm run dev`
 4. **Deploy:** `git push`
@@ -281,7 +281,7 @@ All pages exist. All components built. All APIs work. Just needs database seedin
 
 ### **Immediate Actions:**
 
-1. ⭐ **Create .env file** with your MongoDB URL
+1. ⭐ **Create .env file** with your postgresql URL
 2. 🌱 **Run:** `npm run db:seed:demo`
 3. 🚀 **Deploy:** `git push`
 4. 🎊 **Present:** Your complete hotel management system!

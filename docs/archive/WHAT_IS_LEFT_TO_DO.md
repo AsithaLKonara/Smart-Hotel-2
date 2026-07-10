@@ -94,7 +94,7 @@ ADMIN_EMAIL=admin@smarthotel.com
 **Time:** Already configured (verify it's working)
 
 **Check:**
-- MongoDB Atlas connection string is correct
+- postgresql Atlas connection string is correct
 - Database is accessible
 - Connection is stable
 

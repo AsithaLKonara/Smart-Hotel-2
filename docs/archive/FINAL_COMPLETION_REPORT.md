@@ -287,7 +287,7 @@ To make the system fully operational, complete these steps:
 # Create .env.local file
 
 # Database (already configured)
-DATABASE_URL="your-mongodb-url"
+DATABASE_URL="your-postgresql-url"
 
 # Auth (already configured)
 NEXTAUTH_SECRET="your-secret"

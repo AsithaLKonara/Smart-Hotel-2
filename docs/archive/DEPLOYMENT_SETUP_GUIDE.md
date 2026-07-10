@@ -6,7 +6,7 @@
 - [x] Vercel CLI installed
 - [x] Logged in to Vercel (asithalkonara)
 - [x] .env.local file with all variables
-- [x] MongoDB Atlas IP whitelist configured (0.0.0.0/0)
+- [x] postgresql Atlas IP whitelist configured (0.0.0.0/0)
 
 ---
 
@@ -16,13 +16,13 @@
 
 **Current (WRONG):**
 ```
-mongodb+srv://SmartHotel:1234@cluster0.1savcxg.mongodb.net/smarthotel?
+postgresql://user:pass@host:5432/db
 retryWrites=true&w=majority&appName=Cluster0
 ```
 
 **Correct (ALL ON ONE LINE):**
 ```
-mongodb+srv://SmartHotel:1234@cluster0.1savcxg.mongodb.net/smarthotel?retryWrites=true&w=majority&appName=Cluster0
+postgresql://user:pass@host:5432/db
 ```
 
 ---
@@ -55,7 +55,7 @@ npm run setup:vercel:envs
 ```bash
 # Set each variable manually
 vercel env add DATABASE_URL production
-# Paste: mongodb+srv://SmartHotel:1234@cluster0.1savcxg.mongodb.net/smarthotel?retryWrites=true&w=majority&appName=Cluster0
+# Paste: postgresql://user:pass@host:5432/db
 
 vercel env add NEXTAUTH_URL production
 # Paste: https://smarthotel-demo.vercel.app
@@ -71,7 +71,7 @@ vercel env add NEXTAUTH_SECRET production
 ## 📝 Required Environment Variables
 
 ### Core (Required)
-1. **DATABASE_URL** - MongoDB connection string (ONE LINE!)
+1. **DATABASE_URL** - postgresql connection string (ONE LINE!)
 2. **NEXTAUTH_URL** - Production URL
 3. **NEXTAUTH_SECRET** - Secret key
 4. **STRIPE_SECRET_KEY** - Stripe secret
@@ -139,7 +139,7 @@ curl -I https://smarthotel-demo.vercel.app/
 
 ### Issue: 500 errors on all endpoints
 **Fix:** 
-1. Check MongoDB Atlas IP whitelist (add 0.0.0.0/0)
+1. Check postgresql Atlas IP whitelist (add 0.0.0.0/0)
 2. Verify DATABASE_URL format
 3. Redeploy after fixing
 

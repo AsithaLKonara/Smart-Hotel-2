@@ -130,7 +130,7 @@ Implemented 12 fully functional administrative pages:
 
 - **Framework:** Next.js 15.5.3 (Latest stable)
 - **Language:** TypeScript (100% coverage)
-- **Database:** MongoDB Atlas (Cloud-hosted)
+- **Database:** postgresql Atlas (Cloud-hosted)
 - **ORM:** Prisma (Type-safe)
 - **Authentication:** NextAuth.js (Secure)
 - **Deployment:** Vercel (Serverless)

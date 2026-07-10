@@ -42,7 +42,7 @@
 ### Option 1: Run Update Script (Recommended)
 
 ```bash
-DATABASE_URL="mongodb+srv://SmartHotel:1234@cluster0.1savcxg.mongodb.net/smarthotel?retryWrites=true&w=majority&appName=Cluster0" node scripts/update-demo-passwords.js
+DATABASE_URL="postgresql://user:pass@host:5432/db node scripts/update-demo-passwords.js
 ```
 
 This will update all existing demo users with new passwords.
@@ -50,7 +50,7 @@ This will update all existing demo users with new passwords.
 ### Option 2: Reseed Database
 
 ```bash
-DATABASE_URL="mongodb+srv://SmartHotel:1234@cluster0.1savcxg.mongodb.net/smarthotel?retryWrites=true&w=majority&appName=Cluster0" npm run db:seed
+DATABASE_URL="postgresql://user:pass@host:5432/db npm run db:seed
 ```
 
 This will recreate all users with new passwords.

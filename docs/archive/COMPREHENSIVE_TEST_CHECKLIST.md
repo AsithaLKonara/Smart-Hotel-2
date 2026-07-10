@@ -244,7 +244,7 @@
 
 **Console Errors:** _______________  
 **API Calls:** Check Network tab - `/api/analytics/dashboard`  
-**Database:** MongoDB via Prisma ✅  
+**Database:** postgresql via Prisma ✅  
 **Notes:** _______________
 
 ---
@@ -266,7 +266,7 @@
 
 **Console Errors:** _______________  
 **API Calls:** Check Network tab  
-**Database:** MongoDB via Prisma ✅  
+**Database:** postgresql via Prisma ✅  
 **Notes:** _______________
 
 ---
@@ -288,7 +288,7 @@
 
 **Console Errors:** _______________  
 **API Calls:** Check Network tab - `/api/kitchen/orders`  
-**Database:** MongoDB via Prisma (`prisma.foodOrder`) ✅  
+**Database:** postgresql via Prisma (`prisma.foodOrder`) ✅  
 **Notes:** _______________
 
 ---
@@ -307,7 +307,7 @@
 - [ ] **Submit** - Room created in database ✅
 - [ ] **Success Message** - Toast notification shows ✅
 - [ ] **List Updates** - New room appears in list ✅
-- [ ] **Database Verification** - Check MongoDB for new room ✅
+- [ ] **Database Verification** - Check postgresql for new room ✅
 
 **Test Data:** _______________  
 **Console Errors:** _______________  
@@ -332,7 +332,7 @@
 - [ ] **Submit** - Room updated in database ✅
 - [ ] **Success Message** - Toast notification shows ✅
 - [ ] **List Updates** - Changes reflect in list ✅
-- [ ] **Database Verification** - Check MongoDB for updated room ✅
+- [ ] **Database Verification** - Check postgresql for updated room ✅
 
 **Test Data:** _______________  
 **Room ID:** _______________  
@@ -344,7 +344,7 @@
 - [ ] **Confirm Delete** - Room deleted from database ✅
 - [ ] **Success Message** - Toast notification shows ✅
 - [ ] **List Updates** - Room removed from list ✅
-- [ ] **Database Verification** - Check MongoDB - room deleted ✅
+- [ ] **Database Verification** - Check postgresql - room deleted ✅
 
 **Room ID:** _______________  
 **Console Errors:** _______________  
@@ -911,7 +911,7 @@
 - [ ] **Footer Links** - Load from `/api/footer-links` ✅
 
 **API Calls:** Check Network tab  
-**Database:** MongoDB via Prisma ✅  
+**Database:** postgresql via Prisma ✅  
 **Notes:** _______________
 
 ---
@@ -921,7 +921,7 @@
 - [ ] **Contact Info** - Load from `/api/settings/contact` ✅
 
 **API Calls:** Check Network tab  
-**Database:** MongoDB via Prisma ✅  
+**Database:** postgresql via Prisma ✅  
 **Notes:** _______________
 
 ---
@@ -931,7 +931,7 @@
 - [ ] **Database Data** - All rooms from database display ✅
 
 **API Calls:** Check Network tab - `/api/rooms`  
-**Database:** MongoDB via Prisma (`prisma.room`) ✅  
+**Database:** postgresql via Prisma (`prisma.room`) ✅  
 **Notes:** _______________
 
 ---
@@ -941,7 +941,7 @@
 - [ ] **Database Data** - All images from database display ✅
 
 **API Calls:** Check Network tab - `/api/gallery`  
-**Database:** MongoDB via Prisma (`prisma.gallery`) ✅  
+**Database:** postgresql via Prisma (`prisma.gallery`) ✅  
 **Notes:** _______________
 
 ---

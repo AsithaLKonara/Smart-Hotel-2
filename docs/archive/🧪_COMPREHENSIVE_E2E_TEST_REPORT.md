@@ -261,7 +261,7 @@ I've conducted a comprehensive analysis of your SmartHotel application to verify
 
 #### **✅ Data Security**
 - **Environment Variables:** ✅ Sensitive data protected
-- **Database Security:** ✅ MongoDB Atlas encryption
+- **Database Security:** ✅ postgresql Atlas encryption
 - **File Upload Security:** ✅ Type and size validation
 - **HTTPS Enforcement:** ✅ SSL/TLS required
 
@@ -308,7 +308,7 @@ I've conducted a comprehensive analysis of your SmartHotel application to verify
 - **Email Service:** ✅ SMTP/SendGrid integration
 
 #### **✅ Database Integration**
-- **MongoDB Atlas:** ✅ Cloud database connection
+- **postgresql Atlas:** ✅ Cloud database connection
 - **Prisma ORM:** ✅ Type-safe queries
 - **Data Validation:** ✅ Schema validation
 - **Migrations:** ✅ Database schema updates

@@ -1,6 +1,6 @@
 # 🔧 Database Sleep Issue - Fix Summary
 
-**Problem:** Intermittent login failures because MongoDB Atlas free tier sleeps after 30 minutes of inactivity.
+**Problem:** Intermittent login failures because postgresql Atlas free tier sleeps after 30 minutes of inactivity.
 
 ---
 
@@ -10,7 +10,7 @@
 
 **Added connection retry logic:**
 - Automatic retry up to 3 times for connection failures
-- Detects MongoDB Atlas wake-up delays
+- Detects postgresql Atlas wake-up delays
 - Progressive retry delays (1s, 2s, 3s)
 
 **Added connection string parameters:**
@@ -23,21 +23,21 @@
 
 **Wrapped database queries with retry logic:**
 - Login attempts now retry automatically if database is sleeping
-- Handles MongoDB Atlas wake-up gracefully
+- Handles postgresql Atlas wake-up gracefully
 - Prevents "CredentialsSignin" errors due to connection timeouts
 
 ### 3. Keepalive Endpoint (`app/api/cron/keepalive/route.ts`)
 
 **Prevents database from sleeping:**
 - Simple ping endpoint that queries the database
-- Keeps MongoDB Atlas connection active
+- Keeps postgresql Atlas connection active
 - Can be called manually or via cron
 
 ### 4. Vercel Cron Configuration (`vercel.json`)
 
 **Scheduled keepalive:**
 - Calls `/api/cron/keepalive` every 15 minutes
-- Prevents MongoDB Atlas free tier from sleeping
+- Prevents postgresql Atlas free tier from sleeping
 - No manual intervention needed
 
 ---
@@ -50,7 +50,7 @@ The code changes are ready. Commit and push:
 
 ```bash
 git add lib/db.ts lib/auth.ts app/api/cron/keepalive/route.ts vercel.json
-git commit -m "fix: Add database connection retry and keepalive to prevent MongoDB Atlas sleeping"
+git commit -m "fix: Add database connection retry and keepalive to prevent postgresql Atlas sleeping"
 git push
 ```
 
@@ -60,12 +60,12 @@ Vercel will automatically deploy.
 
 **Current connection string:**
 ```
-mongodb+srv://SmartHotel:1234@cluster0.1savcxg.mongodb.net/smarthotel?retryWrites=true&w=majority&appName=Cluster0
+postgresql://user:pass@host:5432/db
 ```
 
 **Enhanced connection string (add timeout parameters):**
 ```
-mongodb+srv://SmartHotel:1234@cluster0.1savcxg.mongodb.net/smarthotel?retryWrites=true&w=majority&appName=Cluster0&connectTimeoutMS=30000&socketTimeoutMS=45000&serverSelectionTimeoutMS=30000&heartbeatFrequencyMS=10000
+postgresql://user:pass@host:5432/db
 ```
 
 **Steps:**
@@ -169,11 +169,11 @@ User tries to login → Database is already awake → Login succeeds immediately
 **Warning signs:**
 - Frequent `Database connection attempt X failed, retrying...`
 - Keepalive endpoint fails
-- **Action:** Check MongoDB Atlas status or upgrade to M10
+- **Action:** Check postgresql Atlas status or upgrade to M10
 
-### MongoDB Atlas Dashboard
+### postgresql Atlas Dashboard
 
-1. Go to [MongoDB Atlas](https://cloud.mongodb.com/)
+1. Go to [postgresql Atlas](https://cloud.postgresql.com/)
 2. Check cluster status
 3. Look for connection metrics
 4. Verify network access allows `0.0.0.0/0` (for Vercel)
@@ -182,7 +182,7 @@ User tries to login → Database is already awake → Login succeeds immediately
 
 ## 💡 Long-Term Solution
 
-**For production, upgrade MongoDB Atlas:**
+**For production, upgrade postgresql Atlas:**
 
 **Current:** M0 (Free Tier)
 - ❌ Sleeps after 30 minutes
@@ -196,7 +196,7 @@ User tries to login → Database is already awake → Login succeeds immediately
 - ✅ Production SLA
 
 **Upgrade Steps:**
-1. MongoDB Atlas → Clusters → Your Cluster
+1. postgresql Atlas → Clusters → Your Cluster
 2. Click **"Edit Configuration"**
 3. Change tier to **M10**
 4. Confirm and wait ~5 minutes for upgrade
@@ -214,7 +214,7 @@ User tries to login → Database is already awake → Login succeeds immediately
 ### Issue: Still seeing connection timeouts
 
 **Check:**
-1. MongoDB Atlas Network Access allows `0.0.0.0/0`
+1. postgresql Atlas Network Access allows `0.0.0.0/0`
 2. Cluster is running (not paused)
 3. Connection string is correct in Vercel
 4. Check Vercel function logs for specific error messages

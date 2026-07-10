@@ -9,7 +9,7 @@
 
 ### **✅ Core Infrastructure (100%)**
 
-- [x] MongoDB Atlas database connected
+- [x] postgresql Atlas database connected
 - [x] Prisma ORM configured
 - [x] NextAuth authentication working
 - [x] All 33 API endpoints functional

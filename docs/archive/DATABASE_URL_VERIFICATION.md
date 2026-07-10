@@ -54,7 +54,7 @@
    - [ ] `DATABASE_URL` exists
    - [ ] **Production** checkbox is checked ✅
    - [ ] Variable name is exactly `DATABASE_URL`
-   - [ ] Value is a valid MongoDB connection string
+   - [ ] Value is a valid postgresql connection string
 
 ### Step 2: Check Deployment
 1. Go to **Deployments** tab
@@ -95,7 +95,7 @@ curl https://smart-hotel-gtjz4w8js-asithalkonaras-projects.vercel.app/api/rooms
 - [ ] DATABASE_URL is checked for **Production** environment
 - [ ] Variable name is exactly `DATABASE_URL`
 - [ ] Application has been **redeployed** after setting variable
-- [ ] MongoDB Atlas Network Access allows `0.0.0.0/0`
+- [ ] postgresql Atlas Network Access allows `0.0.0.0/0`
 - [ ] API endpoint `/api/rooms` returns data (not 503 error)
 
 ---

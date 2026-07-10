@@ -7,8 +7,8 @@
 ## ✅ Prerequisites
 
 1. **DATABASE_URL** from your Vercel project
-2. **MongoDB Atlas** access with write permissions
-3. **Network access** configured in MongoDB Atlas
+2. **postgresql Atlas** access with write permissions
+3. **Network access** configured in postgresql Atlas
 
 ---
 
@@ -41,7 +41,7 @@ cat .env.production | grep DATABASE_URL
 
 ```bash
 # Set DATABASE_URL and apply
-export DATABASE_URL="your-mongodb-connection-string"
+export DATABASE_URL="your-postgresql-connection-string"
 npm run db:apply-indexes:simple
 ```
 
@@ -58,7 +58,7 @@ npm run db:apply-indexes:simple
 ### Step 1: Set DATABASE_URL
 
 ```bash
-export DATABASE_URL="mongodb+srv://username:password@cluster.mongodb.net/smarthotel?retryWrites=true&w=majority"
+export DATABASE_URL="postgresql://user:pass@host:5432/db
 ```
 
 ### Step 2: Apply Indexes
@@ -85,9 +85,9 @@ DATABASE_URL="your-connection-string" npx prisma db push
 
 ## ✅ Verification
 
-### Check in MongoDB Atlas
+### Check in postgresql Atlas
 
-1. Go to [MongoDB Atlas](https://cloud.mongodb.com)
+1. Go to [postgresql Atlas](https://cloud.postgresql.com)
 2. Select your cluster
 3. Click **Browse Collections**
 4. Select a collection (e.g., `Booking`)
@@ -165,13 +165,13 @@ DATABASE_URL="your-connection-string" npx prisma db push
 
 **Solution:**
 - Verify database credentials in DATABASE_URL
-- Check MongoDB Atlas user permissions
+- Check postgresql Atlas user permissions
 - Ensure user has `readWrite` role
 
 ### Error: "Network timeout"
 
 **Solution:**
-- Check MongoDB Atlas network access
+- Check postgresql Atlas network access
 - Add your IP to whitelist (or use `0.0.0.0/0` for Vercel)
 - Verify cluster is running
 
@@ -194,7 +194,7 @@ After successful application, you should see:
 ✅ Indexes created successfully
 ```
 
-And in MongoDB Atlas:
+And in postgresql Atlas:
 - Indexes visible in Collections > Indexes tab
 - Index build status: "Ready"
 

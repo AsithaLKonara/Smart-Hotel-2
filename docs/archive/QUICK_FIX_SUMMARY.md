@@ -25,7 +25,7 @@
 
 2. **Add/Verify DATABASE_URL**
    - Name: `DATABASE_URL`
-   - Value: Your MongoDB connection string
+   - Value: Your postgresql connection string
    - ✅ **Check "Production" checkbox** (IMPORTANT!)
    - Save
 
@@ -33,8 +33,8 @@
    - Deployments tab → Latest deployment → "..." → "Redeploy"
    - OR: `git push origin main` (auto-deploys)
 
-4. **Verify MongoDB Atlas**
-   - MongoDB Atlas → Security → Network Access
+4. **Verify postgresql Atlas**
+   - postgresql Atlas → Security → Network Access
    - Add `0.0.0.0/0` if not present
    - Wait 2-3 minutes
 

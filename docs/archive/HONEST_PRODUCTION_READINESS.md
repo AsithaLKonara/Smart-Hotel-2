@@ -40,7 +40,7 @@ openssl rand -base64 32
 
 ### 2. **DATABASE_URL** - 🔴 **CRITICAL**
 **Current Status:** Placeholder in `env.example`  
-**Required:** Real MongoDB Atlas connection string
+**Required:** Real postgresql Atlas connection string
 
 **Why Critical:**
 - Application **WILL NOT WORK** without database
@@ -48,7 +48,7 @@ openssl rand -base64 32
 - No data persistence
 
 **Action Required:**
-- Set up MongoDB Atlas account
+- Set up postgresql Atlas account
 - Create cluster
 - Get connection string
 - Add to environment variables
@@ -189,7 +189,7 @@ tsx prisma/seed-comprehensive.ts
    openssl rand -base64 32
    ```
 
-2. ✅ **Set up MongoDB Atlas** (15-30 min)
+2. ✅ **Set up postgresql Atlas** (15-30 min)
    - Create account
    - Create cluster
    - Get connection string
@@ -255,7 +255,7 @@ tsx prisma/seed-comprehensive.ts
 
 ### **Before Deploying - MUST DO:**
 - [ ] Generate secure NEXTAUTH_SECRET (32+ characters)
-- [ ] Set up MongoDB Atlas and get connection string
+- [ ] Set up postgresql Atlas and get connection string
 - [ ] Configure SMTP (Gmail or SendGrid)
 - [ ] Seed database with initial data
 - [ ] Add all environment variables to Vercel
@@ -298,7 +298,7 @@ tsx prisma/seed-comprehensive.ts
 ## 🚀 **NEXT STEPS**
 
 1. **Generate NEXTAUTH_SECRET** (2 min)
-2. **Set up MongoDB Atlas** (15-30 min)
+2. **Set up postgresql Atlas** (15-30 min)
 3. **Configure SMTP** (30 min)
 4. **Seed database** (5 min)
 5. **Deploy** (5 min)

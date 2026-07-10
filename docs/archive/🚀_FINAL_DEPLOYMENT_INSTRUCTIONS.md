@@ -64,8 +64,8 @@ I've created both TypeScript and JavaScript versions of the comprehensive seed f
 Create a `.env` file in your project root:
 
 ```env
-# Database (MongoDB Atlas)
-DATABASE_URL="mongodb+srv://username:password@cluster.mongodb.net/smarthotel?retryWrites=true&w=majority"
+# Database (postgresql Atlas)
+DATABASE_URL="postgresql://user:pass@host:5432/db
 
 # NextAuth
 NEXTAUTH_SECRET="your-secret-key-here-minimum-32-characters"
@@ -269,7 +269,7 @@ vercel --prod
 ### **If Seeding Fails:**
 
 1. **Check DATABASE_URL** in .env file
-2. **Verify MongoDB connection**
+2. **Verify postgresql connection**
 3. **Run:** `npx prisma db push` first
 4. **Try:** `node prisma/seed-comprehensive.js`
 
@@ -312,7 +312,7 @@ All pages exist. All components built. All APIs work. Just needs database seedin
 
 ### **Start Here:**
 
-1. **Create .env file** with your MongoDB URL
+1. **Create .env file** with your postgresql URL
 2. **Run:** `node prisma/seed-comprehensive.js`
 3. **Test:** `npm run dev`
 4. **Deploy:** `git push`

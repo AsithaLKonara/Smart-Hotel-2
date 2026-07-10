@@ -120,7 +120,7 @@ These endpoints are responding but returning 500 errors, likely due to:
 
 **Action Items**:
 1. ✅ Verify `DATABASE_URL` is set in Vercel environment variables
-2. ✅ Verify MongoDB Atlas connection string is correct
+2. ✅ Verify postgresql Atlas connection string is correct
 3. ✅ Test database connection from Vercel
 4. ✅ Verify database network access allows Vercel IPs
 
@@ -149,7 +149,7 @@ vercel env ls
 1. **Verify Database Connection**
    - Check DATABASE_URL in Vercel
    - Test connection from Vercel logs
-   - Verify MongoDB Atlas network access
+   - Verify postgresql Atlas network access
 
 2. **Manual Authentication Testing**
    - Test user registration

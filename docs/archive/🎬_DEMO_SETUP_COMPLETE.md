@@ -43,7 +43,7 @@ Follow **`GET_CREDENTIALS_NOW.md`** to get credentials from:
    - Payment processing (test mode)
    - Get API keys
 
-3. **MongoDB Atlas** (10 min) - https://www.mongodb.com/cloud/atlas/register
+3. **postgresql Atlas** (10 min) - https://www.postgresql.com/cloud/atlas/register
    - Database (free tier)
    - Get connection string
 
@@ -119,7 +119,7 @@ After seeding database:
 | **NextAuth Secret** | ✅ Generated | Already set |
 | **Mailtrap** | ⏳ Pending | Sign up & get SMTP credentials |
 | **Stripe** | ⏳ Pending | Sign up & get test API keys |
-| **MongoDB Atlas** | ⏳ Pending | Create cluster & get connection string |
+| **postgresql Atlas** | ⏳ Pending | Create cluster & get connection string |
 | **Google OAuth** | ⏳ Optional | Set up for social login |
 | **Google Maps** | ⏳ Optional | Get API key for map display |
 
@@ -201,7 +201,7 @@ Once credentials are set up, you can demo:
    - Verify credentials are correct
 
 3. **Database Issues:**
-   - Check MongoDB Atlas cluster is running
+   - Check postgresql Atlas cluster is running
    - Verify IP is whitelisted
    - Check connection string format
 
@@ -218,7 +218,7 @@ Setup:
 [ ] Read GET_CREDENTIALS_NOW.md
 [ ] Created Mailtrap account → Got SMTP credentials
 [ ] Created Stripe account → Got test API keys
-[ ] Created MongoDB Atlas cluster → Got connection string
+[ ] Created postgresql Atlas cluster → Got connection string
 [ ] (Optional) Set up Google OAuth → Got client ID & secret
 [ ] (Optional) Set up Google Maps → Got API key
 [ ] Updated .env.local with all credentials

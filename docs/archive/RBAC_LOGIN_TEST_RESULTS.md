@@ -93,6 +93,6 @@ November 15, 2025
 
 ## Notes
 - All users have been successfully seeded to the production database
-- Database URL: `mongodb+srv://SmartHotel:1234@cluster0.1savcxg.mongodb.net/smarthotel?retryWrites=true&w=majority&appName=Cluster0`
+- Database URL: `postgresql://user:pass@host:5432/db
 - Test each role login on deployment URL: https://smarthotel-demo.vercel.app/auth/signin
 

@@ -7,7 +7,7 @@ SmartHotel uses a comprehensive testing strategy with multiple layers of testing
 ## **Testing Stack**
 
 - **Unit Tests**: Jest + React Testing Library + TypeScript
-- **Integration Tests**: Jest + MongoDB Memory Server + Supertest
+- **Integration Tests**: Jest + postgresql Memory Server + Supertest
 - **E2E Tests**: Playwright with accessibility testing
 - **Performance Tests**: k6 load testing
 - **Security Tests**: Snyk + CodeQL + Dependency scanning
@@ -136,7 +136,7 @@ test('guest can search and book a room', async ({ page }) => {
 
 ### **GitHub Actions Workflow**
 - **Unit Tests**: Run on every PR
-- **Integration Tests**: Run on every PR with MongoDB service
+- **Integration Tests**: Run on every PR with postgresql service
 - **E2E Tests**: Run on main branch and PRs
 - **Security Tests**: Daily scans with Snyk
 - **Performance Tests**: Weekly load tests
@@ -161,7 +161,7 @@ export const testUsers = {
 ```
 
 ### **Database Isolation**
-- Each test suite uses MongoDB Memory Server
+- Each test suite uses postgresql Memory Server
 - Automatic cleanup after tests
 - Deterministic test data
 

@@ -19,7 +19,7 @@
 ✅ Database is populated and ready!
 ```
 
-### ✅ Direct MongoDB Connection: **SUCCESS**
+### ✅ Direct postgresql Connection: **SUCCESS**
 
 - Connection string format: ✅ Valid
 - Network connectivity: ✅ Working
@@ -63,12 +63,12 @@ The database has **19 collections**:
 
 ### Connection String (Masked)
 ```
-mongodb+srv://SmartHotel:***@cluster0.1savcxg.mongodb.net/smarthotel?retryWrites=true&w=majority&appName=Cluster0
+postgresql://user:pass@host:5432/db
 ```
 
 ### Connection Parameters
-- **Protocol:** `mongodb+srv://` ✅
-- **Host:** `cluster0.1savcxg.mongodb.net` ✅
+- **Protocol:** `postgresql://user:pass@host:5432/db ✅
+- **Host:** `cluster0.1savcxg.postgresql.net` ✅
 - **Database:** `smarthotel` ✅
 - **Options:** `retryWrites=true&w=majority&appName=Cluster0` ✅
 
@@ -90,7 +90,7 @@ npm run db:test
 npm run db:debug
 ```
 **Result:** ✅ **PASSED**
-- Direct MongoDB connection: ✅
+- Direct postgresql connection: ✅
 - Prisma connection: ✅
 - Database operations: ✅
 - All collections accessible: ✅
@@ -103,7 +103,7 @@ npm run db:debug
 
 The database connection string from `.env.local` is:
 - ✅ **Valid** - Connection string format is correct
-- ✅ **Accessible** - Can connect to MongoDB Atlas
+- ✅ **Accessible** - Can connect to postgresql Atlas
 - ✅ **Authenticated** - Credentials are correct
 - ✅ **Populated** - Database has data (8,590 users, 420 rooms, 140 menu items)
 - ✅ **Functional** - All Prisma queries work correctly
@@ -119,7 +119,7 @@ Since the **local connection works perfectly**, but **production (Vercel) return
 - ❌ Prisma configuration
 
 The issue **IS** likely:
-- ✅ **MongoDB Atlas IP Whitelist** - Vercel's IPs are blocked
+- ✅ **postgresql Atlas IP Whitelist** - Vercel's IPs are blocked
 - ✅ **Vercel Environment Variable** - DATABASE_URL might be different/wrong in Vercel
 - ✅ **Connection String in Vercel** - Might not match the working one from `.env.local`
 
@@ -132,13 +132,13 @@ The issue **IS** likely:
 1. Go to Vercel Dashboard → **Settings** → **Environment Variables**
 2. Check if `DATABASE_URL` matches the one from `.env.local`:
    ```
-   mongodb+srv://SmartHotel:1234@cluster0.1savcxg.mongodb.net/smarthotel?retryWrites=true&w=majority&appName=Cluster0
+   postgresql://user:pass@host:5432/db
    ```
 3. If different, update it to match
 
-### Step 2: Check MongoDB Atlas IP Whitelist
+### Step 2: Check postgresql Atlas IP Whitelist
 
-1. Go to MongoDB Atlas → **Security** → **Network Access**
+1. Go to postgresql Atlas → **Security** → **Network Access**
 2. Verify `0.0.0.0/0` is in the whitelist
 3. If not, add it:
    - Click **"Add IP Address"**
@@ -180,10 +180,10 @@ curl https://smarthotel-demo.vercel.app/api/rooms
 **The database connection is working perfectly locally.** 
 
 The production issue is most likely:
-1. **MongoDB Atlas IP Whitelist** - Add `0.0.0.0/0`
+1. **postgresql Atlas IP Whitelist** - Add `0.0.0.0/0`
 2. **Vercel DATABASE_URL** - Verify it matches the working one from `.env.local`
 
-**Action:** Fix MongoDB Atlas IP whitelist and verify Vercel environment variables match the working connection string.
+**Action:** Fix postgresql Atlas IP whitelist and verify Vercel environment variables match the working connection string.
 
 ---
 

@@ -65,7 +65,7 @@ Create `.env.local` file:
 
 ```bash
 # Database (✅ already configured)
-DATABASE_URL="your-mongodb-url"
+DATABASE_URL="your-postgresql-url"
 
 # Auth (✅ already configured)
 NEXTAUTH_SECRET="your-secret"

@@ -1,7 +1,7 @@
 # 🗄️ SmartHotel Database Deep Dive Analysis
 
 **Analysis Date:** November 13, 2025  
-**Database Type:** MongoDB (via Prisma ORM)  
+**Database Type:** postgresql (via Prisma ORM)  
 **Status:** ⚠️ Not Configured in Production
 
 ---
@@ -9,7 +9,7 @@
 ## 📊 Executive Summary
 
 ### Current State
-- **Database Provider:** MongoDB (MongoDB Atlas recommended)
+- **Database Provider:** postgresql (postgresql Atlas recommended)
 - **ORM:** Prisma Client v5.7.1
 - **Connection Status:** ❌ `DATABASE_URL` not configured in Vercel
 - **Schema Status:** ✅ Defined and valid
@@ -42,29 +42,29 @@
 │    (prisma/schema.prisma)              │
 └──────────────┬──────────────────────────┘
                │
-               │ MongoDB Driver
+               │ postgresql Driver
                ▼
 ┌─────────────────────────────────────────┐
-│      MongoDB Atlas / MongoDB            │
-│    (mongodb:// or mongodb+srv://)      │
+│      postgresql Atlas / postgresql            │
+│    (postgresql:// or postgresql://user:pass@host:5432/db      │
 └─────────────────────────────────────────┘
 ```
 
-### Database Provider: MongoDB
+### Database Provider: postgresql
 
-**Why MongoDB?**
+**Why postgresql?**
 - Document-based storage (flexible schema)
 - Good for hotel management (nested data like amenities, images)
 - Scalable for high-traffic scenarios
-- Prisma supports MongoDB natively
+- Prisma supports postgresql natively
 
 **Connection String Format:**
 ```env
-# Local MongoDB
-DATABASE_URL="mongodb://localhost:27017/smarthotel"
+# Local postgresql
+DATABASE_URL="postgresql://localhost:27017/smarthotel"
 
-# MongoDB Atlas (Cloud)
-DATABASE_URL="mongodb+srv://username:password@cluster0.xxxxx.mongodb.net/smarthotel?retryWrites=true&w=majority"
+# postgresql Atlas (Cloud)
+DATABASE_URL="postgresql://user:pass@host:5432/db
 ```
 
 ---
@@ -318,7 +318,7 @@ These models are referenced in code but **don't exist** in the schema:
 The schema defines **no relations** between models. This causes:
 
 1. **Cannot use Prisma `include`** - Must fetch related data separately
-2. **No referential integrity** - MongoDB doesn't enforce foreign keys
+2. **No referential integrity** - postgresql doesn't enforce foreign keys
 3. **Manual joins required** - More complex queries
 4. **Type safety issues** - TypeScript can't infer relations
 
@@ -444,10 +444,10 @@ npm run db:seed:production
 
 | Script | Purpose | Command |
 |--------|---------|---------|
-| `debug-db-connection.js` | Test MongoDB connection | `npm run db:debug` |
+| `debug-db-connection.js` | Test postgresql connection | `npm run db:debug` |
 | `quick-db-test.js` | Quick connection test | `npm run db:test` |
 | `setup-production-database.js` | Setup production DB | `npm run db:setup:production` |
-| `check-mongodb-access.js` | Check MongoDB access | (manual) |
+| `check-postgresql-access.js` | Check postgresql access | (manual) |
 | `test-db-connection.js` | Test DB connection | (manual) |
 | `backup-db.js` | Backup database | (manual) |
 | `database-analysis.js` | Analyze database | (manual) |
@@ -480,7 +480,7 @@ npm run validate:env
 1. Go to Vercel Dashboard → Project Settings → Environment Variables
 2. Add `DATABASE_URL`:
    ```
-   mongodb+srv://username:password@cluster0.xxxxx.mongodb.net/smarthotel?retryWrites=true&w=majority
+   postgresql://user:pass@host:5432/db
    ```
 3. Redeploy application
 
@@ -658,7 +658,7 @@ model Room {
 
 2. **Add Indexes** (see Issue 6 above)
 
-3. **Use Prisma Relations** (if possible with MongoDB)
+3. **Use Prisma Relations** (if possible with postgresql)
 
 4. **Implement Caching:**
    - Redis for frequently accessed data
@@ -723,7 +723,7 @@ model Room {
    - Track user actions
 
 4. **Secure Connection String:**
-   - Use MongoDB Atlas IP whitelist
+   - Use postgresql Atlas IP whitelist
    - Use strong passwords
    - Rotate credentials regularly
 
@@ -756,7 +756,7 @@ model Room {
 ### Immediate (P0)
 
 1. **Set DATABASE_URL in Vercel**
-   - Get MongoDB Atlas connection string
+   - Get postgresql Atlas connection string
    - Add to Vercel environment variables
    - Redeploy application
 
@@ -809,8 +809,8 @@ model Room {
 ## 📚 Resources
 
 ### Documentation
-- [Prisma MongoDB Guide](https://www.prisma.io/docs/concepts/database-connectors/mongodb)
-- [MongoDB Atlas Setup](https://www.mongodb.com/docs/atlas/getting-started/)
+- [Prisma postgresql Guide](https://www.prisma.io/docs/concepts/database-connectors/postgresql)
+- [postgresql Atlas Setup](https://www.postgresql.com/docs/atlas/getting-started/)
 - [Prisma Schema Reference](https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference)
 
 ### Scripts

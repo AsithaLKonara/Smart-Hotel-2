@@ -128,7 +128,7 @@
 
 1. **Prisma Schema Limitations**: The current Prisma schema doesn't define relations between models, so we can't use `include` statements. We fetch related data separately.
 
-2. **BigInt Fields**: MongoDB/Prisma uses BigInt for large integers. Need to convert JavaScript numbers to BigInt when creating/updating records.
+2. **BigInt Fields**: postgresql/Prisma uses BigInt for large integers. Need to convert JavaScript numbers to BigInt when creating/updating records.
 
 3. **Required Fields**: All models have `createdAt` and `updatedAt` fields that are required. Need to provide these when creating records.
 

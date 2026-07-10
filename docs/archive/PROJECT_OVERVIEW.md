@@ -14,7 +14,7 @@ SmartHotel is a **complete, enterprise-ready hotel management system** built wit
 - ✅ **28 RBAC dashboards** - Complete role-based access control
 - ✅ **19 CRUD features** - Full create, read, update, delete operations
 - ✅ **100% Frontend Integration** - No mock data remaining
-- ✅ **Production Deployed** - Live on Vercel with MongoDB Atlas
+- ✅ **Production Deployed** - Live on Vercel with postgresql Atlas
 
 ---
 
@@ -36,7 +36,7 @@ External Integrations    ██████████████████�
 ### 🌐 Live Deployment
 - **Production URL**: https://smarthotel-demo.vercel.app
 - **Status**: ✅ **FULLY OPERATIONAL**
-- **Database**: MongoDB Atlas (Cloud-hosted)
+- **Database**: postgresql Atlas (Cloud-hosted)
 - **Uptime**: 99.9% (Vercel infrastructure)
 
 ---
@@ -56,7 +56,7 @@ External Integrations    ██████████████████�
 
 ### 🔧 Backend Stack
 - **Runtime**: Node.js with Next.js API Routes
-- **Database**: MongoDB Atlas (Cloud-hosted)
+- **Database**: postgresql Atlas (Cloud-hosted)
 - **ORM**: Prisma 5.7.1 (Type-safe database access)
 - **Authentication**: NextAuth.js (OAuth + credentials)
 - **Validation**: Zod schemas (runtime type checking)
@@ -67,7 +67,7 @@ External Integrations    ██████████████████�
 
 ### 🚀 Infrastructure
 - **Platform**: Vercel (Serverless deployment)
-- **Database**: MongoDB Atlas (Managed cloud database)
+- **Database**: postgresql Atlas (Managed cloud database)
 - **CDN**: Vercel Edge Network (Global content delivery)
 - **SSL**: Automatic HTTPS with Let's Encrypt
 - **Monitoring**: Built-in health checks and logging
@@ -107,7 +107,7 @@ External Integrations    ██████████████████�
 - **Relationships**: Properly linked with foreign keys
 - **Indexing**: Optimized for performance
 - **Validation**: Schema-level data validation
-- **Backup**: Automatic MongoDB Atlas backups
+- **Backup**: Automatic postgresql Atlas backups
 - **Scalability**: Cloud-native horizontal scaling
 
 ---
@@ -380,7 +380,7 @@ External Integrations    ██████████████████�
 
 **Critical (Required for Core Functionality):**
 - `NEXTAUTH_SECRET` - Authentication secret
-- `DATABASE_URL` - MongoDB connection string
+- `DATABASE_URL` - postgresql connection string
 - `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS` - Email service
 
 **Optional (Enhanced Features):**
@@ -421,7 +421,7 @@ External Integrations    ██████████████████�
 
 ### Prerequisites
 - Node.js 18+ 
-- MongoDB Atlas account (or local MongoDB)
+- postgresql Atlas account (or local postgresql)
 - npm or yarn
 
 ### Installation

@@ -28,10 +28,10 @@ const demoEnvTemplate = `# ===========================================
 # ===========================================
 # Database Configuration
 # ===========================================
-# MongoDB connection string
-# For demo: Use MongoDB Atlas free tier (https://www.mongodb.com/cloud/atlas)
-# Or local MongoDB: mongodb://localhost:27017/smarthotel
-DATABASE_URL=mongodb://localhost:27017/smarthotel
+# PostgreSQL connection string
+# For demo: Use a PostgreSQL provider free tier (e.g., https://supabase.com)
+# Or local PostgreSQL: postgresql://localhost:5432/smarthotel
+DATABASE_URL=postgresql://localhost:5432/smarthotel
 
 # ===========================================
 # NextAuth Configuration
@@ -84,7 +84,7 @@ const exampleEnvTemplate = `# ===========================================
 # Copy this file to .env.local and update with your values
 
 # Database Configuration
-DATABASE_URL=your-mongodb-connection-string
+DATABASE_URL=your-postgresql-connection-string
 
 # NextAuth Configuration
 NEXTAUTH_URL=http://localhost:3000
@@ -138,8 +138,8 @@ function setupDemoEnv() {
   console.log('✅ Created .env.local with demo values');
   console.log('\n📝 Next Steps:');
   console.log('\n1. Database Setup:');
-  console.log('   - Sign up for MongoDB Atlas free tier: https://www.mongodb.com/cloud/atlas');
-  console.log('   - Or install local MongoDB');
+  console.log('   - Sign up for a PostgreSQL provider free tier (e.g. Supabase): https://supabase.com');
+  console.log('   - Or install local PostgreSQL');
   console.log('   - Update DATABASE_URL in .env.local');
   
   console.log('\n2. Stripe Setup (for payments):');

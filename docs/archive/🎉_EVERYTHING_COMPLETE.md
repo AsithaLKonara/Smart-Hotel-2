@@ -215,7 +215,7 @@
 - Health checks
 
 ### **✅ Database Architecture**
-- 23 MongoDB collections
+- 23 postgresql collections
 - Prisma ORM integration
 - Optimized queries
 - Proper relationships
@@ -251,7 +251,7 @@
 - **Custom Domain:** https://smarthotel-demo.vercel.app
 - **SSL Certificate:** Active HTTPS
 - **CDN:** Vercel Global Edge Network
-- **Database:** MongoDB Atlas connected
+- **Database:** postgresql Atlas connected
 - **Build Status:** Successful
 - **Performance:** Optimized
 
@@ -475,7 +475,7 @@ These are the ONLY things left (all optional and non-critical):
 - ✅ Guest experience portal
 
 ### **All Using Real Data:**
-- ✅ MongoDB Atlas database
+- ✅ postgresql Atlas database
 - ✅ Prisma ORM
 - ✅ NextAuth.js authentication
 - ✅ Real-time API calls

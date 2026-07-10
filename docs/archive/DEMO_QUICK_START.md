@@ -30,8 +30,8 @@ Follow these in order - all are FREE:
    - Sign up free → Developers → API keys (TEST mode)
    - Copy keys → Paste into `.env.local`
 
-3. **🗄️ MongoDB Atlas (Database)** - 10 min
-   - Go to: https://www.mongodb.com/cloud/atlas/register
+3. **🗄️ postgresql Atlas (Database)** - 10 min
+   - Go to: https://www.postgresql.com/cloud/atlas/register
    - Create FREE M0 cluster → Get connection string
    - Paste into `.env.local` → Replace `<password>` with your password
 
@@ -71,7 +71,7 @@ Copy this checklist and check off as you complete:
 ESSENTIAL (Required):
 [ ] Mailtrap account created → SMTP credentials added
 [ ] Stripe test account created → Test keys added
-[ ] MongoDB Atlas cluster created → Connection string added
+[ ] postgresql Atlas cluster created → Connection string added
 [ ] NextAuth secret generated (auto-done by script)
 
 RECOMMENDED (Better Demo):
@@ -128,7 +128,7 @@ VALIDATION:
 |---------|------|------|
 | **Mailtrap** | https://mailtrap.io | 5 min |
 | **Stripe** | https://stripe.com | 5 min |
-| **MongoDB Atlas** | https://www.mongodb.com/cloud/atlas/register | 10 min |
+| **postgresql Atlas** | https://www.postgresql.com/cloud/atlas/register | 10 min |
 | **Google Cloud** | https://console.cloud.google.com | 10 min |
 
 ---
@@ -167,7 +167,7 @@ npm run dev
 
 1. **Mailtrap is perfect for demos** - Shows all emails in web interface
 2. **Use Stripe test mode** - Safe, no real charges
-3. **MongoDB Atlas free tier** - 512MB is plenty for demos
+3. **postgresql Atlas free tier** - 512MB is plenty for demos
 4. **Test card works everywhere** - `4242 4242 4242 4242`
 5. **Google OAuth is impressive** - Easy to set up, big impact
 
@@ -176,7 +176,7 @@ npm run dev
 ## 🆘 Troubleshooting
 
 ### Database Connection Error
-- Check MongoDB Atlas IP whitelist (allow `0.0.0.0/0` for dev)
+- Check postgresql Atlas IP whitelist (allow `0.0.0.0/0` for dev)
 - Verify connection string format
 - Ensure database user password is correct
 

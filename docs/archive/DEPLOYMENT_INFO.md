@@ -50,7 +50,7 @@ vercel
 ## Next Steps
 
 1. **Test Production**: Visit the production URL and verify all features work
-2. **Database**: Verify MongoDB Atlas connection is working in production
+2. **Database**: Verify postgresql Atlas connection is working in production
 3. **Custom Domain**: Set up custom domain if needed (optional)
 4. **Monitoring**: Set up Vercel analytics and monitoring (optional)
 5. **Performance**: Monitor performance and optimize as needed

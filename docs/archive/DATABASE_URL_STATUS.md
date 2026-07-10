@@ -39,7 +39,7 @@
 5. **CRITICAL**: Click on it and verify:
    - ✅ **Production** checkbox is checked
    - ✅ Variable name is exactly `DATABASE_URL`
-   - ✅ Value is a valid MongoDB connection string
+   - ✅ Value is a valid postgresql connection string
 
 ### Step 2: Redeploy Application
 **IMPORTANT**: Environment variables only apply to NEW deployments!
@@ -72,7 +72,7 @@ curl https://smart-hotel-gtjz4w8js-asithalkonaras-projects.vercel.app/api/rooms
 - [ ] **Production** checkbox is checked ✅ (CRITICAL!)
 - [ ] Variable name is exactly `DATABASE_URL`
 - [ ] Application **redeployed** after setting variable
-- [ ] MongoDB Atlas Network Access allows `0.0.0.0/0`
+- [ ] postgresql Atlas Network Access allows `0.0.0.0/0`
 - [ ] Test API after redeploy - should work
 
 ---

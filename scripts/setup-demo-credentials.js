@@ -28,7 +28,7 @@ function generateSecret(length = 32) {
   return crypto.randomBytes(length).toString('base64');
 }
 
-// Generate random demo password (for MongoDB example)
+// Generate random demo password (for PostgreSQL example)
 function generateDemoPassword() {
   return crypto.randomBytes(12).toString('base64').replace(/[^a-zA-Z0-9]/g, '').substring(0, 16);
 }
@@ -75,17 +75,17 @@ async function setupDemoCredentials() {
 # ===========================================
 
 # ===========================================
-# Database Configuration (MongoDB Atlas)
+# Database Configuration (PostgreSQL)
 # ===========================================
-# Get FREE tier at: https://www.mongodb.com/cloud/atlas/register
+# Get FREE tier at: https://supabase.com
 # 1. Sign up for free account
-# 2. Create M0 (FREE) cluster
+# 2. Create new project
 # 3. Create database user
 # 4. Copy connection string below
 # 5. Replace <password> with your password
 # 6. Replace <dbname> with "smarthotel"
-DATABASE_URL=mongodb+srv://<username>:<password>@cluster0.xxxxx.mongodb.net/smarthotel?retryWrites=true&w=majority
-# Example: mongodb+srv://demo:${demoPassword}@cluster0.abc123.mongodb.net/smarthotel?retryWrites=true&w=majority
+DATABASE_URL=postgresql://<username>:<password>@<db-host>.supabase.co:5432/postgres
+# Example: postgresql://demo:${demoPassword}@postgres-cluster.example.com/smarthotel
 
 # ===========================================
 # NextAuth Configuration
@@ -226,7 +226,7 @@ NODE_ENV=development
 ## 🔑 Services to Configure
 
 ### Essential (Required)
-- [ ] MongoDB Atlas (Database)
+- [ ] PostgreSQL Provider (Database)
 - [ ] Mailtrap (Email)
 - [ ] Stripe (Payments - Test Mode)
 - [x] NextAuth Secret (✅ Auto-generated)
@@ -282,9 +282,9 @@ See \`DEMO_CREDENTIALS_SETUP.md\` for complete setup instructions.
   console.log('   → https://stripe.com');
   console.log('   → Sign up → Developers → API keys (TEST mode)\n');
 
-  console.log('3. 🗄️ Database (MongoDB Atlas) - FREE:');
-  console.log('   → https://www.mongodb.com/cloud/atlas/register');
-  console.log('   → Create M0 free cluster → Get connection string\n');
+  console.log('3. 🗄️ Database (PostgreSQL - Supabase) - FREE:');
+  console.log('   → https://supabase.com');
+  console.log('   → Create free project → Get connection string\n');
 
   console.log('4. 🔵 Google OAuth (Optional):');
   console.log('   → https://console.cloud.google.com');

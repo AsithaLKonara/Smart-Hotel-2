@@ -366,7 +366,7 @@ All guest-facing pages are fully implemented:
 ## 🔧 **CONFIGURATION AUDIT (Complete - 100%)**
 
 ### **✅ Environment Variables**
-- `DATABASE_URL` - MongoDB connection
+- `DATABASE_URL` - postgresql connection
 - `NEXTAUTH_SECRET` - Authentication secret
 - `NEXTAUTH_URL` - Application URL
 - `SMTP_HOST/PORT/USER/PASS` - Email configuration

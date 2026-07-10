@@ -2,7 +2,7 @@
 
 **Date:** November 19, 2025  
 **Production URL:** https://smarthotel-demo.vercel.app/  
-**Database:** MongoDB Atlas (Production)
+**Database:** postgresql Atlas (Production)
 
 ## Executive Summary
 

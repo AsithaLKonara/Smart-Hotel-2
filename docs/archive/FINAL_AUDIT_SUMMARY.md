@@ -213,7 +213,7 @@
 
 ### **✅ Production Deployment**
 - ✅ **Custom Domain:** https://smarthotel-demo.vercel.app
-- ✅ **Database:** MongoDB Atlas connected and seeded
+- ✅ **Database:** postgresql Atlas connected and seeded
 - ✅ **Authentication:** NextAuth.js configured
 - ✅ **SSL:** HTTPS active
 - ✅ **CDN:** Vercel edge network active

@@ -1,7 +1,7 @@
 # 📊 Database Integration Checklist - SmartHotel
 
 **Date:** 2025-01-16  
-**Database:** MongoDB (via Prisma ORM)  
+**Database:** postgresql (via Prisma ORM)  
 **Status:** Comprehensive Integration Review
 
 ---
