@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { z } from 'zod'
+import { handleZodError } from '@/lib/api-utils'
 
 const createComplaintSchema = z.object({
   subject: z.string().min(3, "Subject must be at least 3 characters").max(100),
@@ -62,7 +63,7 @@ export async function POST(request: NextRequest) {
 
     const validation = createComplaintSchema.safeParse(await request.json())
     if (!validation.success) {
-      return NextResponse.json({ error: 'Validation Error', details: validation.error.flatten().fieldErrors }, { status: 400 })
+      return handleZodError(validation.error)
     }
 
     const { subject, description, category, bookingId, priority } = validation.data
@@ -104,7 +105,7 @@ export async function PATCH(request: NextRequest) {
 
     const validation = updateComplaintSchema.safeParse(await request.json())
     if (!validation.success) {
-      return NextResponse.json({ error: 'Validation Error', details: validation.error.flatten().fieldErrors }, { status: 400 })
+      return handleZodError(validation.error)
     }
 
     const { id, status, resolvedAt } = validation.data

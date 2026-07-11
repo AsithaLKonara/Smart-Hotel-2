@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import prisma from '@/lib/db'
 import { z } from 'zod'
-import { handleZodError } from '@/lib/api-utils'
+import { handleZodError, toPublicRoomDTO } from '@/lib/api-utils'
 
 const roomUpdateSchema = z.object({
   number: z.string().min(1, 'Room number is required').optional(),
@@ -124,9 +124,7 @@ export async function GET(
     const isAuthenticatedStaff = session && ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'HOUSEKEEPING', 'MAINTENANCE'].includes((session.user as any).roleName as string)
     
     if (!isAuthenticatedStaff) {
-      const publicRoom = { ...room }
-      delete (publicRoom as any).status
-      return NextResponse.json(publicRoom)
+      return NextResponse.json(toPublicRoomDTO(room))
     }
 
     return NextResponse.json(room)

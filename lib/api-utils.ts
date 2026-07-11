@@ -10,3 +10,20 @@ export function handleZodError(error: z.ZodError) {
     { status: 400 }
   );
 }
+
+export function toPublicRoomDTO(room: any) {
+  if (!room) return room;
+  const { 
+    status, 
+    lastStatusChangeAt, 
+    lockId, 
+    lockExpiresAt, 
+    lastCleanedAt, 
+    lastInspectedAt, 
+    deletedAt, 
+    version, 
+    ownerId, 
+    ...publicFields 
+  } = room;
+  return publicFields;
+}

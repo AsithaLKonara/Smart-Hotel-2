@@ -6,7 +6,7 @@ import { isDatabaseConfigured, getDatabaseErrorMessage } from '@/lib/db-helpers'
 import { getEffectivePropertyId } from '@/lib/server-rbac'
 import { z } from 'zod'
 import { unstable_cache } from 'next/cache'
-import { handleZodError } from '@/lib/api-utils'
+import { handleZodError, toPublicRoomDTO } from '@/lib/api-utils'
 
 const roomSchema = z.object({
   number: z.string().min(1, 'Room number is required'),
@@ -50,9 +50,14 @@ export async function GET(request: NextRequest) {
 
     const rooms = await getCachedRooms(typeId, status, availableOnly, propertyId)
 
+    const session = await getServerSession(authOptions)
+    const isAuthenticatedStaff = session && ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'HOUSEKEEPING', 'MAINTENANCE'].includes((session.user as any).roleName as string)
+
+    const returnRooms = isAuthenticatedStaff ? rooms : rooms.map(toPublicRoomDTO)
+
     return NextResponse.json({
-      rooms,
-      count: rooms.length
+      rooms: returnRooms,
+      count: returnRooms.length
     })
   } catch (error: any) {
     console.error('Error fetching rooms:', error)

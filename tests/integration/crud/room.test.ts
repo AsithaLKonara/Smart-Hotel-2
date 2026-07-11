@@ -1,5 +1,5 @@
 import { GET, POST } from '@/app/api/rooms/route';
-import { PUT, DELETE } from '@/app/api/rooms/[id]/route';
+import { GET as GET_ID, PUT, DELETE } from '@/app/api/rooms/[id]/route';
 import { RoomFactory } from '@/tests/factories/room.factory';
 import { cleanDatabase } from '@/tests/utils/clean-db';
 import { createNextRequest } from '../../utils/api-handler';
@@ -145,6 +145,56 @@ describe('Room CRUD Verification', () => {
       const deletedRoom = await prisma.room.findUnique({ where: { id: room.id } });
       expect(deletedRoom).not.toBeNull();
       expect(deletedRoom?.deletedAt).not.toBeNull();
+    });
+  });
+
+  describe('Visibility & Authentication (API-008)', () => {
+    it('strips operational fields from GET /api/rooms/[id] for unauthenticated users', async () => {
+      (getServerSession as jest.Mock).mockResolvedValueOnce(null);
+
+      const room = await RoomFactory.create({ status: 'DIRTY' });
+
+      const req = createNextRequest(`/api/rooms/${room.id}`, 'GET');
+      const res = await GET_ID(req, { params: Promise.resolve({ id: room.id }) } as any);
+      
+      expect(res.status).toBe(200);
+      const json = await res.json();
+      expect(json.number).toBe(room.number);
+      expect(json.status).toBeUndefined(); // Operational field stripped
+      expect(json.lastCleanedAt).toBeUndefined();
+    });
+
+    it('returns full operational fields from GET /api/rooms/[id] for STAFF', async () => {
+      (getServerSession as jest.Mock).mockResolvedValueOnce({
+        user: { roleName: 'MANAGER', id: 'mock-admin-id' }
+      });
+
+      const room = await RoomFactory.create({ status: 'MAINTENANCE' });
+
+      const req = createNextRequest(`/api/rooms/${room.id}`, 'GET');
+      const res = await GET_ID(req, { params: Promise.resolve({ id: room.id }) } as any);
+      
+      expect(res.status).toBe(200);
+      const json = await res.json();
+      expect(json.number).toBe(room.number);
+      expect(json.status).toBe('MAINTENANCE'); // Field retained
+    });
+
+    it('strips operational fields from GET /api/rooms for unauthenticated users', async () => {
+      (getServerSession as jest.Mock).mockResolvedValueOnce(null);
+
+      await RoomFactory.create({ status: 'AVAILABLE' });
+      await RoomFactory.create({ status: 'OCCUPIED' });
+
+      // In real code, GET for /api/rooms is exported from app/api/rooms/route.ts.
+      const req = createNextRequest('/api/rooms', 'GET');
+      const res = await GET(req); // Note: The route.ts GET takes NextRequest only
+      
+      expect(res.status).toBe(200);
+      const json = await res.json();
+      expect(json.rooms.length).toBeGreaterThanOrEqual(2);
+      expect(json.rooms[0].status).toBeUndefined();
+      expect(json.rooms[1].status).toBeUndefined();
     });
   });
 });
