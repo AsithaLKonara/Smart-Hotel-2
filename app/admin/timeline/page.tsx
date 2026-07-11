@@ -148,6 +148,9 @@ export default function UnifiedLiveTimeline() {
   // Pusher real-time event integration
   useEffect(() => {
     const pusher = getPusherClient()
+    // CFG-003: Pusher is optional. Silently skip subscription when unconfigured.
+    if (!pusher) return
+
     const adminChannel = pusher.subscribe('admin')
 
     const handleNewTimelineTrigger = (data: any) => {
@@ -192,6 +195,7 @@ export default function UnifiedLiveTimeline() {
   }, [])
 
   const triggerManualSimulationEvent = () => {
+
     // Simulation event injected onto local timeline (since we transitioned to Pusher)
     const fallbackEvent: TimelineEvent = {
       id: `evt-${Date.now()}`,

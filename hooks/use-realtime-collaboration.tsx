@@ -50,6 +50,8 @@ export function useRealtimeCollaboration(activeChannel: string) {
     if (!session?.user?.id) return
 
     const pusher = getPusherClient()
+    // CFG-003: Pusher is optional. Silently skip real-time setup when unconfigured.
+    if (!pusher) return
     
     // 1. Subscribe to Presence Channel for Online Staff
     const presenceChannel = pusher.subscribe('presence-staff') as any
@@ -96,6 +98,8 @@ export function useRealtimeCollaboration(activeChannel: string) {
 
   const setLocalTyping = (isTyping: boolean) => {
     const pusher = getPusherClient()
+    // CFG-003: Pusher is optional. Silently skip when unconfigured.
+    if (!pusher) return
     const collabChannel = pusher.channel(`collab-${activeChannel}`)
     if (collabChannel) {
       collabChannel.trigger('client-typing', {

@@ -24,6 +24,8 @@ export function useRealtimeUpdates() {
   useEffect(() => {
     // 1. Get Shared Pusher Client
     const pusher = getPusherClient()
+    // CFG-003: Pusher is optional. Silently skip real-time setup when unconfigured.
+    if (!pusher) return
 
     pusher.connection.bind('connected', () => setIsConnected(true))
     pusher.connection.bind('disconnected', () => setIsConnected(false))

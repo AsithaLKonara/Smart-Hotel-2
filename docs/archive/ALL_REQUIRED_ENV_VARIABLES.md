@@ -2,50 +2,79 @@
 
 Complete, validated reference for every environment variable the SmartHotel stack recognises.
 
-> ✅ Verified: `npm run validate:env` (November 2025). Required variables confirmed present in `.env.local`.
+> ✅ Verified: `npm run validate:env` (July 2026). Required variables confirmed present in `.env.local`.
 
 ---
 
 ## ✅ Required For Application Startup
 
-These nine values are mandatory. The validator script, CI pipelines, and local smoke tests will fail immediately if any are missing or malformed.
+These values are mandatory. The validator script, CI pipelines, and local smoke tests will fail immediately if any are missing or malformed.
 
 ```env
+# Database (PostgreSQL ONLY — NOT MongoDB)
 DATABASE_URL=postgresql://username:password@localhost:5432/smarthotel
+DIRECT_URL=postgresql://username:password@localhost:5432/smarthotel
+
+# Auth
 NEXTAUTH_URL=http://localhost:3000
 NEXTAUTH_SECRET=generate-a-32-char-secret
+
+# Security (required for cron authentication)
+CRON_SECRET=generate-a-strong-random-secret
+
+# Stripe
 STRIPE_SECRET_KEY=sk_test_your_secret_key
 STRIPE_PUBLISHABLE_KEY=pk_test_your_publishable_key
+
+# Email
 SMTP_HOST=sandbox.smtp.mailtrap.io
 SMTP_PORT=2525
 SMTP_USER=your_smtp_username
 SMTP_PASS=your_smtp_password
 ```
 
-- **DATABASE_URL** – PostgreSQL connection string (Supabase, Neon, or on-prem). Accepted prefixes: `postgresql://` or `postgres://`.
-- **NEXTAUTH_URL** – Base URL used by NextAuth for callbacks and absolute routes. Use production domain (`https://app.example.com`) in live environments.
+- **DATABASE_URL** – PostgreSQL connection string (Supabase, Neon, or on-prem). Accepted prefixes: `postgresql://` or `postgres://`. **⚠️ MongoDB is NOT supported.**
+- **DIRECT_URL** – Direct (non-pooled) PostgreSQL URL for Prisma migrations.
+- **NEXTAUTH_URL** – Base URL used by NextAuth for callbacks. Use production domain (`https://app.example.com`) in live environments.
 - **NEXTAUTH_SECRET** – 32+ character cryptographic secret (generate with `openssl rand -base64 32`).
-- **STRIPE_SECRET_KEY / STRIPE_PUBLISHABLE_KEY** – Stripe credentials for payment processing (test keys start with `sk_test_` / `pk_test_`).
-- **SMTP_HOST / SMTP_PORT / SMTP_USER / SMTP_PASS** – SMTP credentials (Mailtrap, SendGrid, Gmail, etc.) needed for password reset and transactional mail.
+- **CRON_SECRET** – Secures all `/api/cron/*` routes via Bearer token authentication. **Must be set in production.** Without this, Night Audit and Keepalive cron routes return `500 Server Misconfiguration` (fail-closed by design — CFG-004).
+- **STRIPE_SECRET_KEY / STRIPE_PUBLISHABLE_KEY** – Stripe credentials for payment processing.
+- **SMTP_HOST / SMTP_PORT / SMTP_USER / SMTP_PASS** – SMTP credentials for password reset and transactional mail (outbox-based delivery).
 
 ---
 
-## 🔶 Recommended For Production Deployments
+## 🔶 Required For Production Features
 
-These provide branded URLs, admin notifications, and third-party integrations. The app supplies defaults, but production should set explicit values.
-
-### Public URLs & Notifications
+### Redis (Upstash)
 
 ```env
-NEXT_PUBLIC_APP_URL=https://smarthotel.example.com
-ADMIN_EMAIL=admin@smarthotel.com
-CONTACT_EMAIL=concierge@smarthotel.com
-SOCKET_IO_URL=https://smarthotel.example.com
+UPSTASH_REDIS_REST_URL=https://your-upstash-redis-url.upstash.io
+UPSTASH_REDIS_REST_TOKEN=your-upstash-redis-token
 ```
 
-- **NEXT_PUBLIC_APP_URL** – Used in layout metadata, email templates, password reset links, Socket.IO fallback, and QR code generation.
-- **ADMIN_EMAIL / CONTACT_EMAIL** – Delivery targets for system alerts and `/contact` submissions (fallbacks to `SMTP_FROM_EMAIL` when unset).
-- **SOCKET_IO_URL** – Explicit origin for real-time events; defaults to `NEXTAUTH_URL` if omitted.
+Used for:
+- **Distributed booking locks** (prevents double-bookings under concurrency)
+- **Stripe webhook deduplication** (fail-closed if unavailable — PAY-005/INT-010)
+- **Chat history async queue** (INT-008)
+- **Outbox drain trigger** (INT-006/BOOK-005)
+
+### AI / Groq Chatbot
+
+```env
+GROQ_API_KEY=gsk_your-groq-api-key-here
+```
+
+Required for the AI-powered concierge chatbot. **No fallback.** Without this key, the chat endpoint returns a graceful static response (CFG-004 compliance). Do **not** use `BUILD_PLACEHOLDER` in production.
+
+### OTA Integration (Booking.com)
+
+```env
+BOOKING_COM_API_KEY=your-booking-com-api-key
+BOOKING_COM_PARTNER_ID=your-booking-com-partner-id
+BOOKING_COM_WEBHOOK_SECRET=your-booking-com-webhook-secret
+```
+
+- **BOOKING_COM_WEBHOOK_SECRET** – Validates inbound OTA push notifications. Requests without a valid Bearer token are rejected `401` (INT-001).
 
 ### Stripe Webhooks
 
@@ -53,7 +82,35 @@ SOCKET_IO_URL=https://smarthotel.example.com
 STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
 ```
 
-Needed for payment lifecycle webhooks (`/api/webhooks/stripe`).
+### Email Branding
+
+```env
+SMTP_FROM_EMAIL=noreply@smarthotel.com
+SMTP_FROM_NAME=SmartHotel
+ADMIN_EMAIL=admin@smarthotel.com
+CONTACT_EMAIL=concierge@smarthotel.com
+```
+
+---
+
+## 🟢 Optional Feature Toggles
+
+### Real-time (Pusher)
+
+```env
+PUSHER_APP_ID=your-pusher-app-id
+NEXT_PUBLIC_PUSHER_KEY=your-pusher-key
+PUSHER_SECRET=your-pusher-secret
+NEXT_PUBLIC_PUSHER_CLUSTER=mt1
+```
+
+**These are optional.** When absent, `lib/realtime.ts` falls back to a no-op trigger, and `lib/pusher-client.ts` returns `null` to prevent frontend crashes (CFG-003). Real-time dashboard events will be silently skipped.
+
+### Public URLs & Notifications
+
+```env
+NEXT_PUBLIC_APP_URL=https://smarthotel.example.com
+```
 
 ### Google Services
 
@@ -62,27 +119,18 @@ GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=your-google-client-secret
 NEXT_PUBLIC_GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
 GOOGLE_MAPS_API_KEY=AIzaSyYour_Google_Maps_API_Key
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=AIzaSyYour_Google_Maps_API_Key
 NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX
 ```
 
-- **Google OAuth** – Enables “Sign in with Google” (button renders automatically when `NEXT_PUBLIC_GOOGLE_CLIENT_ID` is defined).
-- **Google Maps** – Interactive map on `/contact`.
-- **Google Analytics** – Injected script from the Next.js layout when provided.
-
-### Email Sender Branding
+### Cloudinary Media
 
 ```env
-SMTP_FROM_EMAIL=noreply@smarthotel.com
-SMTP_FROM_NAME=SmartHotel
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your_cloud_name
 ```
-
-Used by `lib/email.ts` for outbound mail defaults.
-
----
-
-## 🟢 Optional Feature Toggles
-
-Set these as needed to unlock advanced capabilities. Otherwise the code paths use safe fallbacks.
 
 ### Push Notifications
 
@@ -90,18 +138,6 @@ Set these as needed to unlock advanced capabilities. Otherwise the code paths us
 NEXT_PUBLIC_VAPID_PUBLIC_KEY=your_public_vapid_key
 VAPID_PRIVATE_KEY=your_private_vapid_key
 ```
-
-Required for browser push notifications in `lib/push-notifications.ts`.
-
-### Cloudinary Media Uploads
-
-```env
-CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
-```
-
-Used by the gallery and admin content editors.
 
 ### Security & Observability
 
@@ -115,35 +151,72 @@ ENABLE_HSTS=true
 TRUST_PROXY=true
 HEALTH_CHECK_ENABLED=true
 HEALTH_CHECK_TIMEOUT=5000
+SENTRY_DSN=your-sentry-dsn-here
+NEXT_PUBLIC_SENTRY_DSN=your-sentry-dsn-here
 SNYK_TOKEN=your_snyk_token
 NODE_ENV=production
 ```
-
-Controls rate limiting, session lifetime, health checks, and security headers.
 
 ---
 
 ## 📋 Quick Reference Table
 
-| Category | Variables |
-|----------|-----------|
-| **Core** | `DATABASE_URL`, `NEXTAUTH_URL`, `NEXTAUTH_SECRET`, `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` |
-| **Branding & URLs** | `NEXT_PUBLIC_APP_URL`, `ADMIN_EMAIL`, `CONTACT_EMAIL`, `SMTP_FROM_EMAIL`, `SMTP_FROM_NAME`, `SOCKET_IO_URL` |
-| **Payments** | `STRIPE_WEBHOOK_SECRET` |
-| **Google** | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `NEXT_PUBLIC_GOOGLE_CLIENT_ID`, `GOOGLE_MAPS_API_KEY`, `NEXT_PUBLIC_GA_ID` |
-| **Notifications** | `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` |
-| **Media** | `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` |
-| **Security** | `RATE_LIMIT_ENABLED`, `MAX_LOGIN_ATTEMPTS`, `LOGIN_TIMEOUT_MINUTES`, `SESSION_TIMEOUT_HOURS`, `ENABLE_CSP`, `ENABLE_HSTS`, `TRUST_PROXY`, `HEALTH_CHECK_ENABLED`, `HEALTH_CHECK_TIMEOUT`, `SNYK_TOKEN`, `NODE_ENV` |
+| Category | Required | Variables |
+|----------|----------|-----------|
+| **Core DB** | ✅ Yes | `DATABASE_URL`, `DIRECT_URL` |
+| **Auth** | ✅ Yes | `NEXTAUTH_URL`, `NEXTAUTH_SECRET` |
+| **Security/Cron** | ✅ Yes | `CRON_SECRET` |
+| **Payments** | ✅ Yes | `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY`, `STRIPE_WEBHOOK_SECRET` |
+| **Email** | ✅ Yes | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM_EMAIL`, `SMTP_FROM_NAME`, `ADMIN_EMAIL` |
+| **Redis** | 🔶 Prod | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` |
+| **AI/Groq** | 🔶 Prod | `GROQ_API_KEY` |
+| **OTA** | 🔶 Prod | `BOOKING_COM_API_KEY`, `BOOKING_COM_PARTNER_ID`, `BOOKING_COM_WEBHOOK_SECRET` |
+| **Real-time** | 🟢 Optional | `PUSHER_APP_ID`, `NEXT_PUBLIC_PUSHER_KEY`, `PUSHER_SECRET`, `NEXT_PUBLIC_PUSHER_CLUSTER` |
+| **Google** | 🟢 Optional | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `NEXT_PUBLIC_GOOGLE_CLIENT_ID`, `GOOGLE_MAPS_API_KEY`, `NEXT_PUBLIC_GA_ID` |
+| **Media** | 🟢 Optional | `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` |
+| **Push** | 🟢 Optional | `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` |
+
+---
+
+## ⚠️ Environment Differences (Dev vs Production) — CFG-005
+
+The following behaviors differ between local development and Vercel production. New engineers must be aware of these before debugging.
+
+### 1. NextAuth Cookie Prefixes
+
+| Cookie | Development Name | Production Name |
+|--------|-----------------|-----------------|
+| Session Token | `next-auth.session-token` | `__Secure-next-auth.session-token` |
+| Callback URL | `next-auth.callback-url` | `__Secure-next-auth.callback-url` |
+| CSRF Token | `next-auth.csrf-token` | `__Host-next-auth.csrf-token` |
+
+The `__Secure-` and `__Host-` prefixes are applied only when `NODE_ENV === 'production'` in `lib/auth.ts`. These prefixes enforce HTTPS-only cookies and cannot be read in local HTTP environments. This means:
+- **Session bugs that occur only in production** may be caused by cookie prefix mismatch if testing over HTTP locally.
+- Always use `https://localhost` or an HTTPS tunnel (e.g., `ngrok`) to replicate production cookie behavior locally.
+
+### 2. `instrumentation.ts` — Vercel Edge vs Node.js
+
+`instrumentation.ts` uses `process.env.NEXT_RUNTIME === 'nodejs'` to conditionally run server-only initialization code (WebSocket SSRF firewall, environment validation). On Vercel:
+- **Node.js runtime** — `register()` executes normally on cold starts.
+- **Edge runtime** — `register()` is invoked but the `if` guard prevents Node.js-specific code (e.g., `http.Server.prototype` patching) from running. This is intentional and expected.
+
+This means the WebSocket SSRF firewall **does not run** on Edge-deployed routes. Ensure critical API routes that process WebSocket upgrades are not deployed to the Edge runtime.
+
+### 3. Supabase Connection Pooler Sleeps
+
+The Supabase free-tier Postgres connection pooler (`pooler.supabase.com:6543`) sleeps after inactivity. This causes intermittent `Can't reach database server` errors on cold starts. The `/api/cron/keepalive` route is designed to prevent this by periodically pinging the database.
 
 ---
 
 ## ✅ Minimum Demo Configuration
 
-For local demos or automated test suites, the following nine entries are sufficient (matching the validator output):
+For local demos or automated test suites:
 
 - `DATABASE_URL`
+- `DIRECT_URL`
 - `NEXTAUTH_URL`
 - `NEXTAUTH_SECRET`
+- `CRON_SECRET`
 - `STRIPE_SECRET_KEY`
 - `STRIPE_PUBLISHABLE_KEY`
 - `SMTP_HOST`
@@ -162,31 +235,23 @@ npm run setup:demo:credentials   # optional helper script
 npm run validate:env             # required check
 ```
 
-The validator reports missing or malformed values and reminds you of example formats. It is invoked locally and in CI to protect deployments.
-
 ---
 
 ## 📖 Credential Sources
 
 | Service | Link | Notes |
 |---------|------|-------|
-| PostgreSQL Provider (e.g., Supabase) | https://supabase.com | Connection string for `DATABASE_URL`. |
+| PostgreSQL (Supabase) | https://supabase.com | Connection string for `DATABASE_URL`. |
 | Stripe | https://stripe.com | Test/live API keys and webhook secret. |
-| Mailtrap (or SMTP provider) | https://mailtrap.io | SMTP credentials for outbound email. |
+| Upstash Redis | https://upstash.com | `UPSTASH_REDIS_REST_URL` and token. |
+| Groq | https://console.groq.com | `GROQ_API_KEY` for LLM inference. |
+| Mailtrap (or SMTP) | https://mailtrap.io | SMTP credentials for outbound email. |
 | Google Cloud Console | https://console.cloud.google.com | OAuth, Maps, Analytics IDs. |
 | Cloudinary | https://cloudinary.com | Optional media upload credentials. |
+| Pusher | https://pusher.com | Optional real-time channels. |
 | Web Push VAPID | https://github.com/web-push-libs/web-push | Use `npx web-push generate-vapid-keys`. |
 
 ---
 
-## 🧪 Latest Status
-
-- `npm run validate:env` – **PASS**
-- Playwright smoke (Chromium & Firefox) – **PASS**
-- Playwright WebKit – **Blocked on macOS 12 frozen WebKit build** (requires newer macOS for Playwright 1.45+ setting support).
-
----
-
-**Last updated:** November 2025  
+**Last updated:** July 2026  
 **Maintainer:** Platform Engineering – SmartHotel
-

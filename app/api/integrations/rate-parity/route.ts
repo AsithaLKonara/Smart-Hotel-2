@@ -3,14 +3,17 @@ import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
-// Scheduled cron job to check direct booking rates against OTA scraped rates
-const CRON_SECRET = process.env.CRON_SECRET || 'dev-secret-key'
-
 export async function GET(req: Request) {
   try {
+    // CFG-004: Fail-closed on missing secret.
+    const cronSecret = process.env.CRON_SECRET
+    if (!cronSecret) {
+      console.error('[RATE_PARITY] CRON_SECRET is not configured. Rejecting request.')
+      return NextResponse.json({ error: 'Server Misconfiguration' }, { status: 500 })
+    }
+
     const authHeader = req.headers.get('authorization')
-    
-    if (authHeader !== `Bearer ${CRON_SECRET}`) {
+    if (authHeader !== `Bearer ${cronSecret}`) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 

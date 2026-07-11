@@ -84,7 +84,7 @@ export default function NightAuditPage() {
                   setRollingForward(true)
                   try {
                     const res = await fetch('/api/cron/night-audit/roll-forward', {
-                      headers: { 'Authorization': `Bearer ${process.env.NEXT_PUBLIC_CRON_SECRET || 'dev-secret-key'}` }
+                      headers: { 'Authorization': `Bearer ${process.env.NEXT_PUBLIC_CRON_SECRET || ''}` }
                     })
                     const data = await res.json()
                     if (res.ok) {

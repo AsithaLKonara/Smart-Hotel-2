@@ -8,6 +8,11 @@ export async function generateEmbedding(text: string): Promise<number[]> {
     const cached = await getCachedEmbedding(text);
     if (cached) return cached;
 
+    // CFG-004: groq is null when GROQ_API_KEY is absent — return zero vector fallback.
+    if (!groq) {
+        return Array(768).fill(0);
+    }
+
     try {
         const response = await groq.embeddings.create({
             model: "nomic-embed-text-v1_5",

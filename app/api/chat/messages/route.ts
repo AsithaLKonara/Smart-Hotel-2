@@ -144,7 +144,8 @@ export async function POST(req: NextRequest) {
             "Compose a luxury response in the persona of the Sanctuary Concierge. Keep it professional and helpful.",
         ].filter(Boolean).join("\n\n");
 
-        if (!process.env.GROQ_API_KEY || process.env.GROQ_API_KEY === "BUILD_PLACEHOLDER") {
+        // CFG-004: groq is null when GROQ_API_KEY is absent (no BUILD_PLACEHOLDER fallback).
+        if (!groq) {
             const fallbackMessage = "I apologize, but my connection to the Sanctuary central intelligence is currently offline for routine maintenance. Our human concierge team is available at the front desk to assist you immediately.";
             const stream = new ReadableStream({
                 async start(controller) {

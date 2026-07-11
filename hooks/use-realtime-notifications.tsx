@@ -135,6 +135,7 @@ export function useRealtimeNotifications() {
     try {
       // 1. Get Shared Pusher Client
       const pusher = getPusherClient()
+      if (!pusher) return
       channel = pusher.subscribe(`user-${session.user.id}`)
       
       setIsPollingActive(false)
@@ -160,7 +161,7 @@ export function useRealtimeNotifications() {
       if (channel) {
         try {
           channel.unbind_all()
-          getPusherClient().unsubscribe(`user-${session.user.id}`)
+          getPusherClient()?.unsubscribe(`user-${session.user.id}`)
         } catch (err) {
           // Ignore cleanup errors
         }

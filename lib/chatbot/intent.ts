@@ -38,6 +38,10 @@ Analyze the user message and return ONLY a valid JSON object with this exact sha
 Return ONLY the JSON. No explanation. No markdown.`;
 
 export async function detectIntent(message: string): Promise<IntentResult> {
+    // CFG-004: groq is null when GROQ_API_KEY is absent — fall back to generic intent.
+    if (!groq) {
+        return { intent: "general", entities: {}, confidence: "low" };
+    }
     try {
         const completion = await groq.chat.completions.create({
             model: "llama-3.3-70b-versatile",

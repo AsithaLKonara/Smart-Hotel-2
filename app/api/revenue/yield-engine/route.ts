@@ -3,14 +3,18 @@ import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
-// Secure the cron endpoint
-const CRON_SECRET = process.env.CRON_SECRET || 'dev-secret-key'
-
 // Yield Management AI rule engine
 export async function GET(req: Request) {
   try {
+    // CFG-004: Fail-closed on missing secret.
+    const cronSecret = process.env.CRON_SECRET
+    if (!cronSecret) {
+      console.error('[YIELD_ENGINE] CRON_SECRET is not configured. Rejecting request.')
+      return NextResponse.json({ error: 'Server Misconfiguration' }, { status: 500 })
+    }
+
     const authHeader = req.headers.get('authorization')
-    if (authHeader !== `Bearer ${CRON_SECRET}`) {
+    if (authHeader !== `Bearer ${cronSecret}`) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 

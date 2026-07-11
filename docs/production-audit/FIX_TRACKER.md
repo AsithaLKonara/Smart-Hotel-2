@@ -48,11 +48,11 @@
 | [INT-008](integrations/INT-008.md) | Sprint 3 | Resolved | Antigravity | Groq Stream Exception Swallowing | Decoupled history save from ReadableStream using Redis `rpush` async queue. |
 | [INT-009](integrations/INT-009.md) | Sprint 3 | Resolved | Antigravity | Cloudinary Ghost Integration | Configured Next.js remotePatterns and Content-Security-Policy for Cloudinary. |
 | [INT-010](integrations/INT-010.md) | Sprint 2 | Resolved | Antigravity | Redis Bypass on Disconnect | Applied fail-closed deduplication (Duplicate of PAY-005). |
-| [CFG-001](configuration/CFG-001.md) | Sprint 1 | Open | Unassigned | PostgreSQL / MongoDB Fatal Mismatch |
-| [CFG-002](configuration/CFG-002.md) | Sprint 1 | Open | Unassigned | Missing Undocumented Critical Variables |
-| [CFG-003](configuration/CFG-003.md) | Sprint 3 | Open | Unassigned | Optional Variables Incorrectly Required |
-| [CFG-004](configuration/CFG-004.md) | Sprint 1 | Open | Unassigned | Unsafe System Defaults (Cron, Groq) |
-| [CFG-005](configuration/CFG-005.md) | Sprint 4 | Open | Unassigned | Differing Development vs. Production Behavior |
+| [CFG-001](configuration/CFG-001.md) | Sprint 1 | Resolved | Antigravity | PostgreSQL / MongoDB Fatal Mismatch | Updated `env.example` and `ALL_REQUIRED_ENV_VARIABLES.md` to remove MongoDB references and document PostgreSQL-only requirement. |
+| [CFG-002](configuration/CFG-002.md) | Sprint 1 | Resolved | Antigravity | Missing Undocumented Critical Variables | Added `UPSTASH_REDIS_REST_URL/TOKEN`, `CRON_SECRET`, `GROQ_API_KEY`, `BOOKING_COM_*` to `env.example` and docs. |
+| [CFG-003](configuration/CFG-003.md) | Sprint 3 | Resolved | Antigravity | Optional Variables Incorrectly Required | `getPusherClient()` now returns `null` when keys absent. Null guards propagated to all 4 hook/page call-sites. System boots gracefully without Pusher. |
+| [CFG-004](configuration/CFG-004.md) | Sprint 1 | Resolved | Antigravity | Unsafe System Defaults (Cron, Groq) | Removed `dev-secret-key` fallback (night-audit fails closed 500). Removed `BUILD_PLACEHOLDER` from `groq.ts`; null guards added to `intent.ts`, `knowledge.ts`, `chat/messages/route.ts`. |
+| [CFG-005](configuration/CFG-005.md) | Sprint 4 | Resolved | Antigravity | Differing Development vs. Production Behavior | Documented NextAuth `__Secure-` cookie prefix behavior and Vercel Edge instrumentation differences in `ALL_REQUIRED_ENV_VARIABLES.md`. |
 
 
 
