@@ -81,7 +81,11 @@ export async function POST(request: NextRequest) {
         
         const payment = await prisma.payment.findUnique({
           where: { providerId: intentId },
-          include: { booking: true }
+          include: { 
+            booking: { 
+              include: { roomAssignments: true } 
+            } 
+          }
         })
 
         if (payment && payment.bookingId) {
@@ -102,10 +106,11 @@ export async function POST(request: NextRequest) {
             })
           ]
 
-          if (payment.booking) {
+          if (payment.booking && payment.booking.roomAssignments && payment.booking.roomAssignments.length > 0) {
+            const roomIds = payment.booking.roomAssignments.map((a: any) => a.roomId)
             updates.push(
-              prisma.room.update({
-                where: { id: payment.booking.roomId },
+              prisma.room.updateMany({
+                where: { id: { in: roomIds } },
                 data: { status: 'AVAILABLE' }
               })
             )

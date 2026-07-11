@@ -25,11 +25,11 @@
 | [API-011](api/API-011.md) | Sprint 2 | Resolved | Antigravity | Orphaned Complaint Bindings | Verified booking.primaryGuestId matches session user before linking |
 | [BOOK-001](booking/BOOK-001.md) | Sprint 1 | Resolved | Antigravity | Lock Bypassing Race Condition (Double Bookings) | Forced Redis lock timeout to abort execution instead of falling back to local memory mutex |
 | [BOOK-002](booking/BOOK-002.md) | Sprint 1 | Resolved | Antigravity | Idempotency Key Poisoning (Soft-lock) | Wrapped post-transaction hooks in try-catch to prevent idempotency keys being wiped on non-critical errors |
-| [BOOK-003](booking/BOOK-003.md) | Sprint 2 | Open | Unassigned | Orphaned Stripe Payments Creation |
-| [BOOK-004](booking/BOOK-004.md) | Sprint 1 | Open | Unassigned | Desynchronized Distributed State (Redis/DB Rollback) |
-| [BOOK-005](booking/BOOK-005.md) | Sprint 3 | Open | Unassigned | Silent Notification Loss (SMTP) |
-| [PAY-001](payments/PAY-001.md) | Sprint 1 | Open | Unassigned | Hard Crash on Refund Webhooks (Missing roomId) |
-| [PAY-002](payments/PAY-002.md) | Sprint 2 | Open | Unassigned | Orphaned Payment Intents (Partial Failure) |
+| [BOOK-003](booking/BOOK-003.md) | Sprint 2 | Resolved | Antigravity | Orphaned Stripe Payments Creation | Implemented Saga pattern: Pre-inserted pending Payment record before invoking Stripe API, using payment ID as idempotency key |
+| [BOOK-004](booking/BOOK-004.md) | Sprint 1 | Resolved | Antigravity | Desynchronized Distributed State (Redis/DB Rollback) | Fixed via architectural shift: Replaced legacy Redis distributed lock with PostgreSQL Pessimistic Row-Level Locking (SELECT FOR UPDATE) |
+| [BOOK-005](booking/BOOK-005.md) | Sprint 3 | Resolved | Antigravity | Silent Notification Loss (SMTP) | Implemented DB-backed Outbox pattern. Enqueue emails synchronously and process asynchronously via ReconciliationWorker. Modified email.ts to throw errors for reliable retries. |
+| [PAY-001](payments/PAY-001.md) | Sprint 1 | Resolved | Antigravity | Hard Crash on Refund Webhooks (Missing roomId) | Fixed by traversing roomAssignments[] and using updateMany instead of the deprecated roomId scalar. |
+| [PAY-002](payments/PAY-002.md) | Sprint 2 | Resolved | Antigravity | Orphaned Payment Intents (Partial Failure) | Implemented Saga pattern: Pre-inserted pending Payment record via upsert before invoking Stripe API. |
 | [PAY-003](payments/PAY-003.md) | Sprint 1 | Open | Unassigned | Out-of-Order Webhook Overwrites |
 | [PAY-004](payments/PAY-004.md) | Sprint 2 | Open | Unassigned | Non-Idempotent Captures and Refunds |
 | [PAY-005](payments/PAY-005.md) | Sprint 2 | Open | Unassigned | Webhook Deduplication Bypass (Redis Fail-Open) |

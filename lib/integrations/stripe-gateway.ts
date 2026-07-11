@@ -32,6 +32,22 @@ export class StripeGateway {
       throw new Error('STRIPE_IDEMPOTENCY_REQUIRED: All charge authorizations require transaction keys.')
     }
 
+    await prisma.payment.upsert({
+      where: { id: req.id },
+      update: {},
+      create: {
+        id: req.id,
+        amount: req.amount,
+        currency: req.currency,
+        providerId: `PENDING_${req.id}`,
+        paymentProvider: 'STRIPE',
+        paymentMethod: 'card',
+        status: 'pending',
+        bookingId: req.bookingId,
+        invoiceId: req.invoiceId,
+      }
+    });
+
     const intent = await stripe.paymentIntents.create({
       amount: Math.round(req.amount * 100),
       currency: req.currency.toLowerCase(),
@@ -45,18 +61,9 @@ export class StripeGateway {
       }
     }, { idempotencyKey: req.idempotencyKey });
 
-    await prisma.payment.create({
-      data: {
-        id: req.id,
-        amount: req.amount,
-        currency: req.currency,
-        providerId: intent.id,
-        paymentProvider: 'STRIPE',
-        paymentMethod: 'card',
-        status: 'pending',
-        bookingId: req.bookingId,
-        invoiceId: req.invoiceId,
-      }
+    await prisma.payment.update({
+      where: { id: req.id },
+      data: { providerId: intent.id }
     });
 
     return {

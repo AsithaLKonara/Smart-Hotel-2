@@ -1,7 +1,7 @@
 import { prisma } from './db'
 import { pushAvailabilityToOTA } from './ota/ota-service'
 import { RealtimeEvents } from './realtime'
-
+import { sendBookingConfirmation, sendAdminBookingAlert } from './email'
 /**
  * Enterprise Reconciliation & Drift Detection Engine
  * Ensures 100% parity between HMS, Redis, and Global OTAs.
@@ -105,6 +105,10 @@ export class ReconciliationWorker {
         // Distribute event via internal bus or external webhook
         if (event.topic === 'BOOKING_UPDATED') {
           await RealtimeEvents.emitBookingUpdated(event.payload as any)
+        } else if (event.topic === 'EMAIL_BOOKING_CONFIRMATION') {
+          await sendBookingConfirmation(event.payload as any)
+        } else if (event.topic === 'EMAIL_ADMIN_ALERT') {
+          await sendAdminBookingAlert(event.payload as any)
         } else {
           await RealtimeEvents.emitOpsMessage(event.payload as any)
         }

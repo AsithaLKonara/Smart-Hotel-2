@@ -4,7 +4,6 @@ import { z } from 'zod'
 import { apiLimiter } from '@/lib/rate-limit-enhanced'
 import { logAction, AUDIT_ACTIONS } from '@/lib/audit'
 import Stripe from 'stripe'
-import { sendBookingConfirmation, sendAdminBookingAlert } from '@/lib/email'
 import { getRequestSession } from '@/lib/session'
 import { getEffectivePropertyId } from '@/lib/server-rbac'
 import { isDatabaseConfigured } from '@/lib/db-helpers'
@@ -193,14 +192,8 @@ export async function POST(request: NextRequest) {
       if (validated.paymentMethod === 'pay_now' && stripe) {
         try {
           if (chaosState.stripeFailure) throw new Error('CHAOS_TEST: Simulated Stripe Failure')
-          const intent = await stripe.paymentIntents.create({
-            amount: Math.round(result.totalAmount * 100),
-            currency: 'lkr',
-            metadata: { bookingId: result.id },
-          })
-          clientSecret = intent.client_secret
-          // Link to payment in DB
-          await prisma.payment.create({
+          // Pre-flight insert to prevent orphaned intents
+          const payment = await prisma.payment.create({
             data: {
               bookingId: result.id,
               folioId: folioId, // DDD dual-write
@@ -208,9 +201,23 @@ export async function POST(request: NextRequest) {
               amount: result.totalAmount,
               paymentMethod: 'card',
               paymentProvider: 'STRIPE',
-              providerId: intent.id,
+              providerId: `PENDING_${result.id}`, // Temporary unique placeholder
               status: 'pending'
             }
+          })
+
+          const intent = await stripe.paymentIntents.create({
+            amount: Math.round(result.totalAmount * 100),
+            currency: 'lkr',
+            metadata: { bookingId: result.id, paymentId: payment.id },
+          }, { idempotencyKey: payment.id })
+          
+          clientSecret = intent.client_secret
+          
+          // Link to payment in DB
+          await prisma.payment.update({
+            where: { id: payment.id },
+            data: { providerId: intent.id }
           })
         } catch (stripeErr) {
           console.error('[STRIPE] Payment Intent creation failed:', stripeErr)
@@ -230,7 +237,7 @@ export async function POST(request: NextRequest) {
       }
 
       try {
-        await sendBookingConfirmation({
+        const emailData = {
           guestName: result.guest.name,
           guestEmail: result.guest.email,
           roomNumber: result.roomAssignments?.[0]?.room?.number || 'TBD',
@@ -240,10 +247,17 @@ export async function POST(request: NextRequest) {
           guests: validated.guests,
           totalAmount: result.totalAmount,
           bookingId: result.id,
-          confirmationCode: result.confirmationCode
+          confirmationCode: result.confirmationCode,
+          specialRequests: validated.specialRequests
+        }
+        await prisma.outbox.createMany({
+          data: [
+            { topic: 'EMAIL_BOOKING_CONFIRMATION', payload: emailData },
+            { topic: 'EMAIL_ADMIN_ALERT', payload: emailData }
+          ]
         })
       } catch (emailErr) {
-        console.error('[EMAIL] Failed to send booking confirmation:', emailErr)
+        console.error('[EMAIL] Failed to queue booking notifications:', emailErr)
         emailFailed = true
       }
 

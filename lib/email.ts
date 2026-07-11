@@ -402,7 +402,7 @@ export async function sendBookingConfirmation(data: {
     // console log removed
   } catch (error) {
     console.error('Failed to send booking confirmation email:', error)
-    // Don't throw - log error but don't break the flow
+    throw error // Bubble up error to trigger Outbox worker retry
   }
 }
 
@@ -433,7 +433,7 @@ export async function sendAdminBookingAlert(data: {
     // console log removed
   } catch (error) {
     console.error('Failed to send admin booking alert:', error)
-    // Don't throw - log error but don't break the flow
+    throw error // Bubble up error to trigger Outbox worker retry
   }
 }
 
