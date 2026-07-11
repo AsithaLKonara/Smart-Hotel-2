@@ -31,8 +31,8 @@
 | [PAY-001](payments/PAY-001.md) | Sprint 1 | Resolved | Antigravity | Hard Crash on Refund Webhooks (Missing roomId) | Fixed by traversing roomAssignments[] and using updateMany instead of the deprecated roomId scalar. |
 | [PAY-002](payments/PAY-002.md) | Sprint 2 | Resolved | Antigravity | Orphaned Payment Intents (Partial Failure) | Implemented Saga pattern: Pre-inserted pending Payment record via upsert before invoking Stripe API. |
 | [PAY-003](payments/PAY-003.md) | Sprint 1 | Resolved | Antigravity | Out-of-Order Webhook Overwrites | Implemented State Machine pre-checks in webhook handlers to gracefully ignore invalid state transitions (e.g. failing a completed payment). |
-| [PAY-004](payments/PAY-004.md) | Sprint 2 | Open | Unassigned | Non-Idempotent Captures and Refunds |
-| [PAY-005](payments/PAY-005.md) | Sprint 2 | Open | Unassigned | Webhook Deduplication Bypass (Redis Fail-Open) |
+| [PAY-004](payments/PAY-004.md) | Sprint 2 | Resolved | Antigravity | Non-Idempotent Captures and Refunds | Added deterministic idempotencyKey to Stripe Gateway captures and refunds. |
+| [PAY-005](payments/PAY-005.md) | Sprint 2 | Resolved | Antigravity | Webhook Deduplication Bypass (Redis Fail-Open) | Updated Stripe webhook route to fail closed (HTTP 503) during Redis unavailability. |
 | [PMS-001](pms/PMS-001.md) | Sprint 1 | Open | Unassigned | Room Assignment vs. Stay Desynchronization |
 | [PMS-002](pms/PMS-002.md) | Sprint 1 | Open | Unassigned | Double-Entry Ledger Bypass (Night Audit) |
 | [PMS-003](pms/PMS-003.md) | Sprint 1 | Open | Unassigned | Financial Engine In-Memory State Loss |

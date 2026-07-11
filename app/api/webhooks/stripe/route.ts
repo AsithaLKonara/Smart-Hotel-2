@@ -34,9 +34,17 @@ export async function POST(request: NextRequest) {
   const eventKey = `stripe:event:${event.id}`
   const redis = getRedisClient()
   
-  if (redis) {
+  if (!redis) {
+    console.error('[STRIPE_WEBHOOK_ERROR] Redis client unavailable for deduplication.')
+    return NextResponse.json({ error: 'Service Unavailable - Deduplication Engine Offline' }, { status: 503 })
+  }
+
+  try {
     const isProcessed = await redis.set(eventKey, 'processed', { nx: true, ex: 86400 })
     if (!isProcessed) return NextResponse.json({ received: true, duplicate: true })
+  } catch (redisError) {
+    console.error('[STRIPE_WEBHOOK_ERROR] Redis connection failed during deduplication:', redisError)
+    return NextResponse.json({ error: 'Service Unavailable - Deduplication Engine Offline' }, { status: 503 })
   }
 
   try {

@@ -83,7 +83,7 @@ export class StripeGateway {
 
     const intent = await stripe.paymentIntents.capture(chargeId, {
       amount_to_capture: Math.round(amountToCapture * 100)
-    });
+    }, { idempotencyKey: `capture_${chargeId}_${amountToCapture}` });
 
     await prisma.payment.update({
       where: { providerId: chargeId },
@@ -108,7 +108,7 @@ export class StripeGateway {
     await stripe.refunds.create({
       payment_intent: chargeId,
       amount: Math.round(amountToRefund * 100)
-    });
+    }, { idempotencyKey: `refund_${chargeId}_${amountToRefund}` });
 
     await prisma.payment.update({
       where: { providerId: chargeId },
