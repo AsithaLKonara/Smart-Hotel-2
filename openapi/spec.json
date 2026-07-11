@@ -264,8 +264,12 @@
                 }
               }
             }
+          },
+          "403": {
+            "description": "Forbidden - Cannot link complaint to an unowned booking"
           }
-        }
+        },
+        "description": "Creates a new complaint. If bookingId is provided, it must belong to the authenticated user."
       },
       "patch": {
         "summary": "Update a Complaint",
@@ -303,6 +307,122 @@
           },
           "401": {
             "description": "Unauthorized - Must be an admin"
+          }
+        }
+      }
+    },
+    "/admin/housekeeping/rooms": {
+      "get": {
+        "summary": "Retrieve Housekeeping Rooms",
+        "description": "Returns a list of rooms for housekeeping purposes. Enforces propertyId scoping for multi-tenant isolation.",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 50
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of rooms with housekeeping data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/RoomInternal"
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "total": {
+                          "type": "integer"
+                        },
+                        "page": {
+                          "type": "integer"
+                        },
+                        "limit": {
+                          "type": "integer"
+                        },
+                        "totalPages": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - Must have SUPER_ADMIN, MANAGER, HOUSEKEEPING, or RECEPTIONIST role"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update Room Status",
+        "description": "Updates a room's operational status. Enforces propertyId scoping (IDOR protection) ensuring admins can only update rooms in their managed property.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateRoomStatusRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Room status updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "room": {
+                      "$ref": "#/components/schemas/RoomInternal"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ZodValidationError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - Cross-property modification attempted, or insufficient role"
+          },
+          "404": {
+            "description": "Room not found"
           }
         }
       }
@@ -629,6 +749,31 @@
             "type": "string",
             "format": "date-time",
             "nullable": true
+          }
+        }
+      },
+      "UpdateRoomStatusRequest": {
+        "type": "object",
+        "required": [
+          "roomId",
+          "newStatus"
+        ],
+        "properties": {
+          "roomId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "newStatus": {
+            "type": "string",
+            "enum": [
+              "AVAILABLE",
+              "OCCUPIED",
+              "DIRTY",
+              "CLEANING",
+              "INSPECTION_PENDING",
+              "MAINTENANCE",
+              "OUT_OF_ORDER"
+            ]
           }
         }
       }

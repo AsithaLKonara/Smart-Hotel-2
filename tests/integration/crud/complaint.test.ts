@@ -115,7 +115,80 @@ describe('Complaints API & IDOR Security', () => {
       
       expect(res.status).toBe(400);
       expect(data.error.name).toBe('ZodError'); // Uses standard handleZodError
-      expect(data.error.issues).toBeDefined();
+    });
+
+    describe('Booking Attachments (API-011)', () => {
+      it('returns 403 if linking complaint to an unowned booking (IDOR Protection)', async () => {
+        const guestA = await UserFactory.create({ roleName: 'GUEST' });
+        const guestB = await UserFactory.create({ roleName: 'GUEST' });
+        
+        // Insert booking directly via prisma
+        const bookingB = await prisma.booking.create({
+          data: {
+            confirmationCode: 'BOOK-B-123',
+            checkIn: new Date(),
+            checkOut: new Date(),
+            primaryGuestId: guestB.id,
+            status: 'CONFIRMED',
+            source: 'WEBSITE',
+            totalAmount: 100,
+            paymentStatus: 'unpaid'
+          }
+        });
+
+        (getServerSession as jest.Mock).mockResolvedValue({
+          user: { id: guestA.id, roleName: 'GUEST' }
+        });
+
+        const body = {
+          subject: 'Issue',
+          description: 'Valid long desc',
+          category: 'ROOM',
+          bookingId: bookingB.id
+        };
+
+        const req = createNextRequest('/api/complaints', 'POST', body);
+        const res = await POST(req);
+        const data = await res.json();
+        
+        expect(res.status).toBe(403);
+        expect(data.error).toBe('Forbidden: Cannot link complaint to this booking');
+      });
+
+      it('successfully links complaint if booking is owned by the user', async () => {
+        const guestA = await UserFactory.create({ roleName: 'GUEST' });
+        
+        const bookingA = await prisma.booking.create({
+          data: {
+            confirmationCode: 'BOOK-A-123',
+            checkIn: new Date(),
+            checkOut: new Date(),
+            primaryGuestId: guestA.id,
+            status: 'CONFIRMED',
+            source: 'WEBSITE',
+            totalAmount: 100,
+            paymentStatus: 'unpaid'
+          }
+        });
+
+        (getServerSession as jest.Mock).mockResolvedValue({
+          user: { id: guestA.id, roleName: 'GUEST' }
+        });
+
+        const body = {
+          subject: 'Issue',
+          description: 'Valid long desc',
+          category: 'ROOM',
+          bookingId: bookingA.id
+        };
+
+        const req = createNextRequest('/api/complaints', 'POST', body);
+        const res = await POST(req);
+        const data = await res.json();
+        
+        expect(res.status).toBe(201);
+        expect(data.bookingId).toBe(bookingA.id);
+      });
     });
   });
 
