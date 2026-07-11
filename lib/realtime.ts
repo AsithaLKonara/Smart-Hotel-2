@@ -11,13 +11,17 @@ import {
  * Enterprise Real-time Infrastructure
  * Standardized on Pusher for high-availability distributed events.
  */
-const pusher = new Pusher({
-  appId: process.env.PUSHER_APP_ID || '',
-  key: process.env.NEXT_PUBLIC_PUSHER_KEY || '',
-  secret: process.env.PUSHER_SECRET || '',
-  cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER || 'mt1',
-  useTLS: true,
-})
+const isPusherConfigured = !!(process.env.PUSHER_APP_ID && process.env.NEXT_PUBLIC_PUSHER_KEY && process.env.PUSHER_SECRET);
+
+const pusher = isPusherConfigured 
+  ? new Pusher({
+      appId: process.env.PUSHER_APP_ID || '',
+      key: process.env.NEXT_PUBLIC_PUSHER_KEY || '',
+      secret: process.env.PUSHER_SECRET || '',
+      cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER || 'mt1',
+      useTLS: true,
+    })
+  : ({ trigger: async () => {} } as any);
 
 export const realtime = pusher
 

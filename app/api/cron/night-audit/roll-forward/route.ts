@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
+import FinancialEngine from '@/lib/financial-engine'
 
 const prisma = new PrismaClient()
 
@@ -36,50 +37,48 @@ export async function GET(req: Request) {
       for (const stay of inHouseStays) {
         const folioId = stay.booking.folios[0]?.id
         if (folioId) {
-          // Post Room Charge
-          await tx.folioLineItem.create({
-            data: {
-              folioId,
-              amount: stay.room.roomType.baseRate,
-              description: `Room Charge - ${stay.room.number}`,
-              category: 'ROOM_CHARGE'
-            }
-          })
-          
-          // Post Tax (mocking 10% tax)
-          await tx.folioLineItem.create({
-            data: {
-              folioId,
-              amount: stay.room.roomType.baseRate * 0.10,
-              description: `Tax - ${stay.room.number}`,
-              category: 'TAX'
-            }
-          })
+          // Post Room Charge (FinancialEngine automatically calculates and posts taxes and GL entries)
+          await FinancialEngine.postCharge(
+            folioId,
+            `Room Charge - ${stay.room.number}`,
+            stay.room.roomType.baseRate,
+            'ROOM_CHARGE',
+            tx
+          )
           chargesPosted += 2
         }
       }
 
       // 2. Mark expected arrivals as NO_SHOW if past business date
-      const noShows = await tx.stay.updateMany({
+      const noShows = await tx.booking.updateMany({
         where: {
-          status: 'EXPECTED',
-          booking: {
-            checkIn: { lt: today }
-          }
+          status: 'CONFIRMED',
+          checkIn: { lt: today }
         },
         data: {
           status: 'NO_SHOW'
         }
       })
 
-      // 3. Log Night Audit
+      // 3. Ensure SYSTEM user exists for audit attribution
+      const systemUser = await tx.user.upsert({
+        where: { email: 'system@smarthotel.local' },
+        update: {},
+        create: {
+          email: 'system@smarthotel.local',
+          name: 'SYSTEM',
+          password: 'cron-automated-user',
+        }
+      })
+
+      // 4. Log Night Audit
       const auditLog = await tx.nightAuditLog.create({
         data: {
           businessDate: today,
           status: 'COMPLETED',
           totalRevenue: inHouseStays.reduce((sum, stay) => sum + stay.room.roomType.baseRate, 0),
           roomsProcessed: inHouseStays.length,
-          runByUserId: inHouseStays[0]?.booking?.primaryGuestId || undefined
+          runByUserId: systemUser.id
         }
       })
 

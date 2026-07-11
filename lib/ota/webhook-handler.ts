@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/db';
 import { log } from '@/lib/logger';
 import { BookingSource } from '@prisma/client';
+import { acquireLock } from '@/lib/lock';
 
 export interface OtaReservationPayload {
   ota_reservation_code: string;
@@ -19,7 +20,11 @@ export interface OtaReservationPayload {
 export async function processOtaReservation(payload: OtaReservationPayload) {
   const { ota_reservation_code, ota_room_type_id, check_in, check_out, guest_name, total_price, status } = payload;
 
+  let releaseLock: (() => Promise<void>) | null = null;
   try {
+    // Acquire distributed lock to prevent concurrent webhook overbooking race conditions
+    releaseLock = await acquireLock(`ota_room_type:${ota_room_type_id}`);
+
     log.info('Processing OTA Reservation Webhook', { ota_reservation_code, status });
 
     // 1. Transactional handling of the reservation
@@ -110,6 +115,33 @@ export async function processOtaReservation(payload: OtaReservationPayload) {
         }
       });
 
+      await tx.stayEvent.create({
+        data: {
+          bookingId: booking.id,
+          type: 'BOOKED',
+          notes: 'Booking created via OTA webhook'
+        }
+      });
+
+      const nights = Math.ceil((new Date(check_out).getTime() - new Date(check_in).getTime()) / (1000 * 60 * 60 * 24)) || 1;
+      
+      const folio = await tx.folio.create({
+        data: {
+          bookingId: booking.id,
+          type: 'GUEST',
+          status: 'OPEN'
+        }
+      });
+
+      await tx.folioLineItem.create({
+        data: {
+          folioId: folio.id,
+          description: `Room Charge (${nights} nights)`,
+          amount: total_price,
+          category: 'ROOM',
+        }
+      });
+
       // Log success to sync logs (outside transaction if preferred, or inside for consistency)
       await tx.syncLog.create({
         data: {
@@ -154,6 +186,10 @@ export async function processOtaReservation(payload: OtaReservationPayload) {
     });
 
     throw error;
+  } finally {
+    if (releaseLock) {
+      await releaseLock();
+    }
   }
 }
 

@@ -1,12 +1,22 @@
 import { prisma } from './db'
 import { pushAvailabilityToOTA } from './ota/ota-service'
 import { RealtimeEvents } from './realtime'
-import { sendBookingConfirmation, sendAdminBookingAlert } from './email'
+import { 
+  sendBookingConfirmation, 
+  sendAdminBookingAlert, 
+  sendContactEmail,
+  sendPasswordResetEmail,
+  sendPasswordResetConfirmation,
+  sendBookingStatusUpdate
+} from './email'
+
 /**
  * Enterprise Reconciliation & Drift Detection Engine
  * Ensures 100% parity between HMS, Redis, and Global OTAs.
  */
 export class ReconciliationWorker {
+  // ... other methods ...
+
   /**
    * Process failed OTA synchronization logs
    * Features exponential backoff and circuit-breaking.
@@ -107,8 +117,16 @@ export class ReconciliationWorker {
           await RealtimeEvents.emitBookingUpdated(event.payload as any)
         } else if (event.topic === 'EMAIL_BOOKING_CONFIRMATION') {
           await sendBookingConfirmation(event.payload as any)
+        } else if (event.topic === 'EMAIL_CONTACT') {
+          await sendContactEmail(event.payload as any)
         } else if (event.topic === 'EMAIL_ADMIN_ALERT') {
           await sendAdminBookingAlert(event.payload as any)
+        } else if (event.topic === 'EMAIL_PASSWORD_RESET') {
+          await sendPasswordResetEmail(event.payload as any)
+        } else if (event.topic === 'EMAIL_PASSWORD_RESET_CONFIRMATION') {
+          await sendPasswordResetConfirmation(event.payload as any)
+        } else if (event.topic === 'EMAIL_BOOKING_STATUS_UPDATE') {
+          await sendBookingStatusUpdate(event.payload as any)
         } else {
           await RealtimeEvents.emitOpsMessage(event.payload as any)
         }
@@ -126,6 +144,35 @@ export class ReconciliationWorker {
           }
         })
       }
+    }
+  }
+
+  /**
+   * Drain Chat History Queue from Redis
+   * Persists async chat histories into the PostgreSQL database.
+   */
+  static async drainChatQueue() {
+    const { redisClient } = await import('@/app/api/chat/messages/route');
+    if (!redisClient) return;
+
+    try {
+      // Process up to 50 messages at a time to avoid lambda timeouts
+      for (let i = 0; i < 50; i++) {
+        const payloadStr = await redisClient.lpop('chat:history:queue');
+        if (!payloadStr) break;
+
+        const payload = JSON.parse(payloadStr as string);
+        const { saveMessage } = await import('@/lib/chatbot/memory');
+        
+        await saveMessage(
+          payload.sessionId,
+          payload.userId,
+          payload.userMessage,
+          payload.response
+        );
+      }
+    } catch (err) {
+      console.error('[RECONCILER_ERROR] Failed to drain chat history queue:', err);
     }
   }
 }

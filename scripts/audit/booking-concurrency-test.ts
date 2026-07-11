@@ -106,7 +106,10 @@ async function testConcurrency() {
     
     return fetch(`${BASE_URL}/api/integrations/booking-com/webhook`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/xml' },
+      headers: { 
+        'Content-Type': 'application/xml',
+        'Authorization': `Bearer ${process.env.BOOKING_COM_WEBHOOK_SECRET || 'test_secret'}`
+      },
       body: xml
     });
   });

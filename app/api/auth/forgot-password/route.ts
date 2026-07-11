@@ -45,16 +45,21 @@ export async function POST(request: NextRequest) {
     const baseUrl = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || new URL(request.url).origin;
     const resetUrl = `${baseUrl}/auth/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`
 
-    // Send email with reset link
+    // Send email with reset link via Outbox
     try {
-      await sendPasswordResetEmail({
-        name: user.name,
-        email: user.email,
-        resetUrl
+      await prisma.outbox.create({
+        data: {
+          topic: 'EMAIL_PASSWORD_RESET',
+          payload: {
+            name: user.name,
+            email: user.email,
+            resetUrl
+          } as any
+        }
       })
     } catch (emailError) {
-      console.error('Failed to send password reset email:', emailError)
-      // Continue even if email fails - don't expose email configuration issues
+      console.error('Failed to enqueue password reset email:', emailError)
+      // Continue even if outbox fails - don't expose configuration issues
     }
 
     return NextResponse.json({

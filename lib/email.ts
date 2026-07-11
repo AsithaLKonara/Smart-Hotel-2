@@ -462,7 +462,7 @@ export async function sendBookingReminder(data: {
     // console log removed
   } catch (error) {
     console.error('Failed to send booking reminder:', error)
-    // Don't throw - log error but don't break the flow
+    throw error
   }
 }
 
@@ -529,7 +529,7 @@ export async function sendBookingStatusUpdate(data: {
     // console log removed
   } catch (error) {
     console.error('Failed to send booking status update:', error)
-    // Don't throw - log error but don't break the flow
+    throw error
   }
 }
 
@@ -558,7 +558,7 @@ export async function sendPasswordResetEmail(data: {
     // console log removed
   } catch (error) {
     console.error('Failed to send password reset email:', error)
-    // Don't throw - return gracefully to prevent email enumeration
+    throw error
   }
 }
 
@@ -584,7 +584,7 @@ export async function sendPasswordResetConfirmation(data: {
     // console log removed
   } catch (error) {
     console.error('Failed to send password reset confirmation:', error)
-    // Don't throw - this is a confirmation, not critical
+    throw error
   }
 }
 
@@ -681,6 +681,6 @@ export async function sendContactEmail(data: {
     // console log removed
   } catch (error) {
     console.error('Failed to send contact email:', error)
-    // Don't throw - log error but don't break the flow
+    throw error
   }
 }

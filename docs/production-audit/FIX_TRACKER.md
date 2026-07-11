@@ -33,21 +33,21 @@
 | [PAY-003](payments/PAY-003.md) | Sprint 1 | Resolved | Antigravity | Out-of-Order Webhook Overwrites | Implemented State Machine pre-checks in webhook handlers to gracefully ignore invalid state transitions (e.g. failing a completed payment). |
 | [PAY-004](payments/PAY-004.md) | Sprint 2 | Resolved | Antigravity | Non-Idempotent Captures and Refunds | Added deterministic idempotencyKey to Stripe Gateway captures and refunds. |
 | [PAY-005](payments/PAY-005.md) | Sprint 2 | Resolved | Antigravity | Webhook Deduplication Bypass (Redis Fail-Open) | Updated Stripe webhook route to fail closed (HTTP 503) during Redis unavailability. |
-| [PMS-001](pms/PMS-001.md) | Sprint 1 | Open | Unassigned | Room Assignment vs. Stay Desynchronization |
-| [PMS-002](pms/PMS-002.md) | Sprint 1 | Open | Unassigned | Double-Entry Ledger Bypass (Night Audit) |
-| [PMS-003](pms/PMS-003.md) | Sprint 1 | Open | Unassigned | Financial Engine In-Memory State Loss |
-| [PMS-004](pms/PMS-004.md) | Sprint 2 | Open | Unassigned | Broken No-Show Processing |
-| [PMS-005](pms/PMS-005.md) | Sprint 2 | Open | Unassigned | Audit Log Attribution Forgery |
-| [INT-001](integrations/INT-001.md) | Sprint 1 | Open | Unassigned | Booking.com Unauthenticated Webhooks |
-| [INT-002](integrations/INT-002.md) | Sprint 1 | Open | Unassigned | Booking.com Concurrency Overbooking |
-| [INT-003](integrations/INT-003.md) | Sprint 2 | Open | Unassigned | Booking.com Missing Lifecycle Orchestration |
-| [INT-004](integrations/INT-004.md) | Sprint 2 | Open | Unassigned | Pusher Synchronous Crashing in Webhooks |
-| [INT-005](integrations/INT-005.md) | Sprint 3 | Open | Unassigned | Pusher Missing Environment Fail-safes |
-| [INT-006](integrations/INT-006.md) | Sprint 3 | Open | Unassigned | SMTP Silent Dropping of Critical Notifications |
-| [INT-007](integrations/INT-007.md) | Sprint 2 | Open | Unassigned | Groq API Key Fallback Vulnerability |
-| [INT-008](integrations/INT-008.md) | Sprint 3 | Open | Unassigned | Groq Stream Exception Swallowing |
-| [INT-009](integrations/INT-009.md) | Sprint 3 | Open | Unassigned | Cloudinary Ghost Integration |
-| [INT-010](integrations/INT-010.md) | Sprint 2 | Open | Unassigned | Redis Bypass on Disconnect |
+| [PMS-001](pms/PMS-001.md) | Sprint 1 | Resolved | Antigravity | Room Assignment vs. Stay Desynchronization | Synchronized RoomAssignment with physical Room check-in via StayService. |
+| [PMS-002](pms/PMS-002.md) | Sprint 1 | Resolved | Antigravity | Double-Entry Ledger Bypass (Night Audit) | Refactored Night Audit to use FinancialEngine.postCharge for double-entry compliance and correct taxation. |
+| [PMS-003](pms/PMS-003.md) | Sprint 1 | Resolved | Antigravity | Financial Engine In-Memory State Loss | Refactored FinancialEngine to use async database hydration and transaction boundaries instead of an in-memory Map. |
+| [PMS-004](pms/PMS-004.md) | Sprint 2 | Resolved | Antigravity | Broken No-Show Processing | Updated Night Audit to accurately query the Booking model for EXPECTED arrivals instead of the Stay model. |
+| [PMS-005](pms/PMS-005.md) | Sprint 2 | Resolved | Antigravity | Audit Log Attribution Forgery | Implemented dynamic upsert of a dedicated SYSTEM user identity for cron operations to ensure accurate Night Audit Log attribution and compliance. |
+| [INT-001](integrations/INT-001.md) | Sprint 1 | Resolved | Antigravity | Booking.com Unauthenticated Webhooks | Enforced strict `BOOKING_COM_WEBHOOK_SECRET` Bearer token authentication to prevent forged XML OTA payloads. |
+| [INT-002](integrations/INT-002.md) | Sprint 1 | Resolved | Antigravity | Booking.com Concurrency Overbooking | Injected distributed Redis lock (acquireLock) into webhook processor to perfectly serialize OTA requests and prevent race condition double-bookings. |
+| [INT-003](integrations/INT-003.md) | Sprint 2 | Resolved | Antigravity | Booking.com Missing Lifecycle Orchestration | Injected dual-write logic (Folio, StayEvent) into OTA webhook. |
+| [INT-004](integrations/INT-004.md) | Sprint 2 | Resolved | Antigravity | Pusher Synchronous Crashing in Webhooks | Replaced synchronous Pusher emit with transactional Prisma outbox queue. |
+| [INT-005](integrations/INT-005.md) | Sprint 3 | Resolved | Antigravity | Pusher Missing Environment Fail-safes | Added configuration guard checks to Pusher initialization. |
+| [INT-006](integrations/INT-006.md) | Sprint 3 | Resolved | Antigravity | SMTP Silent Dropping of Critical Notifications | Updated all email pipelines to leverage Prisma Outbox pattern for queue-based retries. |
+| [INT-007](integrations/INT-007.md) | Sprint 2 | Resolved | Antigravity | Groq API Key Fallback Vulnerability | Implemented BUILD_PLACEHOLDER runtime check with graceful degradation. |
+| [INT-008](integrations/INT-008.md) | Sprint 3 | Resolved | Antigravity | Groq Stream Exception Swallowing | Decoupled history save from ReadableStream using Redis `rpush` async queue. |
+| [INT-009](integrations/INT-009.md) | Sprint 3 | Resolved | Antigravity | Cloudinary Ghost Integration | Configured Next.js remotePatterns and Content-Security-Policy for Cloudinary. |
+| [INT-010](integrations/INT-010.md) | Sprint 2 | Resolved | Antigravity | Redis Bypass on Disconnect | Applied fail-closed deduplication (Duplicate of PAY-005). |
 | [CFG-001](configuration/CFG-001.md) | Sprint 1 | Open | Unassigned | PostgreSQL / MongoDB Fatal Mismatch |
 | [CFG-002](configuration/CFG-002.md) | Sprint 1 | Open | Unassigned | Missing Undocumented Critical Variables |
 | [CFG-003](configuration/CFG-003.md) | Sprint 3 | Open | Unassigned | Optional Variables Incorrectly Required |

@@ -2,7 +2,7 @@ import { eventBus } from './event-bus'
 import { DoubleEntryLedger } from './double-entry-ledger'
 import { BusinessDateEngine } from './business-date-engine'
 import prisma from './db'
-
+import { Prisma } from '@prisma/client'
 
 export interface FolioTransaction {
   id: string
@@ -25,47 +25,92 @@ export interface Folio {
 }
 
 export class FinancialEngine {
-  private static folios: Map<string, Folio> = new Map()
-
   // Clear all folios (useful for testing or system resets)
-  static clearFolios(): void {
-    this.folios.clear()
+  static async clearFolios(dbTx: Prisma.TransactionClient = prisma): Promise<void> {
+    await dbTx.folioLineItem.deleteMany({})
+    await dbTx.folio.deleteMany({})
   }
 
   // Initialize a new guest folio
-  static createFolio(bookingId: string): Folio {
-    const folio: Folio = {
-      id: `folio-${bookingId}-${Date.now()}`,
-      bookingId,
-      transactions: [],
-      routingRules: [],
-      status: 'OPEN'
-    }
-    this.folios.set(folio.id, folio)
+  static async createFolio(bookingId: string, dbTx: Prisma.TransactionClient = prisma): Promise<Folio> {
+    const folioId = `folio-${bookingId}-${Date.now()}`
     
-    // Dual-write to DB
-    prisma.folio.create({
+    await dbTx.folio.create({
       data: {
-        id: folio.id,
+        id: folioId,
         bookingId: bookingId,
         type: 'GUEST',
         status: 'OPEN'
       }
     }).catch((err: any) => console.error('[DDD_SYNC] Failed to create Folio:', err))
 
-    return folio
+    return {
+      id: folioId,
+      bookingId,
+      transactions: [],
+      routingRules: [],
+      status: 'OPEN'
+    }
   }
 
   // Retrieve folio with automatic caching failover
-  static getFolio(folioId: string): Folio {
-    const folio = this.folios.get(folioId)
-    if (!folio) throw new Error(`Folio reference [${folioId}] not found in PMS databases.`)
-    return folio
+  static async getFolio(folioId: string, dbTx: Prisma.TransactionClient = prisma): Promise<Folio> {
+    const dbFolio = await dbTx.folio.findUnique({
+      where: { id: folioId },
+      include: {
+        lineItems: true,
+        routingRulesSource: true
+      }
+    })
+
+    if (!dbFolio) throw new Error(`Folio reference [${folioId}] not found in PMS databases.`)
+
+    const transactions: FolioTransaction[] = dbFolio.lineItems.map(item => {
+      const category = item.category as FolioTransaction['category']
+      const totalAmount = Number(item.amount)
+      
+      let baseAmount = totalAmount
+      let taxAmount = 0
+
+      // Reverse engineer the tax based on the 25% rule
+      if (category !== 'TAX' && category !== 'PAYMENT') {
+        baseAmount = parseFloat((totalAmount / 1.25).toFixed(2))
+        taxAmount = parseFloat((totalAmount - baseAmount).toFixed(2))
+      }
+
+      return {
+        id: item.id,
+        folioId: item.folioId,
+        description: item.description,
+        amount: baseAmount,
+        taxAmount,
+        category,
+        timestamp: item.createdAt.toISOString(),
+        isReversed: item.description.startsWith('REVERSAL COMP:'),
+      }
+    })
+
+    const routingRules = dbFolio.routingRulesSource.map(rule => {
+      const criteria: any = rule.criteria || {}
+      return {
+        category: criteria.category as any || 'ROOM_CHARGE',
+        targetFolioId: rule.targetFolioId,
+        splitPercentage: criteria.splitPercentage || 100
+      }
+    })
+
+    return {
+      id: dbFolio.id,
+      bookingId: dbFolio.bookingId || '',
+      transactions,
+      routingRules,
+      status: dbFolio.status as any
+    }
   }
 
   // Add transactional charges applying precise tax algorithms
-  static postCharge(folioId: string, description: string, baseAmount: number, category: FolioTransaction['category']): FolioTransaction {
-    const folio = this.getFolio(folioId)
+  static async postCharge(folioId: string, description: string, baseAmount: number, category: FolioTransaction['category'], dbTx: Prisma.TransactionClient = prisma): Promise<FolioTransaction> {
+    const folio = await this.getFolio(folioId, dbTx)
     if (folio.status !== 'OPEN') {
       throw new Error(`Cannot modify charge: Folio [${folioId}] is marked locked status: ${folio.status}`)
     }
@@ -81,11 +126,12 @@ export class FinancialEngine {
 
       // Post the routed portion to the target folio
       if (routedAmount !== 0) {
-        routedTx = this.postCharge(
+        routedTx = await this.postCharge(
           activeRule.targetFolioId, 
           `${description} (Routed ${activeRule.splitPercentage}% from Folio ${folioId})`, 
           routedAmount, 
-          category
+          category,
+          dbTx
         )
       }
 
@@ -104,8 +150,8 @@ export class FinancialEngine {
       throw new Error(`Cannot post charge: Business Date [${bizDate}] has been locked by Audit.`)
     }
 
-    // Standard hospitality 15% VAT plus 5% local municipal tax rate
-    const taxRate = category === 'TAX' || category === 'PAYMENT' ? 0 : 0.20
+    // Standard hospitality 15% VAT plus 10% local municipal tax rate
+    const taxRate = category === 'TAX' || category === 'PAYMENT' ? 0 : 0.25
     const taxAmount = parseFloat((baseAmount * taxRate).toFixed(2))
 
     const tx: FolioTransaction = {
@@ -119,10 +165,8 @@ export class FinancialEngine {
       isReversed: false
     }
 
-    folio.transactions.push(tx)
-
-    // Dual-write FolioLineItem to DB
-    prisma.folioLineItem.create({
+    // Write FolioLineItem to DB using the transaction client
+    await dbTx.folioLineItem.create({
       data: {
         id: tx.id,
         folioId: folioId,
@@ -130,7 +174,7 @@ export class FinancialEngine {
         amount: baseAmount + taxAmount,
         category: category,
       }
-    }).catch((err: any) => console.error('[DDD_SYNC] Failed to create FolioLineItem:', err))
+    })
 
     // Post to Double-Entry Accounting Ledger
     const ledgerLines: { accountId: string; debit: number; credit: number }[] = []
@@ -174,35 +218,28 @@ export class FinancialEngine {
   }
 
   // Post payment transactions
-  static postPayment(folioId: string, amount: number, description = 'Credit Card Settlement'): FolioTransaction {
-    return this.postCharge(folioId, description, -Math.abs(amount), 'PAYMENT')
+  static async postPayment(folioId: string, amount: number, description = 'Credit Card Settlement', dbTx: Prisma.TransactionClient = prisma): Promise<FolioTransaction> {
+    return await this.postCharge(folioId, description, -Math.abs(amount), 'PAYMENT', dbTx)
   }
 
   // Audit-safe transaction reversal workflows (No hard deletion permitted by SRE)
-  static reverseTransaction(folioId: string, txId: string, actor: string): void {
-    const folio = this.getFolio(folioId)
+  static async reverseTransaction(folioId: string, txId: string, actor: string, dbTx: Prisma.TransactionClient = prisma): Promise<void> {
+    const folio = await this.getFolio(folioId, dbTx)
     const tx = folio.transactions.find(t => t.id === txId)
     if (!tx) throw new Error(`Transaction [${txId}] not found under Folio [${folioId}].`)
     if (tx.isReversed) throw new Error(`Cannot reverse: Transaction [${txId}] is already reversed.`)
 
-    tx.isReversed = true
-    tx.reversedBy = actor
-
     // Post equal compensating transaction in compliance with strict ledger rules
     const compensationAmount = -tx.amount
-    const compensationTax = -tx.taxAmount
-    const compensationTx: FolioTransaction = {
-      id: `tx-rev-${txId}-${Date.now()}`,
+    
+    // In our new model, postCharge handles taxes natively, so we just post the inverted base amount
+    const compensationTx = await this.postCharge(
       folioId,
-      description: `REVERSAL COMP: ${tx.description}`,
-      amount: compensationAmount,
-      taxAmount: compensationTax,
-      category: tx.category,
-      timestamp: new Date().toISOString(),
-      isReversed: false
-    }
-
-    folio.transactions.push(compensationTx)
+      `REVERSAL COMP: ${tx.description}`,
+      compensationAmount,
+      tx.category,
+      dbTx
+    )
 
     // Emit compensating reversal timeline log
     eventBus.emit({
@@ -217,29 +254,41 @@ export class FinancialEngine {
   }
 
   // Night audit operational workflow closing business days
-  static runNightAudit(actor: string): { totalRevenue: number; totalTaxes: number; auditedFolios: number; batchChecksum?: string } {
+  static async runNightAudit(actor: string, dbTx: Prisma.TransactionClient = prisma): Promise<{ totalRevenue: number; totalTaxes: number; auditedFolios: number; batchChecksum?: string }> {
     const closedDate = BusinessDateEngine.getBusinessDate()
     let totalRevenue = 0
     let totalTaxes = 0
     let auditedFolios = 0
 
-    // Perform SRE-safe day rollover and lock previous business date
-    BusinessDateEngine.performDayRollover(actor, () => {
-      this.folios.forEach(folio => {
-        if (folio.status === 'OPEN') {
-          folio.status = 'PENDING_AUDIT'
-          
-          folio.transactions.forEach(t => {
-            if (t.category !== 'PAYMENT') {
-              totalRevenue += t.amount
-              totalTaxes += t.taxAmount
-            }
-          })
+    // Fetch all OPEN folios directly from database
+    const openDbFolios = await dbTx.folio.findMany({
+      where: { status: 'OPEN' }
+    })
 
-          folio.status = 'SETTLED'
-          auditedFolios++
-        }
-      })
+    // Perform SRE-safe day rollover and lock previous business date
+    await BusinessDateEngine.performDayRollover(actor, async () => {
+      for (const dbFolio of openDbFolios) {
+        const folio = await this.getFolio(dbFolio.id, dbTx)
+        
+        await dbTx.folio.update({
+          where: { id: folio.id },
+          data: { status: 'PENDING_AUDIT' }
+        })
+        
+        folio.transactions.forEach(t => {
+          if (t.category !== 'PAYMENT') {
+            totalRevenue += t.amount
+            totalTaxes += t.taxAmount
+          }
+        })
+
+        await dbTx.folio.update({
+          where: { id: folio.id },
+          data: { status: 'SETTLED' }
+        })
+        
+        auditedFolios++
+      }
     })
 
     // Settle Ledger Batch for the closed business date

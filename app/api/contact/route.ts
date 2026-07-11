@@ -27,8 +27,13 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // Background task (or fire-and-forget) for email
-    await sendContactEmail(data)
+    // Background task via outbox queue
+    await prisma.outbox.create({
+      data: {
+        topic: 'EMAIL_CONTACT',
+        payload: data as any
+      }
+    });
 
     return NextResponse.json({ success: true }, { status: 201 })
   } catch (error) {

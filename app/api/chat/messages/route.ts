@@ -21,9 +21,11 @@ export const dynamic = "force-dynamic";
 
 // ─── Rate limiter ─────────────────────────────────────────────────────────────
 let ratelimit: Ratelimit | null = null;
+export let redisClient: Redis | null = null;
 if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+    redisClient = Redis.fromEnv();
     ratelimit = new Ratelimit({
-        redis: Redis.fromEnv(),
+        redis: redisClient,
         limiter: Ratelimit.slidingWindow(20, "1 m"),
         analytics: true,
     });
@@ -142,6 +144,18 @@ export async function POST(req: NextRequest) {
             "Compose a luxury response in the persona of the Sanctuary Concierge. Keep it professional and helpful.",
         ].filter(Boolean).join("\n\n");
 
+        if (!process.env.GROQ_API_KEY || process.env.GROQ_API_KEY === "BUILD_PLACEHOLDER") {
+            const fallbackMessage = "I apologize, but my connection to the Sanctuary central intelligence is currently offline for routine maintenance. Our human concierge team is available at the front desk to assist you immediately.";
+            const stream = new ReadableStream({
+                async start(controller) {
+                    controller.enqueue(new TextEncoder().encode(fallbackMessage));
+                    await saveMessage(sessionId, userId, userMessage, fallbackMessage);
+                    controller.close();
+                }
+            });
+            return new Response(stream, { headers: { "Content-Type": "text/plain; charset=utf-8", "X-Session-Id": sessionId } });
+        }
+
         const completion = await groq.chat.completions.create({
             model: "llama-3.3-70b-versatile",
             stream: true,
@@ -170,7 +184,13 @@ export async function POST(req: NextRequest) {
                         controller.enqueue(encoder.encode(delta));
                     }
                     if (fullContent) {
-                        await saveMessage(sessionId, userId, userMessage, fullContent);
+                        if (redisClient) {
+                            redisClient.rpush('chat:history:queue', JSON.stringify({ sessionId, userId, userMessage, response: fullContent }))
+                                .catch(err => console.error("Redis rpush error:", err));
+                        } else {
+                            saveMessage(sessionId, userId, userMessage, fullContent)
+                                .catch(err => console.error("saveMessage error:", err));
+                        }
                     }
                     controller.close();
                 } catch (e) {

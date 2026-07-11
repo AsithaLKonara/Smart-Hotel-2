@@ -39,7 +39,7 @@ export class BusinessDateEngine {
   }
 
   // SRE-safe Business Day Rollover
-  static performDayRollover(actor: string, postNightAuditCharges: () => void): string {
+  static async performDayRollover(actor: string, postNightAuditCharges: () => Promise<void> | void): Promise<string> {
     if (this.isDayClosed) {
       throw new Error(`Operational day ${this.currentOperationalDate} is already closed. Rollover already executed.`)
     }
@@ -47,7 +47,7 @@ export class BusinessDateEngine {
     const closedDate = this.currentOperationalDate
 
     // 1. Post nightly recurring charges (e.g., Room rent, taxes) before closing
-    postNightAuditCharges()
+    await postNightAuditCharges()
 
     // 2. Lock the day being closed
     this.lockDate(closedDate)

@@ -67,15 +67,20 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // Send password changed confirmation email
+    // Send password changed confirmation email via Outbox
     try {
-      await sendPasswordResetConfirmation({
-        name: user.name,
-        email: user.email
+      await prisma.outbox.create({
+        data: {
+          topic: 'EMAIL_PASSWORD_RESET_CONFIRMATION',
+          payload: {
+            name: user.name,
+            email: user.email
+          } as any
+        }
       })
     } catch (emailError) {
-      console.error('Failed to send password reset confirmation:', emailError)
-      // Don't fail the request if email fails
+      console.error('Failed to enqueue password reset confirmation:', emailError)
+      // Don't fail the request if outbox fails
     }
 
     return NextResponse.json({

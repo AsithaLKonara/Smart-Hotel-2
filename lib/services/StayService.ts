@@ -49,6 +49,18 @@ export class StayService {
         },
       });
 
+      // 3.5 Sync RoomAssignment
+      // If the guest is moved to a new room during check-in, update the original assignment
+      await tx.roomAssignment.updateMany({
+        where: {
+          bookingId: booking.id,
+          status: "ACTIVE"
+        },
+        data: {
+          roomId: room.id
+        }
+      });
+
       // 4. Update Booking Status
       await tx.booking.update({
         where: { id: booking.id },

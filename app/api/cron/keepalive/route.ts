@@ -23,11 +23,16 @@ export async function GET(request: Request) {
     // This prevents the free tier from sleeping after 30 minutes of inactivity
     const userCount = await prisma.user.count()
     
+    // Periodically drain background queues
+    const { ReconciliationWorker } = await import('@/lib/reconciliation-worker')
+    await ReconciliationWorker.drainOutbox()
+    await ReconciliationWorker.drainChatQueue()
+
     return NextResponse.json({ 
       status: 'ok', 
       timestamp: new Date().toISOString(),
       userCount,
-      message: 'Database connection is active'
+      message: 'Database connection is active, queues drained'
     })
   } catch (error: any) {
     console.error('Keepalive error:', error)

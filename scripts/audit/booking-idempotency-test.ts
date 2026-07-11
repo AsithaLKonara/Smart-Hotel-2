@@ -99,7 +99,16 @@ async function testIdempotency() {
     where: {
       otaReference: exactOtaCode
     },
-    select: { id: true, roomId: true, otaReference: true, status: true }
+    select: { 
+      id: true, 
+      roomId: true, 
+      otaReference: true, 
+      status: true,
+      folios: {
+        include: { lineItems: true }
+      },
+      stayEvents: true
+    }
   });
 
   console.log(`\nFound ${testBookings.length} bookings created by the idempotency test.`);
@@ -110,17 +119,31 @@ async function testIdempotency() {
     console.error(`   Bookings:`, testBookings.map(b => b.id).join(', '));
     failed = true;
   } else if (testBookings.length === 1) {
-    console.log('✅ Idempotency test passed. The system correctly prevented duplicate bookings and gracefully handled the race condition.');
+    const b = testBookings[0];
+    const hasFolio = b.folios && b.folios.length > 0;
+    const hasLineItems = hasFolio && b.folios[0].lineItems.length > 0;
+    const hasStayEvents = b.stayEvents && b.stayEvents.length > 0;
+
+    if (!hasFolio || !hasLineItems || !hasStayEvents) {
+      console.error(`❌ INT-003 FAILED: Webhook created booking, but missed DDD lifecycle records! Folio: ${hasFolio}, LineItems: ${hasLineItems}, StayEvents: ${hasStayEvents}`);
+      failed = true;
+    } else {
+      console.log('✅ Idempotency & Lifecycle test passed. The system correctly prevented duplicate bookings and orchestrated Folio/StayEvent creation.');
+    }
   } else {
     console.log('⚠️  No bookings were created. The webhook might be broken or dates unavailable.');
   }
 
   // 3. Cleanup
   console.log('\nCleaning up test data...');
+  // Note: cascades handle folios and stayEvents, but we should be safe
+  await prisma.stayEvent.deleteMany({
+    where: { bookingId: { in: testBookings.map(b => b.id) } }
+  });
   const deleted = await prisma.booking.deleteMany({
     where: { otaReference: exactOtaCode }
   });
-  console.log(`Deleted ${deleted.count} test bookings.`);
+  console.log(`Deleted ${deleted.count} test bookings and related records.`);
 
   await prisma.$disconnect();
 

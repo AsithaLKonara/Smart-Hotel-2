@@ -19,8 +19,21 @@ export async function POST(req: Request) {
 
     logger.info('Received Booking.com webhook notification', { contentType });
 
-    // 1. Basic Validation
-    // In production, you would verify the sender's IP or a custom header/token
+    // 1. Security & Authentication
+    const authHeader = req.headers.get('authorization');
+    const expectedToken = process.env.BOOKING_COM_WEBHOOK_SECRET;
+
+    if (!expectedToken) {
+      logger.error('BOOKING_COM_WEBHOOK_SECRET is not configured. Failing closed to prevent unauthorized access.');
+      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
+    }
+
+    if (!authHeader || authHeader !== `Bearer ${expectedToken}`) {
+      logger.warn('Unauthorized access attempt to Booking.com webhook');
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // 2. Basic Validation
     if (!body || body.length < 100) {
       return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
     }

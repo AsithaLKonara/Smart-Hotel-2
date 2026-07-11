@@ -274,22 +274,26 @@ export async function PATCH(
       } : null,
     }
 
-    // Send email notifications for status changes
-    try {
-      if (validatedData.status && validatedData.status !== oldStatus && user && room) {
-        await sendBookingStatusUpdate({
-          guestEmail: user.email,
-          guestName: user.name || 'Guest',
-          bookingId: booking.id,
-          roomNumber: room.number,
-          status: validatedData.status,
-          checkIn: booking.checkIn,
-          checkOut: booking.checkOut
+    // Send status update email if moving to a relevant status via Outbox
+    if (validatedData.status && validatedData.status !== oldStatus) {
+      try {
+        await prisma.outbox.create({
+          data: {
+            topic: 'EMAIL_BOOKING_STATUS_UPDATE',
+            payload: {
+              bookingId: booking.id,
+              status: validatedData.status,
+              guestName: user?.name || 'Guest',
+              guestEmail: user?.email,
+              roomNumber: room?.number || 'TBD',
+              checkIn: booking.checkIn.toISOString(),
+              checkOut: booking.checkOut.toISOString(),
+            } as any
+          }
         })
+      } catch (emailError) {
+        console.error('Failed to enqueue status update email:', emailError)
       }
-    } catch (emailError) {
-      console.error('Failed to send status update email:', emailError)
-      // Don't fail the update if email fails
     }
 
     // Log the action
