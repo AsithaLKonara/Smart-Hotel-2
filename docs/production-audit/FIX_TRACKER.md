@@ -23,8 +23,8 @@
 | [API-009](api/API-009.md) | Sprint 1 | Resolved | Antigravity | Complaints IDOR Vulnerability | Enforced non-admin user restriction on GET requests |
 | [API-010](api/API-010.md) | Sprint 1 | Resolved | Antigravity | Cross-Property Housekeeping IDOR | Validated room.propertyId against effective session propertyId |
 | [API-011](api/API-011.md) | Sprint 2 | Resolved | Antigravity | Orphaned Complaint Bindings | Verified booking.primaryGuestId matches session user before linking |
-| [BOOK-001](booking/BOOK-001.md) | Sprint 1 | Open | Unassigned | Lock Bypassing Race Condition (Double Bookings) |
-| [BOOK-002](booking/BOOK-002.md) | Sprint 1 | Open | Unassigned | Idempotency Key Poisoning (Soft-lock) |
+| [BOOK-001](booking/BOOK-001.md) | Sprint 1 | Resolved | Antigravity | Lock Bypassing Race Condition (Double Bookings) | Forced Redis lock timeout to abort execution instead of falling back to local memory mutex |
+| [BOOK-002](booking/BOOK-002.md) | Sprint 1 | Resolved | Antigravity | Idempotency Key Poisoning (Soft-lock) | Wrapped post-transaction hooks in try-catch to prevent idempotency keys being wiped on non-critical errors |
 | [BOOK-003](booking/BOOK-003.md) | Sprint 2 | Open | Unassigned | Orphaned Stripe Payments Creation |
 | [BOOK-004](booking/BOOK-004.md) | Sprint 1 | Open | Unassigned | Desynchronized Distributed State (Redis/DB Rollback) |
 | [BOOK-005](booking/BOOK-005.md) | Sprint 3 | Open | Unassigned | Silent Notification Loss (SMTP) |

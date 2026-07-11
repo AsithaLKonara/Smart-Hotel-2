@@ -60,7 +60,10 @@ export async function acquireLock(key: string, ttl = 15000): Promise<() => Promi
           console.error(`SRE Lock: Failed releasing Redis lock for key: ${key}`, err)
         }
       }
-    } catch (err) {
+    } catch (err: any) {
+      if (err.message === 'LOCK_TIMEOUT') {
+        throw err; // Do not fallback on timeout, another process holds the lock
+      }
       console.warn('SRE Lock: Redis distributed lock failed. Falling back to local event-loop lock:', err)
     }
   }

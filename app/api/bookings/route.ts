@@ -219,21 +219,35 @@ export async function POST(request: NextRequest) {
       }
 
       // 8. AUDIT & EMAIL
-      await logAction(request, result.primaryGuestId, AUDIT_ACTIONS.BOOKING_CREATE, 'Booking', result.id, { total: result.totalAmount })
-      await sendBookingConfirmation({
-        guestName: result.guest.name,
-        guestEmail: result.guest.email,
-        roomNumber: result.roomAssignments?.[0]?.room?.number || 'TBD',
-        roomType: result.roomAssignments?.[0]?.room?.roomType?.name || 'Standard',
-        checkIn,
-        checkOut,
-        guests: validated.guests,
-        totalAmount: result.totalAmount,
-        bookingId: result.id,
-        confirmationCode: result.confirmationCode
-      })
+      let auditFailed = false
+      let emailFailed = false
 
-      const responseBody = { booking: { ...result, clientSecret }, paymentFailed }
+      try {
+        await logAction(request, result.primaryGuestId, AUDIT_ACTIONS.BOOKING_CREATE, 'Booking', result.id, { total: result.totalAmount })
+      } catch (auditErr) {
+        console.error('[AUDIT] Failed to log booking creation:', auditErr)
+        auditFailed = true
+      }
+
+      try {
+        await sendBookingConfirmation({
+          guestName: result.guest.name,
+          guestEmail: result.guest.email,
+          roomNumber: result.roomAssignments?.[0]?.room?.number || 'TBD',
+          roomType: result.roomAssignments?.[0]?.room?.roomType?.name || 'Standard',
+          checkIn,
+          checkOut,
+          guests: validated.guests,
+          totalAmount: result.totalAmount,
+          bookingId: result.id,
+          confirmationCode: result.confirmationCode
+        })
+      } catch (emailErr) {
+        console.error('[EMAIL] Failed to send booking confirmation:', emailErr)
+        emailFailed = true
+      }
+
+      const responseBody = { booking: { ...result, clientSecret }, paymentFailed, auditFailed, emailFailed }
       if (idempotencyKey) await saveIdempotency(idempotencyKey, { status: 201, body: responseBody })
       
       return NextResponse.json(responseBody, { status: 201 })

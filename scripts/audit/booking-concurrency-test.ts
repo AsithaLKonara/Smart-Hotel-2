@@ -55,7 +55,7 @@ async function testConcurrency() {
     console.log('⚠️  No RoomMapping found. Creating mock data...');
     roomType = await prisma.roomType.create({
       data: {
-        name: 'Concurrency Test Room Type',
+        name: `Concurrency Test Room Type ${Date.now()}`,
         description: 'Mock',
         baseRate: 250,
         capacity: 2,
@@ -64,12 +64,20 @@ async function testConcurrency() {
       }
     });
 
+    let property = await prisma.property.findFirst();
+    if (!property) {
+      property = await prisma.property.create({
+        data: { name: 'Test Property', code: 'TST', address: '123 Test St', city: 'Test City', country: 'US' }
+      });
+    }
+
     await prisma.room.create({
       data: {
         number: `TEST-${Date.now()}`,
         roomTypeId: roomType.id,
         status: 'AVAILABLE',
-        floor: 1
+        floor: 1,
+        propertyId: property.id
       }
     });
 
