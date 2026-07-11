@@ -45,6 +45,12 @@ export async function POST(request: NextRequest) {
         const intent = event.data.object as Stripe.PaymentIntent
         const bookingId = intent.metadata.bookingId
         
+        const existingPayment = await prisma.payment.findUnique({ where: { providerId: intent.id } })
+        if (existingPayment && (existingPayment.status === 'completed' || existingPayment.status === 'refunded')) {
+          console.log('[WEBHOOK] Ignored succeeded event for non-pending payment:', intent.id)
+          break
+        }
+        
         await prisma.$transaction([
           prisma.booking.update({
             where: { id: bookingId },
@@ -66,7 +72,12 @@ export async function POST(request: NextRequest) {
 
       case 'payment_intent.payment_failed': {
         const intent = event.data.object as Stripe.PaymentIntent
-        const bookingId = intent.metadata.bookingId
+        
+        const existingPayment = await prisma.payment.findUnique({ where: { providerId: intent.id } })
+        if (existingPayment && (existingPayment.status === 'completed' || existingPayment.status === 'refunded')) {
+          console.log('[WEBHOOK] Ignored failed event for completed/refunded payment:', intent.id)
+          break
+        }
         
         await prisma.payment.update({
           where: { providerId: intent.id },
@@ -89,6 +100,11 @@ export async function POST(request: NextRequest) {
         })
 
         if (payment && payment.bookingId) {
+          if (payment.status === 'refunded') {
+            console.log('[WEBHOOK] Ignored refunded event for already refunded payment:', intentId)
+            break
+          }
+          
           const updates: any[] = [
             prisma.booking.update({
               where: { id: payment.bookingId },
