@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { z } from 'zod';
+import { handleZodError } from '@/lib/api-utils';
 
 export async function GET(req: Request) {
   try {
@@ -67,7 +68,7 @@ export async function POST(req: Request) {
     const result = createEventSchema.safeParse(json);
 
     if (!result.success) {
-      return NextResponse.json({ error: 'Validation Error', details: result.error.format() }, { status: 400 });
+      return handleZodError(result.error);
     }
 
     const { name, type, status, startDate, endDate, expectedAttendees, organizerName, organizerEmail, spaceId } = result.data;

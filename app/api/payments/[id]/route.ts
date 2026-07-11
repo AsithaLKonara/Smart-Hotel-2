@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db'
 import { getRequestSession } from '@/lib/session'
 import { z } from 'zod'
 import { realtime } from '@/lib/realtime'
+import { handleZodError } from '@/lib/api-utils'
 
 const updatePaymentSchema = z.object({
   status: z.enum(['pending', 'completed', 'failed', 'refunded']).optional(),
@@ -117,10 +118,7 @@ export async function PATCH(
     return NextResponse.json(payment)
   } catch (error: any) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
-        { status: 400 }
-      )
+      return handleZodError(error)
     }
     console.error('Error updating payment:', error)
     return NextResponse.json(

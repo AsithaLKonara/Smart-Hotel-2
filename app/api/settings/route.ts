@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import prisma from '@/lib/db'
 import { isDatabaseConfigured } from '@/lib/db-helpers'
 import { z } from 'zod'
+import { handleZodError } from '@/lib/api-utils'
 
 const settingSchema = z.object({
   key: z.string().min(1, 'Key is required'),
@@ -100,10 +101,7 @@ export async function POST(request: NextRequest) {
     }
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
-        { status: 400 }
-      )
+      return handleZodError(error)
     }
 
     console.error('Error saving setting:', error)
@@ -162,10 +160,7 @@ export async function PUT(request: NextRequest) {
     }, { status: 200 })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
-        { status: 400 }
-      )
+      return handleZodError(error)
     }
 
     console.error('Error updating settings:', error)

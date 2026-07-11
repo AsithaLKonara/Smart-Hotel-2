@@ -5,6 +5,7 @@ import prisma from '@/lib/db'
 import { z } from 'zod'
 import { logAction, AUDIT_ACTIONS } from '@/lib/audit'
 import { sendBookingStatusUpdate } from '@/lib/email'
+import { handleZodError } from '@/lib/api-utils'
 
 const bookingUpdateSchema = z.object({
   status: z.enum(['PENDING', 'CONFIRMED', 'CHECKED_IN', 'CHECKED_OUT', 'CANCELLED']).optional(),
@@ -309,10 +310,7 @@ export async function PATCH(
     return NextResponse.json(bookingWithRelations)
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
-        { status: 400 }
-      )
+      return handleZodError(error)
     }
 
     console.error('Error updating booking:', error)

@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { z } from 'zod';
+import { handleZodError } from '@/lib/api-utils';
 
 const updateBlockSchema = z.object({
   eventId: z.string().uuid().optional(),
@@ -47,7 +48,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     const result = updateBlockSchema.safeParse(json);
 
     if (!result.success) {
-      return NextResponse.json({ error: 'Validation Error', details: result.error.format() }, { status: 400 });
+      return handleZodError(result.error);
     }
 
     const data = result.data;

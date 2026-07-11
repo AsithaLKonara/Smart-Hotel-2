@@ -6,6 +6,7 @@ import { isDatabaseConfigured, getDatabaseErrorMessage } from '@/lib/db-helpers'
 import { getEffectivePropertyId } from '@/lib/server-rbac'
 import { z } from 'zod'
 import { unstable_cache } from 'next/cache'
+import { handleZodError } from '@/lib/api-utils'
 
 const roomSchema = z.object({
   number: z.string().min(1, 'Room number is required'),
@@ -105,7 +106,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(room, { status: 201 })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Validation error', details: error.errors }, { status: 400 })
+      return handleZodError(error)
     }
     console.error('Error creating room:', error)
     return NextResponse.json({ 

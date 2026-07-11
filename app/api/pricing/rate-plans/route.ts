@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/db'
 import { z } from 'zod'
+import { handleZodError } from '@/lib/api-utils'
 
 const ratePlanSchema = z.object({
   name: z.string(),
@@ -56,7 +57,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ratePlan }, { status: 201 })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Validation error', details: error.errors }, { status: 400 })
+      return handleZodError(error)
     }
     console.error('Error creating rate plan:', error)
     return NextResponse.json({ error: 'Failed to create rate plan' }, { status: 500 })

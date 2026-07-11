@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/db'
 import { z } from 'zod'
+import { handleZodError } from '@/lib/api-utils'
 
 const seasonalRateSchema = z.object({
   ratePlanId: z.string().uuid(),
@@ -30,7 +31,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ seasonalRate }, { status: 201 })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Validation error', details: error.errors }, { status: 400 })
+      return handleZodError(error)
     }
     console.error('Error creating seasonal rate:', error)
     return NextResponse.json({ error: 'Failed to create seasonal rate' }, { status: 500 })

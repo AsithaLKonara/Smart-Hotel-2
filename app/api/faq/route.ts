@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import prisma from '@/lib/db'
 import { isDatabaseConfigured } from '@/lib/db-helpers'
 import { z } from 'zod'
+import { handleZodError } from '@/lib/api-utils'
 
 const faqSchema = z.object({
   question: z.string().min(1),
@@ -69,7 +70,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ item: faq }, { status: 201 })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Validation error', details: error.errors }, { status: 400 })
+      return handleZodError(error)
     }
     console.error('Error creating FAQ:', error)
     return NextResponse.json({ error: 'Failed to create FAQ' }, { status: 500 })

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { getRequestSession } from '@/lib/session'
 import { z } from 'zod'
+import { handleZodError } from '@/lib/api-utils'
 
 const orderItemSchema = z.object({
   orderId: z.string().min(1),
@@ -115,10 +116,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(item, { status: 201 })
   } catch (error: any) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
-        { status: 400 }
-      )
+      return handleZodError(error)
     }
     console.error('Error creating order item:', error)
     return NextResponse.json(

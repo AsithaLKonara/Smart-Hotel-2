@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import prisma from '@/lib/db'
 import { z } from 'zod'
 import { logAction, AUDIT_ACTIONS } from '@/lib/audit'
+import { handleZodError } from '@/lib/api-utils'
 
 const galleryUpdateSchema = z.object({
   title: z.string().min(1, 'Title is required').optional(),
@@ -83,10 +84,7 @@ export async function PUT(
     return NextResponse.json(gallery)
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
-        { status: 400 }
-      )
+      return handleZodError(error)
     }
 
     console.error('Error updating gallery item:', error)

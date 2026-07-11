@@ -4,6 +4,7 @@ import { postCharge, ChargePayload } from '@/lib/accounting'
 import { z } from 'zod'
 import { getRequestSession } from '@/lib/session'
 import { realtime } from '@/lib/realtime'
+import { handleZodError } from '@/lib/api-utils'
 
 const chargeSchema = z.object({
   bookingId: z.string().uuid(),
@@ -39,7 +40,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(result, { status: 201 })
   } catch (error: any) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Validation error', details: error.errors }, { status: 400 })
+      return handleZodError(error)
     }
     console.error('Error posting charge:', error)
     return NextResponse.json({ error: error.message || 'Failed to post charge' }, { status: 500 })

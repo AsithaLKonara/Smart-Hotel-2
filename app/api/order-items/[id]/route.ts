@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { getRequestSession } from '@/lib/session'
 import { z } from 'zod'
+import { handleZodError } from '@/lib/api-utils'
 
 const updateOrderItemSchema = z.object({
   quantity: z.number().int().positive().optional(),
@@ -52,10 +53,7 @@ export async function PUT(
     return NextResponse.json(item)
   } catch (error: any) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
-        { status: 400 }
-      )
+      return handleZodError(error)
     }
     console.error('Error updating order item:', error)
     return NextResponse.json(

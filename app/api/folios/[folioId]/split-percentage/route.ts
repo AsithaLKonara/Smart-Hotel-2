@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { PrismaClient } from '@prisma/client'
 import { getRequestSession } from '@/lib/session'
 import { realtime } from '@/lib/realtime'
+import { handleZodError } from '@/lib/api-utils'
 
 const prisma = new PrismaClient()
 
@@ -117,7 +118,7 @@ export async function POST(
 
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Validation failed', details: error.errors }, { status: 400 })
+      return handleZodError(error)
     }
     console.error('Folio split error:', error)
     return NextResponse.json({ error: 'Internal server error processing folio split' }, { status: 500 })

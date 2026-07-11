@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { PrismaClient } from '@prisma/client'
+import { handleZodError } from '@/lib/api-utils'
 
 const prisma = new PrismaClient()
 
@@ -84,7 +85,7 @@ export async function POST(
 
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Validation failed', details: error.errors }, { status: 400 })
+      return handleZodError(error)
     }
     console.error('Stock adjustment error:', error)
     return NextResponse.json({ error: 'Internal server error processing stock adjustment' }, { status: 500 })

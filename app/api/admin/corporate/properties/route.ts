@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { z } from 'zod'
+import { handleZodError } from '@/lib/api-utils';
 
 const propertySchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -31,7 +32,7 @@ export async function POST(req: Request) {
     const result = propertySchema.safeParse(json)
     
     if (!result.success) {
-      return NextResponse.json({ error: 'Invalid input', details: result.error.errors }, { status: 400 })
+      return handleZodError(result.error);
     }
     
     const data = result.data

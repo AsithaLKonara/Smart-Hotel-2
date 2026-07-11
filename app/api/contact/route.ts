@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { sendContactEmail } from '@/lib/email'
 import { prisma } from '@/lib/db'
+import { handleZodError } from '@/lib/api-utils'
 
 const contactSchema = z.object({
   name: z.string().min(2, 'Name is required'),
@@ -32,10 +33,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true }, { status: 201 })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: error.flatten() },
-        { status: 400 }
-      )
+      return handleZodError(error)
     }
 
     console.error('Failed to process contact form submission:', error)

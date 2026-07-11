@@ -5,6 +5,7 @@ import prisma from '@/lib/db'
 import { z } from 'zod'
 import { logAction, AUDIT_ACTIONS } from '@/lib/audit'
 import { Prisma } from '@prisma/client'
+import { handleZodError } from '@/lib/api-utils'
 
 const taskUpdateSchema = z.object({
   title: z.string().min(1, 'Title is required').optional(),
@@ -170,10 +171,7 @@ export async function PUT(
     })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
-        { status: 400 }
-      )
+      return handleZodError(error)
     }
 
     console.error('Error updating task:', error)
@@ -312,10 +310,7 @@ export async function PATCH(
     })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
-        { status: 400 }
-      )
+      return handleZodError(error)
     }
 
     console.error('Error updating task:', error)

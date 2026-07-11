@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import prisma from '@/lib/db'
 import { isDatabaseConfigured } from '@/lib/db-helpers'
 import { z } from 'zod'
+import { handleZodError } from '@/lib/api-utils'
 
 const settingUpdateSchema = z.object({
   value: z.string()
@@ -95,10 +96,7 @@ export async function PUT(
     return NextResponse.json({ setting: updated }, { status: 200 })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
-        { status: 400 }
-      )
+      return handleZodError(error)
     }
 
     console.error('Error updating setting:', error)

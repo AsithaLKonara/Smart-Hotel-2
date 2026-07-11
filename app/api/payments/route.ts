@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db'
 import { getRequestSession } from '@/lib/session'
 import { z } from 'zod'
 import { realtime } from '@/lib/realtime'
+import { handleZodError } from '@/lib/api-utils'
 
 const paymentSchema = z.object({
   bookingId: z.string().optional(),
@@ -130,10 +131,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(payment, { status: 201 })
   } catch (error: any) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
-        { status: 400 }
-      )
+      return handleZodError(error)
     }
     console.error('Error creating payment:', error)
     return NextResponse.json(

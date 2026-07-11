@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import prisma from '@/lib/db'
 import { z } from 'zod'
 import { logAction, AUDIT_ACTIONS } from '@/lib/audit'
+import { handleZodError } from '@/lib/api-utils'
 
 const inventoryUpdateSchema = z.object({
   name: z.string().min(1, 'Name is required').optional(),
@@ -130,10 +131,7 @@ export async function PUT(
     return NextResponse.json({ item: inventory })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
-        { status: 400 }
-      )
+      return handleZodError(error)
     }
 
     console.error('Error updating inventory item:', error)

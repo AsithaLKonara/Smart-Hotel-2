@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { PrismaClient } from '@prisma/client'
+import { handleZodError } from '@/lib/api-utils'
 
 const prisma = new PrismaClient()
 
@@ -51,7 +52,7 @@ export async function POST(req: Request) {
     return NextResponse.json(extractedData)
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Validation failed', details: error.errors }, { status: 400 })
+      return handleZodError(error)
     }
     console.error('OCR integration error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

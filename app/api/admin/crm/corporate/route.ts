@@ -27,6 +27,7 @@ export async function GET(req: Request) {
 }
 
 import { z } from 'zod';
+import { handleZodError } from '@/lib/api-utils'
 
 const corporateAccountSchema = z.object({
   companyName: z.string().min(1, 'Company name is required'),
@@ -63,7 +64,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true, account });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Validation error', details: error.errors }, { status: 400 });
+      return handleZodError(error)
     }
     console.error('Failed to create corporate account:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

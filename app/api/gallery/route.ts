@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import prisma from '@/lib/db'
 import { z } from 'zod'
 import { logAction, AUDIT_ACTIONS } from '@/lib/audit'
+import { handleZodError } from '@/lib/api-utils'
 
 const gallerySchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -88,10 +89,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ item: gallery }, { status: 201 })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
-        { status: 400 }
-      )
+      return handleZodError(error)
     }
 
     console.error('Error creating gallery item:', error)

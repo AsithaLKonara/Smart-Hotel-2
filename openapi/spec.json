@@ -90,7 +90,14 @@
             }
           },
           "400": {
-            "description": "Payload constraint check failed (validation error)"
+            "description": "Payload constraint check failed (validation error)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ZodValidationError"
+                }
+              }
+            }
           },
           "409": {
             "description": "Conflict: Room double booked or concurrency lock active."
@@ -235,6 +242,19 @@
             "items": {
               "type": "object"
             }
+          }
+        }
+      },
+      "ZodValidationError": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "Validation error"
+          },
+          "details": {
+            "type": "object",
+            "description": "Zod-formatted error details object."
           }
         }
       }

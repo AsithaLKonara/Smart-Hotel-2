@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { PrismaClient } from '@prisma/client'
+import { handleZodError } from '@/lib/api-utils'
 
 const prisma = new PrismaClient()
 
@@ -60,7 +61,7 @@ export async function POST(req: Request) {
 
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Validation failed', details: error.errors }, { status: 400 })
+      return handleZodError(error)
     }
     console.error('Rate shopper integration error:', error)
     return NextResponse.json({ error: 'Internal server error processing rate shopper payload' }, { status: 500 })

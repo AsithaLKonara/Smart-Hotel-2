@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { z } from 'zod'
+import { handleZodError } from '@/lib/api-utils'
 
 const roomTypeSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -45,7 +46,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     return NextResponse.json(roomType)
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Validation error', details: error.errors }, { status: 400 })
+      return handleZodError(error)
     }
     console.error('Error updating room type:', error)
     return NextResponse.json({ error: 'Failed to update room type' }, { status: 500 })

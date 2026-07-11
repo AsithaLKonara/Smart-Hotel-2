@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 import { z } from 'zod'
+import { handleZodError } from '@/lib/api-utils'
 
 const prisma = new PrismaClient()
 
@@ -63,7 +64,7 @@ export async function POST(req: Request) {
     })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Validation failed', details: error.errors }, { status: 400 })
+      return handleZodError(error)
     }
     console.error('Digital Key error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

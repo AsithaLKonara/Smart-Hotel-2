@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/db'
 import { z } from 'zod'
 import { postCharge } from '@/lib/accounting'
+import { handleZodError } from '@/lib/api-utils'
 
 const orderItemSchema = z.object({
   productId: z.string().uuid(),
@@ -88,7 +89,7 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Validation error', details: error.errors }, { status: 400 })
+      return handleZodError(error)
     }
     console.error('Error processing POS order:', error)
     return NextResponse.json({ error: error.message || 'Failed to process POS order' }, { status: 500 })

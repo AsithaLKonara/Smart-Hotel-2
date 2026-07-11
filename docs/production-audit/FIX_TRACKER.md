@@ -57,32 +57,3 @@
 
 
 
-Audit the implementation of API-006.
-
-Do not trust previous work.
-
-Use codebase-memory-mcp.
-
-Verify:
-
-✓ Root cause removed
-
-✓ No regression
-
-✓ No duplicated logic
-
-✓ Types updated
-
-✓ APIs compatible
-
-✓ Database consistent
-
-✓ Documentation updated
-
-✓ Tests updated
-
-If anything remains,
-
-list remaining problems.
-
-Do not modify code.

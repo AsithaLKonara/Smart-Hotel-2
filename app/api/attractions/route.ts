@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import prisma from '@/lib/db'
 import { isDatabaseConfigured } from '@/lib/db-helpers'
 import { z } from 'zod'
+import { handleZodError } from '@/lib/api-utils'
 
 const attractionSchema = z.object({
   name: z.string().min(1),
@@ -71,7 +72,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ item: attraction }, { status: 201 })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Validation error', details: error.errors }, { status: 400 })
+      return handleZodError(error)
     }
     console.error('Error creating attraction:', error)
     return NextResponse.json({ error: 'Failed to create attraction' }, { status: 500 })

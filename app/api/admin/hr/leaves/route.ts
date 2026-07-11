@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { z } from 'zod'
+import { handleZodError } from '@/lib/api-utils'
 
 const leaveRequestSchema = z.object({
   employeeId: z.string().min(1),
@@ -48,7 +49,7 @@ export async function POST(req: Request) {
     return NextResponse.json(leave, { status: 201 })
   } catch (error: any) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Validation Error', issues: error.issues }, { status: 400 })
+      return handleZodError(error)
     }
     console.error('Failed to create leave:', error)
     return NextResponse.json({ error: 'Failed to create leave' }, { status: 500 })

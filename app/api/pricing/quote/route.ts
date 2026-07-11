@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/db'
 import { z } from 'zod'
 import { addDays, isBefore, isEqual, format, isFriday, isSaturday } from 'date-fns'
+import { handleZodError } from '@/lib/api-utils'
 
 const quoteSchema = z.object({
   roomTypeId: z.string().uuid(),
@@ -117,7 +118,7 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Validation error', details: error.errors }, { status: 400 })
+      return handleZodError(error)
     }
     console.error('Pricing Quote Error:', error)
     return NextResponse.json({ error: 'Failed to generate quote' }, { status: 500 })

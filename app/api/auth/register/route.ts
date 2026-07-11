@@ -4,6 +4,7 @@ import prisma from '@/lib/db'
 import { z } from 'zod'
 import { isDatabaseConfigured } from '@/lib/db-helpers'
 import { enhancedRateLimit, createEnhancedRateLimitResponse } from '@/lib/rate-limit-enhanced'
+import { handleZodError } from '@/lib/api-utils'
 
 const registerSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -75,10 +76,7 @@ export async function POST(request: NextRequest) {
     )
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
-        { status: 400 }
-      )
+      return handleZodError(error)
     }
 
     console.error('Error creating user:', error)

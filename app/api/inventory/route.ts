@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db'
 import { z } from 'zod'
 import { logAction, AUDIT_ACTIONS } from '@/lib/audit'
 import { isDatabaseConfigured } from '@/lib/db-helpers'
+import { handleZodError } from '@/lib/api-utils'
 
 const inventorySchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -174,10 +175,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ item: serializedInventory }, { status: 201 })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
-        { status: 400 }
-      )
+      return handleZodError(error)
     }
 
     console.error('Error creating inventory item:', error)

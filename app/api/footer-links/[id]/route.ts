@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import prisma from '@/lib/db'
 import { isDatabaseConfigured } from '@/lib/db-helpers'
 import { z } from 'zod'
+import { handleZodError } from '@/lib/api-utils'
 
 const updateSchema = z.object({
   label: z.string().min(1).optional(),
@@ -66,7 +67,7 @@ export async function PUT(
     return NextResponse.json({ item: link })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Validation error', details: error.errors }, { status: 400 })
+      return handleZodError(error)
     }
     console.error('Error updating footer link:', error)
     return NextResponse.json({ error: 'Failed to update link' }, { status: 500 })
