@@ -21,7 +21,7 @@ function createPrismaClient() {
         async $allOperations({ model, operation, args, query }) {
           if (
             ['findMany', 'findFirst', 'count'].includes(operation) &&
-            ['Room', 'Booking', 'Invoice', 'Payment', 'User'].includes(model)
+            ['Room', 'Booking', 'Folio', 'Payment', 'User', 'Task'].includes(model)
           ) {
             const queryArgs = args as any
             queryArgs.where = queryArgs.where || {}

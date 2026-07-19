@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (minPrice || maxPrice) {
-      const priceFilter: Prisma.FloatFilter = {}
+      const priceFilter: Prisma.DecimalFilter = {}
       if (minPrice) priceFilter.gte = parseFloat(minPrice)
       if (maxPrice) priceFilter.lte = parseFloat(maxPrice)
       where.price = priceFilter

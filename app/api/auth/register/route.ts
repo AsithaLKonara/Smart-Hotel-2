@@ -49,6 +49,12 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await bcrypt.hash(validatedData.password, 12)
 
+    // Fetch default property
+    const defaultProperty = await prisma.property.findFirst()
+    if (!defaultProperty) {
+      return NextResponse.json({ error: 'System not properly initialized' }, { status: 500 })
+    }
+
     // Create user
     const user = await prisma.user.create({
       data: {
@@ -56,6 +62,7 @@ export async function POST(request: NextRequest) {
         email: validatedData.email,
         password: hashedPassword,
         phone: validatedData.phone || '',
+        propertyId: defaultProperty.id,
         createdAt: new Date(),
         updatedAt: new Date(),
       },

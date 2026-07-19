@@ -23,18 +23,17 @@ export async function POST(req: Request) {
 
       // 2. Post room charges
       for (const booking of activeBookings) {
-        let folio = await tx.invoice.findFirst({
-          where: { bookingId: booking.id, folioType: 'MASTER' }
+        let folio = await tx.folio.findFirst({
+          where: { bookingId: booking.id, type: 'MASTER' }
         });
 
         if (!folio) {
-          folio = await tx.invoice.create({
+          folio = await tx.folio.create({
             data: {
               bookingId: booking.id,
-              invoiceNo: `FOL-${Date.now()}-${booking.id.slice(0,4)}`,
-              folioType: 'MASTER',
+              type: 'MASTER',
               status: 'OPEN',
-              subtotal: 0, taxAmount: 0, grandTotal: 0
+              propertyId: booking.propertyId
             }
           });
         }
@@ -43,25 +42,15 @@ export async function POST(req: Request) {
         const rate = assignment?.room?.roomType?.baseRate || 0;
         const tax = 0; // Tax removed
 
-        await tx.invoiceLineItem.create({
+        await tx.folioLineItem.create({
           data: {
-            invoiceId: folio.id,
+            folioId: folio.id,
             description: `Room Charge - ${assignment?.room?.number || 'TBD'}`,
-            category: 'ROOM',
-            quantity: 1,
-            unitPrice: rate,
-            totalPrice: rate + tax
+            category: 'ROOM_CHARGE',
+            amount: rate + tax
           }
         });
 
-        await tx.invoice.update({
-          where: { id: folio.id },
-          data: {
-            subtotal: folio.subtotal + rate,
-            taxAmount: folio.taxAmount + tax,
-            grandTotal: folio.grandTotal + rate + tax
-          }
-        });
 
         totalRevenue += (rate + tax);
 

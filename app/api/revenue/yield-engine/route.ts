@@ -49,15 +49,16 @@ export async function GET(req: Request) {
       // Simple Yield Rules:
       // If occupancy > 80%, increase rate by 15%
       // If occupancy < 30%, decrease rate by 10%
-      let newBaseRate = roomType.baseRate
+      const baseRateNumber = roomType.baseRate.toNumber()
+      let newBaseRate = baseRateNumber
 
       if (occupancyRate > 0.8) {
-        newBaseRate = roomType.baseRate * 1.15
+        newBaseRate = baseRateNumber * 1.15
       } else if (occupancyRate < 0.3) {
-        newBaseRate = roomType.baseRate * 0.90
+        newBaseRate = baseRateNumber * 0.90
       }
 
-      if (newBaseRate !== roomType.baseRate) {
+      if (newBaseRate !== baseRateNumber) {
         await prisma.roomType.update({
           where: { id: roomType.id },
           data: { baseRate: newBaseRate }
@@ -70,7 +71,7 @@ export async function GET(req: Request) {
             resourceId: roomType.id,
             actor: 'YIELD_ENGINE',
             details: {
-              oldRate: roomType.baseRate,
+              oldRate: baseRateNumber,
               newRate: newBaseRate,
               occupancyRate
             }

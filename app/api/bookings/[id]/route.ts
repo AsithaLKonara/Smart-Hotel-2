@@ -198,6 +198,7 @@ export async function PATCH(
               createdBy: session.user.id,
               roomId: b.roomId,
               bookingId: b.id,
+              propertyId: b.propertyId,
               dueDate: new Date(),
             }
           })

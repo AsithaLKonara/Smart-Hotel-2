@@ -50,7 +50,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Travel agent not found' }, { status: 404 })
     }
 
-    const commissionRate = agent.commissionRate / 100
+    const commissionRate = agent.commissionRate.toNumber() / 100
     let totalRoomRevenue = 0
 
     bookings.forEach(booking => {

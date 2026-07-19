@@ -69,7 +69,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Item not found in inventory' }, { status: 404 })
     }
 
-    const amount = item.unitPrice * validatedData.quantity
+    const amount = item.unitPrice.toNumber() * validatedData.quantity
 
     // Post charge to folio
     await prisma.folioLineItem.create({

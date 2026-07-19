@@ -24,10 +24,11 @@ export async function GET(req: Request) {
     for (const room of roomTypes) {
       // Mock: Fetch current rate from OTA scraper API (e.g., Booking.com, Expedia)
       // In production, this would call an external rate shopping service
-      const mockOtaRate = room.baseRate * 0.95 // Simulate OTA undercutting direct rate
+      const baseRateNumber = room.baseRate.toNumber()
+      const mockOtaRate = baseRateNumber * 0.95 // Simulate OTA undercutting direct rate
 
       // Direct rate parity check: Are we more expensive than OTAs?
-      if (room.baseRate > mockOtaRate) {
+      if (baseRateNumber > mockOtaRate) {
         parityViolations++
         
         await prisma.auditLog.create({
@@ -37,9 +38,9 @@ export async function GET(req: Request) {
             resourceId: room.id,
             actor: 'SYSTEM',
             details: {
-              directRate: room.baseRate,
+              directRate: baseRateNumber,
               otaRate: mockOtaRate,
-              difference: room.baseRate - mockOtaRate
+              difference: baseRateNumber - mockOtaRate
             }
           }
         })

@@ -73,7 +73,7 @@ async function loadHotelData(): Promise<HotelData> {
     menu[category].push({
       name: item.name,
       description: item.description,
-      price: item.price,
+      price: item.price.toNumber(),
       // Note: FoodMenu model doesn't have image field in schema
       image: undefined,
     })
@@ -110,7 +110,7 @@ async function loadHotelData(): Promise<HotelData> {
     id: room.id,
     type: room.roomType.name,
     description: room.roomType.description,
-    price: room.roomType.baseRate,
+    price: room.roomType.baseRate.toNumber(),
     amenities: room.roomType.amenities || [],
     images: room.roomType.images?.length ? room.roomType.images : ['/images/hotel/room-deluxe.jpg'],
   }))

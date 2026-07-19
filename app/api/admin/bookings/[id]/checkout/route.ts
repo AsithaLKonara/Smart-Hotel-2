@@ -74,6 +74,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
         // Calculate total charges for this specific folio
         const folioCharges = folio.lineItems.reduce((acc: any, item: any) => acc.add(item.amount), new Prisma.Decimal(0)).toNumber();
+        const folioPayments = folio.payments.filter((p: any) => p.status === 'completed').reduce((acc: any, p: any) => acc.add(p.amount), new Prisma.Decimal(0)).toNumber();
+        const folioBalance = folioCharges - folioPayments;
 
         if (folioCharges > 0) {
           // Double-entry settlement log
@@ -86,15 +88,30 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
               postingDate: new Date()
             }
           });
-          await tx.journalEntry.create({
-            data: {
-              accountId: balance > 0 ? 'ACCOUNTS_RECEIVABLE' : 'CASH',
-              debit: folioCharges,
-              credit: 0,
-              description: `Checkout settlement transfer for Folio ${folio.id}`,
-              postingDate: new Date()
-            }
-          });
+          
+          if (folioPayments > 0) {
+            await tx.journalEntry.create({
+              data: {
+                accountId: 'CASH',
+                debit: folioPayments,
+                credit: 0,
+                description: `Checkout payment settlement for Folio ${folio.id}`,
+                postingDate: new Date()
+              }
+            });
+          }
+
+          if (folioBalance > 0) {
+            await tx.journalEntry.create({
+              data: {
+                accountId: 'ACCOUNTS_RECEIVABLE',
+                debit: folioBalance,
+                credit: 0,
+                description: `Checkout balance transfer for Folio ${folio.id}`,
+                postingDate: new Date()
+              }
+            });
+          }
         }
       }
       // 1. Update Booking status and clear checkout request
@@ -136,7 +153,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
             status: 'PENDING',
             priority: 'HIGH',
             roomId: assignment.roomId,
-            bookingId: bookingId
+            bookingId: bookingId,
+            propertyId: booking.propertyId
           }
         });
 

@@ -55,7 +55,7 @@ export async function POST(req: Request) {
         propertyId: prop.id,
         propertyName: prop.name,
         availableRoomCount: availableRooms.length,
-        lowestRate: Math.min(...availableRooms.map(r => r.roomType.baseRate))
+        lowestRate: Math.min(...availableRooms.map(r => r.roomType.baseRate.toNumber()))
       }
     }).filter(Boolean)
 

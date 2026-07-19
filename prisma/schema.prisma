@@ -13,7 +13,7 @@ model RoomType {
   id               String       @id @default(uuid())
   name             String       @unique
   description      String
-  baseRate         Float
+  baseRate         Decimal
   capacity         Int          @default(2)
   amenities        String[]
   images           String[]
@@ -95,7 +95,7 @@ model RatePlan {
   name           String
   description    String?
   roomTypeId     String
-  baseMultiplier Float          @default(1.0)
+  baseMultiplier Decimal        @default(1.0)
   isDefault      Boolean        @default(false)
   active         Boolean        @default(true)
   cancelPolicy   String         @default("FLEXIBLE")
@@ -114,8 +114,8 @@ model SeasonalRate {
   name             String
   startDate        DateTime @db.Date
   endDate          DateTime @db.Date
-  multiplier       Float    @default(1.0)
-  baseRateOverride Float?
+  multiplier       Decimal  @default(1.0)
+  baseRateOverride Decimal?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
   ratePlan         RatePlan @relation(fields: [ratePlanId], references: [id], onDelete: Cascade)
@@ -171,6 +171,7 @@ model Booking {
   stayEvents          StayEvent[]
   tasks               Task[]
 
+  @@unique([source, otaReference])
   @@index([checkIn, checkOut])
   @@index([status])
   @@index([createdAt])
@@ -178,7 +179,6 @@ model Booking {
   @@index([primaryGuestId, paymentStatus])
   @@index([source, status])
   @@index([status, checkIn, checkOut])
-  @@unique([source, otaReference])
   @@index([confirmationCode])
   @@index([checkoutRequestId])
 }
@@ -245,8 +245,8 @@ model JournalEntry {
   id            String   @id @default(uuid())
   transactionId String?
   accountId     String
-  debit         Float    @default(0)
-  credit        Float    @default(0)
+  debit         Decimal  @default(0)
+  credit        Decimal  @default(0)
   description   String
   postingDate   DateTime @db.Date
   createdAt     DateTime @default(now())
@@ -256,7 +256,7 @@ model JournalEntry {
 model NightAuditLog {
   id              String           @id @default(uuid())
   businessDate    DateTime         @db.Date
-  totalRevenue    Float
+  totalRevenue    Decimal
   roomsProcessed  Int
   status          String           @default("COMPLETED")
   runByUserId     String?
@@ -303,7 +303,7 @@ model FinancialAdjustment {
   id        String   @id @default(uuid())
   paymentId String
   type      String
-  amount    Float
+  amount    Decimal
   reason    String
   createdAt DateTime @default(now())
   payment   Payment  @relation(fields: [paymentId], references: [id])
@@ -329,6 +329,7 @@ model Folio {
   routingRulesSource RoutingRule[]   @relation("SourceFolio")
   routingRulesTarget RoutingRule[]   @relation("TargetFolio")
 
+  @@unique([bookingId, type])
   @@index([bookingId])
 }
 
@@ -361,7 +362,7 @@ model RevenuePosting {
   id              String        @id @default(uuid())
   nightAuditLogId String
   category        String
-  amount          Float
+  amount          Decimal
   createdAt       DateTime      @default(now())
   nightAuditLog   NightAuditLog @relation(fields: [nightAuditLogId], references: [id])
 }
@@ -372,7 +373,7 @@ model CompanyProfile {
   taxId        String?
   address      String?
   billingEmail String?
-  creditLimit  Float?
+  creditLimit  Decimal?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   folios       Folio[]
@@ -425,11 +426,11 @@ model YieldRule {
   description     String?
   startDate       DateTime @db.Date
   endDate         DateTime @db.Date
-  minOccupancy    Float?
-  maxOccupancy    Float?
-  competitorPrice Float?
+  minOccupancy    Decimal?
+  maxOccupancy    Decimal?
+  competitorPrice Decimal?
   adjustmentType  String
-  adjustmentValue Float
+  adjustmentValue Decimal
   isActive        Boolean  @default(true)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -452,7 +453,7 @@ model POSProduct {
   outletId           String
   name               String
   category           String
-  price              Float
+  price              Decimal
   isActive           Boolean             @default(true)
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
@@ -464,8 +465,8 @@ model EventSpace {
   id         String         @id @default(uuid())
   name       String
   capacity   Int
-  hourlyRate Float
-  dailyRate  Float
+  hourlyRate Decimal
+  dailyRate  Decimal
   isActive   Boolean        @default(true)
   createdAt  DateTime       @default(now())
   updatedAt  DateTime       @updatedAt
@@ -505,7 +506,7 @@ model GroupBlock {
   eventId        String
   roomTypeId     String
   blockedCount   Int
-  contractedRate Float
+  contractedRate Decimal
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
   bookings       Booking[]
@@ -518,7 +519,7 @@ model FoodMenu {
   name               String
   description        String
   category           String
-  price              Float
+  price              Decimal
   available          Boolean             @default(true)
   preparationTime    Int
   createdAt          DateTime            @default(now())
@@ -591,7 +592,7 @@ model CorporateAccount {
   contactName    String
   contactEmail   String
   contactPhone   String
-  negotiatedRate Float?
+  negotiatedRate Decimal?
   isActive       Boolean  @default(true)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -605,7 +606,7 @@ model TravelAgent {
   contactName    String
   contactEmail   String
   contactPhone   String
-  commissionRate Float    @default(10.0)
+  commissionRate Decimal  @default(10.0)
   isActive       Boolean  @default(true)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -617,7 +618,7 @@ model GuestHistory {
   userId         String    @unique
   totalStays     Int       @default(0)
   totalNights    Int       @default(0)
-  totalSpend     Float     @default(0)
+  totalSpend     Decimal   @default(0)
   lastStayDate   DateTime?
   lastRoomTypeId String?
   createdAt      DateTime  @default(now())
@@ -747,7 +748,7 @@ model RoomMapping {
   localRoomTypeId       String
   otaRoomTypeId         String
   otaRatePlanId         String?
-  priceMarkupPercentage Float   @default(15.0)
+  priceMarkupPercentage Decimal @default(15.0)
   syncEnabled           Boolean @default(true)
 }
 
@@ -982,7 +983,7 @@ model InventoryItem {
   sku           String?             @unique
   category      String
   unit          String
-  unitPrice     Float
+  unitPrice     Decimal
   parLevel      Int                 @default(10)
   vendorId      String?
   createdAt     DateTime            @default(now())
@@ -1011,7 +1012,7 @@ model PurchaseOrder {
   orderNumber    String              @unique
   vendorId       String
   status         String
-  totalAmount    Float               @default(0)
+  totalAmount    Decimal             @default(0)
   expectedDate   DateTime?
   notes          String?
   createdAt      DateTime            @default(now())
@@ -1027,8 +1028,8 @@ model PurchaseOrderItem {
   purchaseOrderId String
   itemId          String
   quantity        Int
-  unitPrice       Float
-  totalPrice      Float
+  unitPrice       Decimal
+  totalPrice      Decimal
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
   item            InventoryItem @relation(fields: [itemId], references: [id])
@@ -1057,7 +1058,7 @@ model VendorInvoice {
   id              String        @id @default(uuid())
   purchaseOrderId String
   invoiceNumber   String
-  amount          Float
+  amount          Decimal
   receivedDate    DateTime      @default(now())
   purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
 }
@@ -1071,7 +1072,7 @@ model Employee {
   phone            String?
   department       String
   position         String
-  baseSalary       Float
+  baseSalary       Decimal
   hireDate         DateTime          @db.Date
   status           String            @default("ACTIVE")
   createdAt        DateTime          @default(now())
@@ -1117,11 +1118,11 @@ model PayrollRecord {
   employeeId     String
   periodStart    DateTime  @db.Date
   periodEnd      DateTime  @db.Date
-  baseAmount     Float
-  overtimeAmount Float     @default(0)
-  deductions     Float     @default(0)
-  bonuses        Float     @default(0)
-  netPay         Float
+  baseAmount     Decimal
+  overtimeAmount Decimal   @default(0)
+  deductions     Decimal   @default(0)
+  bonuses        Decimal   @default(0)
+  netPay         Decimal
   status         String    @default("DRAFT")
   paidAt         DateTime?
   createdAt      DateTime  @default(now())
@@ -1146,7 +1147,7 @@ model PayrollRun {
   periodStart DateTime          @db.Date
   periodEnd   DateTime          @db.Date
   status      String            @default("DRAFT")
-  totalAmount Float             @default(0)
+  totalAmount Decimal           @default(0)
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
   lineItems   PayrollLineItem[]
@@ -1156,10 +1157,10 @@ model PayrollLineItem {
   id           String     @id @default(uuid())
   payrollRunId String
   employeeId   String
-  basePay      Float
-  overtimePay  Float      @default(0)
-  deductions   Float      @default(0)
-  netPay       Float
+  basePay      Decimal
+  overtimePay  Decimal    @default(0)
+  deductions   Decimal    @default(0)
+  netPay       Decimal
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
   employee     Employee   @relation(fields: [employeeId], references: [id])
@@ -1332,7 +1333,7 @@ model ResortService {
   facilityId   String
   name         String
   durationMins Int
-  price        Float
+  price        Decimal
   createdAt    DateTime       @default(now())
   facility     ResortFacility @relation(fields: [facilityId], references: [id])
 }
@@ -1368,7 +1369,7 @@ model InternalOrder {
   id              String              @id @default(uuid())
   orderType       String              @default("IN_ROOM_DINING")
   status          String
-  totalAmount     Float
+  totalAmount     Decimal
   guestId         String?
   roomId          String?
   outletId        String?
@@ -1396,8 +1397,8 @@ model InternalOrderItem {
   productId  String?
   menuItemId String?
   quantity   Int
-  price      Float
-  subtotal   Float
+  price      Decimal
+  subtotal   Decimal
   notes      String?
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @updatedAt

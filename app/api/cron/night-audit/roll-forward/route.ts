@@ -45,7 +45,7 @@ export async function GET(req: Request) {
           await FinancialEngine.postCharge(
             folioId,
             `Room Charge - ${stay.room.number}`,
-            stay.room.roomType.baseRate,
+            stay.room.roomType.baseRate.toNumber(),
             'ROOM_CHARGE',
             tx
           )
@@ -85,7 +85,7 @@ export async function GET(req: Request) {
         data: {
           businessDate: today,
           status: 'COMPLETED',
-          totalRevenue: inHouseStays.reduce((sum, stay) => sum + stay.room.roomType.baseRate, 0),
+          totalRevenue: inHouseStays.reduce((sum, stay) => sum + stay.room.roomType.baseRate.toNumber(), 0),
           roomsProcessed: inHouseStays.length,
           runByUserId: systemUser.id
         }
