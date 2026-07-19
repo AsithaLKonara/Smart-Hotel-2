@@ -144,7 +144,7 @@ export default function GuestCRMPage() {
       )}
 
       {/* Guest Profile Dialog */}
-      <Dialog.Root open={!!selectedGuest} onOpenChange={(open) => !open && setSelectedGuest(null)}>
+      <Dialog.Root open={!!selectedGuest} onOpenChange={(open: boolean) => !open && setSelectedGuest(null)}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50" />
           <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl bg-[#0a0a0f] border border-white/10 rounded-2xl shadow-2xl p-6 z-50 max-h-[90vh] overflow-y-auto">

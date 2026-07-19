@@ -35,12 +35,16 @@ export class FinancialEngine {
   static async createFolio(bookingId: string, dbTx: Prisma.TransactionClient = prisma): Promise<Folio> {
     const folioId = `folio-${bookingId}-${Date.now()}`
     
+    const booking = await dbTx.booking.findUnique({ where: { id: bookingId } });
+    if (!booking) throw new Error('Booking not found');
+
     await dbTx.folio.create({
       data: {
         id: folioId,
         bookingId: bookingId,
         type: 'GUEST',
-        status: 'OPEN'
+        status: 'OPEN',
+        propertyId: booking.propertyId
       }
     }).catch((err: any) => console.error('[DDD_SYNC] Failed to create Folio:', err))
 

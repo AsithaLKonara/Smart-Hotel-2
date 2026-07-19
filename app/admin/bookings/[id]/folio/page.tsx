@@ -213,7 +213,7 @@ export default function AdvancedFolioPage({ params }: { params: Promise<{ id: st
       </div>
 
       {/* Post Charge Modal */}
-      <Dialog.Root open={chargeModal} onOpenChange={(o) => !o && setChargeModal(false)}>
+      <Dialog.Root open={chargeModal} onOpenChange={(o: boolean) => !o && setChargeModal(false)}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50" />
           <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-[#0a0a0f] border border-white/10 rounded-2xl shadow-2xl p-6 z-50">
@@ -257,7 +257,7 @@ export default function AdvancedFolioPage({ params }: { params: Promise<{ id: st
       </Dialog.Root>
 
       {/* Add Routing Rule Modal */}
-      <Dialog.Root open={!!routingModal} onOpenChange={(o) => !o && setRoutingModal(null)}>
+      <Dialog.Root open={!!routingModal} onOpenChange={(o: boolean) => !o && setRoutingModal(null)}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50" />
           <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-[#0a0a0f] border border-white/10 rounded-2xl shadow-2xl p-6 z-50">

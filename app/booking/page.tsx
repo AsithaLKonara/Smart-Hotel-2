@@ -102,7 +102,7 @@ function BookingPageContent() {
     router.push(`/auth/signin?callbackUrl=/booking`)
   }
 
-  const createBooking = async () => {
+  const handleCreateBooking = async () => {
     if (!selectedRoom) return
     if (!session?.user) {
       toast.error('Authentication required to book. Redirecting to login...')
@@ -439,7 +439,7 @@ function BookingPageContent() {
                       <span className="text-primary uppercase tracking-widest text-[9px] font-bold">Total</span>
                       <span className="text-3xl font-serif font-bold text-primary">{formatPrice(totalAmount)}</span>
                     </div>
-                    <Button onClick={createBooking} disabled={isLoading} className="w-full bg-gold-gradient text-white h-14 rounded-xl uppercase tracking-[0.2em] text-xs font-bold border-none shadow-luxury hover:opacity-90">
+                    <Button onClick={handleCreateBooking} disabled={isLoading} className="w-full bg-gold-gradient text-white h-14 rounded-xl uppercase tracking-[0.2em] text-xs font-bold border-none shadow-luxury hover:opacity-90">
                       {isLoading ? 'Processing...' : (!session?.user ? 'Sign In to Confirm' : 'Confirm Reservation')}
                     </Button>
                     <div className="flex items-center gap-2 text-[9px] text-white/20 uppercase tracking-widest justify-center">

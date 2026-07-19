@@ -129,9 +129,9 @@ export async function computeDashboardAnalytics(referenceDate = new Date()): Pro
   // Strictly aggregate completed revenue
   const getRevenue = (list: Booking[], orders: InternalOrder[], start: Date, end: Date) => {
     const roomRev = list.filter((b: Booking) => b.createdAt >= start && b.createdAt <= end && b.paymentStatus === 'completed')
-                       .reduce((sum: number, b: Booking) => sum + (b.totalAmount || 0), 0)
+                       .reduce((sum: number, b: Booking) => sum + Number(b.totalAmount || 0), 0)
     const foodRev = orders.filter((o: InternalOrder) => o.createdAt >= start && o.createdAt <= end)
-                         .reduce((sum: number, o: InternalOrder) => sum + (o.totalAmount || 0), 0)
+                         .reduce((sum: number, o: InternalOrder) => sum + Number(o.totalAmount || 0), 0)
     return roomRev + foodRev
   }
 

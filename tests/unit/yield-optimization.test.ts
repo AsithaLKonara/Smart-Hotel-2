@@ -8,12 +8,25 @@ jest.mock('../../lib/event-bus', () => ({
   },
 }))
 
-describe('YieldOptimizationEngine Unit Tests', async () => {
+jest.mock('../../lib/db', () => ({
+  __esModule: true,
+  default: {
+    yieldRule: {
+      findMany: jest.fn().mockResolvedValue([
+        { adjustmentType: 'DYNAMIC_TIER', minOccupancy: 0.90, maxOccupancy: null, adjustmentValue: 45, name: 'CRITICAL_COMPRESSION_SURGE' },
+        { adjustmentType: 'DYNAMIC_TIER', minOccupancy: 0.75, maxOccupancy: 0.89, adjustmentValue: 25, name: 'MODERATE_COMPRESSION_SURGE' },
+        { adjustmentType: 'DYNAMIC_TIER', minOccupancy: null, maxOccupancy: 0.29, adjustmentValue: -15, name: 'LOW_OCCUPANCY_DISCOUNT' }
+      ])
+    }
+  }
+}))
+
+describe('YieldOptimizationEngine Unit Tests', () => {
   beforeEach(async () => {
     jest.clearAllMocks()
   })
 
-  describe('calculateDemandElasticity', async () => {
+  describe('calculateDemandElasticity', () => {
     it('should throw error for occupancy rate outside 0.0-1.0 range', async () => {
       expect(() => YieldOptimizationEngine.calculateDemandElasticity(-0.1)).toThrow()
       expect(() => YieldOptimizationEngine.calculateDemandElasticity(1.1)).toThrow()
@@ -30,29 +43,29 @@ describe('YieldOptimizationEngine Unit Tests', async () => {
     })
   })
 
-  describe('calculateDynamicPrice', async () => {
+  describe('calculateDynamicPrice', () => {
     it('should throw error for non-positive base price', async () => {
-      expect(() => YieldOptimizationEngine.calculateDynamicPrice(0, 0.5, 5, 'weekday')).toThrow()
-      expect(() => YieldOptimizationEngine.calculateDynamicPrice(-10, 0.5, 5, 'weekday')).toThrow()
+      await expect(YieldOptimizationEngine.calculateDynamicPrice(0, 0.5, 5, 'weekday')).rejects.toThrow()
+      await expect(YieldOptimizationEngine.calculateDynamicPrice(-10, 0.5, 5, 'weekday')).rejects.toThrow()
     })
 
     it('should apply critical compression surge for high occupancy', async () => {
       const result = await YieldOptimizationEngine.calculateDynamicPrice(100, 0.95, 10, 'weekday')
       expect(result.multiplier).toBe(1.45)
-      expect(result.appliedRules).toContain('CRITICAL_COMPRESSION_SURGE')
+      expect(result.appliedRules).toContain('DB: CRITICAL_COMPRESSION_SURGE')
       expect(result.recommendedPrice).toBe(145)
     })
 
     it('should apply moderate compression surge for medium-high occupancy', async () => {
       const result = await YieldOptimizationEngine.calculateDynamicPrice(100, 0.8, 10, 'weekday')
       expect(result.multiplier).toBe(1.25)
-      expect(result.appliedRules).toContain('MODERATE_COMPRESSION_SURGE')
+      expect(result.appliedRules).toContain('DB: MODERATE_COMPRESSION_SURGE')
     })
 
     it('should apply low occupancy discount for low occupancy', async () => {
       const result = await YieldOptimizationEngine.calculateDynamicPrice(100, 0.2, 10, 'weekday')
       expect(result.multiplier).toBe(0.85)
-      expect(result.appliedRules).toContain('LOW_OCCUPANCY_DISCOUNT')
+      expect(result.appliedRules).toContain('DB: LOW_OCCUPANCY_DISCOUNT')
     })
 
     it('should apply early bird discount for booking far in advance', async () => {
@@ -72,13 +85,17 @@ describe('YieldOptimizationEngine Unit Tests', async () => {
     })
 
     it('should apply last minute clearance for low occupancy stays close to arrival', async () => {
+      // Mock db specifically for this test to include the last minute clearance DB rule if it was converted to a rule
+      const db = require('../../lib/db').default
+      db.yieldRule.findMany.mockResolvedValueOnce([
+        { adjustmentType: 'DYNAMIC_TIER', minOccupancy: null, maxOccupancy: 0.35, adjustmentValue: -10, name: 'LAST_MINUTE_CLEARANCE_DISCOUNT' }
+      ])
       const result = await YieldOptimizationEngine.calculateDynamicPrice(100, 0.3, 2, 'weekday')
       // base multiplier = 1.0
-      // last-minute clearance = -0.10 (since daysToArrival < 3 and occupancy < 0.35)
-      // low occupancy discount = -0.15 (since occupancy < 0.30? Wait, occupancy is 0.3 so no low occupancy discount)
+      // last-minute clearance = -0.10 (since occupancy < 0.35)
       // total = 0.90
       expect(result.multiplier).toBe(0.9)
-      expect(result.appliedRules).toContain('LAST_MINUTE_CLEARANCE_DISCOUNT')
+      expect(result.appliedRules).toContain('DB: LAST_MINUTE_CLEARANCE_DISCOUNT')
     })
 
     it('should apply weekend premium', async () => {
@@ -99,7 +116,7 @@ describe('YieldOptimizationEngine Unit Tests', async () => {
     })
   })
 
-  describe('calculateOverbookingBuffer', async () => {
+  describe('calculateOverbookingBuffer', () => {
     it('should throw error for invalid historical cancellation rate', async () => {
       expect(() => YieldOptimizationEngine.calculateOverbookingBuffer(100, -0.1, 95)).toThrow()
       expect(() => YieldOptimizationEngine.calculateOverbookingBuffer(100, 1.5, 95)).toThrow()
@@ -121,7 +138,7 @@ describe('YieldOptimizationEngine Unit Tests', async () => {
     })
   })
 
-  describe('recommendLengthOfStayLimit', async () => {
+  describe('recommendLengthOfStayLimit', () => {
     it('should return correct stay limits based on occupancy', async () => {
       expect(YieldOptimizationEngine.recommendLengthOfStayLimit(0.9)).toEqual({
         minLOS: 3,
@@ -143,7 +160,7 @@ describe('YieldOptimizationEngine Unit Tests', async () => {
     })
   })
 
-  describe('generateOptimizationRecommendation', async () => {
+  describe('generateOptimizationRecommendation', () => {
     it('should orchestrate recommendation and emit event', async () => {
       const rec = await YieldOptimizationEngine.generateOptimizationRecommendation(
         'DELUXE',

@@ -20,6 +20,9 @@ export class FolioFactory {
       data: {
         type: overrides?.type || 'GUEST',
         status: overrides?.status || 'OPEN',
+        property: {
+          create: { name: faker.company.name() }
+        },
         ...overrides,
       },
     });

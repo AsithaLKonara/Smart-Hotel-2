@@ -262,7 +262,7 @@ export default function AdminRoomTypesPage() {
         </div>
       </Card>
 
-      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title={editingType ? 'Edit Room Type' : 'Add Room Type'}>
+      <Modal open={showModal} onClose={() => setShowModal(false)} title={editingType ? 'Edit Room Type' : 'Add Room Type'}>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5 block">Name</label>

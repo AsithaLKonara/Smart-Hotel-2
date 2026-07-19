@@ -16,7 +16,7 @@ const roomTypeSchema = z.object({
   maxLengthOfStay: z.number().int().min(1).optional().default(30),
 })
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions)
     if (!session || !['SUPER_ADMIN', 'MANAGER'].includes((session.user as any).roleName as string)) {
@@ -27,10 +27,11 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     const validatedData = roomTypeSchema.parse(body)
 
     // Check name conflict
+    const { id } = await params
     const existing = await prisma.roomType.findFirst({
       where: { 
         name: validatedData.name,
-        id: { not: params.id }
+        id: { not: id }
       }
     })
 
@@ -39,7 +40,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     }
 
     const roomType = await prisma.roomType.update({
-      where: { id: params.id },
+      where: { id: id },
       data: validatedData
     })
 
@@ -53,16 +54,16 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions)
     if (!session || !['SUPER_ADMIN', 'MANAGER'].includes((session.user as any).roleName as string)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Ensure no rooms depend on this type
+    const { id } = await params
     const roomCount = await prisma.room.count({
-      where: { roomTypeId: params.id }
+      where: { roomTypeId: id }
     })
 
     if (roomCount > 0) {
@@ -70,7 +71,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     }
 
     await prisma.roomType.delete({
-      where: { id: params.id }
+      where: { id: id }
     })
 
     return NextResponse.json({ success: true })

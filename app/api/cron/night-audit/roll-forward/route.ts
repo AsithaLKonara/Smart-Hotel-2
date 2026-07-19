@@ -64,16 +64,21 @@ export async function GET(req: Request) {
         }
       })
 
+      const defaultProperty = await tx.property.findFirst();
+      if (!defaultProperty) throw new Error('No property found');
+
       // 3. Ensure SYSTEM user exists for audit attribution
-      const systemUser = await tx.user.upsert({
-        where: { email: 'system@smarthotel.local' },
-        update: {},
-        create: {
-          email: 'system@smarthotel.local',
-          name: 'SYSTEM',
-          password: 'cron-automated-user',
-        }
-      })
+      let systemUser = await tx.user.findFirst({ where: { email: 'system@smarthotel.local' } });
+      if (!systemUser) {
+        systemUser = await tx.user.create({
+          data: {
+            email: 'system@smarthotel.local',
+            name: 'SYSTEM',
+            password: 'cron-automated-user',
+            propertyId: defaultProperty.id
+          }
+        });
+      }
 
       // 4. Log Night Audit
       const auditLog = await tx.nightAuditLog.create({

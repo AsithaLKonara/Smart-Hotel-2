@@ -14,8 +14,9 @@ describe('Advanced Integration: HR Leaves API', () => {
 
   it('successfully creates a valid leave request', async () => {
     // Seed an employee
+    const property = await prisma.property.create({ data: { name: 'Test Property' } });
     const user = await prisma.user.create({
-      data: { name: 'Emp 1', email: 'emp@test.com' }
+      data: { name: 'Emp 1', email: 'emp@test.com', password: 'password', propertyId: property.id }
     });
     const employee = await prisma.employee.create({
       data: {
@@ -51,8 +52,9 @@ describe('Advanced Integration: HR Leaves API', () => {
   });
 
   it('rejects an invalid leave request where endDate is before startDate', async () => {
+    const property = await prisma.property.create({ data: { name: 'Test Property 2' } });
     const user = await prisma.user.create({
-      data: { name: 'Emp 2', email: 'emp2@test.com' }
+      data: { name: 'Emp 2', email: 'emp2@test.com', password: 'password', propertyId: property.id }
     });
     const employee = await prisma.employee.create({
       data: {

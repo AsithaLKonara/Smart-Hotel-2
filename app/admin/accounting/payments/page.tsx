@@ -100,7 +100,7 @@ export default function PaymentsLedgerPage() {
       )}
 
       {/* Currency Convert Modal */}
-      <Dialog.Root open={convertModal} onOpenChange={(o) => !o && setConvertModal(false)}>
+      <Dialog.Root open={convertModal} onOpenChange={(o: boolean) => !o && setConvertModal(false)}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50" />
           <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-[#0a0a0f] border border-white/10 rounded-2xl shadow-2xl p-6 z-50">
@@ -140,7 +140,7 @@ export default function PaymentsLedgerPage() {
       </Dialog.Root>
 
       {/* Split Folio Modal */}
-      <Dialog.Root open={splitModal} onOpenChange={(o) => !o && setSplitModal(false)}>
+      <Dialog.Root open={splitModal} onOpenChange={(o: boolean) => !o && setSplitModal(false)}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50" />
           <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-[#0a0a0f] border border-white/10 rounded-2xl shadow-2xl p-6 z-50">
@@ -178,7 +178,7 @@ export default function PaymentsLedgerPage() {
       </Dialog.Root>
 
       {/* Fiscal Sign Modal */}
-      <Dialog.Root open={fiscalModal} onOpenChange={(o) => !o && setFiscalModal(false)}>
+      <Dialog.Root open={fiscalModal} onOpenChange={(o: boolean) => !o && setFiscalModal(false)}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50" />
           <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-[#0a0a0f] border border-white/10 rounded-2xl shadow-2xl p-6 z-50">

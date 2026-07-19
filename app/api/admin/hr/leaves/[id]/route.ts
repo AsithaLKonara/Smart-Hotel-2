@@ -5,7 +5,7 @@ import { authOptions } from '@/lib/auth';
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -13,7 +13,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const { status } = await req.json();
 
     if (!['APPROVED', 'REJECTED'].includes(status)) {
@@ -35,7 +35,7 @@ export async function PATCH(
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -43,7 +43,8 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    await prisma.leaveRequest.delete({ where: { id: params.id } });
+    const { id } = await params;
+    await prisma.leaveRequest.delete({ where: { id: id } });
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Failed to delete leave request:', error);

@@ -46,8 +46,8 @@ export async function POST(
     // Only split ROOM_CHARGE category revenue
     let roomRevenue = 0
     folio.lineItems.forEach(item => {
-      if (item.category === 'ROOM_CHARGE' && item.amount > 0) {
-        roomRevenue += item.amount
+      if (item.category === 'ROOM_CHARGE' && Number(item.amount) > 0) {
+        roomRevenue += Number(item.amount)
       }
     })
 

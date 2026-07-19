@@ -20,7 +20,7 @@ describe('Advanced Integration: POS Orders API', () => {
 
   it('creates a standard POS Order with items', async () => {
     const outlet = await prisma.pOSOutlet.create({ data: { name: 'Gift Shop', type: 'SHOP' } });
-    const product = await prisma.pOSProduct.create({ data: { outletId: outlet.id, name: 'Mug', price: 10, stock: 50, barcode: '123' } });
+    const product = await prisma.pOSProduct.create({ data: { outletId: outlet.id, name: 'Mug', price: 10, category: 'RETAIL' } });
 
     const payload = {
       outletId: outlet.id,
@@ -43,7 +43,7 @@ describe('Advanced Integration: POS Orders API', () => {
   });
 
   it('creates a POS Order and charges it to a Room Folio (Folio)', async () => {
-    const roomType = await prisma.roomType.create({ data: { name: 'Standard', baseRate: 100, capacity: 2 } });
+    const roomType = await prisma.roomType.create({ data: { name: 'Standard', baseRate: 100, capacity: 2, description: 'Standard room' } });
     const room = await RoomFactory.create({ number: '404', status: 'OCCUPIED', roomType: { connect: { id: roomType.id } } });
     const guest = await UserFactory.create({ role: { connect: { name: 'GUEST' } } });
 
@@ -69,7 +69,7 @@ describe('Advanced Integration: POS Orders API', () => {
     const folioId = booking.folios[0].id;
 
     const outlet = await prisma.pOSOutlet.create({ data: { name: 'Mini Bar', type: 'BAR' } });
-    const product = await prisma.pOSProduct.create({ data: { outletId: outlet.id, name: 'Soda', price: 5, stock: 100, barcode: '456' } });
+    const product = await prisma.pOSProduct.create({ data: { outletId: outlet.id, name: 'Soda', price: 5, category: 'BEVERAGE' } });
 
     const payload = {
       outletId: outlet.id,

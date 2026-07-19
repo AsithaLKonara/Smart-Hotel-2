@@ -8,6 +8,7 @@ export function ChatWrapper() {
   
   // Hide the chatbot on all dashboard/admin routes
   if (
+    !pathname ||
     pathname.startsWith('/admin') ||
     pathname.startsWith('/kitchen') ||
     pathname.startsWith('/reception') ||

@@ -432,7 +432,7 @@ export default function AdminRoomsPage() {
 
       {/* Add/Edit Room Modal */}
       <Modal
-        isOpen={showModal}
+        open={showModal}
         onClose={() => {
           setShowModal(false)
           setEditingRoom(null)

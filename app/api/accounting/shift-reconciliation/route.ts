@@ -29,7 +29,7 @@ export async function POST(req: Request) {
       }
     })
 
-    const systemCash = payments.reduce((sum, p) => sum + p.amount, 0)
+    const systemCash = payments.reduce((sum, p) => sum + Number(p.amount), 0)
     const variance = validatedData.declaredCash - systemCash
 
     await prisma.auditLog.create({

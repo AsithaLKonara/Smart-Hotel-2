@@ -57,7 +57,7 @@ export async function POST(req: Request) {
       booking.folios.forEach(folio => {
         folio.lineItems.forEach(item => {
           if (item.category === 'ROOM_CHARGE') {
-            totalRoomRevenue += item.amount
+            totalRoomRevenue += Number(item.amount)
           }
         })
       })

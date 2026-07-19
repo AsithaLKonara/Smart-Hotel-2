@@ -73,7 +73,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         });
 
         // Calculate total charges for this specific folio
-        const folioCharges = folio.lineItems.reduce((acc, item) => acc.add(item.amount), new Prisma.Decimal(0)).toNumber();
+        const folioCharges = folio.lineItems.reduce((acc: any, item: any) => acc.add(item.amount), new Prisma.Decimal(0)).toNumber();
 
         if (folioCharges > 0) {
           // Double-entry settlement log
