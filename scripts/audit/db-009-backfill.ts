@@ -26,35 +26,35 @@ async function main() {
 
   // 1. Backfill Rooms
   const roomsResult = await prisma.room.updateMany({
-    where: { propertyId: null },
+    where: { propertyId: null as any },
     data: { propertyId }
   })
   console.log(`✅ Backfilled ${roomsResult.count} Rooms`)
 
   // 2. Backfill Bookings
   const bookingsResult = await prisma.booking.updateMany({
-    where: { propertyId: null },
+    where: { propertyId: null as any },
     data: { propertyId }
   })
   console.log(`✅ Backfilled ${bookingsResult.count} Bookings`)
 
   // 3. Backfill Folios
   const foliosResult = await prisma.folio.updateMany({
-    where: { propertyId: null },
+    where: { propertyId: null as any },
     data: { propertyId }
   })
   console.log(`✅ Backfilled ${foliosResult.count} Folios`)
 
   // 4. Backfill Tasks
   const tasksResult = await prisma.task.updateMany({
-    where: { propertyId: null },
+    where: { propertyId: null as any },
     data: { propertyId }
   })
   console.log(`✅ Backfilled ${tasksResult.count} Tasks`)
 
   // 5. Backfill Users
   const usersResult = await prisma.user.updateMany({
-    where: { propertyId: null },
+    where: { propertyId: null as any },
     data: { propertyId }
   })
   console.log(`✅ Backfilled ${usersResult.count} Users`)

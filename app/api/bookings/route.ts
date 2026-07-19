@@ -323,9 +323,9 @@ export async function GET(request: NextRequest) {
   })
 
   // Map roomType to type to match the frontend expectations
-  const formattedBookings = bookings.map(booking => ({
+  const formattedBookings = bookings.map((booking: any) => ({
     ...booking,
-    roomAssignments: booking.roomAssignments.map(assignment => ({
+    roomAssignments: booking.roomAssignments.map((assignment: any) => ({
       ...assignment,
       room: assignment.room ? {
         ...assignment.room,

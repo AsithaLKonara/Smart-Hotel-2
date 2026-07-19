@@ -51,12 +51,12 @@ export class DatabaseClient {
         const prismaIsolationLevel = isolationLevel === 'READ COMMITTED' ? 'ReadCommitted' :
                                      isolationLevel === 'REPEATABLE READ' ? 'RepeatableRead' : 'Serializable'
 
-        return await prisma.$transaction(async (tx) => {
+        return await prisma.$transaction(async (tx: any) => {
           const clientWrapper: SqlTransactionClient = {
             query: async (queryText: string, params: any[] = []) => {
               const isSelect = queryText.trim().toLowerCase().startsWith('select')
               if (isSelect) {
-                const rows = await tx.$queryRawUnsafe<any[]>(queryText, ...params)
+                const rows = await (tx as any).$queryRawUnsafe(queryText, ...params) as any[]
                 return { rows, rowCount: rows.length }
               } else {
                 const rowCount = await tx.$executeRawUnsafe(queryText, ...params)

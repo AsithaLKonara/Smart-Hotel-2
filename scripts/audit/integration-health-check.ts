@@ -61,7 +61,7 @@ async function auditIntegrations() {
     const stripeKey = process.env.STRIPE_SECRET_KEY;
     if (!stripeKey) throw new Error('STRIPE_SECRET_KEY is missing');
     
-    const stripe = new Stripe(stripeKey, { apiVersion: '2025-01-27.acacia' });
+    const stripe = new Stripe(stripeKey, { apiVersion: '2023-10-16' });
     await stripe.balance.retrieve();
     console.log('✅ Stripe API is reachable and credentials are valid.');
   } catch (err: any) {

@@ -51,7 +51,7 @@ async function testIdempotency() {
   console.log('--- OTA Webhook Idempotency Audit ---\n');
   
   // 1. Find a mapped room type
-  const mapping = await prisma.roomMapping.findFirst({
+  const mapping = await (prisma.roomMapping.findFirst as any)({
     include: { roomType: true }
   });
 
@@ -95,13 +95,12 @@ async function testIdempotency() {
   // Wait a moment for async DB operations in webhooks to settle
   await new Promise(resolve => setTimeout(resolve, 2000));
 
-  const testBookings = await prisma.booking.findMany({
+  const testBookings = await (prisma.booking.findMany as any)({
     where: {
       otaReference: exactOtaCode
     },
     select: { 
       id: true, 
-      roomId: true, 
       otaReference: true, 
       status: true,
       folios: {

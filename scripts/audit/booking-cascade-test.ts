@@ -14,12 +14,16 @@ async function runTest() {
     
     const user = await prisma.user.findFirst()
     if (!user) throw new Error('No User found')
+    
+    const property = await prisma.property.findFirst()
+    if (!property) throw new Error('No Property found')
 
     const room = await prisma.room.create({
       data: {
         number: `TEST-CASC-${Date.now()}`,
         floor: 1,
         roomTypeId: roomType.id,
+        propertyId: property.id,
       }
     })
     testRoomId = room.id;
@@ -27,6 +31,7 @@ async function runTest() {
     const booking = await prisma.booking.create({
       data: {
         confirmationCode: `TCASC${Date.now()}`,
+        propertyId: property.id,
         checkIn: new Date(),
         checkOut: new Date(Date.now() + 86400000),
         primaryGuestId: user.id,

@@ -36,7 +36,7 @@ test.describe('🧬 Security Audit - Ownership & Cross-User Isolation', () => {
           password: hashedPassword,
           phone: '0987654321',
           role: { connect: { name: 'GUEST' } },
-          propertyId: property.id,
+          property: { connect: { id: property.id } },
           createdAt: new Date(),
           updatedAt: new Date()
         }

@@ -12,7 +12,7 @@ async function testOverlap() {
   console.log('--- Overlapping Assignments Audit ---\n');
   
   // 1. Find a mapped room type and an available room
-  const mapping = await prisma.roomMapping.findFirst({
+  const mapping = await (prisma.roomMapping.findFirst as any)({
     include: { roomType: { include: { rooms: true } } }
   });
 
@@ -40,6 +40,7 @@ async function testOverlap() {
       guests: 1,
       totalAmount: 100,
       primaryGuestId: (await prisma.user.findFirst())?.id || 'SYSTEM',
+      propertyId: room.propertyId || (await prisma.property.findFirst())?.id || 'TEST_PROP',
       status: 'CONFIRMED',
       confirmationCode: `OVERLAP-TEST-${Date.now()}`,
       source: 'WEBSITE'
