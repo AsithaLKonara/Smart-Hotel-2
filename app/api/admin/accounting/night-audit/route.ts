@@ -38,30 +38,42 @@ export async function POST(req: Request) {
           });
         }
 
-        const assignment = booking.roomAssignments?.[0]
-        const rate = assignment?.room?.roomType?.baseRate || 0;
-        const tax = 0; // Tax removed
+        // Process all room assignments for the booking
+        for (const assignment of booking.roomAssignments) {
+          if (!assignment || !assignment.room || !assignment.room.roomType) continue;
 
-        await tx.folioLineItem.create({
-          data: {
-            folioId: folio.id,
-            description: `Room Charge - ${assignment?.room?.number || 'TBD'}`,
-            category: 'ROOM_CHARGE',
-            amount: rate + tax
-          }
-        });
+          const rate = assignment.room.roomType.baseRate;
+          const tax = rate * 0.15; // 15% Tax added back
 
+          await tx.folioLineItem.create({
+            data: {
+              folioId: folio.id,
+              description: `Room Charge - ${assignment.room.number}`,
+              category: 'ROOM_CHARGE',
+              amount: rate
+            }
+          });
 
-        totalRevenue += (rate + tax);
+          await tx.folioLineItem.create({
+            data: {
+              folioId: folio.id,
+              description: `Room Tax (15%) - ${assignment.room.number}`,
+              category: 'TAX',
+              amount: tax
+            }
+          });
 
-        await tx.journalEntry.create({
-          data: {
-            accountId: 'A/R-GUEST',
-            debit: rate + tax,
-            description: `Room Posting: ${booking.id}`,
-            postingDate: businessDate
-          }
-        });
+          totalRevenue += (rate + tax);
+
+          await tx.journalEntry.create({
+            data: {
+              accountId: 'A/R-GUEST',
+              debit: rate + tax,
+              description: `Room Posting: ${booking.id} (${assignment.room.number})`,
+              postingDate: businessDate
+            }
+          });
+        }
       }
 
       // 3. Log Audit

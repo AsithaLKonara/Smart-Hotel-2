@@ -61,14 +61,33 @@ export class ReconciliationWorker {
    * Compares Local availability vs SyncLog state.
    */
   static async checkInventoryDrift() {
-    const roomTypes = await prisma.room.groupBy({
-      by: ['roomTypeId'],
-      where: { status: 'AVAILABLE' },
-      _count: { id: true }
-    })
+    // Fix 4: Calculate true inventory based on overlapping reservations for today
+    const roomTypes = await prisma.roomType.findMany({
+      select: { id: true }
+    });
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
 
     for (const rt of roomTypes) {
-      const localCount = rt._count.id
+      const roomTypeId = rt.id;
+      
+      const totalRooms = await prisma.room.count({ 
+        where: { roomTypeId, status: { notIn: ['MAINTENANCE', 'OUT_OF_ORDER'] } } 
+      });
+      
+      const overlappingBookings = await prisma.roomAssignment.count({
+        where: {
+          room: { roomTypeId },
+          status: 'ACTIVE',
+          startDate: { lt: tomorrow },
+          endDate: { gt: today }
+        }
+      });
+      
+      const localCount = Math.max(0, totalRooms - overlappingBookings);
       
       // Get the last successful sync for this type
       const lastSync = await prisma.syncLog.findFirst({
@@ -82,10 +101,10 @@ export class ReconciliationWorker {
       const lastSyncedCount = (lastSync?.payload as any)?.availability
 
       if (lastSyncedCount !== undefined && lastSyncedCount !== localCount) {
-        console.warn(`[DRIFT_DETECTED] RoomType ${rt.roomTypeId}: Local=${localCount}, OTA=${lastSyncedCount}. Triggering self-healing push.`)
+        console.warn(`[DRIFT_DETECTED] RoomType ${roomTypeId}: Local=${localCount}, OTA=${lastSyncedCount}. Triggering self-healing push.`)
         
         await pushAvailabilityToOTA({
-          roomTypeId: rt.roomTypeId, // Grouping by type for OTA sync
+          roomTypeId: roomTypeId, // Grouping by type for OTA sync
           date: new Date().toISOString().split('T')[0],
           availability: localCount
         })
@@ -93,7 +112,7 @@ export class ReconciliationWorker {
         await RealtimeEvents.emitOpsMessage({
           type: 'INVENTORY_DRIFT_HEALED',
           severity: 'MEDIUM',
-          message: `Self-healing sync triggered for ${rt.roomTypeId}. Drift corrected from ${lastSyncedCount} to ${localCount}.`
+          message: `Self-healing sync triggered for ${roomTypeId}. Drift corrected from ${lastSyncedCount} to ${localCount}.`
         })
       }
     }

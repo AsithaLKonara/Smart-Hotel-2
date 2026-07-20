@@ -89,13 +89,17 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
             }
           });
           
-          if (folioPayments > 0) {
+          // Fix 3: Iterate through individual payments to correctly record their account type
+          // 'CASH' for offline payments, 'STRIPE_CLEARING' for online payments
+          const completedPayments = folio.payments.filter((p: any) => p.status === 'completed');
+          for (const payment of completedPayments) {
+            const accountId = payment.paymentProvider === 'STRIPE' ? 'STRIPE_CLEARING' : 'CASH';
             await tx.journalEntry.create({
               data: {
-                accountId: 'CASH',
-                debit: folioPayments,
+                accountId: accountId,
+                debit: payment.amount,
                 credit: 0,
-                description: `Checkout payment settlement for Folio ${folio.id}`,
+                description: `Checkout payment settlement for Folio ${folio.id} (${payment.paymentProvider || 'CASH'})`,
                 postingDate: new Date()
               }
             });

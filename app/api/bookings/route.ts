@@ -220,9 +220,23 @@ export async function POST(request: NextRequest) {
         if (chaosState.otaFailure) throw new Error('CHAOS_TEST: Simulated OTA Failure')
         const assignment = result.roomAssignments?.[0]
         if (assignment && assignment.room) {
-          const availableCount = await prisma.room.count({ where: { roomTypeId: assignment.room.roomTypeId, status: 'AVAILABLE' } })
+          const roomTypeId = assignment.room.roomTypeId;
+          // Fix 4: Calculate true availability using overlapping active reservations
+          const totalRooms = await prisma.room.count({ 
+            where: { roomTypeId, status: { notIn: ['MAINTENANCE', 'OUT_OF_ORDER'] } } 
+          });
+          const overlappingBookings = await prisma.roomAssignment.count({
+            where: {
+              room: { roomTypeId },
+              status: 'ACTIVE',
+              startDate: { lt: checkOut },
+              endDate: { gt: checkIn }
+            }
+          });
+          const availableCount = Math.max(0, totalRooms - overlappingBookings);
+
           await pushAvailabilityToOTA({
-            roomTypeId: assignment.room.roomTypeId,
+            roomTypeId,
             date: checkIn.toISOString().split('T')[0],
             availability: availableCount,
             rate: assignment.room.roomType.baseRate
