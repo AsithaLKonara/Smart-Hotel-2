@@ -1,11 +1,14 @@
 "use client"
 
-export const dynamic = 'force-dynamic'
-export const runtime = 'nodejs'
+// NOTE: `export const dynamic` and `export const runtime` are Server Component
+// route segment configs. They are illegal in Client Components ('use client')
+// and were removed to prevent build failures and unpredictable runtime behavior.
+// (Batch 4 audit — Fix 2)
 
-import { useState, useEffect, Suspense } from 'react'
+import { Suspense } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import { useQuery } from '@tanstack/react-query'
 import {
   TrendingUp,
   Users,
@@ -31,34 +34,25 @@ import { AdminPageShell } from '@/components/dashboard/admin/admin-page-shell'
 function AdminDashboardContent() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const [dashboardData, setDashboardData] = useState<any>(null)
-  const [isLoading, setIsLoading] = useState(true)
 
-  useEffect(() => {
-    // Rely solely on middleware.ts for enterprise-grade edge protection.
-    // Client-side redirects cause race conditions during Playwright E2E hydration.
-    if (status === 'authenticated' && session) {
-      fetchDashboardData()
-    }
-  }, [session, status, router])
-
-  const fetchDashboardData = async () => {
-    try {
-      setIsLoading(true)
-      const response = await fetch('/api/analytics/dashboard', {
-        cache: 'no-store'
-      })
-      const data = await response.json()
-      if (response.ok) {
-        setDashboardData(data)
-      }
-    } catch (error: any) {
-      console.error('Error fetching dashboard data:', error)
-      toast.error('Failed to load dashboard data')
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  // Fix 3: Use React Query instead of a manual useEffect+fetch pattern.
+  // Gains automatic caching, background refetching (polls every 30s),
+  // deduplication, and a stable refetch() handle for the refresh button.
+  const {
+    data: dashboardData,
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ['dashboard'],
+    queryFn: async () => {
+      const res = await fetch('/api/analytics/dashboard', { cache: 'no-store' })
+      if (!res.ok) throw new Error('Failed to load dashboard data')
+      return res.json()
+    },
+    enabled: status === 'authenticated' && !!session,
+    refetchInterval: 30_000,  // Live dashboard: poll every 30 seconds
+    staleTime: 10_000,
+  })
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-LK', {
@@ -83,7 +77,7 @@ function AdminDashboardContent() {
     <AdminPageShell
       title="Admin Command Deck"
       subtitle="High-level revenue tracking and system-wide governance."
-      onRefresh={fetchDashboardData}
+      onRefresh={() => refetch()}
     >
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
         <Card className="bg-[#0c0c0c] border-white/5 p-6 rounded-3xl shadow-2xl group hover:border-primary/20 transition-all">

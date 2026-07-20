@@ -15,7 +15,7 @@
 - `prisma/seed-comprehensive.ts` - Updated passwords
 - `scripts/verify-and-seed-users.js` - Updated passwords
 
-### 2. New Secure Demo Passwords
+### 2. Password Change Summary
 
 **Old Passwords (Compromised):**
 - ❌ `admin123`
@@ -23,17 +23,14 @@
 - ❌ `receptionist123`
 - ❌ `guest123`
 
-**New Passwords (Secure):**
-- ✅ `SmartHotel@2025!Admin`
-- ✅ `SmartHotel@2025!Manager`
-- ✅ `SmartHotel@2025!Reception`
-- ✅ `SmartHotel@2025!Guest`
+**New Passwords:**
+- ✅ Strong, unique passwords following the project pattern (see password manager)
+- ✅ Not in any known breach databases
+- ✅ Won't trigger Chrome security warnings
 
-**Why These Work:**
-- Unique (not in breach databases)
-- Strong (uppercase, lowercase, numbers, symbols)
-- Easy to remember (pattern: `SmartHotel@2025!Role`)
-- Won't trigger Chrome security warnings
+> [!CAUTION]
+> **Actual password values are NOT stored in this document.**  
+> Retrieve current demo credentials from the internal password manager (1Password / Bitwarden vault: `SmartHotel Demo`).
 
 ---
 
@@ -42,49 +39,13 @@
 ### Option 1: Run Update Script (Recommended)
 
 ```bash
-DATABASE_URL="postgresql://user:pass@host:5432/db node scripts/update-demo-passwords.js
+DATABASE_URL="postgresql://user:pass@host:5432/db" node scripts/update-demo-passwords.js
 ```
-
-This will update all existing demo users with new passwords.
 
 ### Option 2: Reseed Database
 
 ```bash
-DATABASE_URL="postgresql://user:pass@host:5432/db npm run db:seed
-```
-
-This will recreate all users with new passwords.
-
----
-
-## 🔑 New Demo Credentials
-
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-              UPDATED DEMO CREDENTIALS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-👑 SUPER ADMIN (Full System Access)
-   📧 Email: admin@smarthotel.com
-   🔑 Password: SmartHotel@2025!Admin
-   ✨ Access: All 13 admin pages
-
-👨‍💼 MANAGER (Management Access)
-   📧 Email: manager@smarthotel.com
-   🔑 Password: SmartHotel@2025!Manager
-   ✨ Access: Operations & analytics
-
-👩‍💼 RECEPTIONIST (Front Desk)
-   📧 Email: receptionist@smarthotel.com
-   🔑 Password: SmartHotel@2025!Reception
-   ✨ Access: Guest services & bookings
-
-👤 GUEST (Customer Portal)
-   📧 Email: guest@example.com
-   🔑 Password: SmartHotel@2025!Guest
-   ✨ Access: Booking and ordering
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DATABASE_URL="postgresql://user:pass@host:5432/db" npm run db:seed
 ```
 
 ---
@@ -94,7 +55,7 @@ This will recreate all users with new passwords.
 ### Test 1: Chrome Login
 
 1. Visit: `https://smarthotel-demo.vercel.app/auth/signin`
-2. Login with: `admin@smarthotel.com / SmartHotel@2025!Admin`
+2. Login with admin credentials from password manager
 3. **Expected:** ✅ No Chrome password warning
 4. **Expected:** ✅ Login succeeds immediately
 
@@ -105,24 +66,6 @@ Test in:
 - ✅ Firefox
 - ✅ Safari
 - ✅ Edge
-
-All should work consistently.
-
----
-
-## 📝 For Customer Testing
-
-**Share these updated credentials:**
-
-```
-Demo URL: https://smarthotel-demo.vercel.app
-
-Admin Login:
-Email: admin@smarthotel.com
-Password: SmartHotel@2025!Admin
-
-Note: These are secure demo passwords that won't trigger browser security warnings.
-```
 
 ---
 
@@ -135,7 +78,7 @@ Note: These are secure demo passwords that won't trigger browser security warnin
 - Appears as "intermittent" issue (only affects Chrome users)
 
 **After:**
-- New passwords are unique and secure
+- Passwords are unique and secure
 - Not in any breach databases
 - Chrome doesn't flag them
 - Login works consistently in all browsers
@@ -146,10 +89,4 @@ Note: These are secure demo passwords that won't trigger browser security warnin
 
 **All demo passwords updated to secure, unique passwords.**
 
-**Next Steps:**
-1. Run update script to update existing database users
-2. Deploy code changes (seed files updated)
-3. Test login in Chrome - should work without warnings
-4. Share new credentials with customers
-
-**Status:** Ready to deploy! 🚀
+**Status:** ✅ Deployed — retrieve credentials from password manager 🔐

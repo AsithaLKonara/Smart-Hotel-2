@@ -2,12 +2,16 @@
 
 **Demo URL:** `https://smarthotel-demo.vercel.app/`
 
+> [!CAUTION]
+> **Passwords are NOT stored in this file.** Retrieve them from the internal password manager (1Password / Bitwarden vault: `SmartHotel Demo`) or from a team member.  
+> All demo accounts follow the seeded password pattern defined in `prisma/seed.ts`.
+
 ---
 
 ## 👑 Admin Access (Full System)
 
 **Email:** `admin@smarthotel.com`  
-**Password:** `SmartHotel@2025!Admin`
+**Password:** `[retrieve from password manager]`
 
 **Access:**
 - All 13 admin pages
@@ -23,7 +27,7 @@
 ## 👨‍💼 Manager Access
 
 **Email:** `manager@smarthotel.com`  
-**Password:** `SmartHotel@2025!Manager`
+**Password:** `[retrieve from password manager]`
 
 **Access:**
 - Operations management
@@ -35,7 +39,7 @@
 ## 👩‍💼 Receptionist Access
 
 **Email:** `receptionist@smarthotel.com`  
-**Password:** `SmartHotel@2025!Reception`
+**Password:** `[retrieve from password manager]`
 
 **Access:**
 - Guest services
@@ -47,7 +51,7 @@
 ## 👤 Guest Access
 
 **Email:** `guest@example.com`  
-**Password:** `SmartHotel@2025!Guest`
+**Password:** `[retrieve from password manager]`
 
 **Access:**
 - Booking system
@@ -58,9 +62,8 @@
 
 ## 📝 Notes for Testing
 
-- **These are secure demo passwords** - They won't trigger browser security warnings
-- **All passwords follow pattern:** `SmartHotel@2025!Role`
-- **For new guest accounts:** Use the sign-up page at `/auth/signup`
+- All demo accounts are seeded via `prisma/seed.ts` — run `npm run db:seed` to reset.
+- To share credentials externally, use the team password manager share link — do **not** paste passwords into documents or chat.
 
 ---
 
@@ -77,5 +80,5 @@
 
 ---
 
-**Last Updated:** December 18, 2025  
-**Status:** ✅ Ready for Customer Testing
+**Last Updated:** July 2026 (passwords redacted from repo)  
+**Status:** ✅ Ready for Testing — retrieve credentials from password manager

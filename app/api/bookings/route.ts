@@ -24,6 +24,16 @@ const bookingSchema = z.object({
   guestName: z.string().optional(),
   guestEmail: z.string().email().optional(),
   guestPhone: z.string().optional(),
+  // Extras selected by the guest on the frontend.
+  // The backend recomputes the total authoritatively — never trusting the
+  // client-submitted totalAmount — but must receive the extras selection
+  // to correctly reflect charges in the DB and the folio.
+  extras: z.object({
+    breakfast: z.boolean().default(false),
+    lateCheckout: z.boolean().default(false),
+    airportShuttle: z.boolean().default(false),
+    spaAccess: z.boolean().default(false),
+  }).optional().default({}),
 })
 
 export async function POST(request: NextRequest) {
@@ -92,7 +102,18 @@ export async function POST(request: NextRequest) {
         if (!guestId) throw new Error('GUEST_DATA_REQUIRED')
 
         const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24))
-        const totalAmount = room.roomType.baseRate * nights
+
+        // SERVER-AUTHORITATIVE PRICING (Fix: Ghost Revenue)
+        // Mirrors calculateBookingTotal() in lib/booking-api.ts.
+        // Never trusts the client-submitted totalAmount.
+        const extras = validated.extras ?? {}
+        let subtotal = room.roomType.baseRate * nights
+        if (extras.breakfast)      subtotal += 25 * nights
+        if (extras.lateCheckout)   subtotal += 50
+        if (extras.airportShuttle) subtotal += 75
+        if (extras.spaAccess)      subtotal += 100
+        const totalAmount = Math.round(subtotal * 1.15 * 100) / 100  // +15% tax
+
         const confirmationCode = `SH-${Math.random().toString(36).substring(2, 9).toUpperCase()}`
 
         const booking = await tx.booking.create({
@@ -150,10 +171,35 @@ export async function POST(request: NextRequest) {
           data: {
             folioId: folio.id,
             description: `Room Charge (${nights} nights)`,
-            amount: totalAmount,
+            amount: room.roomType.baseRate * nights,
             category: 'ROOM',
           }
         });
+
+        // Add a folio line item for each selected extra
+        const extraLineItems = [
+          extras.breakfast      && { description: `Breakfast (${nights} nights)`, amount: 25 * nights,  category: 'FOOD' },
+          extras.lateCheckout   && { description: 'Late Checkout',                amount: 50,           category: 'SERVICE' },
+          extras.airportShuttle && { description: 'Airport Shuttle',              amount: 75,           category: 'TRANSPORT' },
+          extras.spaAccess      && { description: 'Spa Access',                   amount: 100,          category: 'SERVICE' },
+        ].filter(Boolean) as { description: string; amount: number; category: string }[]
+
+        if (extraLineItems.length > 0) {
+          await tx.folioLineItem.createMany({
+            data: extraLineItems.map(item => ({ folioId: folio.id, ...item }))
+          })
+        }
+
+        // Tax line item for full transparency in the folio
+        const taxAmount = Math.round((totalAmount - (room.roomType.baseRate * nights + extraLineItems.reduce((s, i) => s + i.amount, 0))) * 100) / 100
+        await tx.folioLineItem.create({
+          data: {
+            folioId: folio.id,
+            description: 'Tax (15%)',
+            amount: taxAmount,
+            category: 'TAX',
+          }
+        })
 
         // Lock will automatically be released by PostgreSQL upon transaction commit
         return { booking, folioId: folio.id }

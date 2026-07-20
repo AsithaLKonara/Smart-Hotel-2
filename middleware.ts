@@ -92,22 +92,37 @@ export async function middleware(request: NextRequest) {
   const url = request.nextUrl
   const path = url.pathname
 
-  // 0.5. CSRF Protection for state-changing internal Admin API requests
+  // 0.5. CSRF Protection for state-changing internal Admin API requests (FAIL-CLOSED)
+  //
+  // SECURITY: Both Sec-Fetch-Site and Origin are REQUIRED.
+  // Absence of either header is treated as a violation — classic HTML <form> CSRF
+  // attacks omit Sec-Fetch-Site on older browsers and never send an Origin header.
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method) && path.startsWith('/api/admin')) {
     const secFetchSite = request.headers.get('sec-fetch-site')
-    if (secFetchSite && secFetchSite !== 'same-origin' && secFetchSite !== 'same-site') {
-      return NextResponse.json({ error: 'CSRF violation: Cross-origin requests blocked for internal APIs.' }, { status: 403 })
+
+    // Sec-Fetch-Site must be present AND same-origin/same-site
+    if (!secFetchSite || (secFetchSite !== 'same-origin' && secFetchSite !== 'same-site')) {
+      return NextResponse.json({ error: 'CSRF violation: Cross-origin or missing Sec-Fetch-Site header.' }, { status: 403 })
     }
+
     const origin = request.headers.get('origin')
     const host = request.headers.get('host')
-    if (origin && host) {
+
+    // Origin must be present for state-changing requests
+    if (!origin) {
+      return NextResponse.json({ error: 'CSRF violation: Origin header is required.' }, { status: 403 })
+    }
+
+    if (host) {
       try {
         const originHost = new URL(origin).host
-        if (originHost !== host) {
+        // Allow the configured NEXTAUTH_URL as a valid same-site origin (OAuth callbacks)
+        const nextAuthHost = process.env.NEXTAUTH_URL ? new URL(process.env.NEXTAUTH_URL).host : null
+        if (originHost !== host && originHost !== nextAuthHost) {
           return NextResponse.json({ error: 'CSRF violation: Origin mismatch.' }, { status: 403 })
         }
       } catch (e) {
-        return NextResponse.json({ error: 'CSRF violation: Invalid Origin.' }, { status: 403 })
+        return NextResponse.json({ error: 'CSRF violation: Invalid Origin header.' }, { status: 403 })
       }
     }
   }
@@ -154,10 +169,19 @@ export async function middleware(request: NextRequest) {
     })
   }
 
+  // SECURITY (Fix 4): Treat an expired-but-present token as unauthenticated.
+  // The jwt callback marks expired tokens with error:'SessionExpired' instead of
+  // returning null (which the NextAuth v4 type system doesn't allow). We nullify
+  // the token here so all downstream checks behave identically to no-token.
+  if ((token as any)?.error === 'SessionExpired') {
+    token = null
+  }
+
   // 3. Enforce Authentication for ALL remaining /api routes (Default Deny)
   if (path.startsWith('/api') && !token) {
     return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
   }
+
 
   // 4. Identify applicable authorization rule
   const rule = PROTECTED_ROUTES.find(r => path.startsWith(r.prefix))

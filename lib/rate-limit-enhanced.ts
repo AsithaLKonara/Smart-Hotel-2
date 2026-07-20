@@ -236,12 +236,52 @@ const paymentLimiter = new EnhancedRateLimiter('payment', {
 
 
 
+/**
+ * Determine a stable, spoofing-resistant client identifier.
+ *
+ * SECURITY: `X-Forwarded-For` is attacker-controlled unless it is injected by
+ * a trusted reverse proxy (Cloudflare, AWS ALB, nginx, etc.). Reading it
+ * unconditionally allows an attacker to bypass rate limits by rotating headers.
+ *
+ * Strategy:
+ * - If `request.ip` (the actual TCP peer address) matches a trusted proxy,
+ *   we trust the first IP in `X-Forwarded-For` / `X-Real-IP`.
+ * - Otherwise we use `request.ip` directly, ignoring forwarded headers.
+ * - `TRUSTED_PROXY_IPS` env var: comma-separated list of trusted proxy IPs.
+ *   Example: "10.0.0.1,10.0.0.2,172.31.0.0/20"
+ */
+function getTrustedProxies(): Set<string> {
+  const raw = process.env.TRUSTED_PROXY_IPS || ''
+  return new Set(raw.split(',').map(s => s.trim()).filter(Boolean))
+}
+
 export function getClientIdentifier(req: NextRequest): string {
+  // next/server exposes the direct TCP peer address as `req.ip`
+  const remoteIp = (req as any).ip as string | undefined
+  const trustedProxies = getTrustedProxies()
+
+  const isFromTrustedProxy =
+    remoteIp && trustedProxies.size > 0 && trustedProxies.has(remoteIp)
+
+  if (isFromTrustedProxy) {
+    // Trust the forwarded header only when the direct sender is a known proxy
+    const forwarded = req.headers.get('x-forwarded-for')
+    const realIp = req.headers.get('x-real-ip')
+    const forwardedIp = forwarded ? forwarded.split(',')[0].trim() : realIp
+    if (forwardedIp) return forwardedIp
+  }
+
+  // Fallback: use the direct TCP peer address
+  if (remoteIp) return remoteIp
+
+  // Last resort (edge runtimes that don't expose req.ip)
   const forwarded = req.headers.get('x-forwarded-for')
-  const realIp = req.headers.get('x-real-ip')
-  const ip = forwarded ? forwarded.split(',')[0].trim() : realIp || 'unknown'
-  
-  return ip
+  if (forwarded) {
+    console.warn('[SRE] rate-limit: req.ip unavailable; falling back to X-Forwarded-For without proxy validation.')
+    return forwarded.split(',')[0].trim()
+  }
+
+  return 'unknown'
 }
 
 export function getTenantIdentifier(req: NextRequest): string {
@@ -274,8 +314,14 @@ export async function enhancedRateLimit(
 
   const result = await limiter.isAllowedAsync(identifier)
 
-  // Adaptive Throttling: Bypass standard rates for enterprise subscription tokens
-  if (!result.allowed && !result.blocked && tenantTier === 'enterprise') {
+  // Adaptive Throttling: Bypass standard rates for enterprise subscription tokens.
+  // SECURITY FIX: The previous condition `!result.allowed && !result.blocked` was
+  // logically impossible because `blocked` is always `true` when `allowed` is `false`.
+  // Corrected to `!result.allowed` so the bypass can actually execute.
+  //
+  // NOTE: `x-tenant-tier` is a request header and thus attacker-controlled.
+  // For production hardening, tie this check to a verified JWT claim instead.
+  if (!result.allowed && tenantTier === 'enterprise') {
     return {
       allowed: true,
       remaining: 5,

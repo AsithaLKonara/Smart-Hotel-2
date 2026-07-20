@@ -53,39 +53,27 @@ export const authOptions: NextAuthOptions = {
           
           // Use connection retry wrapper to handle MongoDB Atlas sleeping
           let user: PrismaUser & { role?: any } | null = null;
-          if (isDatabaseConfigured()) {
-            user = await connectWithRetry(async () => {
-              return await prisma.user.findFirst({ 
-                where: { email: credentials.email.toLowerCase().trim() },
-                include: {
-                  role: {
-                    include: {
-                      permissions: {
-                        include: { permission: true }
-                      }
+          // SECURITY: Hard-fail if database is not configured.
+          // A missing DATABASE_URL must never fall back to demo credentials.
+          if (!isDatabaseConfigured()) {
+            console.error('Credentials authorize: DATABASE_URL is not configured. Authentication refused.')
+            return null
+          }
+
+          user = await connectWithRetry(async () => {
+            return await prisma.user.findFirst({ 
+              where: { email: credentials.email.toLowerCase().trim() },
+              include: {
+                role: {
+                  include: {
+                    permissions: {
+                      include: { permission: true }
                     }
                   }
                 }
-              })
-            }, 3, 1000)
-          } else {
-            // Mock authentication for demo purposes when DB is not configured
-            const demoUsers = [
-              { email: 'admin@smarthotel.com', password: 'SmartHotel@2025!Admin', roleName: 'SUPER_ADMIN', name: 'Demo Admin' },
-              { email: 'manager@smarthotel.com', password: 'SmartHotel@2025!Manager', roleName: 'MANAGER', name: 'Demo Manager' },
-              { email: 'guest@example.com', password: 'SmartHotel@2025!Guest', roleName: 'GUEST', name: 'Demo Guest' }
-            ]
-            const demoUser = demoUsers.find(u => u.email === credentials.email.toLowerCase().trim())
-            if (demoUser && credentials.password === demoUser.password) {
-              return {
-                id: 'demo-user-id',
-                email: demoUser.email,
-                name: demoUser.name,
-                roleName: demoUser.roleName,
-                permissions: demoUser.roleName === 'SUPER_ADMIN' ? ['*'] : [],
               }
-            }
-          }
+            })
+          }, 3, 1000)
           
           console.info('Credentials authorize: user found', !!user)
 
@@ -173,18 +161,14 @@ export const authOptions: NextAuthOptions = {
         token.iat = Math.floor(Date.now() / 1000)
       }
 
-      // Check if token has expired (older than 8 hours)
+      // SECURITY (Fix 4): Invalidate expired tokens by setting a sentinel error field.
+      // NextAuth v4 does not allow returning null from the jwt callback (type error).
+      // The correct pattern is to mark the token with error: 'SessionExpired' and
+      // enforce it in middleware so the session is treated as unauthenticated.
       const maxAgeSeconds = 8 * 60 * 60
       const currentTimestamp = Math.floor(Date.now() / 1000)
       if (token.iat && (currentTimestamp - (token.iat as number)) > maxAgeSeconds) {
-        return {
-          id: '',
-          roleId: null,
-          roleName: 'GUEST',
-          permissions: [],
-          propertyId: null,
-          iat: 0,
-        }
+        return { ...token, error: 'SessionExpired' as const }
       }
 
       if (user) {
@@ -199,6 +183,10 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       if (token) {
+        // Propagate session expiry sentinel so the client and middleware can react
+        if ((token as any).error === 'SessionExpired') {
+          (session as any).error = 'SessionExpired'
+        }
         session.user.id = token.id as string
         session.user.roleId = token.roleId as string | undefined
         if (!(session.user as any).role) {

@@ -16,7 +16,13 @@ export default function SignInPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-  const DEMO_CREDENTIALS = [
+  // SECURITY: Demo credentials are ONLY defined and rendered when NEXT_PUBLIC_DEMO_MODE='true'.
+  // process.env.NEXT_PUBLIC_* is statically replaced at build time by Next.js/webpack.
+  // When the var is absent in production, this evaluates to `false ? [...] : []`
+  // and the credential strings are dead-code-eliminated from the JS bundle entirely.
+  const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true'
+
+  const DEMO_CREDENTIALS = isDemoMode ? [
     { role: 'Super Admin', email: 'admin@smarthotel.com', password: 'SmartHotel@2025!Admin', color: 'from-purple-500/20 to-indigo-500/20 border-purple-500/30 text-purple-200' },
     { role: 'Manager', email: 'manager@smarthotel.com', password: 'SmartHotel@2025!Manager', color: 'from-blue-500/20 to-cyan-500/20 border-blue-500/30 text-blue-200' },
     { role: 'Receptionist', email: 'receptionist@smarthotel.com', password: 'SmartHotel@2025!Reception', color: 'from-sky-500/20 to-blue-500/20 border-sky-500/30 text-sky-200' },
@@ -25,7 +31,7 @@ export default function SignInPage() {
     { role: 'Kitchen & F&B', email: 'kitchen@smarthotel.com', password: 'SmartHotel@2025!Kitchen', color: 'from-rose-500/20 to-pink-500/20 border-rose-500/30 text-rose-200' },
     { role: 'Guest', email: 'guest@example.com', password: 'SmartHotel@2025!Guest', color: 'from-gray-500/20 to-slate-500/20 border-gray-500/30 text-gray-200' },
     { role: 'Guest B', email: 'guestb@example.com', password: 'SmartHotel@2025!GuestB', color: 'from-gray-500/20 to-slate-500/20 border-gray-500/30 text-gray-200' }
-  ]
+  ] : []
 
   const handleDemoLogin = (email: string, pass: string) => {
     setEmail(email)
@@ -129,7 +135,8 @@ export default function SignInPage() {
                 </p>
               </div>
 
-              {/* Demo Credentials Section */}
+              {/* Demo Credentials Section — only rendered in DEMO_MODE */}
+              {isDemoMode && (
               <div className="space-y-6 pt-8">
                 <div className="flex items-center space-x-3">
                   <div className="h-[1px] w-12 bg-primary/30"></div>
@@ -153,6 +160,7 @@ export default function SignInPage() {
                   ))}
                 </div>
               </div>
+              )}
             </div>
 
             {/* Bottom Accent */}

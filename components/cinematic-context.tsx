@@ -1,6 +1,6 @@
 "use client"
 
-import React, { createContext, useContext, useState, useEffect } from 'react'
+import React, { createContext, useContext, useState } from 'react'
 
 export type EmotionalState = 'calm' | 'focus' | 'prestige'
 
@@ -14,19 +14,34 @@ interface CinematicContextProps {
 const CinematicContext = createContext<CinematicContextProps | undefined>(undefined)
 
 export function CinematicProvider({ children }: { children: React.ReactNode }) {
-  const [isDemoMode, setIsDemoMode] = useState<boolean>(true) // Default to ON for instant wow factor
-  const [emotionalState, setEmotionalState] = useState<EmotionalState>('prestige') // Default to prestige for high luxury
+  // Fix 4: Use lazy initialisers instead of static defaults + useEffect.
+  //
+  // The previous pattern — `useState(true)` then a `useEffect` that reads
+  // localStorage — caused a two-phase render:
+  //   Phase 1 (SSR + first client paint): defaults applied  → 'prestige/demo'
+  //   Phase 2 (after hydration):          localStorage read → different values
+  // This produced a jarring FOUC on every hard-reload.
+  //
+  // Lazy initialisers run ONCE, synchronously, on the client during the first
+  // render, so the first paint already uses the persisted values. On the server
+  // (SSR) `typeof window === 'undefined'` is true and the defaults are used,
+  // which is fine because the server and client agree on those defaults when
+  // localStorage is empty.
+  const [isDemoMode, setIsDemoMode] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return true
+    const saved = localStorage.getItem('sh_demo_mode')
+    return saved !== null ? saved === 'true' : true
+  })
 
-  useEffect(() => {
-    const savedDemo = localStorage.getItem('sh_demo_mode')
-    const savedState = localStorage.getItem('sh_emotional_state')
-    if (savedDemo !== null) {
-      setIsDemoMode(savedDemo === 'true')
-    }
-    if (savedState !== null) {
-      setEmotionalState(savedState as EmotionalState)
-    }
-  }, [])
+  const [emotionalState, setEmotionalState] = useState<EmotionalState>(() => {
+    if (typeof window === 'undefined') return 'prestige'
+    const saved = localStorage.getItem('sh_emotional_state')
+    return (saved as EmotionalState | null) ?? 'prestige'
+  })
+
+  // useEffect is no longer needed for the initial localStorage read.
+  // It is intentionally removed to eliminate the post-hydration state flip.
+
 
   const handleSetDemoMode = (val: boolean) => {
     setIsDemoMode(val)
