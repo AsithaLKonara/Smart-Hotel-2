@@ -53,6 +53,8 @@
     "node_modules",
     "prisma/seed*.ts",
     "prisma/seed/**/*",
-    "scripts/**/*"
+    "scripts/**/*",
+    "playwright.config.ts",
+    "playwright-generated.config.ts"
   ]
 }
