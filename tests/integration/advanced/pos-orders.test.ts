@@ -37,9 +37,9 @@ describe('Advanced Integration: POS Orders API', () => {
     const data = await res.json();
     
     expect(data.success).toBe(true);
-    expect(data.order.totalAmount).toBe(20);
+    expect(Number(data.order.totalAmount)).toBe(20);
     expect(data.order.items.length).toBe(1);
-    expect(data.order.items[0].subtotal).toBe(20);
+    expect(Number(data.order.items[0].subtotal)).toBe(20);
   });
 
   it('creates a POS Order and charges it to a Room Folio (Folio)', async () => {
@@ -89,9 +89,9 @@ describe('Advanced Integration: POS Orders API', () => {
 
     // Verify Folio was updated
     const updatedFolio = await prisma.folio.findUnique({ where: { id: folioId }, include: { lines: true } });
-    expect(updatedFolio?.subtotal).toBe(115); // 100 + 15
+    expect(Number(updatedFolio?.subtotal)).toBe(115); // 100 + 15
     expect(updatedFolio?.lines.length).toBe(1);
     expect(updatedFolio?.lines[0].category).toBe('POS');
-    expect(updatedFolio?.lines[0].totalPrice).toBe(15);
+    expect(Number(updatedFolio?.lines[0].totalPrice)).toBe(15);
   });
 });

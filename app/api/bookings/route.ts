@@ -92,6 +92,7 @@ export async function POST(request: NextRequest) {
                 name: validated.guestName || 'Guest',
                 password: '', // Passwordless guest
                 roleId: guestRole?.id,
+                propertyId: room.propertyId,
                 createdAt: new Date(),
                 updatedAt: new Date()
               }
@@ -162,6 +163,7 @@ export async function POST(request: NextRequest) {
         const folio = await tx.folio.create({
           data: {
             bookingId: booking.id,
+            propertyId: room.propertyId,
             type: 'GUEST',
             status: 'OPEN'
           }
@@ -203,7 +205,7 @@ export async function POST(request: NextRequest) {
 
         // Lock will automatically be released by PostgreSQL upon transaction commit
         return { booking, folioId: folio.id }
-      }, { isolationLevel: 'Serializable', maxWait: 10000, timeout: 30000 })
+      }, { maxWait: 10000, timeout: 30000 })
 
       const result = txResult.booking
       const folioId = txResult.folioId
@@ -339,6 +341,11 @@ export async function POST(request: NextRequest) {
   } catch (err: any) {
     console.error('[BOOKING_ENGINE_ERROR]', err)
     if (idempotencyKey) await clearIdempotency(idempotencyKey)
+    
+    if (err.message === 'DOUBLE_BOOKING') {
+      return NextResponse.json({ error: 'LOCK_ACQUISITION_FAILED - Double booking detected.' }, { status: 409 })
+    }
+    
     return NextResponse.json({ error: err.message || 'Booking failed' }, { status: 400 })
   }
 }

@@ -78,8 +78,8 @@ test.describe('E2E Journey: Cross-Module Event Propagation', () => {
       });
 
       await page.goto('/admin/rooms');
-      await expect(page.getByRole('heading', { name: /Room Management/i })).toBeVisible();
-      await expect(page.getByText(roomId)).toBeVisible();
+      await expect(page.getByRole('heading', { name: /Room Directory/i })).toBeVisible({ timeout: 30000 });
+      await expect(page.getByText(roomId)).toBeVisible({ timeout: 15000 });
     });
 
     await test.step('3. Verify Calendar Module', async () => {

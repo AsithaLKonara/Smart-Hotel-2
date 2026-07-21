@@ -21,7 +21,13 @@ export class FolioFactory {
         type: overrides?.type || 'GUEST',
         status: overrides?.status || 'OPEN',
         property: {
-          create: { name: faker.company.name() }
+          create: { 
+            name: faker.company.name(), 
+            code: faker.string.alphanumeric(6).toUpperCase(),
+            address: faker.location.streetAddress(),
+            city: faker.location.city(),
+            country: faker.location.country()
+          }
         },
         ...overrides,
       },

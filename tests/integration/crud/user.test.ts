@@ -41,7 +41,7 @@ describe('User CRUD & RBAC Verification', () => {
   describe('Soft Deletes', () => {
     it('soft deletes a user successfully', async () => {
       (getServerSession as jest.Mock).mockResolvedValueOnce({
-        user: { roleName: 'ADMIN', id: 'admin-1' }
+        user: { roleName: 'MANAGER', id: 'admin-1' }
       });
 
       const user = await UserFactory.create({ email: 'delete-me@test.com' });

@@ -76,6 +76,25 @@ async function main() {
   }
 
   // ==========================================
+  // 1.5 PROPERTY STRUCTURE
+  // ==========================================
+  console.log('Seeding Property...')
+  const mainProperty = await prisma.property.upsert({
+    where: { code: 'MAIN-001' },
+    update: {},
+    create: {
+      name: 'SmartHotel Main',
+      code: 'MAIN-001',
+      address: '123 Smart St',
+      city: 'Techville',
+      country: 'USA',
+      timezone: 'America/New_York',
+      totalRooms: 100,
+      status: 'ACTIVE'
+    }
+  })
+
+  // ==========================================
   // 2. USERS
   // ==========================================
   console.log('Seeding Users...')
@@ -93,17 +112,21 @@ async function main() {
   const createdUsers: Record<string, any> = {}
   for (const user of demoUsers) {
     const hashedPassword = await bcrypt.hash(user.password, 10)
-    createdUsers[user.email] = await prisma.user.upsert({
-      where: { email: user.email },
-      update: { roleId: createdRoles[user.roleName].id },
-      create: { email: user.email, name: user.name, password: hashedPassword, roleId: createdRoles[user.roleName].id }
+    createdUsers[user.email] = await prisma.user.create({
+      data: { 
+        email: user.email, 
+        name: user.name, 
+        password: hashedPassword, 
+        roleId: createdRoles[user.roleName].id, 
+        propertyId: mainProperty.id 
+      }
     })
   }
 
   // ==========================================
-  // 3. PROPERTY STRUCTURE
+  // 3. ROOM STRUCTURE
   // ==========================================
-  console.log('Seeding Property Structure...')
+  console.log('Seeding Room Structure...')
   
   const amenities = [
     { name: 'WiFi', icon: 'wifi', category: 'Basic' },
@@ -112,7 +135,7 @@ async function main() {
     { name: 'Ocean View', icon: 'sun', category: 'View' },
   ]
   for (const am of amenities) {
-    await prisma.amenity.upsert({ where: { name: am.name }, update: {}, create: am })
+    await prisma.amenity.create({ data: am })
   }
 
   const roomTypes = [
@@ -123,10 +146,8 @@ async function main() {
 
   const createdRoomTypes: Record<string, any> = {}
   for (const rt of roomTypes) {
-    createdRoomTypes[rt.name] = await prisma.roomType.upsert({
-      where: { name: rt.name },
-      update: { baseRate: rt.baseRate },
-      create: rt
+    createdRoomTypes[rt.name] = await prisma.roomType.create({
+      data: rt
     })
   }
 
@@ -141,10 +162,8 @@ async function main() {
 
   const createdRooms: Record<string, any> = {}
   for (const r of roomsToCreate) {
-    createdRooms[r.number] = await prisma.room.upsert({
-      where: { number: r.number },
-      update: { status: r.status, roomTypeId: createdRoomTypes[r.type].id },
-      create: { number: r.number, floor: r.floor, status: r.status, roomTypeId: createdRoomTypes[r.type].id }
+    createdRooms[r.number] = await prisma.room.create({
+      data: { number: r.number, floor: r.floor, status: r.status, roomTypeId: createdRoomTypes[r.type].id, propertyId: mainProperty.id }
     })
   }
 
@@ -159,10 +178,8 @@ async function main() {
     { name: 'Dom Perignon', category: 'Drinks', price: 250, description: 'Vintage Champagne', preparationTime: 5 },
   ]
   for (const menu of menus) {
-    await prisma.foodMenu.upsert({
-      where: { id: menu.name.toLowerCase().replace(/\s+/g, '-') }, // Fake deterministic ID
-      update: { price: menu.price },
-      create: { id: menu.name.toLowerCase().replace(/\s+/g, '-'), ...menu }
+    await prisma.foodMenu.create({
+      data: { id: menu.name.toLowerCase().replace(/\s+/g, '-'), ...menu }
     })
   }
 
@@ -201,15 +218,14 @@ async function main() {
   const today = new Date()
 
   // 1. Current Active Booking
-  const currentBooking = await prisma.booking.upsert({
-    where: { confirmationCode: 'RES-CUR-001' },
-    update: {},
-    create: {
+  const currentBooking = await prisma.booking.create({
+    data: {
       confirmationCode: 'RES-CUR-001',
       checkIn: subDays(today, 1),
       checkOut: addDays(today, 2),
       status: BookingStatus.CHECKED_IN,
       source: BookingSource.WEBSITE,
+      propertyId: mainProperty.id,
       roomAssignments: { create: { roomId: createdRooms['102'].id, startDate: subDays(today, 1), endDate: addDays(today, 2) } },
       primaryGuestId: createdUsers['guest@example.com'].id,
       guests: 2,
@@ -226,6 +242,7 @@ async function main() {
         create: {
           type: 'GUEST',
           status: 'OPEN',
+          propertyId: mainProperty.id,
           lineItems: {
             create: [
               { description: 'Room Charge (3 nights)', amount: 450.0, category: 'ROOM' }
@@ -245,15 +262,14 @@ async function main() {
   })
 
   // 2. Future Booking
-  await prisma.booking.upsert({
-    where: { confirmationCode: 'RES-FUT-002' },
-    update: {},
-    create: {
+  await prisma.booking.create({
+    data: {
       confirmationCode: 'RES-FUT-002',
       checkIn: addDays(today, 5),
       checkOut: addDays(today, 8),
       status: BookingStatus.CONFIRMED,
       source: BookingSource.EXPEDIA,
+      propertyId: mainProperty.id,
       roomAssignments: { create: { roomId: createdRooms['201'].id, startDate: addDays(today, 5), endDate: addDays(today, 8) } },
       primaryGuestId: createdUsers['guestb@example.com'].id,
       guests: 2,
@@ -263,6 +279,7 @@ async function main() {
         create: {
           type: 'GUEST',
           status: 'OPEN',
+          propertyId: mainProperty.id,
           lineItems: {
             create: [
               { description: 'Room Charge (3 nights)', amount: 750.0, category: 'ROOM' }
@@ -339,6 +356,7 @@ async function main() {
         title: 'Clean Room 103',
         description: 'Deep clean required after checkout',
         roomId: createdRooms['103'].id,
+        propertyId: mainProperty.id,
         createdBy: createdUsers['manager@smarthotel.com'].id,
       },
       {
@@ -348,6 +366,7 @@ async function main() {
         title: 'Fix AC in 202',
         description: 'AC blowing warm air',
         roomId: createdRooms['202'].id,
+        propertyId: mainProperty.id,
         createdBy: createdUsers['guest@example.com'].id,
       },
       {
@@ -358,6 +377,7 @@ async function main() {
         description: 'Guest requested 2 extra bath towels',
         roomId: createdRooms['102'].id,
         bookingId: currentBooking.id,
+        propertyId: mainProperty.id,
         createdBy: createdUsers['guest@example.com'].id,
       }
     ]

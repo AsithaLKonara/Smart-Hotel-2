@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
 import prisma from '@/lib/prisma';
 import { faker } from '@faker-js/faker';
+import { PropertyFactory } from './room.factory';
 
 type PrismaClientType = Omit<
   Prisma.TransactionClient,
@@ -44,6 +45,12 @@ export class UserFactory {
       roleInput = { connect: { id: role.id } };
     }
 
+    let propertyInput = overrides?.property;
+    if (!propertyInput) {
+      const property = await PropertyFactory.create({}, client);
+      propertyInput = { connect: { id: property.id } };
+    }
+
     const { roleName, ...prismaOverrides } = overrides || {};
 
     return client.user.create({
@@ -53,6 +60,7 @@ export class UserFactory {
         password: overrides?.password || '$2b$10$xyz', // mock hash
         phone: overrides?.phone || faker.phone.number(),
         role: roleInput,
+        property: propertyInput,
         ...prismaOverrides,
       },
     });

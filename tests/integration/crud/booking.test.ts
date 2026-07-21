@@ -24,7 +24,7 @@ describe('Booking CRUD Verification', () => {
       (getServerSession as jest.Mock).mockResolvedValueOnce(null);
 
       const roomType = await prisma.roomType.create({
-        data: { name: 'Anonymous Suite', baseRate: 150, capacity: 2, amenities: [] }
+        data: { name: 'Anonymous Suite', baseRate: 150, capacity: 2, amenities: [], description: 'Test suite' }
       });
       const room = await RoomFactory.create({ status: 'AVAILABLE', roomType: { connect: { id: roomType.id } } });
 
@@ -62,6 +62,8 @@ describe('Booking CRUD Verification', () => {
       const req = createNextRequest('/api/bookings', 'POST', {
         checkIn: new Date(Date.now() + 86400000).toISOString(),
         checkOut: new Date().toISOString(),
+        roomId: 'some-mock-room-id',
+        guests: 2
       });
       const res = await POST(req);
       
@@ -73,7 +75,7 @@ describe('Booking CRUD Verification', () => {
     it('successfully creates a booking and reduces room availability', async () => {
       const guest = await UserFactory.create({ roleName: 'GUEST' });
       const roomType = await prisma.roomType.create({
-        data: { name: 'Suite', baseRate: 100, capacity: 2, amenities: [] }
+        data: { name: 'Suite', baseRate: 100, capacity: 2, amenities: [], description: 'Test suite' }
       });
       const room = await RoomFactory.create({ status: 'AVAILABLE', roomType: { connect: { id: roomType.id } } });
 
@@ -84,7 +86,7 @@ describe('Booking CRUD Verification', () => {
       const req = createNextRequest('/api/bookings', 'POST', {
         checkIn: new Date().toISOString(),
         checkOut: new Date(Date.now() + 86400000).toISOString(),
-        roomTypeId: roomType.id,
+        roomId: room.id,
         guests: 1,
       });
       

@@ -58,6 +58,12 @@ export class RoomFactory {
       roomTypeInput = { connect: { id: roomType.id } };
     }
 
+    let propertyInput = overrides?.property;
+    if (!propertyInput) {
+      const property = await PropertyFactory.create({}, client);
+      propertyInput = { connect: { id: property.id } };
+    }
+
     return client.room.create({
       data: {
         number: overrides?.number || faker.number.int({ min: 100, max: 9999 }).toString() + faker.string.alphanumeric(2).toUpperCase(),
@@ -66,6 +72,7 @@ export class RoomFactory {
         capacity: overrides?.capacity || 2,
         status: overrides?.status || 'AVAILABLE',
         roomType: roomTypeInput,
+        property: propertyInput,
         ...overrides,
       },
     });

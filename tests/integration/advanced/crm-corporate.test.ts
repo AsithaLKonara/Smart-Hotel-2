@@ -34,7 +34,7 @@ describe('Advanced Integration: Corporate CRM API', () => {
     
     expect(data.success).toBe(true);
     expect(data.account.companyName).toBe('Acme Corp');
-    expect(data.account.negotiatedRate).toBe(150);
+    expect(Number(data.account.negotiatedRate)).toBe(150);
   });
 
   it('rejects corporate account creation with invalid email', async () => {
@@ -66,8 +66,8 @@ describe('Advanced Integration: Corporate CRM API', () => {
       }
     });
 
-    const user1 = await UserFactory.create({ role: { connect: { name: 'GUEST' } } });
-    const user2 = await UserFactory.create({ role: { connect: { name: 'GUEST' } } });
+    const user1 = await UserFactory.create({ roleName: 'GUEST' });
+    const user2 = await UserFactory.create({ roleName: 'GUEST' });
 
     await prisma.user.update({
       where: { id: user1.id },

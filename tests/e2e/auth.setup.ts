@@ -18,10 +18,10 @@ setup('authenticate as admin', async ({ page }) => {
   await page.getByRole('button', { name: /initialize session/i }).click();
 
   // Wait for navigation to the dashboard and ensure the URL is correct
-  await page.waitForURL('/admin/dashboard');
+  await expect(page).toHaveURL(/.*\/admin\/dashboard/, { timeout: 60000 });
 
   // Assert successful login by checking for the dashboard heading
-  await expect(page.getByRole('heading', { name: /Admin Command Deck/i })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Admin Command Deck/i })).toBeVisible({ timeout: 60000 });
 
   // Ensure directory exists
   const authDir = path.dirname(authFileAdmin);

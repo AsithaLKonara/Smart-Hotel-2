@@ -186,7 +186,7 @@ export async function computeDashboardAnalytics(referenceDate = new Date()): Pro
     roomPerformanceMap.set(roomId, {
       ...existing,
       count: existing.count + 1,
-      revenue: existing.revenue + (b.totalAmount || 0)
+      revenue: existing.revenue + Number(b.totalAmount || 0)
     })
   })
 

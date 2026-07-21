@@ -12,7 +12,8 @@ const isMac12 = os.platform() === 'darwin' && os.release().startsWith('21.');
  */
 export default defineConfig({
   testDir: './tests/e2e',
-  timeout: 60 * 1000,
+  /* Maximum time one test can run for. */
+  timeout: 120 * 1000,
   expect: {
     timeout: 10000,
   },
@@ -51,7 +52,7 @@ export default defineConfig({
   webServer: {
     command: 'npm run dev -- -p 3001',
     url: 'http://localhost:3001',
-    reuseExistingServer: false,
+    reuseExistingServer: !process.env.CI,
     timeout: 120000,
   },
 });

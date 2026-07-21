@@ -85,8 +85,7 @@ test.describe('E2E Journey: Role-Based Access Control (RBAC)', () => {
           await page.getByRole('button', { name: /initialize session/i }).click();
           
           // Wait for navigation and verify intelligent routing based on role
-          await page.waitForURL(url => url.pathname.includes(config.dashboardPath), { timeout: 30000 });
-          expect(page.url()).toContain(config.dashboardPath);
+          await expect(page).toHaveURL(new RegExp(config.dashboardPath), { timeout: 30000 });
         });
 
         await test.step(`2. Verify Allowed View (${config.allowedPage})`, async () => {
@@ -102,7 +101,7 @@ test.describe('E2E Journey: Role-Based Access Control (RBAC)', () => {
           await expect(page.locator('text=/Unauthorized/i')).not.toBeVisible();
           
           // Double check the URL stayed on the allowed page
-          expect(page.url()).toContain(config.allowedPage);
+          await expect(page).toHaveURL(new RegExp(config.allowedPage));
         });
 
         if (config.forbiddenPage) {
@@ -113,7 +112,7 @@ test.describe('E2E Journey: Role-Based Access Control (RBAC)', () => {
             await page.waitForLoadState('domcontentloaded');
             
             // Verify we did not land on the forbidden page successfully
-            expect(page.url()).not.toContain(config.forbiddenPage);
+            await expect(page).not.toHaveURL(new RegExp(config.forbiddenPage));
           });
         }
 

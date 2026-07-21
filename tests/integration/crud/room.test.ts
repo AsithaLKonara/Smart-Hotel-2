@@ -41,7 +41,7 @@ describe('Room CRUD Verification', () => {
 
       // Needs a valid roomTypeId in a real scenario
       const roomType = await prisma.roomType.create({
-        data: { name: 'Test Suite', description: 'desc', baseRate: 100 }
+        data: { name: 'Suite', baseRate: 100, capacity: 2, amenities: [], description: 'Suite desc' }
       });
 
       const req = createNextRequest('/api/rooms', 'POST', { 

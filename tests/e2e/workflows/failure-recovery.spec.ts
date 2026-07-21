@@ -31,8 +31,15 @@ test.describe('Phase 6: Failure Testing (Resiliency & Recovery)', () => {
         emailFailure: true,
         pusherFailure: true,
         otaFailure: true
+      },
+      headers: {
+        'sec-fetch-site': 'same-origin',
+        'origin': process.env.BASE_URL || 'http://localhost:3001'
       }
     });
+    if (!chaosRes.ok()) {
+      console.log('CHAOS API FAILED:', chaosRes.status(), await chaosRes.text());
+    }
     expect(chaosRes.ok()).toBeTruthy();
 
     // Setup room
@@ -77,16 +84,23 @@ test.describe('Phase 6: Failure Testing (Resiliency & Recovery)', () => {
 
   test('Idempotency - Browser Refresh Mid-Operation should return exact cached response', async () => {
     // Reset chaos
-    await apiContext.post('/api/admin/sre/chaos', { data: { stripeFailure: false, emailFailure: false, pusherFailure: false, otaFailure: false } });
+    await apiContext.post('/api/admin/sre/chaos', { 
+      data: { stripeFailure: false, emailFailure: false, pusherFailure: false, otaFailure: false },
+      headers: {
+        'sec-fetch-site': 'same-origin',
+        'origin': process.env.BASE_URL || 'http://localhost:3001'
+      }
+    });
 
     const roomsResponse = await apiContext.get('/api/rooms');
     const room = (await roomsResponse.json()).rooms[0];
 
+    const checkInOffset = Math.floor(Math.random() * 1000 + 400);
     const idempotencyKey = `test-refresh-${Date.now()}`;
     const payload = {
       roomId: room.id,
-      checkIn: new Date(Date.now() + 86400000 * 500).toISOString(),
-      checkOut: new Date(Date.now() + 86400000 * 502).toISOString(),
+      checkIn: new Date(Date.now() + 86400000 * checkInOffset).toISOString(),
+      checkOut: new Date(Date.now() + 86400000 * (checkInOffset + 2)).toISOString(),
       guests: 2,
       paymentMethod: 'pay_later'
     };

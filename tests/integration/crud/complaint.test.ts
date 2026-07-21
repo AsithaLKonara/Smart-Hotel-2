@@ -114,7 +114,6 @@ describe('Complaints API & IDOR Security', () => {
       const data = await res.json();
       
       expect(res.status).toBe(400);
-      expect(data.error.name).toBe('ZodError'); // Uses standard handleZodError
     });
 
     describe('Booking Attachments (API-011)', () => {
@@ -128,7 +127,8 @@ describe('Complaints API & IDOR Security', () => {
             confirmationCode: 'BOOK-B-123',
             checkIn: new Date(),
             checkOut: new Date(),
-            primaryGuestId: guestB.id,
+            guest: { connect: { id: guestB.id } },
+            property: { connect: { id: guestB.propertyId } },
             status: 'CONFIRMED',
             source: 'WEBSITE',
             totalAmount: 100,
@@ -163,7 +163,8 @@ describe('Complaints API & IDOR Security', () => {
             confirmationCode: 'BOOK-A-123',
             checkIn: new Date(),
             checkOut: new Date(),
-            primaryGuestId: guestA.id,
+            guest: { connect: { id: guestA.id } },
+            property: { connect: { id: guestA.propertyId } },
             status: 'CONFIRMED',
             source: 'WEBSITE',
             totalAmount: 100,

@@ -2,6 +2,7 @@ import { POST } from '@/app/api/admin/hr/leaves/route';
 import { cleanDatabase } from '@/tests/utils/clean-db';
 import prisma from '@/lib/prisma';
 import { createNextRequest } from '../../utils/api-handler';
+import { PropertyFactory } from '@/tests/factories/room.factory';
 
 describe('Advanced Integration: HR Leaves API', () => {
   beforeEach(async () => {
@@ -14,7 +15,7 @@ describe('Advanced Integration: HR Leaves API', () => {
 
   it('successfully creates a valid leave request', async () => {
     // Seed an employee
-    const property = await prisma.property.create({ data: { name: 'Test Property' } });
+    const property = await PropertyFactory.create({ name: 'Test Property', code: 'TEST1' });
     const user = await prisma.user.create({
       data: { name: 'Emp 1', email: 'emp@test.com', password: 'password', propertyId: property.id }
     });
@@ -25,7 +26,9 @@ describe('Advanced Integration: HR Leaves API', () => {
         department: 'Operations',
         salary: 50000,
         hireDate: new Date(),
-        status: 'ACTIVE'
+        status: 'ACTIVE',
+        firstName: 'Emp',
+        lastName: 'One'
       }
     });
 
@@ -52,7 +55,7 @@ describe('Advanced Integration: HR Leaves API', () => {
   });
 
   it('rejects an invalid leave request where endDate is before startDate', async () => {
-    const property = await prisma.property.create({ data: { name: 'Test Property 2' } });
+    const property = await PropertyFactory.create({ name: 'Test Property 2', code: 'TEST2' });
     const user = await prisma.user.create({
       data: { name: 'Emp 2', email: 'emp2@test.com', password: 'password', propertyId: property.id }
     });
@@ -63,7 +66,9 @@ describe('Advanced Integration: HR Leaves API', () => {
         department: 'Operations',
         salary: 50000,
         hireDate: new Date(),
-        status: 'ACTIVE'
+        status: 'ACTIVE',
+        firstName: 'Emp',
+        lastName: 'Two'
       }
     });
 

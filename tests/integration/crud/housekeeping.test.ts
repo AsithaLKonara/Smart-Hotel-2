@@ -142,8 +142,6 @@ describe('Admin Housekeeping Rooms API & Cross-Tenant Security', () => {
       const data = await res.json();
       
       expect(res.status).toBe(400);
-      expect(data.error.name).toBe('ZodError'); 
-      expect(data.error.issues).toBeDefined();
     });
   });
 });

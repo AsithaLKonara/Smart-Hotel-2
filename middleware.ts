@@ -13,6 +13,7 @@ const PROTECTED_ROUTES = [
   // API equivalents for SUPER ADMIN ONLY
   { prefix: '/api/admin/roles', roles: ['SUPER_ADMIN'] },
   { prefix: '/api/admin/audit-logs', roles: ['SUPER_ADMIN'] },
+  { prefix: '/api/admin/sre', roles: ['SUPER_ADMIN'] },
   { prefix: '/api/admin/settings/integrations', roles: ['SUPER_ADMIN'] },
   { prefix: '/api/admin/corporate/loyalty', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'] },
   { prefix: '/api/admin/corporate', roles: ['SUPER_ADMIN', 'MANAGER'] },

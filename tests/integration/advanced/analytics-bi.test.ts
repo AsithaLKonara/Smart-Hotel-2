@@ -29,7 +29,7 @@ describe('Advanced Integration: BI Analytics Engine', () => {
   it('accurately calculates ADR, RevPAR, Occupancy and total revenue', async () => {
     // Seed test data
     const roomType = await prisma.roomType.create({
-      data: { name: 'Standard', baseRate: 100, capacity: 2 }
+      data: { name: 'Standard', baseRate: 100, capacity: 2, description: 'Standard Room' }
     });
 
     // Create 4 total rooms, 2 OCCUPIED, 2 AVAILABLE -> Occupancy should be 50%
