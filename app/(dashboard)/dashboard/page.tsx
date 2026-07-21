@@ -34,7 +34,7 @@ export default function DashboardOrchestrator() {
     }
 
     if (session?.user?.id) fetchBooking()
-  }, [status, session, router])
+  }, [status, session]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchBooking = async () => {
     try {

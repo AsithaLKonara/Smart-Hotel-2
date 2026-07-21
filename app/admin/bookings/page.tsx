@@ -86,7 +86,7 @@ export default function AdminBookingsPage() {
     } finally {
       setLoading(false)
     }
-  }, [router])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     // Rely solely on middleware.ts for enterprise-grade edge protection.
@@ -94,7 +94,7 @@ export default function AdminBookingsPage() {
     if (status === 'authenticated' && session) {
       fetchBookings()
     }
-  }, [session, status, router, fetchBookings])
+  }, [session, status, fetchBookings]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleStatusUpdate = async (bookingId: string, newStatus: string) => {
     try {

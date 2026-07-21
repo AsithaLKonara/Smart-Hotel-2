@@ -46,7 +46,7 @@ export default function AdminAmenitiesPage() {
     }
 
     fetchAmenities()
-  }, [session, status, router])
+  }, [session, status]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchAmenities = async () => {
     try {

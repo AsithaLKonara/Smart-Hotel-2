@@ -48,7 +48,7 @@ export default function AdminSettingsPage() {
     }
 
     fetchSettings()
-  }, [session, authStatus, router])
+  }, [session, authStatus]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchSettings = async () => {
     try {

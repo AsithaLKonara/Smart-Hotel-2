@@ -50,7 +50,7 @@ export default function CheckInCheckOutPage() {
     }
 
     fetchBookings()
-  }, [session, status, router])
+  }, [session, status]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchBookings = async () => {
     try {

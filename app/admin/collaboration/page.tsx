@@ -61,7 +61,7 @@ export default function StaffCollaborationHub() {
       toast.error('Access Denied: Administrative credentials required.')
       router.push('/auth/signin')
     }
-  }, [session, status, router])
+  }, [session, status]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Automatically scroll chat feeds
   useEffect(() => {

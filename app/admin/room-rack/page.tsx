@@ -174,7 +174,7 @@ export default function MasterOperationsRoomV2() {
     setTimeout(() => {
       setLoading(false)
     }, 450)
-  }, [session, status, router])
+  }, [session, status]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Helpers
   const addLog = (type: 'SUCCESS' | 'WARNING' | 'INFO' | 'DANGER', message: string) => {

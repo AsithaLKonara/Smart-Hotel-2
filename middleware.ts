@@ -45,7 +45,7 @@ const PROTECTED_ROUTES = [
   { prefix: '/mobile/housekeeping', roles: ['SUPER_ADMIN', 'MANAGER', 'HOUSEKEEPING'] },
 
   // 🔧 MAINTENANCE
-  { prefix: '/admin/maintenance', roles: ['SUPER_ADMIN', 'MANAGER', 'MAINTENANCE'] },
+  { prefix: '/admin/maintenance', roles: ['SUPER_ADMIN', 'MANAGER', 'MAINTENANCE', 'RECEPTIONIST'] },
 
   // 🟠 KITCHEN
   { prefix: '/kitchen', roles: ['SUPER_ADMIN', 'MANAGER', 'KITCHEN'] },
@@ -146,7 +146,8 @@ export async function middleware(request: NextRequest) {
   // 1. Bypass Public Assets, Public APIs, and Public Pages
   const isPublicPage = [
     '/', '/about', '/booking', '/booking-flow', '/contact', '/cookies', 
-    '/facilities', '/gallery', '/privacy', '/rooms', '/spa', '/terms'
+    '/facilities', '/gallery', '/privacy', '/rooms', '/spa', '/terms',
+    '/unauthorized'
   ].some(p => path === p || path.startsWith(`${p}/`))
   
   const isAuthPage = path.startsWith('/auth')

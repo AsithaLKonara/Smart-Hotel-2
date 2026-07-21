@@ -47,7 +47,7 @@ export default function AdminOrdersPage() {
     if (!canAccessManagerFeatures(session)) {
       router.push('/auth/signin')
     }
-  }, [session, status, router])
+  }, [session, status]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const { data: rawOrders, isLoading: loading, refetch: fetchOrders } = useQuery({
     queryKey: QueryKeys.orders.all,

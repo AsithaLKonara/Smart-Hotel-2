@@ -49,7 +49,7 @@ export default function AdminMenuPage() {
     }
 
     fetchMenuItems()
-  }, [session, status, router])
+  }, [session, status]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchMenuItems = async () => {
     try {

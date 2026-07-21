@@ -74,7 +74,7 @@ export default function IncidentCommandRoom() {
     }
 
     loadIncidents()
-  }, [session, status, router])
+  }, [session, status]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadIncidents = async () => {
     try {

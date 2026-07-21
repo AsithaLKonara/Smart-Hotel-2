@@ -83,7 +83,7 @@ export default function MyBookingsPage() {
     }
 
     fetchBookings()
-  }, [session, status, router, fetchBookings])
+  }, [session, status, fetchBookings]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleCancelBooking = async (bookingId: string) => {
     if (!confirm('Are you sure you want to cancel this booking?')) {

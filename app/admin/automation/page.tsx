@@ -53,7 +53,7 @@ export default function WorkflowAutomationBuilder() {
     }
 
     loadAutomationRules()
-  }, [session, status, router])
+  }, [session, status]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadAutomationRules = async () => {
     try {

@@ -43,7 +43,7 @@ export default function AdminSocialLinksPage() {
     }
 
     fetchLinks()
-  }, [session, status, router])
+  }, [session, status]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchLinks = async () => {
     try {

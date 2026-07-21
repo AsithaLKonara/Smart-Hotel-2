@@ -46,7 +46,7 @@ export default function AdminAttractionsPage() {
     }
 
     fetchAttractions()
-  }, [session, status, router])
+  }, [session, status]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchAttractions = async () => {
     try {

@@ -44,7 +44,7 @@ export default function AdminFooterLinksPage() {
     }
 
     fetchLinks()
-  }, [session, status, router])
+  }, [session, status]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchLinks = async () => {
     try {

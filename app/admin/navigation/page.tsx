@@ -41,7 +41,7 @@ export default function AdminNavigationPage() {
     }
 
     fetchLinks()
-  }, [session, status, router])
+  }, [session, status]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchLinks = async () => {
     try {

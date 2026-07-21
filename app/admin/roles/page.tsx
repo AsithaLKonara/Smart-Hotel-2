@@ -46,7 +46,7 @@ export default function RolesManagementPage() {
     }
 
     fetchStaff()
-  }, [session, status, router])
+  }, [session, status]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchStaff = async () => {
     try {

@@ -49,7 +49,7 @@ export default function AdminHeroSlidesPage() {
     }
 
     fetchSlides()
-  }, [session, status, router])
+  }, [session, status]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchSlides = async () => {
     try {

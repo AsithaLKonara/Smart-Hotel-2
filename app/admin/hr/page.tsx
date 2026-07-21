@@ -17,7 +17,7 @@ export default function HRIndexPage() {
       return
     }
     router.replace('/admin/hr/employees')
-  }, [session, status, router])
+  }, [session, status]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-slate-950">

@@ -16,8 +16,15 @@ interface RateLimitResult {
   blockUntil?: number
 }
 
-// Check if Upstash Redis credentials exist in the environment
-const hasRedis = !!(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN)
+// Check if Upstash Redis credentials exist AND are not placeholder/dummy values
+const DUMMY_VALUES = new Set(['dummy', 'http://dummy', 'https://dummy', 'placeholder', '', 'sk_dummy', 'pk_dummy'])
+const hasRedis = !!(
+  process.env.UPSTASH_REDIS_REST_URL &&
+  process.env.UPSTASH_REDIS_REST_TOKEN &&
+  !DUMMY_VALUES.has(process.env.UPSTASH_REDIS_REST_URL) &&
+  !DUMMY_VALUES.has(process.env.UPSTASH_REDIS_REST_TOKEN) &&
+  process.env.UPSTASH_REDIS_REST_URL.startsWith('https://')
+)
 
 class EnhancedRateLimiter {
   private requests: Map<string, { 

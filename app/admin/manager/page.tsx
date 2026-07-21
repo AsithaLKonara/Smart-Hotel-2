@@ -36,7 +36,7 @@ export default function ManagerOperationsCenter() {
       return
     }
     loadAnalytics()
-  }, [session, status, router])
+  }, [session, status]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadAnalytics = async () => {
     try {

@@ -17,7 +17,7 @@ export default function AccountingIndexPage() {
       return
     }
     router.replace('/admin/accounting/folios')
-  }, [session, status, router])
+  }, [session, status]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-slate-950">

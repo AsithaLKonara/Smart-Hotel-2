@@ -25,7 +25,7 @@ export default function DiningDashboardPage() {
     if (status === 'unauthenticated') {
       router.push('/auth/signin')
     }
-  }, [status, router])
+  }, [status]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (status === 'loading' || (status === 'authenticated' && bookingsLoading)) {
     return (

@@ -143,7 +143,7 @@ export default function UnifiedLiveTimeline() {
     }
 
     setLoading(false)
-  }, [session, status, router])
+  }, [session, status]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Pusher real-time event integration
   useEffect(() => {

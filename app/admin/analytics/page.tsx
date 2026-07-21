@@ -25,7 +25,7 @@ export default function AdminAnalyticsPage() {
 
     fetchAnalytics()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session, status, router, range])
+  }, [session, status, range]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchAnalytics = async () => {
     try {

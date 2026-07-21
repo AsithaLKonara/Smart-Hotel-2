@@ -62,7 +62,7 @@ export default function AdminRoomsPage() {
     if (status === 'loading') return
     fetchRooms()
     fetchRoomTypes()
-  }, [status, router])
+  }, [status]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchRooms = async () => {
     try {

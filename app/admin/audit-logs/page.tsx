@@ -46,7 +46,7 @@ export default function ForensicAuditTimeline() {
     }
 
     loadAuditLogs()
-  }, [session, status, router])
+  }, [session, status]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadAuditLogs = async () => {
     try {

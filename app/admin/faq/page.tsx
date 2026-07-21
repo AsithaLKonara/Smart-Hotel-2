@@ -44,7 +44,7 @@ export default function AdminFAQPage() {
     }
 
     fetchFAQs()
-  }, [session, status, router])
+  }, [session, status]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchFAQs = async () => {
     try {

@@ -57,7 +57,7 @@ export default function OtaChannelSync() {
     }
 
     fetchInitialData()
-  }, [session, status, router])
+  }, [session, status]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchInitialData = async () => {
     try {

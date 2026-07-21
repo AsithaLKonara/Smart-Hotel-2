@@ -72,7 +72,7 @@ export default function RoomOccupancyTimelineMatrix() {
     }
 
     loadDatabaseMetadata()
-  }, [session, status, router])
+  }, [session, status]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Countdown timer thread for active room hold locks
   useEffect(() => {

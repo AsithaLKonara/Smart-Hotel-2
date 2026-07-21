@@ -46,7 +46,7 @@ export default function AdminGalleryPage() {
     }
 
     fetchGallery()
-  }, [session, status, router])
+  }, [session, status]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchGallery = async () => {
     try {
