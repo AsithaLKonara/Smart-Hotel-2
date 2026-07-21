@@ -130,7 +130,7 @@ export function OrderPortal({ roomNumber = "101", guestInfo }: OrderPortalProps)
     ? menuItems 
     : menuItems.filter(item => item.category === selectedCategory)
 
-  const cartTotal = cart.reduce((sum, c) => sum + (c.item.price * c.quantity), 0)
+  const cartTotal = cart.reduce((sum, c) => sum + (Number(c.item.price || 0) * c.quantity), 0)
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
@@ -206,7 +206,7 @@ export function OrderPortal({ roomNumber = "101", guestInfo }: OrderPortalProps)
                           )}
                         </div>
                         <div className="mt-8 flex items-center justify-between">
-                          <span className="text-2xl font-serif font-bold text-primary">${item.price.toFixed(2)}</span>
+                          <span className="text-2xl font-serif font-bold text-primary">${Number(item.price || 0).toFixed(2)}</span>
                           <Button
                             onClick={() => handleAddToCart(item)}
                             disabled={!item.available}
@@ -252,7 +252,7 @@ export function OrderPortal({ roomNumber = "101", guestInfo }: OrderPortalProps)
                       <div key={item.id} className="flex items-center justify-between p-4 bg-white/[0.03] border border-white/5 rounded-2xl group/cart transition-colors hover:border-white/10">
                         <div className="flex-1">
                           <p className="font-bold text-sm text-white">{item.name}</p>
-                          <p className="text-[10px] text-white/40 uppercase tracking-widest">${item.price.toFixed(2)} each</p>
+                          <p className="text-[10px] text-white/40 uppercase tracking-widest">${Number(item.price || 0).toFixed(2)} each</p>
                         </div>
                         <div className="flex items-center gap-3 bg-black/40 rounded-xl p-1.5 border border-white/5">
                           <button

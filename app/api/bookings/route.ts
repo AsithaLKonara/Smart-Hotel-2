@@ -378,6 +378,12 @@ export async function GET(request: NextRequest) {
       guest: {
         select: { id: true, name: true, email: true }
       },
+      folios: {
+        include: {
+          lineItems: true,
+          payments: true
+        }
+      },
       roomAssignments: {
         include: {
           room: {

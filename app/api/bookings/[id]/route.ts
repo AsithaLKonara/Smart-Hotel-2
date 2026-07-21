@@ -32,24 +32,31 @@ export async function GET(
     // Note: Booking model doesn't have relations defined in schema
     // Relations would need to be added to schema for include to work
     const booking = await prisma.booking.findUnique({
-      where: { id }
+      where: { id },
+      include: {
+        guest: true,
+        roomAssignments: {
+          include: {
+            room: {
+              include: {
+                roomType: true
+              }
+            }
+          }
+        }
+      }
     })
     
-    // Fetch related data separately if needed
-    let user, room
-    if (booking) {
-      [user, room] = await Promise.all([
-        prisma.user.findUnique({ where: { id: booking.primaryGuestId } }).catch(() => null),
-        prisma.room.findUnique({ where: { id: booking.roomId } }).catch(() => null)
-      ])
-    }
-
     if (!booking) {
       return NextResponse.json(
         { error: 'Booking not found' },
         { status: 404 }
       )
     }
+
+    const user = booking.guest
+    const roomAssignment = booking.roomAssignments?.[0]
+    const room = roomAssignment?.room
 
     // Check if user has permission to view this booking
     if ((session.user as any).roleName === 'GUEST' && booking.primaryGuestId !== session.user.id) {
@@ -72,13 +79,13 @@ export async function GET(
       room: room ? {
         id: room.id,
         number: room.number,
-        type: (room as any).type,
-        price: (room as any).price,
-        description: (room as any).description,
-        amenities: (room as any).amenities,
-        capacity: Number(room.capacity),
-        floor: Number(room.floor),
-        size: Number(room.size),
+        type: room.roomType?.name || 'Standard',
+        price: room.roomType?.baseRate || 0,
+        description: room.roomType?.description || '',
+        amenities: room.roomType?.amenities || [],
+        capacity: Number(room.capacity || room.roomType?.capacity || 2),
+        floor: Number(room.floor || 1),
+        size: Number(room.size || 25),
       } : null,
     })
   } catch (error) {
@@ -109,24 +116,31 @@ export async function PATCH(
     const validatedData = bookingUpdateSchema.parse(body)
 
     const booking = await prisma.booking.findUnique({
-      where: { id: id }
+      where: { id: id },
+      include: {
+        guest: true,
+        roomAssignments: {
+          include: {
+            room: {
+              include: {
+                roomType: true
+              }
+            }
+          }
+        }
+      }
     })
     
-    // Fetch related data separately
-    let user, room
-    if (booking) {
-      [user, room] = await Promise.all([
-        prisma.user.findUnique({ where: { id: booking.primaryGuestId } }).catch(() => null),
-        prisma.room.findUnique({ where: { id: booking.roomId } }).catch(() => null)
-      ])
-    }
-
     if (!booking) {
       return NextResponse.json(
         { error: 'Booking not found' },
         { status: 404 }
       )
     }
+
+    const user = booking.guest
+    const roomAssignment = booking.roomAssignments?.[0]
+    const room = roomAssignment?.room
 
     const oldStatus = booking.status
     const oldPaymentStatus = booking.paymentStatus
@@ -174,39 +188,42 @@ export async function PATCH(
 
       // 2. Resolve Side Effects (Room Status & Tasks)
       if (validatedData.status && validatedData.status !== oldStatus) {
-        if (validatedData.status === 'CHECKED_IN') {
-          await tx.room.update({
-            where: { id: b.roomId },
-            data: { status: 'OCCUPIED' }
-          })
-        } else if (validatedData.status === 'CHECKED_OUT') {
-          await tx.room.update({
-            where: { id: b.roomId },
-            data: { status: 'CLEANING' }
-          })
+        const targetRoomId = b.roomAssignments?.[0]?.roomId
+        if (targetRoomId) {
+          if (validatedData.status === 'CHECKED_IN') {
+            await tx.room.update({
+              where: { id: targetRoomId },
+              data: { status: 'OCCUPIED' }
+            })
+          } else if (validatedData.status === 'CHECKED_OUT') {
+            await tx.room.update({
+              where: { id: targetRoomId },
+              data: { status: 'CLEANING' }
+            })
 
-          // Create automatic housekeeping task
-          const assignment = b.roomAssignments?.[0]
-          await tx.task.create({
-            data: {
-              title: `Clean Room ${assignment?.room?.number || 'TBD'}`,
-              description: `Checkout cleaning for ${b.confirmationCode}.`,
-              type: 'HOUSEKEEPING',
-              priority: 'HIGH',
-              status: 'PENDING',
-              assignedTo: null,
-              createdBy: session.user.id,
-              roomId: b.roomId,
-              bookingId: b.id,
-              propertyId: b.propertyId,
-              dueDate: new Date(),
-            }
-          })
-        } else if (validatedData.status === 'CANCELLED') {
-          await tx.room.update({
-            where: { id: b.roomId },
-            data: { status: 'AVAILABLE' }
-          })
+            // Create automatic housekeeping task
+            const assignment = b.roomAssignments?.[0]
+            await tx.task.create({
+              data: {
+                title: `Clean Room ${assignment?.room?.number || 'TBD'}`,
+                description: `Checkout cleaning for ${b.confirmationCode}.`,
+                type: 'HOUSEKEEPING',
+                priority: 'HIGH',
+                status: 'PENDING',
+                assignedTo: null,
+                createdBy: session.user.id,
+                roomId: targetRoomId,
+                bookingId: b.id,
+                propertyId: b.propertyId,
+                dueDate: new Date(),
+              }
+            })
+          } else if (validatedData.status === 'CANCELLED') {
+            await tx.room.update({
+              where: { id: targetRoomId },
+              data: { status: 'AVAILABLE' }
+            })
+          }
         }
       }
 
@@ -227,11 +244,15 @@ export async function PATCH(
     }
 
     // 3. EMIT REAL-TIME EVENTS
-    const { RealtimeEvents } = await import('@/lib/realtime')
-    await RealtimeEvents.emitBookingUpdated(updatedBooking)
-    const assignment = updatedBooking.roomAssignments?.[0]
-    if (assignment?.room) {
-      await RealtimeEvents.emitRoomStatusChanged(assignment.room)
+    try {
+      const { RealtimeEvents } = await import('@/lib/realtime')
+      await RealtimeEvents.emitBookingUpdated(updatedBooking)
+      const assignment = updatedBooking.roomAssignments?.[0]
+      if (assignment?.room) {
+        await RealtimeEvents.emitRoomStatusChanged(assignment.room)
+      }
+    } catch (realtimeErr) {
+      console.warn('[REALTIME] Failed to emit booking realtime event:', realtimeErr)
     }
     
     // 4. CQRS PROJECTIONS
@@ -255,6 +276,7 @@ export async function PATCH(
     }
     
     // Return booking with related data
+    const assignment = updatedBooking.roomAssignments?.[0]
     const bookingWithRelations = {
       ...updatedBooking,
       guests: Number(updatedBooking.guests),

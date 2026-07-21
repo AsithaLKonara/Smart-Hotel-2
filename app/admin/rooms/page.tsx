@@ -52,6 +52,7 @@ export default function AdminRoomsPage() {
   const [formData, setFormData] = useState({
     number: '',
     roomTypeId: '',
+    price: '',
     floor: '',
     size: '',
     status: 'AVAILABLE',
@@ -94,10 +95,17 @@ export default function AdminRoomsPage() {
 
   const fetchRoomTypes = async () => {
     try {
-      const response = await fetch('/api/room-types')
+      const response = await fetch('/api/room-types', { cache: 'no-store' })
       if (!response.ok) return;
       const data = await response.json()
-      setRoomTypes(data || [])
+      const list = Array.isArray(data) 
+        ? data 
+        : Array.isArray(data?.roomTypes) 
+        ? data.roomTypes 
+        : Array.isArray(data?.data) 
+        ? data.data 
+        : []
+      setRoomTypes(list)
     } catch (error) {
       console.error('Error fetching room types:', error)
     }
@@ -112,6 +120,29 @@ export default function AdminRoomsPage() {
     }
 
     try {
+      // 1. Sync Base Rate to Room Type if custom price provided
+      if (formData.roomTypeId && formData.price) {
+        const priceNum = parseFloat(formData.price)
+        if (!isNaN(priceNum) && priceNum >= 0) {
+          const selected = roomTypes.find(rt => rt.id === formData.roomTypeId)
+          if (selected && Number(selected.baseRate) !== priceNum) {
+            try {
+              await fetch(`/api/room-types/${formData.roomTypeId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  name: selected.name,
+                  baseRate: priceNum
+                })
+              })
+            } catch (e) {
+              console.error('Failed to update room type rate:', e)
+            }
+          }
+        }
+      }
+
+      // 2. Save Room
       const roomData = {
         number: formData.number,
         roomTypeId: formData.roomTypeId,
@@ -139,6 +170,7 @@ export default function AdminRoomsPage() {
       setEditingRoom(null)
       resetForm()
       fetchRooms()
+      fetchRoomTypes()
     } catch (error: any) {
       console.error('Error saving room:', error)
       toast.error(error.message || 'Failed to save room')
@@ -150,6 +182,7 @@ export default function AdminRoomsPage() {
     setFormData({
       number: room.number,
       roomTypeId: room.roomTypeId || '',
+      price: room.roomType?.baseRate ? room.roomType.baseRate.toString() : '',
       floor: room.floor?.toString() || '',
       size: room.size?.toString() || '',
       status: room.status,
@@ -179,6 +212,7 @@ export default function AdminRoomsPage() {
     setFormData({
       number: '',
       roomTypeId: '',
+      price: '',
       floor: '',
       size: '',
       status: 'AVAILABLE',
@@ -282,6 +316,7 @@ export default function AdminRoomsPage() {
           onClick={() => {
             setEditingRoom(null)
             resetForm()
+            fetchRoomTypes()
             setShowModal(true)
           }}
           className="w-full md:w-auto"
@@ -448,7 +483,7 @@ export default function AdminRoomsPage() {
               </label>
               <input
                 type="text"
-                value={formData.number}
+                value={formData.number || ''}
                 onChange={(e) => setFormData({ ...formData, number: e.target.value })}
                 className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-primary/50 text-sm"
                 required
@@ -460,16 +495,50 @@ export default function AdminRoomsPage() {
                 Room Type *
               </label>
               <select
-                value={formData.roomTypeId}
-                onChange={(e) => setFormData({ ...formData, roomTypeId: e.target.value })}
+                value={formData.roomTypeId || ''}
+                onChange={(e) => {
+                  const typeId = e.target.value
+                  const selected = roomTypes.find(rt => rt.id === typeId)
+                  setFormData(prev => ({
+                    ...prev,
+                    roomTypeId: typeId,
+                    price: selected?.baseRate != null ? selected.baseRate.toString() : (prev.price || '')
+                  }))
+                }}
                 className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-primary/50 text-sm"
                 required
               >
-                <option value="">Select type</option>
+                <option value="">{roomTypes.length === 0 ? '-- No Room Types (Create First) --' : 'Select Room Type'}</option>
                 {roomTypes.map(rt => (
-                  <option key={rt.id} value={rt.id}>{rt.name}</option>
+                  <option key={rt.id} value={rt.id}>
+                    {rt.name} {rt.baseRate ? `($${Number(rt.baseRate).toFixed(2)}/night)` : ''}
+                  </option>
                 ))}
               </select>
+              {roomTypes.length === 0 && (
+                <p className="text-[11px] text-amber-400 mt-1">
+                  No room types found. <a href="/admin/room-types" className="underline font-bold" target="_blank" rel="noreferrer">Create a Room Type</a>
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5 block">
+              Nightly Rate / Price ($/night) *
+            </label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold">$</span>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="e.g. 150.00"
+                value={formData.price || ''}
+                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                className="w-full pl-7 pr-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white font-mono text-sm focus:outline-none focus:ring-1 focus:ring-primary/50"
+                required
+              />
             </div>
           </div>
 
@@ -480,7 +549,7 @@ export default function AdminRoomsPage() {
               </label>
               <input
                 type="number"
-                value={formData.floor}
+                value={formData.floor || ''}
                 onChange={(e) => setFormData({ ...formData, floor: e.target.value })}
                 className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-primary/50 text-sm"
                 min="0"
@@ -493,7 +562,7 @@ export default function AdminRoomsPage() {
               </label>
               <input
                 type="number"
-                value={formData.size}
+                value={formData.size || ''}
                 onChange={(e) => setFormData({ ...formData, size: e.target.value })}
                 className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-primary/50 text-sm"
                 min="0"
@@ -506,7 +575,7 @@ export default function AdminRoomsPage() {
               Status *
             </label>
             <select
-              value={formData.status}
+              value={formData.status || 'AVAILABLE'}
               onChange={(e) => setFormData({ ...formData, status: e.target.value })}
               className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-primary/50 text-sm"
               required

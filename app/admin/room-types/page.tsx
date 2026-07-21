@@ -78,8 +78,8 @@ export default function AdminRoomTypesPage() {
       const payload = {
         name: formData.name,
         description: formData.description,
-        baseRate: parseFloat(formData.baseRate),
-        capacity: parseInt(formData.capacity),
+        baseRate: parseFloat(formData.baseRate) || 0,
+        capacity: parseInt(formData.capacity) || 2,
         amenities: amenitiesArray,
         images: formData.images,
       }

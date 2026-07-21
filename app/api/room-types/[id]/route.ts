@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { getRequestSession } from '@/lib/session'
 import { prisma } from '@/lib/db'
 import { z } from 'zod'
 import { handleZodError } from '@/lib/api-utils'
@@ -18,25 +17,30 @@ const roomTypeSchema = z.object({
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session || !['SUPER_ADMIN', 'MANAGER'].includes((session.user as any).roleName as string)) {
+    const session = await getRequestSession(request)
+    const userRole = (session?.user as any)?.roleName || (session?.user as any)?.role || ''
+    const allowedRoles = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'RECEPTIONIST', 'STAFF']
+
+    if (!session || !allowedRoles.includes(userRole.toUpperCase())) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const body = await request.json()
-    const validatedData = roomTypeSchema.parse(body)
+    const validatedData = roomTypeSchema.partial().parse(body)
 
     // Check name conflict
     const { id } = await params
-    const existing = await prisma.roomType.findFirst({
-      where: { 
-        name: validatedData.name,
-        id: { not: id }
-      }
-    })
+    if (validatedData.name) {
+      const existing = await prisma.roomType.findFirst({
+        where: { 
+          name: validatedData.name,
+          id: { not: id }
+        }
+      })
 
-    if (existing) {
-      return NextResponse.json({ error: 'Room Type name already exists' }, { status: 400 })
+      if (existing) {
+        return NextResponse.json({ error: 'Room Type name already exists' }, { status: 400 })
+      }
     }
 
     const roomType = await prisma.roomType.update({
@@ -56,8 +60,11 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session || !['SUPER_ADMIN', 'MANAGER'].includes((session.user as any).roleName as string)) {
+    const session = await getRequestSession(request)
+    const userRole = (session?.user as any)?.roleName || (session?.user as any)?.role || ''
+    const allowedRoles = ['SUPER_ADMIN', 'ADMIN', 'MANAGER']
+
+    if (!session || !allowedRoles.includes(userRole.toUpperCase())) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 

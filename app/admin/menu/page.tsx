@@ -180,7 +180,7 @@ export default function AdminMenuPage() {
     available: menuItems.filter(i => i.available).length,
     unavailable: menuItems.filter(i => !i.available).length,
     avgPrice: menuItems.length > 0 
-      ? (menuItems.reduce((sum, i) => sum + i.price, 0) / menuItems.length).toFixed(2)
+      ? (menuItems.reduce((sum, i) => sum + Number(i.price || 0), 0) / menuItems.length).toFixed(2)
       : '0.00'
   }
 
@@ -328,7 +328,7 @@ export default function AdminMenuPage() {
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <DollarSign className="w-4 h-4 text-gray-500" />
-                  <span className="font-semibold text-lg">${item.price.toFixed(2)}</span>
+                  <span className="font-semibold text-lg">${Number(item.price || 0).toFixed(2)}</span>
                 </div>
                 {item.preparationTime && (
                   <div className="flex items-center gap-1 text-sm text-gray-500">

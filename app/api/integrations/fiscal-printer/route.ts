@@ -5,44 +5,58 @@ import crypto from 'crypto'
 /**
  * Enterprise Feature: Fiscal Compliance
  * This API acts as an adapter for regional tax authorities (e.g., LATAM DIAN/SUNAT, Europe SII)
- * It takes an Invoice, signs it cryptographically, and records the signature in an AuditLog.
+ * It takes an Invoice or Folio, signs it cryptographically, and records the signature in an AuditLog.
  */
 export async function POST(req: NextRequest) {
   try {
-    const { invoiceId } = await req.json()
+    const body = await req.json()
+    const targetId = body.invoiceId || body.folioId
 
-    if (!invoiceId) {
-      return NextResponse.json({ error: 'Invoice ID required' }, { status: 400 })
+    if (!targetId) {
+      return NextResponse.json({ error: 'Invoice ID or Folio ID required' }, { status: 400 })
     }
 
-    const invoice = await prisma.invoice.findUnique({
-      where: { id: invoiceId },
-      include: { folio: { include: { booking: { include: { user: true } } } } }
-    })
+    let totalAmount = 0
+    let createdAtDate = new Date()
 
-    if (!invoice) {
-      return NextResponse.json({ error: 'Invoice not found' }, { status: 404 })
+    const invoice = await prisma.invoice.findUnique({
+      where: { id: targetId },
+      include: { folio: { include: { booking: { include: { guest: true } } } } }
+    }).catch(() => null)
+
+    if (invoice) {
+      totalAmount = Number(invoice.amount)
+      createdAtDate = invoice.createdAt
+    } else {
+      const folio = await prisma.folio.findUnique({
+        where: { id: targetId },
+        include: { lineItems: true, booking: { include: { guest: true } } }
+      })
+
+      if (!folio) {
+        return NextResponse.json({ error: 'Invoice or Folio not found' }, { status: 404 })
+      }
+
+      totalAmount = folio.lineItems.reduce((sum: number, item: any) => sum + Number(item.amount), 0)
+      createdAtDate = folio.createdAt
     }
 
     // 1. Generate Cryptographic Signature (simulating a Fiscal Private Key signing)
-    const payloadToSign = `${invoice.id}|${invoice.amount}|${invoice.createdAt.toISOString()}`
+    const payloadToSign = `${targetId}|${totalAmount}|${createdAtDate.toISOString()}`
     const signature = crypto.createHmac('sha256', process.env.FISCAL_SECRET || 'fallback_secret')
       .update(payloadToSign)
       .digest('hex')
 
-    // 2. Mark invoice as fiscally printed/signed (simulated via AuditLog for now)
+    // 2. Mark invoice/folio as fiscally printed/signed in AuditLog
     await prisma.auditLog.create({
       data: {
         actor: 'SYSTEM_FISCAL',
         action: 'INVOICE_SIGNED',
-        resource: 'Invoice',
-        resourceId: invoice.id,
+        resource: 'Folio/Invoice',
+        resourceId: targetId,
         details: { signature, payload: payloadToSign }
       }
     })
-
-    // In a real enterprise system, we might update `invoice.fiscalSignature = signature`
-    // but AuditLog satisfies the compliance trail for this prototype.
 
     return NextResponse.json({
       success: true,

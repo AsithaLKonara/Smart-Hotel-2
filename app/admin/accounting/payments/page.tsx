@@ -63,7 +63,7 @@ export default function PaymentsLedgerPage() {
                 <tr key={p.id} className="hover:bg-white/5">
                   <td className="p-4 font-mono text-xs">{p.id}</td>
                   <td className="p-4">{new Date(p.createdAt).toLocaleString()}</td>
-                  <td className="p-4 font-semibold">${p.amount.toFixed(2)}</td>
+                  <td className="p-4 font-semibold">${Number(p.amount || 0).toFixed(2)}</td>
                   <td className="p-4 uppercase text-white/70">{p.paymentMethod}</td>
                   <td className="p-4">
                     <span className={`px-2 py-1 rounded text-xs ${p.status === 'completed' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}`}>

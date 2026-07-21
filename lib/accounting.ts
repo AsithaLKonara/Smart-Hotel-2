@@ -12,7 +12,7 @@ export interface ChargePayload {
 export async function postCharge(payload: ChargePayload, tx?: any) {
   const db = tx || prisma
   // 1. Get all open folios for this booking
-  const folios = await db.folio.findMany({
+  let folios = await db.folio.findMany({
     where: { bookingId: payload.bookingId, status: 'OPEN' },
     include: {
       routingRulesSource: true
@@ -21,7 +21,21 @@ export async function postCharge(payload: ChargePayload, tx?: any) {
   })
 
   if (folios.length === 0) {
-    throw new Error('No open folio found for this booking.')
+    const booking = await db.booking.findUnique({ where: { id: payload.bookingId } })
+    const propertyId = booking?.propertyId || (await db.property.findFirst())?.id || 'default'
+    const newFolio = await db.folio.create({
+      data: {
+        bookingId: payload.bookingId,
+        windowNumber: 1,
+        type: 'GUEST',
+        status: 'OPEN',
+        propertyId: propertyId
+      },
+      include: {
+        routingRulesSource: true
+      }
+    })
+    folios = [newFolio]
   }
 
   // 2. The primary folio is Window 1 (Guest Folio)

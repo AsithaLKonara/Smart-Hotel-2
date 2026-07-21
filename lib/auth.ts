@@ -148,11 +148,11 @@ export const authOptions: NextAuthOptions = {
   ],
   session: { 
     strategy: 'jwt',
-    maxAge: 8 * 60 * 60, // 8 hours (reduced for security)
-    updateAge: 30 * 60, // 30 minutes
+    maxAge: 7 * 24 * 60 * 60, // 7 days (604,800 seconds)
+    updateAge: 24 * 60 * 60, // 24 hours
   },
   jwt: {
-    maxAge: 8 * 60 * 60, // 8 hours
+    maxAge: 7 * 24 * 60 * 60, // 7 days
   },
   callbacks: {
     async jwt({ token, user, account }) {
@@ -165,7 +165,7 @@ export const authOptions: NextAuthOptions = {
       // NextAuth v4 does not allow returning null from the jwt callback (type error).
       // The correct pattern is to mark the token with error: 'SessionExpired' and
       // enforce it in middleware so the session is treated as unauthenticated.
-      const maxAgeSeconds = 8 * 60 * 60
+      const maxAgeSeconds = 7 * 24 * 60 * 60 // 7 days
       const currentTimestamp = Math.floor(Date.now() / 1000)
       if (token.iat && (currentTimestamp - (token.iat as number)) > maxAgeSeconds) {
         return { ...token, error: 'SessionExpired' as const }

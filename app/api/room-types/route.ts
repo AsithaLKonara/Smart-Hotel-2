@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { getRequestSession } from '@/lib/session'
 import { prisma } from '@/lib/db'
 import { isDatabaseConfigured, getDatabaseErrorMessage } from '@/lib/db-helpers'
 import { z } from 'zod'
@@ -41,8 +40,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session || !['SUPER_ADMIN', 'MANAGER'].includes((session.user as any).roleName as string)) {
+    const session = await getRequestSession(request)
+    const userRole = (session?.user as any)?.roleName || (session?.user as any)?.role || ''
+    const allowedRoles = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'RECEPTIONIST', 'STAFF']
+    
+    if (!session || !allowedRoles.includes(userRole.toUpperCase())) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 

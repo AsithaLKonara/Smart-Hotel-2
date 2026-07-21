@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 
-const IDLE_TIMEOUT = 15 * 60 * 1000 // 15 minutes
+const IDLE_TIMEOUT = 7 * 24 * 60 * 60 * 1000 // 7 days
 
 export function IdleTimer() {
   const [lastActivity, setLastActivity] = useState(Date.now())

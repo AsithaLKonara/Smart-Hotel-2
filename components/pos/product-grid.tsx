@@ -73,7 +73,7 @@ export default function ProductGrid({ orderType, setOrderType, onAddToCart }: { 
                   <div className="font-semibold text-white group-hover:text-purple-300 transition-colors">{product.name}</div>
                   <div className="text-xs text-gray-400 mt-1">{product.outlet?.name || product.category}</div>
                 </div>
-                <div className="font-mono text-purple-400">${product.price.toFixed(2)}</div>
+                <div className="font-mono text-purple-400">${Number(product.price || 0).toFixed(2)}</div>
               </div>
             ))}
           </div>

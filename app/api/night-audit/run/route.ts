@@ -76,9 +76,9 @@ export async function POST(req: NextRequest) {
       let totalRevenuePosted = 0
 
       for (const booking of inHouseBookings) {
-        // Approximate nightly rate from totalAmount
-        const duration = differenceInDays(booking.checkOut, booking.checkIn)
-        const nightlyRate = duration > 0 ? booking.totalAmount.div(duration).toNumber() : booking.totalAmount.toNumber()
+        const total = Number(booking.totalAmount || 0)
+        const duration = Math.max(1, differenceInDays(new Date(booking.checkOut), new Date(booking.checkIn)))
+        const nightlyRate = duration > 0 ? total / duration : total
         
         // Post Room Charge
         await postCharge({

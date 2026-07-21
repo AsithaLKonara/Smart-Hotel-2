@@ -10,7 +10,7 @@ export default function CartPanel({ cart, onUpdateQuantity, selectedRoom, orderT
   const [paymentMethod, setPaymentMethod] = useState('ROOM_CHARGE')
   const [loading, setLoading] = useState(false)
   const [lastOrder, setLastOrder] = useState<any>(null)
-  const subtotal = cart.reduce((sum: number, item: any) => sum + item.price * item.quantity, 0)
+  const subtotal = cart.reduce((sum: number, item: any) => sum + Number(item.price || 0) * item.quantity, 0)
   const tax = subtotal * 0.10 // 10% tax
   const total = subtotal + tax
 
@@ -68,7 +68,7 @@ export default function CartPanel({ cart, onUpdateQuantity, selectedRoom, orderT
             <div key={item.productId} className="flex justify-between items-center group">
               <div className="flex-1">
                 <div className="text-sm font-medium text-white">{item.name}</div>
-                <div className="text-xs text-purple-400 font-mono">${item.price.toFixed(2)}</div>
+                <div className="text-xs text-purple-400 font-mono">${Number(item.price || 0).toFixed(2)}</div>
               </div>
               <div className="flex items-center gap-2 bg-black/50 rounded-lg p-1 border border-gray-800">
                 <button onClick={() => onUpdateQuantity(item.productId, -1)} className="p-1 hover:text-purple-400 text-gray-400">

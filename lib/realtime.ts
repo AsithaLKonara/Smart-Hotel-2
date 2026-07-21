@@ -11,9 +11,18 @@ import {
  * Enterprise Real-time Infrastructure
  * Standardized on Pusher for high-availability distributed events.
  */
-const isPusherConfigured = !!(process.env.PUSHER_APP_ID && process.env.NEXT_PUBLIC_PUSHER_KEY && process.env.PUSHER_SECRET);
+const isPusherConfigured = !!(
+  process.env.PUSHER_APP_ID && 
+  process.env.PUSHER_APP_ID !== 'dummy' &&
+  !process.env.PUSHER_APP_ID.includes('YOUR_') &&
+  process.env.NEXT_PUBLIC_PUSHER_KEY && 
+  process.env.NEXT_PUBLIC_PUSHER_KEY !== 'dummy' &&
+  !process.env.NEXT_PUBLIC_PUSHER_KEY.includes('YOUR_') &&
+  process.env.PUSHER_SECRET &&
+  process.env.PUSHER_SECRET !== 'dummy'
+);
 
-const pusher = isPusherConfigured 
+const pusherClient = isPusherConfigured 
   ? new Pusher({
       appId: process.env.PUSHER_APP_ID || '',
       key: process.env.NEXT_PUBLIC_PUSHER_KEY || '',
@@ -21,9 +30,18 @@ const pusher = isPusherConfigured
       cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER || 'mt1',
       useTLS: true,
     })
-  : ({ trigger: async () => {} } as any);
+  : null;
 
-export const realtime = pusher
+const safeTrigger = async (channel: string, event: string, data: any) => {
+  if (!pusherClient) return;
+  try {
+    await pusherClient.trigger(channel, event, data);
+  } catch (err) {
+    console.warn(`[PUSHER_WARNING] Failed to trigger event "${event}" on channel "${channel}":`, (err as any)?.message || err);
+  }
+};
+
+export const realtime = pusherClient || ({ trigger: safeTrigger } as any);
 
 export class RealtimeEvents {
   private static CHANNEL_GLOBAL = 'global'
@@ -44,8 +62,8 @@ export class RealtimeEvents {
       bookingId: booking.id,
       status: booking.status,
     })
-    await pusher.trigger(this.CHANNEL_GLOBAL, 'booking.created', payload)
-    await pusher.trigger(this.CHANNEL_ADMIN, 'admin.alert.new_booking', payload)
+    await safeTrigger(this.CHANNEL_GLOBAL, 'booking.created', payload)
+    await safeTrigger(this.CHANNEL_ADMIN, 'admin.alert.new_booking', payload)
   }
 
   static async emitBookingUpdated(booking: any) {
@@ -55,8 +73,8 @@ export class RealtimeEvents {
       bookingId: booking.id,
       status: booking.status,
     })
-    await pusher.trigger(`booking-${booking.id}`, 'updated', payload)
-    await pusher.trigger(this.CHANNEL_ADMIN, 'booking.updated', payload)
+    await safeTrigger(`booking-${booking.id}`, 'updated', payload)
+    await safeTrigger(this.CHANNEL_ADMIN, 'booking.updated', payload)
   }
 
   // Room & Inventory events
@@ -67,8 +85,8 @@ export class RealtimeEvents {
       roomId: room.id,
       status: room.status,
     })
-    await pusher.trigger(this.CHANNEL_GLOBAL, 'room.status_changed', payload)
-    await pusher.trigger(`room-${room.id}`, 'status_changed', payload)
+    await safeTrigger(this.CHANNEL_GLOBAL, 'room.status_changed', payload)
+    await safeTrigger(`room-${room.id}`, 'status_changed', payload)
   }
 
   static async emitAvailabilityUpdate(roomId: string, available: boolean) {
@@ -78,7 +96,7 @@ export class RealtimeEvents {
       roomId,
       available,
     })
-    await pusher.trigger(this.CHANNEL_GLOBAL, 'inventory.availability_updated', payload)
+    await safeTrigger(this.CHANNEL_GLOBAL, 'inventory.availability_updated', payload)
   }
 
   // Housekeeping & Staff events
@@ -90,9 +108,9 @@ export class RealtimeEvents {
       status: task.status,
       assignedTo: task.assignedTo,
     })
-    await pusher.trigger(this.CHANNEL_ADMIN, 'task.updated', payload)
+    await safeTrigger(this.CHANNEL_ADMIN, 'task.updated', payload)
     if (task.assignedTo) {
-      await pusher.trigger(`staff-${task.assignedTo}`, 'task.assigned', payload)
+      await safeTrigger(`staff-${task.assignedTo}`, 'task.assigned', payload)
     }
   }
 
@@ -105,7 +123,7 @@ export class RealtimeEvents {
       status: message.status,
       roomNumber: message.roomNumber,
     })
-    await pusher.trigger('ops-center', payload.type, payload)
+    await safeTrigger('ops-center', payload.type, payload)
   }
 
   // Strategic KPI Updates
@@ -115,6 +133,6 @@ export class RealtimeEvents {
       type: 'kpis.refresh',
       metrics,
     })
-    await pusher.trigger(this.CHANNEL_ADMIN, 'kpis.refresh', payload)
+    await safeTrigger(this.CHANNEL_ADMIN, 'kpis.refresh', payload)
   }
 }

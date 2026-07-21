@@ -79,7 +79,7 @@ export function MenuModal({ isOpen, onClose, venueName }: MenuModalProps) {
                     <div key={item.id} className="group space-y-2">
                       <div className="flex justify-between items-start">
                         <h4 className="text-lg font-bold text-white group-hover:text-primary transition-colors">{item.name}</h4>
-                        <span className="text-sm font-serif italic text-primary">${item.price.toFixed(2)}</span>
+                        <span className="text-sm font-serif italic text-primary">${Number(item.price || 0).toFixed(2)}</span>
                       </div>
                       <p className="text-xs text-white/40 font-light leading-relaxed">{item.description}</p>
                       <div className="flex items-center gap-3 pt-2">

@@ -34,7 +34,7 @@ export default function NightAuditPage() {
         if (data.success) {
           success(
             "Night Audit Completed",
-            `Processed ${data.auditLog.roomsProcessed} rooms. Revenue posted: $${data.auditLog.totalRevenue.toFixed(2)}`
+            `Processed ${data.auditLog?.roomsProcessed || 0} rooms. Revenue posted: $${Number(data.auditLog?.totalRevenue || 0).toFixed(2)}`
           )
           fetchLogs()
         } else {
@@ -190,7 +190,7 @@ export default function NightAuditPage() {
                 </td>
                 <td className="p-4 text-sm text-white/80">{new Date(log.businessDate).toLocaleDateString()}</td>
                 <td className="p-4 text-sm text-white/80">{log.roomsProcessed}</td>
-                <td className="p-4 text-sm font-bold text-primary">${log.totalRevenue.toFixed(2)}</td>
+                <td className="p-4 text-sm font-bold text-primary">${Number(log.totalRevenue || 0).toFixed(2)}</td>
                 <td className="p-4 text-sm">
                   <span className="px-2 py-1 rounded text-xs bg-green-500/20 text-green-400">
                     {log.status}
