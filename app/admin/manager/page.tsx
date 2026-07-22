@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { canAccessAdminDashboard } from '@/lib/rbac-helpers'
+import { useProperty } from '@/contexts/property-context'
 import { 
   TrendingUp, 
   Activity, 
@@ -21,12 +22,14 @@ import { PremiumSpinner } from '@/components/ui/premium-spinner'
 
 export default function ManagerOperationsCenter() {
   const { data: session, status } = useSession()
+  const { activePropertyId } = useProperty()
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [financials, setFinancials] = useState({
-    revPar: 18450,
-    adr: 24600,
-    occupancy: 75
+    revPar: 0,
+    adr: 0,
+    occupancy: 0,
+    activeStaff: 0
   })
 
   useEffect(() => {
@@ -47,17 +50,19 @@ export default function ManagerOperationsCenter() {
     if (status === 'authenticated') {
       loadAnalytics();
     }
-  }, [session, status, router]);
+  }, [session, status, router, activePropertyId]);
 
   const loadAnalytics = async () => {
     try {
       setLoading(true)
-      const res = await fetch('/api/analytics/dashboard').then(r => r.json()).catch(() => null)
+      const url = activePropertyId ? `/api/analytics/dashboard?propertyId=${activePropertyId}` : '/api/analytics/dashboard'
+      const res = await fetch(url).then(r => r.json()).catch(() => null)
       if (res && res.summary) {
         setFinancials({
-          revPar: Math.round(Number(res.summary.totalRevenue) / 30),
-          adr: 24600,
-          occupancy: Number(res.summary.occupancyRate) || 75
+          revPar: Math.round(Number(res.summary.todayRevenue) || 0),
+          adr: res.summary.avgBookingValue || 0,
+          occupancy: Number(res.summary.occupancyRate) || 0,
+          activeStaff: res.guestStats?.totalStaff || 0
         })
       }
     } catch (err) {
@@ -112,7 +117,7 @@ export default function ManagerOperationsCenter() {
           <div className="flex justify-between items-center">
             <div>
               <p className="text-xs text-slate-400 uppercase font-bold tracking-widest">Active Staff</p>
-              <h3 className="text-2xl font-bold mt-1">18 Personnel</h3>
+              <h3 className="text-2xl font-bold mt-1">{financials.activeStaff} Personnel</h3>
             </div>
             <Users className="text-blue-400 w-8 h-8" />
           </div>

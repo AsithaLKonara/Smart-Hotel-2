@@ -13,6 +13,7 @@ import { Breadcrumbs } from '@/components/ui/breadcrumbs'
 import toast from 'react-hot-toast'
 import { PremiumSpinner } from '@/components/ui/premium-spinner'
 import { formatPrice } from '@/lib/utils'
+import { useProperty } from '@/contexts/property-context'
 
 interface RoomType {
   id: string;
@@ -40,6 +41,7 @@ interface Room {
 export default function AdminRoomsPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const { activePropertyId } = useProperty()
   const [rooms, setRooms] = useState<Room[]>([])
   const [roomTypes, setRoomTypes] = useState<RoomType[]>([])
   const [loading, setLoading] = useState(true)
@@ -62,7 +64,7 @@ export default function AdminRoomsPage() {
     if (status === 'loading') return
     fetchRooms()
     fetchRoomTypes()
-  }, [status]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [status, activePropertyId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchRooms = async () => {
     try {
@@ -72,6 +74,9 @@ export default function AdminRoomsPage() {
         signal: controller.signal,
         cache: 'no-store',
         credentials: 'include',
+        headers: {
+          'x-property-id': activePropertyId || 'all'
+        }
       })
       clearTimeout(timeoutId)
       if (!response.ok) throw new Error('Failed to fetch rooms')
@@ -95,7 +100,12 @@ export default function AdminRoomsPage() {
 
   const fetchRoomTypes = async () => {
     try {
-      const response = await fetch('/api/room-types', { cache: 'no-store' })
+      const response = await fetch('/api/room-types', { 
+        cache: 'no-store',
+        headers: {
+          'x-property-id': activePropertyId || 'all'
+        }
+      })
       if (!response.ok) return;
       const data = await response.json()
       const list = Array.isArray(data) 
@@ -156,7 +166,10 @@ export default function AdminRoomsPage() {
 
       const response = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-property-id': activePropertyId || 'all'
+        },
         body: JSON.stringify(roomData)
       })
 
@@ -195,7 +208,10 @@ export default function AdminRoomsPage() {
 
     try {
       const response = await fetch(`/api/rooms/${roomId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: {
+          'x-property-id': activePropertyId || 'all'
+        }
       })
 
       if (!response.ok) throw new Error('Failed to delete room')

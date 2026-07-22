@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { formatPrice, formatDate, cn } from '@/lib/utils'
 import toast from 'react-hot-toast'
 import { PremiumSpinner } from '@/components/ui/premium-spinner'
+import { useProperty } from '@/contexts/property-context'
 
 interface Booking {
   id: string
@@ -42,6 +43,7 @@ import { AdminPageShell } from '@/components/dashboard/admin/admin-page-shell'
 export default function AdminBookingsPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const { activePropertyId } = useProperty()
   const [bookings, setBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -57,6 +59,9 @@ export default function AdminBookingsPage() {
         cache: 'no-store',
         credentials: 'include',
         signal: controller.signal,
+        headers: {
+          'x-property-id': activePropertyId || 'all'
+        }
       })
       clearTimeout(timeoutId)
 
@@ -86,7 +91,7 @@ export default function AdminBookingsPage() {
     } finally {
       setLoading(false)
     }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [activePropertyId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     // Rely solely on middleware.ts for enterprise-grade edge protection.
@@ -100,7 +105,10 @@ export default function AdminBookingsPage() {
     try {
       const response = await fetch(`/api/bookings/${bookingId}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-property-id': activePropertyId || 'all'
+        },
         body: JSON.stringify({ status: newStatus })
       })
 
@@ -267,6 +275,9 @@ export default function AdminBookingsPage() {
               try {
                 const res = await fetch('/api/bookings/group-rooming-list', {
                   method: 'POST',
+                  headers: {
+                    'x-property-id': activePropertyId || 'all'
+                  },
                   body: formData
                 })
                 const data = await res.json()

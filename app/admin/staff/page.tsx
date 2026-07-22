@@ -5,12 +5,17 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Users, Shield, Check, X } from 'lucide-react'
 import { PremiumSpinner } from '@/components/ui/premium-spinner'
+import { useProperty } from '@/contexts/property-context'
 
 export default function StaffDirectoryPage() {
+  const { activePropertyId } = useProperty()
+  
   const { data: staffData, isLoading: loadingStaff } = useQuery({
-    queryKey: ['staff-directory'],
+    queryKey: ['staff-directory', activePropertyId],
     queryFn: async () => {
-      const res = await fetch('/api/admin/users')
+      const res = await fetch('/api/admin/users', {
+        headers: { 'x-property-id': activePropertyId || 'all' }
+      })
       return res.json()
     }
   })

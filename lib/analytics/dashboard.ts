@@ -78,7 +78,7 @@ function calculateGrowthRate(current: number, previous: number): number {
   return Number((((current - previous) / previous) * 100).toFixed(1))
 }
 
-export async function computeDashboardAnalytics(referenceDate = new Date()): Promise<DashboardAnalyticsPayload> {
+export async function computeDashboardAnalytics(referenceDate = new Date(), propertyId?: string | null): Promise<DashboardAnalyticsPayload> {
   const now = referenceDate
   const todayStart = startOfDay(now)
   const todayEnd = endOfDay(now)
@@ -97,9 +97,13 @@ export async function computeDashboardAnalytics(referenceDate = new Date()): Pro
     userStats,
     staffCount
   ] = await Promise.all([
-    prisma.room.findMany({ include: { roomType: true } }),
+    prisma.room.findMany({ 
+      where: propertyId ? { propertyId } : undefined,
+      include: { roomType: true } 
+    }),
     prisma.booking.findMany({
       where: {
+        ...(propertyId ? { propertyId } : {}),
         OR: [
           { createdAt: { gte: previousMonthStart } },
           { checkIn: { lte: todayEnd }, checkOut: { gte: thirtyDaysAgo } }
@@ -108,18 +112,35 @@ export async function computeDashboardAnalytics(referenceDate = new Date()): Pro
       include: { roomAssignments: { include: { room: { include: { roomType: true } } } }, guest: true }
     }),
     prisma.internalOrder.findMany({
-      where: { createdAt: { gte: previousMonthStart }, status: 'DELIVERED' }
+      where: { 
+        ...(propertyId ? { propertyId } : {}),
+        createdAt: { gte: previousMonthStart }, 
+        status: 'DELIVERED' 
+      }
     }),
     prisma.booking.count({
-      where: { createdAt: { gte: previousMonthStart, lte: previousMonthEnd }, paymentStatus: 'completed' }
+      where: { 
+        ...(propertyId ? { propertyId } : {}),
+        createdAt: { gte: previousMonthStart, lte: previousMonthEnd }, 
+        paymentStatus: 'completed' 
+      }
     }),
     prisma.booking.findMany({
+      where: propertyId ? { propertyId } : undefined,
       orderBy: { createdAt: 'desc' },
       take: 5,
       include: { roomAssignments: { include: { room: { include: { roomType: true } } } }, guest: true }
     }),
-    prisma.user.findMany({ select: { id: true, role: { select: { name: true } } } }),
-    prisma.user.count({ where: { role: { name: { in: ['RECEPTIONIST', 'HOUSEKEEPING', 'HOUSEKEEPER', 'MAINTENANCE', 'KITCHEN'] } } } })
+    prisma.user.findMany({ 
+      where: propertyId ? { propertyId } : undefined,
+      select: { id: true, role: { select: { name: true } } } 
+    }),
+    prisma.user.count({ 
+      where: { 
+        ...(propertyId ? { propertyId } : {}),
+        role: { name: { in: ['RECEPTIONIST', 'HOUSEKEEPING', 'HOUSEKEEPER', 'MAINTENANCE', 'KITCHEN'] } } 
+      } 
+    })
   ])
 
   // 2. Summary Calculations (Room + Dining)

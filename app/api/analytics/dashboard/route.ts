@@ -8,16 +8,19 @@ export const dynamic = 'force-dynamic'
 
 import { unstable_cache } from 'next/cache'
 
-const getCachedDashboardAnalytics = unstable_cache(
-  async () => {
-    return await computeDashboardAnalytics()
-  },
-  ['admin-dashboard-analytics'],
-  { revalidate: 300, tags: ['dashboard'] }
-)
+async function getCachedDashboardAnalytics(propertyId?: string | null) {
+  const cacheKey = propertyId ? `admin-dashboard-analytics-${propertyId}` : 'admin-dashboard-analytics-global';
+  const fetcher = unstable_cache(
+    async () => await computeDashboardAnalytics(new Date(), propertyId),
+    [cacheKey],
+    { revalidate: 300, tags: ['dashboard'] }
+  );
+  return fetcher();
+}
 
 export async function GET(request: NextRequest) {
   try {
+    const propertyId = request.nextUrl.searchParams.get('propertyId');
     const rateLimitResult = await enhancedRateLimit(request, 'api')
     if (!rateLimitResult.allowed) {
       return createEnhancedRateLimitResponse(rateLimitResult)
@@ -30,7 +33,7 @@ export async function GET(request: NextRequest) {
     }
 
     try {
-      const analytics = await getCachedDashboardAnalytics()
+      const analytics = await getCachedDashboardAnalytics(propertyId)
       return NextResponse.json(analytics)
     } catch (error: any) {
       console.error('Error computing dashboard analytics:', error)

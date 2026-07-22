@@ -12,6 +12,7 @@ import {
   Search,
   Filter
 } from 'lucide-react'
+import { useProperty } from '@/contexts/property-context'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -28,6 +29,7 @@ export default function ReceptionistOperationsCenter() {
   const { data: session, status: authStatus } = useSession()
   const router = useRouter()
   const queryClient = useQueryClient()
+  const { activePropertyId } = useProperty()
   
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("ALL")
@@ -56,9 +58,11 @@ export default function ReceptionistOperationsCenter() {
 
   // Fetch Rooms Data
   const { data: roomsData, isLoading: roomsLoading } = useQuery({
-    queryKey: ['rooms'],
+    queryKey: ['rooms', activePropertyId],
     queryFn: async () => {
-      const res = await fetch('/api/rooms')
+      const res = await fetch('/api/rooms', {
+        headers: { 'x-property-id': activePropertyId || 'all' }
+      })
       if (!res.ok) throw new Error('Failed to fetch rooms')
       return res.json()
     }
@@ -66,9 +70,11 @@ export default function ReceptionistOperationsCenter() {
 
   // Fetch Bookings Data
   const { data: bookingsData, isLoading: bookingsLoading } = useQuery({
-    queryKey: ['bookings'],
+    queryKey: ['bookings', activePropertyId],
     queryFn: async () => {
-      const res = await fetch('/api/bookings')
+      const res = await fetch('/api/bookings', {
+        headers: { 'x-property-id': activePropertyId || 'all' }
+      })
       if (!res.ok) throw new Error('Failed to fetch bookings')
       return res.json()
     }
@@ -107,14 +113,17 @@ export default function ReceptionistOperationsCenter() {
     mutationFn: async ({ id, status }: { id: string, status: string }) => {
       const res = await fetch(`/api/bookings/${id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-property-id': activePropertyId || 'all'
+        },
         body: JSON.stringify({ status })
       })
       return res.json()
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['bookings'] })
-      queryClient.invalidateQueries({ queryKey: ['rooms'] })
+      queryClient.invalidateQueries({ queryKey: ['bookings', activePropertyId] })
+      queryClient.invalidateQueries({ queryKey: ['rooms', activePropertyId] })
     }
   })
 
@@ -124,10 +133,13 @@ export default function ReceptionistOperationsCenter() {
     try {
       await fetch(`/api/rooms/${room.id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-property-id': activePropertyId || 'all'
+        },
         body: JSON.stringify({ status: nextStatus })
       })
-      queryClient.invalidateQueries({ queryKey: ['rooms'] })
+      queryClient.invalidateQueries({ queryKey: ['rooms', activePropertyId] })
       toast.success(`Room ${roomNumber} updated to ${nextStatus}`)
     } catch (err) {
       toast.error('Update failed')
@@ -157,13 +169,16 @@ export default function ReceptionistOperationsCenter() {
     
     try {
       const res = await fetch(`/api/admin/bookings/${booking.id}/checkout`, {
-        method: 'POST'
+        method: 'POST',
+        headers: {
+          'x-property-id': activePropertyId || 'all'
+        }
       })
       const result = await res.json()
       if (!res.ok) throw new Error(result.error || 'Failed to checkout')
       
-      queryClient.invalidateQueries({ queryKey: ['bookings'] })
-      queryClient.invalidateQueries({ queryKey: ['rooms'] })
+      queryClient.invalidateQueries({ queryKey: ['bookings', activePropertyId] })
+      queryClient.invalidateQueries({ queryKey: ['rooms', activePropertyId] })
       toast.success(`Check-out and settlement completed for Room ${roomNumber}`)
     } catch (err: any) {
       toast.error(err.message || 'Check-out failed')
@@ -174,7 +189,10 @@ export default function ReceptionistOperationsCenter() {
     try {
       const res = await fetch('/api/bookings', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-property-id': activePropertyId || 'all'
+        },
         body: JSON.stringify({
           roomId: data.roomId,
           guestName: data.guestName,
@@ -193,13 +211,16 @@ export default function ReceptionistOperationsCenter() {
       if (result.booking?.id) {
         await fetch(`/api/bookings/${result.booking.id}`, {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'x-property-id': activePropertyId || 'all'
+          },
           body: JSON.stringify({ status: 'CHECKED_IN' })
         })
       }
 
-      queryClient.invalidateQueries({ queryKey: ['bookings'] })
-      queryClient.invalidateQueries({ queryKey: ['rooms'] })
+      queryClient.invalidateQueries({ queryKey: ['bookings', activePropertyId] })
+      queryClient.invalidateQueries({ queryKey: ['rooms', activePropertyId] })
       toast.success(`Walk-in for ${data.guestName} created and checked into Room ${data.roomNumber}.`)
     } catch (err: any) {
       toast.error(err.message || 'Walk-in creation failed')
@@ -243,7 +264,7 @@ export default function ReceptionistOperationsCenter() {
     <AdminPageShell
       title="Reception Desk"
       subtitle="Monitor room occupancy and manage guest assignments."
-      onRefresh={() => queryClient.invalidateQueries({ queryKey: ['rooms'] })}
+      onRefresh={() => queryClient.invalidateQueries({ queryKey: ['rooms', activePropertyId] })}
     >
       <div className="space-y-12">
         <section>
