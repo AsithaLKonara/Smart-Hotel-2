@@ -129,7 +129,7 @@ export default function EmployeesPage() {
                 </div>
                 <div className="mt-4 pt-4 border-t border-white/10 flex justify-between items-center">
                   <span className="text-xs text-white/40">Hired {emp.hireDate ? new Date(emp.hireDate).toLocaleDateString() : '—'}</span>
-                  <span className="text-sm font-bold text-emerald-400">${emp.baseSalary?.toFixed(2)}/mo</span>
+                  <span className="text-sm font-bold text-emerald-400">${(Number(emp.baseSalary) || 0).toFixed(2)}/mo</span>
                 </div>
               </CardContent>
             </Card>

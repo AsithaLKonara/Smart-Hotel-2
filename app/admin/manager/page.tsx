@@ -30,13 +30,24 @@ export default function ManagerOperationsCenter() {
   })
 
   useEffect(() => {
-    if (status === 'loading') return
-    if (!canAccessAdminDashboard(session)) {
-      router.push('/auth/signin')
-      return
+    if (status === 'loading') return;
+    
+    // If explicitly unauthenticated, redirect to login
+    if (status === 'unauthenticated') {
+      router.push('/auth/signin');
+      return;
     }
-    loadAnalytics()
-  }, [session, status]) // eslint-disable-line react-hooks/exhaustive-deps
+
+    // If authenticated but unauthorized, redirect to unauthorized page
+    if (status === 'authenticated' && !canAccessAdminDashboard(session)) {
+      router.push('/unauthorized');
+      return;
+    }
+
+    if (status === 'authenticated') {
+      loadAnalytics();
+    }
+  }, [session, status, router]);
 
   const loadAnalytics = async () => {
     try {

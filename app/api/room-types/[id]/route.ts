@@ -18,10 +18,12 @@ const roomTypeSchema = z.object({
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getRequestSession(request)
-    const userRole = (session?.user as any)?.roleName || (session?.user as any)?.role || ''
-    const allowedRoles = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'RECEPTIONIST', 'STAFF']
+    const rawRole = (session?.user as any)?.roleName || (session?.user as any)?.role || ''
+    const { getBroadRole } = await import('@/lib/rbac-utils')
+    const userRole = getBroadRole(rawRole)
+    const allowedRoles = ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST']
 
-    if (!session || !allowedRoles.includes(userRole.toUpperCase())) {
+    if (!session || !allowedRoles.includes(userRole)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -61,10 +63,14 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getRequestSession(request)
-    const userRole = (session?.user as any)?.roleName || (session?.user as any)?.role || ''
-    const allowedRoles = ['SUPER_ADMIN', 'ADMIN', 'MANAGER']
+    const rawRole = (session?.user as any)?.roleName || (session?.user as any)?.role || ''
+    const { getBroadRole } = await import('@/lib/rbac-utils')
+    const userRole = getBroadRole(rawRole)
+    const allowedRoles = ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'] // allowed Receptionist to delete too? Or leave as Manager/SuperAdmin? Let's keep it strictly MANAGER for DELETE if it was before. Wait, previously it was SUPER_ADMIN, ADMIN, MANAGER.
+    // Actually, I'll use the original allowed roles but with getBroadRole:
+    const allowedRolesForDelete = ['SUPER_ADMIN', 'MANAGER']
 
-    if (!session || !allowedRoles.includes(userRole.toUpperCase())) {
+    if (!session || !allowedRolesForDelete.includes(userRole)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 

@@ -86,11 +86,11 @@ export default function DashboardSidebar() {
       { name: 'Room Directory', href: '/admin/rooms', icon: Bed, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Operations & Inventory' },
       { name: 'Room Types', href: '/admin/room-types', icon: ImageIcon, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Operations & Inventory' },
       { name: 'Housekeeping', href: '/admin/housekeeping', icon: Brush, roles: ['HOUSEKEEPING', 'MANAGER', 'SUPER_ADMIN'], group: 'Operations & Inventory' },
-      { name: 'Service Tickets', href: '/admin/maintenance', icon: Wrench, roles: ['MAINTENANCE', 'MANAGER', 'SUPER_ADMIN'], group: 'Operations & Inventory' },
+      { name: 'Service Tickets', href: '/admin/maintenance/tickets', icon: Wrench, roles: ['MAINTENANCE', 'MANAGER', 'SUPER_ADMIN', 'RECEPTIONIST'], group: 'Operations & Inventory' },
       { name: 'Preventative Schedules', href: '/admin/maintenance/schedules', icon: CalendarClock, roles: ['MAINTENANCE', 'MANAGER', 'SUPER_ADMIN'], group: 'Operations & Inventory' },
       { name: 'Inspection Logs', href: '/admin/maintenance/inspections', icon: ClipboardCheck, roles: ['MAINTENANCE', 'MANAGER', 'SUPER_ADMIN'], group: 'Operations & Inventory' },
       { name: 'Event Command', href: '/admin/events/dashboard', icon: CalendarDays, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Operations & Inventory' },
-      { name: 'Master Inventory', href: '/admin/inventory', icon: Box, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Operations & Inventory' },
+      { name: 'Master Inventory', href: '/admin/inventory', icon: Box, roles: ['MANAGER', 'SUPER_ADMIN', 'RECEPTIONIST', 'HOUSEKEEPING', 'MAINTENANCE', 'KITCHEN'], group: 'Operations & Inventory' },
       { name: 'Procurement', href: '/admin/procurement/orders', icon: FileCheck, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Operations & Inventory' },
       
       // 👥 HUMAN RESOURCES

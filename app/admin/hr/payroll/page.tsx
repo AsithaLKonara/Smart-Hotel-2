@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Loader2, Plus, DollarSign, FileText } from 'lucide-react'
+import { Loader2, Plus, DollarSign, FileText, Printer } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 export default function PayrollPage() {
@@ -16,10 +16,10 @@ export default function PayrollPage() {
     employeeId: '',
     periodStart: '',
     periodEnd: '',
-    baseAmount: 0,
-    overtimeAmount: 0,
-    bonuses: 0,
-    deductions: 0
+    baseAmount: '' as string | number,
+    overtimeAmount: '' as string | number,
+    bonuses: '' as string | number,
+    deductions: '' as string | number
   })
 
   const [pagination, setPagination] = useState<any>(null)
@@ -119,25 +119,25 @@ export default function PayrollPage() {
                 <div className="col-span-2 border-t border-white/10 my-2 pt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div>
                         <label className="text-xs text-slate-400">Base Amount ($)</label>
-                        <input type="number" required value={formData.baseAmount} onChange={e=>setFormData({...formData, baseAmount: parseFloat(e.target.value)})} className="w-full p-2 rounded bg-black/50 border border-white/10 mt-1" />
+                        <input type="number" required value={formData.baseAmount} onChange={e=>setFormData({...formData, baseAmount: e.target.value})} className="w-full p-2 rounded bg-black/50 border border-white/10 mt-1" />
                     </div>
                     <div>
                         <label className="text-xs text-emerald-400">Overtime ($)</label>
-                        <input type="number" value={formData.overtimeAmount} onChange={e=>setFormData({...formData, overtimeAmount: parseFloat(e.target.value)})} className="w-full p-2 rounded bg-black/50 border border-emerald-500/30 mt-1 text-emerald-400" />
+                        <input type="number" value={formData.overtimeAmount} onChange={e=>setFormData({...formData, overtimeAmount: e.target.value})} className="w-full p-2 rounded bg-black/50 border border-emerald-500/30 mt-1 text-emerald-400" />
                     </div>
                     <div>
                         <label className="text-xs text-emerald-400">Bonuses ($)</label>
-                        <input type="number" value={formData.bonuses} onChange={e=>setFormData({...formData, bonuses: parseFloat(e.target.value)})} className="w-full p-2 rounded bg-black/50 border border-emerald-500/30 mt-1 text-emerald-400" />
+                        <input type="number" value={formData.bonuses} onChange={e=>setFormData({...formData, bonuses: e.target.value})} className="w-full p-2 rounded bg-black/50 border border-emerald-500/30 mt-1 text-emerald-400" />
                     </div>
                     <div>
                         <label className="text-xs text-rose-400">Deductions/Tax ($)</label>
-                        <input type="number" value={formData.deductions} onChange={e=>setFormData({...formData, deductions: parseFloat(e.target.value)})} className="w-full p-2 rounded bg-black/50 border border-rose-500/30 mt-1 text-rose-400" />
+                        <input type="number" value={formData.deductions} onChange={e=>setFormData({...formData, deductions: e.target.value})} className="w-full p-2 rounded bg-black/50 border border-rose-500/30 mt-1 text-rose-400" />
                     </div>
                 </div>
               </div>
               <div className="flex justify-between items-center mt-6 pt-4 border-t border-white/10">
                 <div className="text-xl font-bold">
-                    Net Pay: <span className="text-emerald-400">${(formData.baseAmount + formData.overtimeAmount + formData.bonuses - formData.deductions).toFixed(2)}</span>
+                    Net Pay: <span className="text-emerald-400">${((Number(formData.baseAmount) || 0) + (Number(formData.overtimeAmount) || 0) + (Number(formData.bonuses) || 0) - (Number(formData.deductions) || 0)).toFixed(2)}</span>
                 </div>
                 <div className="flex gap-2">
                     <Button type="button" variant="ghost" onClick={() => setShowForm(false)}>Cancel</Button>
@@ -160,6 +160,7 @@ export default function PayrollPage() {
               <th className="p-4 font-medium text-slate-400 text-right">Deductions</th>
               <th className="p-4 font-medium text-emerald-400 text-right">Net Pay</th>
               <th className="p-4 font-medium text-center">Status</th>
+              <th className="p-4 font-medium text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-white/5">
@@ -177,14 +178,19 @@ export default function PayrollPage() {
                 <td className="p-4 text-slate-300">
                     {new Date(pay.periodStart).toLocaleDateString()} - {new Date(pay.periodEnd).toLocaleDateString()}
                 </td>
-                <td className="p-4 text-right">${pay.baseAmount.toFixed(2)}</td>
-                <td className="p-4 text-right text-emerald-400">+${(pay.overtimeAmount + pay.bonuses).toFixed(2)}</td>
-                <td className="p-4 text-right text-rose-400">-${pay.deductions.toFixed(2)}</td>
-                <td className="p-4 text-right font-bold text-emerald-400">${pay.netPay.toFixed(2)}</td>
+                <td className="p-4 text-right">${Number(pay.baseAmount).toFixed(2)}</td>
+                <td className="p-4 text-right text-emerald-400">+${(Number(pay.overtimeAmount) + Number(pay.bonuses)).toFixed(2)}</td>
+                <td className="p-4 text-right text-rose-400">-${Number(pay.deductions).toFixed(2)}</td>
+                <td className="p-4 text-right font-bold text-emerald-400">${Number(pay.netPay).toFixed(2)}</td>
                 <td className="p-4 text-center">
                   <span className={`px-2 py-1 rounded text-xs font-bold ${pay.status === 'PAID' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}`}>
                       {pay.status}
                   </span>
+                </td>
+                <td className="p-4 text-right">
+                  <Button variant="ghost" size="sm" onClick={() => window.open(`/admin/hr/payroll/${pay.id}/print`, '_blank')} title="Print Payslip">
+                    <Printer className="w-4 h-4" />
+                  </Button>
                 </td>
               </tr>
             ))}

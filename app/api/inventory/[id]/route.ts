@@ -60,7 +60,12 @@ export async function PUT(
     const { id } = await params
     const session = await getServerSession(authOptions)
     
-    if (!session || !['SUPER_ADMIN', 'MANAGER'].includes((session.user as any).roleName as string)) {
+    const rawRole = (session?.user as any)?.roleName || (session?.user as any)?.role || ''
+    const { getBroadRole } = await import('@/lib/rbac-utils')
+    const userRole = getBroadRole(rawRole)
+    const allowedRoles = ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'HOUSEKEEPING', 'MAINTENANCE', 'KITCHEN']
+
+    if (!session || !allowedRoles.includes(userRole)) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -150,7 +155,12 @@ export async function DELETE(
     const { id } = await params
     const session = await getServerSession(authOptions)
     
-    if (!session || !['SUPER_ADMIN', 'MANAGER'].includes((session.user as any).roleName as string)) {
+    const rawRole = (session?.user as any)?.roleName || (session?.user as any)?.role || ''
+    const { getBroadRole } = await import('@/lib/rbac-utils')
+    const userRole = getBroadRole(rawRole)
+    const allowedRoles = ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'HOUSEKEEPING', 'MAINTENANCE', 'KITCHEN']
+
+    if (!session || !allowedRoles.includes(userRole)) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }

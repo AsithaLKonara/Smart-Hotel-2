@@ -114,7 +114,8 @@ export default function ForensicAuditTimeline() {
   const filteredLogs = logs.filter(log => {
     const actor = (log.actor || '').toLowerCase()
     const action = (log.action || '').toLowerCase()
-    const details = (log.details || '').toLowerCase()
+    const detailsStr = typeof log.details === 'string' ? log.details : JSON.stringify(log.details || {})
+    const details = detailsStr.toLowerCase()
     const query = searchQuery.toLowerCase()
     const matchesSearch = actor.includes(query) || action.includes(query) || details.includes(query)
     const matchesAction = actionFilter === 'ALL' || log.action === actionFilter

@@ -41,10 +41,14 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getRequestSession(request)
-    const userRole = (session?.user as any)?.roleName || (session?.user as any)?.role || ''
-    const allowedRoles = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'RECEPTIONIST', 'STAFF']
+    const rawRole = (session?.user as any)?.roleName || (session?.user as any)?.role || ''
     
-    if (!session || !allowedRoles.includes(userRole.toUpperCase())) {
+    const { getBroadRole } = await import('@/lib/rbac-utils')
+    const userRole = getBroadRole(rawRole)
+    
+    const allowedRoles = ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST']
+    
+    if (!session || !allowedRoles.includes(userRole)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 

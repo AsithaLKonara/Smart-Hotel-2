@@ -56,15 +56,12 @@ export default function AdminSettingsPage() {
       if (!response.ok) throw new Error('Failed to fetch settings')
       const data = await response.json()
       
-      const settingsMap = data.reduce((acc: any, curr: any) => {
-        acc[curr.key] = curr.value
-        return acc
-      }, {})
-
-      setFormData(prev => ({
-        ...prev,
-        ...settingsMap
-      }))
+      if (data.settings) {
+        setFormData(prev => ({
+          ...prev,
+          ...data.settings
+        }))
+      }
     } catch (error) {
       console.error('Error fetching settings:', error)
       toast.error('Failed to load settings')

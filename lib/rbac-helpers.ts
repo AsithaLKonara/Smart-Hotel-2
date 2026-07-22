@@ -1,4 +1,5 @@
 import { Session } from 'next-auth';
+import { getBroadRole } from './rbac-utils';
 
 export type UserRole = 'GUEST' | 'RECEPTIONIST' | 'MANAGER' | 'SUPER_ADMIN' | 'KITCHEN' | 'HOUSEKEEPING' | 'MAINTENANCE';
 
@@ -22,10 +23,11 @@ export function getUserRole(session: Session | null | undefined): UserRole | nul
   const roleName = 
     (session.user as any).roleName || 
     (session.user as any).role?.name || 
+    (typeof (session.user as any).role === 'string' ? (session.user as any).role : undefined) ||
     (session as any).roleName;
     
   if (!roleName) return null;
-  return roleName === 'ADMIN' ? 'SUPER_ADMIN' : roleName as UserRole;
+  return getBroadRole(roleName) as UserRole;
 }
 
 /**

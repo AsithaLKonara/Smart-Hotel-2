@@ -52,10 +52,7 @@ export default function AdminInventoryPage() {
   useEffect(() => {
     if (status === 'loading') return
     
-    if (!canAccessManagerFeatures(session)) {
-      router.push('/auth/signin')
-      return
-    }
+
 
     fetchInventory()
   }, [session, status]) // eslint-disable-line react-hooks/exhaustive-deps
