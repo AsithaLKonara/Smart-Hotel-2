@@ -45,7 +45,7 @@ describe('Advanced Integration: POS Orders API', () => {
   it('creates a POS Order and charges it to a Room Folio (Folio)', async () => {
     const roomType = await prisma.roomType.create({ data: { name: 'Standard', baseRate: 100, capacity: 2, description: 'Standard room' } });
     const room = await RoomFactory.create({ number: '404', status: 'OCCUPIED', roomType: { connect: { id: roomType.id } } });
-    const guest = await UserFactory.create({ role: { connect: { name: 'GUEST' } } });
+    const guest = await UserFactory.create({ roleName: 'GUEST' });
 
     // Create a CHECKED_IN booking with a MASTER folio
     const booking = await prisma.booking.create({

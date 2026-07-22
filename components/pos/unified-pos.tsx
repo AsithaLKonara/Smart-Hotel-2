@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { ShoppingCart, Search, Printer, FileText, Bed, User, Plus, Minus, CreditCard, DollarSign, CheckCircle, Receipt, Sparkles } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useProperty } from '@/contexts/property-context'
 
 export default function UnifiedPOS({ role }: { role: string }) {
   const queryClient = useQueryClient()
@@ -24,12 +25,15 @@ export default function UnifiedPOS({ role }: { role: string }) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [printReceiptModal, setPrintReceiptModal] = useState(false)
   const [lastTransaction, setLastTransaction] = useState<any>(null)
+  const { activePropertyId } = useProperty()
 
   // 1. Fetch POS Products
   const { data: productsData } = useQuery({
-    queryKey: ['pos-products'],
+    queryKey: ['pos-products', activePropertyId],
     queryFn: async () => {
-      const res = await fetch('/api/pos/products')
+      const res = await fetch('/api/pos/products', {
+        headers: { 'x-property-id': activePropertyId || 'all' }
+      })
       if (!res.ok) throw new Error('Failed to fetch POS products')
       return res.json()
     }
@@ -37,9 +41,11 @@ export default function UnifiedPOS({ role }: { role: string }) {
 
   // 2. Fetch Active Check-ins (with Folio details included)
   const { data: bookingsData, isLoading: bookingsLoading, refetch: refetchBookings } = useQuery({
-    queryKey: ['active-checkins'],
+    queryKey: ['active-checkins', activePropertyId],
     queryFn: async () => {
-      const res = await fetch('/api/bookings?status=CHECKED_IN')
+      const res = await fetch('/api/bookings?status=CHECKED_IN', {
+        headers: { 'x-property-id': activePropertyId || 'all' }
+      })
       if (!res.ok) throw new Error('Failed to fetch check-ins')
       return res.json()
     }
@@ -114,7 +120,10 @@ export default function UnifiedPOS({ role }: { role: string }) {
     try {
       const res = await fetch('/api/pos/checkout', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-property-id': activePropertyId || 'all'
+        },
         body: JSON.stringify({
           bookingId: activeBooking.id,
           folioId: activeFolio?.id,
@@ -148,7 +157,10 @@ export default function UnifiedPOS({ role }: { role: string }) {
     try {
       const res = await fetch('/api/pos/checkout', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-property-id': activePropertyId || 'all'
+        },
         body: JSON.stringify({
           bookingId: activeBooking?.id,
           cart: posCart,
@@ -192,7 +204,10 @@ export default function UnifiedPOS({ role }: { role: string }) {
     try {
       const res = await fetch('/api/pos/checkout', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-property-id': activePropertyId || 'all'
+        },
         body: JSON.stringify({
           bookingId: activeBooking.id,
           folioId: activeFolio?.id,

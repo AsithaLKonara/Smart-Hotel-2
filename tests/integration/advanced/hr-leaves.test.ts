@@ -28,7 +28,8 @@ describe('Advanced Integration: HR Leaves API', () => {
         hireDate: new Date(),
         status: 'ACTIVE',
         firstName: 'Emp',
-        lastName: 'One'
+        lastName: 'One',
+        email: 'emp@test.com'
       }
     });
 
@@ -68,7 +69,8 @@ describe('Advanced Integration: HR Leaves API', () => {
         hireDate: new Date(),
         status: 'ACTIVE',
         firstName: 'Emp',
-        lastName: 'Two'
+        lastName: 'Two',
+        email: 'emp2@test.com'
       }
     });
 

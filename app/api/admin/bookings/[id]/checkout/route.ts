@@ -4,6 +4,7 @@ import { Prisma } from '@prisma/client';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { realtime } from '@/lib/realtime';
+import { getEffectivePropertyId } from '@/lib/server-rbac';
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -35,6 +36,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
     if (!booking) {
       return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
+    }
+
+    const activePropertyId = await getEffectivePropertyId(req);
+    if (booking.propertyId !== activePropertyId) {
+      return NextResponse.json({ error: 'Unauthorized: Booking belongs to a different property' }, { status: 403 });
     }
 
     if (booking.status === 'CHECKED_OUT') {

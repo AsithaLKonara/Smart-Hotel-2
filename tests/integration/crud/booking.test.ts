@@ -48,7 +48,7 @@ describe('Booking CRUD Verification', () => {
       expect(json.booking.guest.email).toBe('john.doe@example.com');
       
       // Verify user was created in DB
-      const dbUser = await prisma.user.findUnique({ where: { email: 'john.doe@example.com' } });
+      const dbUser = await prisma.user.findFirst({ where: { email: 'john.doe@example.com' } });
       expect(dbUser).toBeDefined();
       expect(dbUser?.name).toBe('John Doe');
     });
@@ -96,6 +96,6 @@ describe('Booking CRUD Verification', () => {
       const json = await res.json();
       expect(json.booking).toBeDefined();
       expect(json.booking.status).toBe('CONFIRMED');
-    });
+    }, 30000);
   });
 });

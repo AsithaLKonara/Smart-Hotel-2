@@ -4,6 +4,7 @@ import { postCharge } from '@/lib/accounting'
 import { differenceInDays, addDays, startOfDay, isBefore, isSameDay } from 'date-fns'
 import { getRequestSession } from '@/lib/session'
 import { realtime } from '@/lib/realtime'
+import { getEffectivePropertyId } from '@/lib/server-rbac'
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,22 +12,20 @@ export async function POST(req: NextRequest) {
     if (!session || !['MANAGER', 'SUPER_ADMIN'].includes((session.user as any).roleName as string)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    const activePropertyId = await getEffectivePropertyId(req);
+    if (!activePropertyId) {
+      return NextResponse.json({ error: 'No active property assigned' }, { status: 400 })
+    }
+
     const auditResult = await prisma.$transaction(async (tx: any) => {
-      // 1. Get the current business date from the first property (or fallback to today)
-      let property = await tx.property.findFirst()
+      // 1. Get the current business date from the active property
+      let property = await tx.property.findUnique({
+        where: { id: activePropertyId }
+      })
       
-      // If no property exists, seed one
       if (!property) {
-        property = await tx.property.create({
-          data: {
-            name: 'SmartHotel Grand',
-            code: 'SH-GRAND',
-            address: '123 Main St',
-            city: 'Metropolis',
-            country: 'USA',
-            businessDate: startOfDay(new Date())
-          }
-        })
+         return { error: 'Property not found', status: 404 }
       }
 
       const businessDate = property.businessDate
@@ -35,6 +34,7 @@ export async function POST(req: NextRequest) {
       // A strict EOD process requires all guests who were supposed to leave today to be checked out.
       const pendingCheckouts = await tx.booking.count({
         where: {
+          propertyId: activePropertyId,
           status: 'CHECKED_IN',
           checkOut: { lte: businessDate }
         }
@@ -50,6 +50,7 @@ export async function POST(req: NextRequest) {
       // 3. Process No-Shows (Bookings that were supposed to arrive today or earlier but are still CONFIRMED)
       const noShows = await tx.booking.findMany({
         where: {
+          propertyId: activePropertyId,
           status: 'CONFIRMED',
           checkIn: { lte: businessDate }
         }
@@ -67,6 +68,7 @@ export async function POST(req: NextRequest) {
       // 4. Post Room & Tax for all In-House Guests
       const inHouseBookings = await tx.booking.findMany({
         where: {
+          propertyId: activePropertyId,
           status: 'CHECKED_IN',
           checkOut: { gt: businessDate } // Only post if they are staying over
         }
@@ -155,7 +157,15 @@ export async function GET(req: NextRequest) {
     if (!session || !['MANAGER', 'SUPER_ADMIN'].includes((session.user as any).roleName as string)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-    const property = await prisma.property.findFirst()
+
+    const activePropertyId = await getEffectivePropertyId(req);
+    if (!activePropertyId) {
+      return NextResponse.json({ error: 'No active property assigned' }, { status: 400 })
+    }
+
+    const property = await prisma.property.findUnique({
+      where: { id: activePropertyId }
+    })
     
     if (!property) {
       return NextResponse.json({ businessDate: startOfDay(new Date()) })
@@ -166,6 +176,7 @@ export async function GET(req: NextRequest) {
     // Fetch stats for dashboard
     const pendingCheckouts = await prisma.booking.count({
       where: {
+        propertyId: activePropertyId,
         status: 'CHECKED_IN',
         checkOut: { lte: businessDate }
       }
@@ -173,6 +184,7 @@ export async function GET(req: NextRequest) {
 
     const noShowsPending = await prisma.booking.count({
       where: {
+        propertyId: activePropertyId,
         status: 'CONFIRMED',
         checkIn: { lte: businessDate }
       }
@@ -180,6 +192,7 @@ export async function GET(req: NextRequest) {
 
     const inHouse = await prisma.booking.count({
       where: {
+        propertyId: activePropertyId,
         status: 'CHECKED_IN',
         checkOut: { gt: businessDate }
       }

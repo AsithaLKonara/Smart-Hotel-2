@@ -41,7 +41,10 @@ export class UserFactory {
       }
       roleInput = { connect: { id: role.id } };
     } else if (!roleInput) {
-      const role = await RoleFactory.create({}, client);
+      let role = await client.role.findFirst({});
+      if (!role) {
+        role = await RoleFactory.create({}, client);
+      }
       roleInput = { connect: { id: role.id } };
     }
 

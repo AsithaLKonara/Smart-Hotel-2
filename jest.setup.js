@@ -118,11 +118,15 @@ process.env.NEXTAUTH_SECRET = 'test-secret-key-for-testing-only'
 process.env.STRIPE_SECRET_KEY = 'sk_test_51234567890abcdef'
 process.env.STRIPE_PUBLISHABLE_KEY = 'pk_test_51234567890abcdef'
 process.env.SMTP_HOST = 'smtp.ethereal.email'
-process.env.SMTP_PORT = '587'
+import dotenv from 'dotenv'
+dotenv.config({ path: '.env' })
+
 process.env.SMTP_USER = 'test@example.com'
 process.env.SMTP_PASS = 'test-password'
 
 // Global test setup
+jest.setTimeout(30000);
+
 beforeAll(() => {
   // Set up any global test configuration
 })

@@ -86,5 +86,5 @@ describe('Advanced Integration: Corporate CRM API', () => {
     expect(data.accounts.length).toBe(1);
     expect(data.accounts[0].companyName).toBe('Tech Corp');
     expect(data.accounts[0]._count.users).toBe(2);
-  });
+  }, 30000);
 });

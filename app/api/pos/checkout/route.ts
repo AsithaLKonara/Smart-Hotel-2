@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { getEffectivePropertyId } from '@/lib/server-rbac';
 
 export async function POST(req: Request) {
   try {
@@ -8,6 +9,8 @@ export async function POST(req: Request) {
     if ((!cart || cart.length === 0) && (!settleFolioAmount || settleFolioAmount <= 0)) {
       return NextResponse.json({ error: 'Cart is empty and no folio settlement amount specified' }, { status: 400 });
     }
+
+    const effectivePropertyId = await getEffectivePropertyId(req);
 
     const result = await prisma.$transaction(async (tx: any) => {
       let defaultOutlet = await tx.pOSOutlet.findFirst();
@@ -25,6 +28,14 @@ export async function POST(req: Request) {
           orderBy: { createdAt: 'desc' }
         });
         if (folio) targetFolioId = folio.id;
+      }
+
+      // Security check: Ensure the folio belongs to the effective property
+      if (targetFolioId && effectivePropertyId !== 'all') {
+        const folioCheck = await tx.folio.findUnique({ where: { id: targetFolioId } });
+        if (!folioCheck || folioCheck.propertyId !== effectivePropertyId) {
+          throw new Error('Unauthorized: Target folio does not belong to active property');
+        }
       }
 
       let order = null;
@@ -132,8 +143,11 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true, ...result });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('POS Checkout Error:', error);
+    if (error.message.includes('Unauthorized')) {
+      return NextResponse.json({ error: error.message }, { status: 403 });
+    }
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

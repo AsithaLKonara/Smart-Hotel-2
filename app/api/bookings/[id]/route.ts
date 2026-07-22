@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { logAction, AUDIT_ACTIONS } from '@/lib/audit'
 import { sendBookingStatusUpdate } from '@/lib/email'
 import { handleZodError } from '@/lib/api-utils'
+import { getEffectivePropertyId } from '@/lib/server-rbac'
 
 const bookingUpdateSchema = z.object({
   status: z.enum(['PENDING', 'CONFIRMED', 'CHECKED_IN', 'CHECKED_OUT', 'CANCELLED']).optional(),
@@ -135,6 +136,14 @@ export async function PATCH(
       return NextResponse.json(
         { error: 'Booking not found' },
         { status: 404 }
+      )
+    }
+
+    const activePropertyId = await getEffectivePropertyId(request);
+    if (booking.propertyId !== activePropertyId) {
+      return NextResponse.json(
+        { error: 'Unauthorized: Booking belongs to a different property' },
+        { status: 403 }
       )
     }
 
