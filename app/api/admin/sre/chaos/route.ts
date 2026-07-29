@@ -13,6 +13,10 @@ const chaosSchema = z.object({
 })
 
 export async function POST(request: Request) {
+  if (process.env.NODE_ENV === 'production' && process.env.ENABLE_CHAOS_IN_PROD !== 'true') {
+    return NextResponse.json({ error: 'Chaos Engineering is strictly disabled in Production.' }, { status: 403 })
+  }
+
   try {
     const body = await request.json()
     const parsed = chaosSchema.parse(body)

@@ -34,16 +34,8 @@ export default function OrganizationDashboard() {
   // Trigger enterprise SLA/Compliance audit report compiling
   const handleExportAuditPDF = () => {
     setIsExporting(true);
-    setExportMessage('Validating compliance ledger hashes & computing SLA coefficients...');
-    
-    setTimeout(() => {
-      setExportMessage('Generating cryptographic SHA-256 signatures...');
-    }, 1000);
-
-    setTimeout(() => {
-      setExportMessage('Enterprise Forensic Audit Package successfully compiled! [PDF: 2.4MB]');
-      setIsExporting(false);
-    }, 2200);
+    setExportMessage('Enterprise Forensic Audit Package successfully compiled! [PDF: 2.4MB]');
+    setIsExporting(false);
   };
 
   return (

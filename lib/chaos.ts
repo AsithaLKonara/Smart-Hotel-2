@@ -50,6 +50,11 @@ let memoryLeakedBlock: Buffer[] = []
  * Allocates or deallocates dummy memory blocks to simulate RAM starvation
  */
 export function toggleMemoryPressure(active: boolean): void {
+  if (process.env.NODE_ENV === 'production' && process.env.ENABLE_CHAOS_IN_PROD !== 'true') {
+    console.warn('SRE Chaos: Memory pressure blocked in production.')
+    return
+  }
+
   if (active) {
     try {
       // Allocate 50MB of memory safely

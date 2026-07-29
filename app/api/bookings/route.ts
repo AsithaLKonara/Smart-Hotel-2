@@ -10,6 +10,8 @@ import { isDatabaseConfigured } from '@/lib/db-helpers'
 import { RealtimeEvents } from '@/lib/realtime'
 import { pushAvailabilityToOTA } from '@/lib/ota/ota-service'
 import { checkIdempotency, saveIdempotency, clearIdempotency } from '@/lib/idempotency'
+import { generateConfirmationCode } from '@/lib/utils'
+import { logger } from '@/lib/logger'
 import { chaosState } from '@/lib/chaos'
 
 const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' }) : null
@@ -115,7 +117,7 @@ export async function POST(request: NextRequest) {
         if (extras.spaAccess)      subtotal += 100
         const totalAmount = Math.round(subtotal * 1.15 * 100) / 100  // +15% tax
 
-        const confirmationCode = `SH-${Math.random().toString(36).substring(2, 9).toUpperCase()}`
+        const confirmationCode = generateConfirmationCode()
 
         const booking = await tx.booking.create({
           data: {
@@ -214,7 +216,7 @@ export async function POST(request: NextRequest) {
         if (chaosState.pusherFailure) throw new Error('CHAOS_TEST: Simulated Pusher Failure')
         await RealtimeEvents.emitBookingCreated(result)
       } catch (pusherErr) {
-        console.error('[REALTIME] Pusher event emit failed:', pusherErr)
+        logger.warn('Pusher event emit failed', { error: pusherErr })
       }
 
       // 6. OTA SYNCHRONIZATION (Non-blocking but logged)
@@ -245,7 +247,7 @@ export async function POST(request: NextRequest) {
           })
         }
       } catch (otaErr) {
-        console.error('[OTA] Sync Failed during booking creation:', otaErr)
+        logger.warn('OTA sync failed during booking creation', { error: otaErr })
       }
 
       // 7. STRIPE PAYMENT INTENT
@@ -282,7 +284,7 @@ export async function POST(request: NextRequest) {
             data: { providerId: intent.id }
           })
         } catch (stripeErr) {
-          console.error('[STRIPE] Payment Intent creation failed:', stripeErr)
+          logger.error('Payment Intent creation failed', stripeErr)
           paymentFailed = true
         }
       }
@@ -294,7 +296,7 @@ export async function POST(request: NextRequest) {
       try {
         await logAction(request, result.primaryGuestId, AUDIT_ACTIONS.BOOKING_CREATE, 'Booking', result.id, { total: result.totalAmount })
       } catch (auditErr) {
-        console.error('[AUDIT] Failed to log booking creation:', auditErr)
+        logger.error('[AUDIT] Failed to log booking creation:', auditErr)
         auditFailed = true
       }
 
@@ -319,13 +321,14 @@ export async function POST(request: NextRequest) {
           ]
         })
       } catch (emailErr) {
-        console.error('[EMAIL] Failed to queue booking notifications:', emailErr)
+        logger.error('[EMAIL] Failed to queue booking notifications:', emailErr)
         emailFailed = true
       }
 
       const responseBody = { booking: { ...result, clientSecret }, paymentFailed, auditFailed, emailFailed }
       if (idempotencyKey) await saveIdempotency(idempotencyKey, { status: 201, body: responseBody })
       
+      logger.info('Booking completed', { bookingId: result.id, source: result.source })
       return NextResponse.json(responseBody, { status: 201 })
 
     } catch (txErr: any) {
@@ -339,7 +342,7 @@ export async function POST(request: NextRequest) {
     }
 
   } catch (err: any) {
-    console.error('[BOOKING_ENGINE_ERROR]', err)
+    logger.error('Booking engine error', err)
     if (idempotencyKey) await clearIdempotency(idempotencyKey)
     
     if (err.message === 'DOUBLE_BOOKING') {

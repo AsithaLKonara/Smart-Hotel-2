@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 import FinancialEngine from '@/lib/financial-engine'
 
+export const maxDuration = 300; // Force Vercel to allow 5 minutes execution
+
 const prisma = new PrismaClient()
 
 export async function GET(req: Request) {

@@ -80,6 +80,11 @@ const PROTECTED_ROUTES = [
   { prefix: '/api/portals/b2b', roles: ['SUPER_ADMIN', 'MANAGER'] },
   { prefix: '/api/analytics', roles: ['SUPER_ADMIN', 'MANAGER'] },
   { prefix: '/api/night-audit', roles: ['SUPER_ADMIN', 'MANAGER'] },
+  { prefix: '/api/pricing', roles: ['SUPER_ADMIN', 'MANAGER'] },
+  { prefix: '/api/revenue', roles: ['SUPER_ADMIN', 'MANAGER'] },
+  { prefix: '/api/tape-chart', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'] },
+  { prefix: '/api/integrations', roles: ['SUPER_ADMIN', 'MANAGER'] },
+  { prefix: '/api/reservations', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'] },
 
   // 🟢 GUEST SUITE & FALLBACKS
   { prefix: '/dashboard', roles: ['GUEST', 'SUPER_ADMIN', 'MANAGER'] },

@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 
+export const maxDuration = 300; // Force Vercel to allow 5 minutes execution
+
 /**
  * Keepalive endpoint to prevent MongoDB Atlas free tier from sleeping
  * Call this endpoint every 15 minutes via Vercel Cron

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import prisma from '@/lib/db'
+import { logger } from '@/lib/logger'
 
 // GET /api/pos - Fetch all occupied rooms with guest info for the room selector
 export async function GET(request: NextRequest) {
@@ -37,7 +38,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ rooms, activeBookings })
   } catch (error) {
-    console.error('POS GET error:', error)
+    logger.error('Failed to fetch POS data', error)
     return NextResponse.json({ error: 'Failed to fetch POS data' }, { status: 500 })
   }
 }
@@ -82,52 +83,57 @@ export async function POST(request: NextRequest) {
       MISC:       'MISCELLANEOUS',
     }
 
-    // Create the InternalOrder with its items
-    const order = await prisma.internalOrder.create({
-      data: {
-        orderType: orderType || 'POS_OUTLET',
-        status: 'PENDING',
-        totalAmount,
-        guestId: guestId || null,
-        roomId: roomId || null,
-        outletId: outletId || null,
-        folioId: folioId || null,
-        paymentType: paymentType || 'ROOM_CHARGE',
-        specialRequests: specialRequests || null,
-        idempotencyKey: `pos-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-        items: {
-          create: items.map((item: any) => ({
-            productId: item.productId || null,
-            menuItemId: item.menuItemId || null,
-            quantity: item.quantity,
-            price: item.price,
-            subtotal: parseFloat((item.price * item.quantity).toFixed(2)),
-            notes: item.notes || null,
-          }))
-        }
-      },
-      include: { items: true }
+    // 1. Transaction wrapping to ensure ACID compliance
+    const result = await prisma.$transaction(async (tx) => {
+      // Create the InternalOrder with its items
+      const order = await tx.internalOrder.create({
+        data: {
+          orderType: orderType || 'POS_OUTLET',
+          status: 'PENDING',
+          totalAmount,
+          guestId: guestId || null,
+          roomId: roomId || null,
+          outletId: outletId || null,
+          folioId: folioId || null,
+          paymentType: paymentType || 'ROOM_CHARGE',
+          specialRequests: specialRequests || null,
+          idempotencyKey: `pos-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+          items: {
+            create: items.map((item: any) => ({
+              productId: item.productId || null,
+              menuItemId: item.menuItemId || null,
+              quantity: item.quantity,
+              price: item.price,
+              subtotal: parseFloat((item.price * item.quantity).toFixed(2)),
+              notes: item.notes || null,
+            }))
+          }
+        },
+        include: { items: true }
+      })
+
+      // If payment is ROOM_CHARGE, post to the folio atomically
+      if (paymentType === 'ROOM_CHARGE' && folioId) {
+        const folioCategory = FOLIO_CATEGORY_MAP[orderType] || 'MISCELLANEOUS'
+        const itemDescriptions = items.map((i: any) => `${i.quantity}x ${i.name}`).join(', ')
+
+        await tx.folioLineItem.create({
+          data: {
+            folioId,
+            description: `POS Charge — ${orderType}: ${itemDescriptions}`,
+            amount: totalAmount,
+            category: folioCategory,
+            isRouted: false,
+          }
+        })
+      }
+
+      return order
     })
 
-    // If payment is ROOM_CHARGE, post to the folio
-    if (paymentType === 'ROOM_CHARGE' && folioId) {
-      const folioCategory = FOLIO_CATEGORY_MAP[orderType] || 'MISCELLANEOUS'
-      const itemDescriptions = items.map((i: any) => `${i.quantity}x ${i.name}`).join(', ')
-
-      await prisma.folioLineItem.create({
-        data: {
-          folioId,
-          description: `POS Charge — ${orderType}: ${itemDescriptions}`,
-          amount: totalAmount,
-          category: folioCategory,
-          isRouted: false,
-        }
-      })
-    }
-
-    return NextResponse.json({ order, totalAmount, taxAmount, subtotal }, { status: 201 })
+    return NextResponse.json({ order: result, totalAmount, taxAmount, subtotal }, { status: 201 })
   } catch (error) {
-    console.error('POS POST error:', error)
+    logger.error('Failed to create POS order', error)
     return NextResponse.json({ error: 'Failed to create POS order' }, { status: 500 })
   }
 }

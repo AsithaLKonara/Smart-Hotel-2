@@ -38,22 +38,17 @@ export default function PlatformToolsPage() {
   // Trigger automated self-healing procedures (dead locks release, dead outbox retry)
   const handleRunSelfHealing = () => {
     setIsRunningScript(true);
-    setSelfHealingLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] SRE Auto-Healer: Launching diagnostic cycle...`]);
-
-    setTimeout(() => {
-      setSelfHealingLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] LOCK_INSPECTOR: Found 0 dead locked states.`]);
-    }, 400);
-
-    setTimeout(() => {
-      setSelfHealingLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] OUTBOX_RECONCILER: Found 1 failed event (evt-003). Rewriting backoff sequence...`]);
-      setOutboxEvents(prev => prev.map(e => e.id === 'evt-003' ? { ...e, status: 'PENDING', retryCount: 0 } : e));
-    }, 800);
-
-    setTimeout(() => {
-      setSelfHealingLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] AUDIT_ALIGNMENT: Projection snapshot regenerated. Parity alignment: 100%.`]);
-      setSelfHealingLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] SRE Auto-Healer: Diagnostic cycle completed. Zero remaining vulnerabilities.`]);
-      setIsRunningScript(false);
-    }, 1300);
+    setSelfHealingLogs(prev => [
+      ...prev, 
+      `[${new Date().toLocaleTimeString()}] SRE Auto-Healer: Launching diagnostic cycle...`,
+      `[${new Date().toLocaleTimeString()}] LOCK_INSPECTOR: Found 0 dead locked states.`,
+      `[${new Date().toLocaleTimeString()}] OUTBOX_RECONCILER: Found 1 failed event (evt-003). Rewriting backoff sequence...`,
+      `[${new Date().toLocaleTimeString()}] AUDIT_ALIGNMENT: Projection snapshot regenerated. Parity alignment: 100%.`,
+      `[${new Date().toLocaleTimeString()}] SRE Auto-Healer: Diagnostic cycle completed. Zero remaining vulnerabilities.`
+    ]);
+    
+    setOutboxEvents(prev => prev.map(e => e.id === 'evt-003' ? { ...e, status: 'PENDING', retryCount: 0 } : e));
+    setIsRunningScript(false);
   };
 
   // Clear single lock manually

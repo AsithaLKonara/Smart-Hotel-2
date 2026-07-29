@@ -20,21 +20,14 @@ import { Badge } from '@/components/ui/badge'
 import toast from 'react-hot-toast'
 import { canAccessAdminDashboard } from '@/lib/rbac-helpers'
 
-const ROLES_DEFINITION = [
-  { id: 'SUPER_ADMIN', name: 'Super Admin', desc: 'Full system control, financial oversight, and audit access.', color: 'text-rose-500' },
-  { id: 'MANAGER', name: 'Hotel Manager', desc: 'Operational oversight, staff management, and reporting.', color: 'text-amber-500' },
-  { id: 'RECEPTIONIST', name: 'Receptionist', desc: 'Booking management, guest check-in/out, and room rack.', color: 'text-blue-500' },
-  { id: 'KITCHEN', name: 'Kitchen Staff', desc: 'Order fulfillment, menu management, and inventory.', color: 'text-emerald-500' },
-  { id: 'HOUSEKEEPING', name: 'Housekeeping', desc: 'Room status updates, maintenance tasks, and supplies.', color: 'text-purple-500' },
-  { id: 'MAINTENANCE', name: 'Maintenance', icon: Lock, desc: 'Technical repairs and preventive maintenance.', color: 'text-orange-500' },
-  { id: 'GUEST', name: 'Guest', desc: 'Standard guest access to profile and services.', color: 'text-slate-400' },
-]
+
 
 export default function RolesManagementPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [staff, setStaff] = useState<any[]>([])
+  const [roles, setRoles] = useState<any[]>([])
 
   useEffect(() => {
     if (status === 'loading') return
@@ -45,18 +38,27 @@ export default function RolesManagementPage() {
       return
     }
 
-    fetchStaff()
+    fetchData()
   }, [session, status]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const fetchStaff = async () => {
+  const fetchData = async () => {
     try {
-      const res = await fetch('/api/staff')
-      if (res.ok) {
-        const data = await res.json()
+      const [staffRes, rolesRes] = await Promise.all([
+        fetch('/api/staff'),
+        fetch('/api/staff/roles')
+      ])
+      
+      if (staffRes.ok) {
+        const data = await staffRes.json()
         setStaff(data.staff || [])
       }
+      
+      if (rolesRes.ok) {
+        const data = await rolesRes.json()
+        setRoles(data.roles || [])
+      }
     } catch (err) {
-      toast.error("Failed to fetch staff directory")
+      toast.error("Failed to fetch system architecture data")
     } finally {
       setLoading(false)
     }
@@ -73,7 +75,7 @@ export default function RolesManagementPage() {
       if (res.ok) {
         toast.dismiss()
         toast.success("Authority updated successfully")
-        fetchStaff()
+        fetchData()
       } else {
         throw new Error("Update failed")
       }
@@ -123,15 +125,21 @@ export default function RolesManagementPage() {
           <div className="lg:col-span-4 space-y-6">
             <h3 className="text-xs font-black uppercase tracking-[0.3em] text-white/30 ml-2">Authority Definitions</h3>
             <div className="space-y-4">
-              {ROLES_DEFINITION.map((role) => (
+              {roles.map((role) => (
                 <Card key={role.id} className="bg-white/[0.02] border-white/5 hover:border-white/10 transition-all rounded-3xl overflow-hidden group">
                   <CardContent className="p-6 flex items-start gap-4">
                     <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors">
-                      <ShieldCheck className={`w-6 h-6 ${role.color}`} />
+                      <ShieldCheck className={`w-6 h-6 text-primary`} />
                     </div>
                     <div className="space-y-1">
                       <h4 className="font-bold text-white text-sm uppercase tracking-wider">{role.name}</h4>
-                      <p className="text-xs text-slate-500 leading-relaxed">{role.desc}</p>
+                      <p className="text-xs text-slate-500 leading-relaxed">{role.description || 'System Authority Level'}</p>
+                      {/* Sub-render permissions mapped from DB */}
+                      <div className="flex flex-wrap gap-1 mt-3">
+                        {role.permissions?.map((p: any) => (
+                          <Badge key={p.id} className="bg-primary/5 text-primary/70 text-[8px] font-black uppercase tracking-widest">{p.permission.name}</Badge>
+                        ))}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -166,7 +174,7 @@ export default function RolesManagementPage() {
                             value={member.role}
                             onChange={(e) => updateStaffRole(member.id, e.target.value)}
                          >
-                            {ROLES_DEFINITION.map(r => (
+                            {roles.map(r => (
                               <option key={r.id} value={r.id}>{r.name}</option>
                             ))}
                          </select>

@@ -4,6 +4,7 @@ import { PrismaClient } from '@prisma/client'
 import { getRequestSession } from '@/lib/session'
 import { realtime } from '@/lib/realtime'
 import { handleZodError } from '@/lib/api-utils'
+import Stripe from 'stripe'
 
 const prisma = new PrismaClient()
 
@@ -34,14 +35,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Booking not found' }, { status: 404 })
     }
 
-    // 1. In a real PMS, this creates a Stripe Terminal PaymentIntent and hands it off to the reader
-    // using stripe.terminal.readers.processPaymentIntent({ reader: readerId, payment_intent: pi.id })
-    // We mock this integration here.
-    
-    // Simulate terminal interaction delay (waiting for guest to tap card)
-    await new Promise(resolve => setTimeout(resolve, 1500))
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_mock', { apiVersion: '2023-10-16' })
 
-    const mockChargeId = `ch_terminal_${Math.random().toString(36).substring(2, 10)}`
+    const intent = await stripe.paymentIntents.create({
+      amount: Math.round(validatedData.amount * 100),
+      currency: validatedData.currency.toLowerCase(),
+      payment_method_types: ['card_present'],
+      capture_method: 'manual',
+    })
+
+    await stripe.terminal.readers.processPaymentIntent(validatedData.readerId, {
+      payment_intent: intent.id,
+    })
+
+    const mockChargeId = intent.id
 
     // 2. Record the payment in the primary folio
     const primaryFolio = booking.folios[0]
@@ -55,10 +62,10 @@ export async function POST(req: NextRequest) {
             folioId: primaryFolio.id,
             bookingId: booking.id,
             amount: validatedData.amount,
-            method: 'card',
+            paymentMethod: 'card',
             status: 'completed',
-            provider: 'STRIPE_TERMINAL',
-            transactionId: mockChargeId
+            paymentProvider: 'STRIPE_TERMINAL',
+            providerId: mockChargeId
           }
         })
 

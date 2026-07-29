@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { getRequestSession } from '@/lib/session'
 import { realtime } from '@/lib/realtime'
 import { handleZodError } from '@/lib/api-utils'
+import Stripe from 'stripe'
 
 const prisma = new PrismaClient()
 
@@ -33,11 +34,18 @@ export async function POST(req: NextRequest) {
 
     const folioId = booking.folios[0]?.id
 
-    // In a real system, you would call Stripe or your payment gateway to create a PaymentIntent 
-    // with capture_method: 'manual' (which places a hold/pre-auth on the card)
-    // e.g. const intent = await stripe.paymentIntents.create({ amount, currency, capture_method: 'manual', payment_method })
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_mock', { apiVersion: '2023-10-16' })
+
+    const intent = await stripe.paymentIntents.create({
+      amount: Math.round(validated.amount * 100),
+      currency: 'usd',
+      capture_method: 'manual',
+      payment_method: validated.paymentMethodId,
+      confirm: true,
+      automatic_payment_methods: { enabled: true, allow_redirects: 'never' }
+    })
     
-    const mockIntentId = `pi_${Buffer.from(Date.now().toString()).toString('base64')}`
+    const mockIntentId = intent.id
 
     let paymentRecordId = null
     await prisma.$transaction(async (tx: any) => {

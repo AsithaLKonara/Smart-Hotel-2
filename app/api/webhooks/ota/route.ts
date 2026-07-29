@@ -2,12 +2,26 @@ import { NextRequest, NextResponse } from 'next/server';
 import { processOtaReservation } from '@/lib/ota/webhook-handler';
 import { log } from '@/lib/logger';
 import { enhancedRateLimit, createEnhancedRateLimitResponse } from '@/lib/rate-limit-enhanced';
+import { Redis } from '@upstash/redis';
+
+function getRedisClient(): Redis | null {
+  if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+    try {
+      return Redis.fromEnv()
+    } catch {
+      return null
+    }
+  }
+  return null
+}
 
 /**
  * OTA Webhook Endpoint
  * Receives bookings from Channex/Beds24 middleware
  */
 export async function POST(req: NextRequest) {
+  let payload: any = null;
+  
   try {
     const rateLimitResult = await enhancedRateLimit(req, 'api');
     if (!rateLimitResult.allowed) {
@@ -22,7 +36,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
-    const payload = await req.json();
+    payload = await req.json();
     
     // 1. Log incoming request for debugging
     log.info('Received OTA Webhook Request', { 
@@ -45,12 +59,33 @@ export async function POST(req: NextRequest) {
   } catch (error: any) {
     log.error('Webhook Endpoint Error', error instanceof Error ? error : new Error(String(error)));
     
-    // Return 200 to prevent OTA infinite retry loops on logic errors.
-    // The error is logged and can be investigated asynchronously.
+    const redis = getRedisClient();
+    
+    // Attempt to salvage the reservation by pushing it to a Redis Dead-Letter Queue
+    if (redis && payload) {
+      try {
+        await redis.lpush('ota:webhook:dlq', JSON.stringify({
+          payload,
+          error: String(error),
+          timestamp: new Date().toISOString()
+        }));
+        
+        // Payload successfully saved to DLQ. We can safely return 200 OK so the OTA doesn't suspend us.
+        return NextResponse.json({ 
+          success: false, 
+          error: 'Webhook processing failed — payload securely saved to DLQ for manual retry'
+        }, { status: 200 });
+      } catch (redisError) {
+        log.error('Redis DLQ Failure', redisError instanceof Error ? redisError : new Error(String(redisError)));
+      }
+    }
+    
+    // CATASTROPHIC FAILURE: Both Postgres AND Redis failed, or payload couldn't be parsed.
+    // We MUST return a 503 so the OTA utilizes its own retry mechanism. Dropping the payload is unacceptable.
     return NextResponse.json({ 
       success: false, 
-      error: 'Webhook processing failed — logged for review'
-    }, { status: 200 });
+      error: 'Service Unavailable - Payload dropped, OTA must retry'
+    }, { status: 503 });
   }
 }
 

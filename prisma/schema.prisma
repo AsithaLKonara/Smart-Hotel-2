@@ -355,6 +355,9 @@ model RoutingRule {
   createdAt     DateTime @default(now())
   sourceFolio   Folio    @relation("SourceFolio", fields: [sourceFolioId], references: [id])
   targetFolio   Folio    @relation("TargetFolio", fields: [targetFolioId], references: [id])
+
+  @@index([sourceFolioId])
+  @@index([targetFolioId])
 }
 
 model RevenuePosting {
@@ -364,6 +367,8 @@ model RevenuePosting {
   amount          Decimal
   createdAt       DateTime      @default(now())
   nightAuditLog   NightAuditLog @relation(fields: [nightAuditLogId], references: [id])
+
+  @@index([nightAuditLogId])
 }
 
 model TransactionCode {
@@ -446,6 +451,8 @@ model POSProduct {
   updatedAt          DateTime            @updatedAt
   internalOrderItems InternalOrderItem[]
   outlet             POSOutlet           @relation(fields: [outletId], references: [id])
+
+  @@index([outletId])
 }
 
 model EventSpace {
@@ -486,6 +493,9 @@ model EventBooking {
   updatedAt DateTime        @updatedAt
   event     BanquetingEvent @relation(fields: [eventId], references: [id])
   space     EventSpace      @relation(fields: [spaceId], references: [id])
+
+  @@index([eventId])
+  @@index([spaceId])
 }
 
 model GroupBlock {
@@ -499,6 +509,9 @@ model GroupBlock {
   bookings       Booking[]
   event          BanquetingEvent @relation(fields: [eventId], references: [id])
   roomType       RoomType        @relation(fields: [roomTypeId], references: [id])
+
+  @@index([eventId])
+  @@index([roomTypeId])
 }
 
 model FoodMenu {
