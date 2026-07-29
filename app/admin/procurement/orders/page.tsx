@@ -39,6 +39,10 @@ export default function PurchaseOrdersPage() {
   const [items, setItems] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
+  const [receiveModal, setReceiveModal] = useState<any>(null)
+  const [receiveForm, setReceiveForm] = useState({ targetLocation: 'MAIN_WAREHOUSE', notes: '' })
+  const [invoiceModal, setInvoiceModal] = useState<any>(null)
+  const [invoiceForm, setInvoiceForm] = useState({ invoiceNumber: '', amount: '' })
 
   const [formData, setFormData] = useState({
     vendorId: '', expectedDate: '', notes: '',
@@ -106,6 +110,54 @@ export default function PurchaseOrdersPage() {
     } catch { toast.error("Error submitting form") }
   }
 
+  const handleReceiveGoods = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      const res = await fetch('/api/admin/procurement/receive-goods', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          purchaseOrderId: receiveModal.id,
+          targetLocation: receiveForm.targetLocation,
+          notes: receiveForm.notes || undefined
+        })
+      })
+      if (res.ok) {
+        toast.success("Goods received and inventory populated")
+        setReceiveModal(null)
+        setReceiveForm({ targetLocation: 'MAIN_WAREHOUSE', notes: '' })
+        fetchData()
+      } else {
+        const data = await res.json()
+        toast.error(data.message || "Failed to receive goods")
+      }
+    } catch { toast.error("Error receiving goods") }
+  }
+
+  const handleRegisterInvoice = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      const res = await fetch('/api/admin/procurement/vendor-invoices', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          purchaseOrderId: invoiceModal.id,
+          invoiceNumber: invoiceForm.invoiceNumber,
+          amount: parseFloat(invoiceForm.amount)
+        })
+      })
+      if (res.ok) {
+        toast.success("Invoice registered successfully")
+        setInvoiceModal(null)
+        setInvoiceForm({ invoiceNumber: '', amount: '' })
+        fetchData()
+      } else {
+        const data = await res.json()
+        toast.error(data.message || "Invoice registration failed")
+      }
+    } catch { toast.error("Error registering invoice") }
+  }
+
   const orderTotal = formData.orderItems.reduce((acc, curr) => acc + (Number(curr.quantity) * Number(curr.unitPrice)), 0)
 
   return (
@@ -130,6 +182,7 @@ export default function PurchaseOrdersPage() {
                 <th className="p-4 text-white/50 text-xs uppercase">Expected</th>
                 <th className="p-4 text-white/50 text-xs uppercase text-right">Total</th>
                 <th className="p-4 text-white/50 text-xs uppercase">Status</th>
+                <th className="p-4 text-white/50 text-xs uppercase text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/10">
@@ -151,11 +204,23 @@ export default function PurchaseOrdersPage() {
                     <td className="p-4 font-bold text-right text-emerald-400">${order.totalAmount.toFixed(2)}</td>
                     <td className="p-4">
                       {st ? (
-                        <span className={`flex items-center gap-1 text-xs font-bold px-2 py-1 rounded ${st.className}`}>
+                        <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded ${st.className}`}>
                           {st.icon} {st.label}
                         </span>
                       ) : (
                         <span className="text-white/40 text-xs">{order.status}</span>
+                      )}
+                    </td>
+                    <td className="p-4 text-right">
+                      {(order.status === 'APPROVED' || order.status === 'SHIPPED') && (
+                        <Button variant="ghost" size="sm" onClick={() => setReceiveModal(order)} className="text-xs h-7 text-blue-400 hover:text-blue-300">
+                          Receive Goods
+                        </Button>
+                      )}
+                      {order.status === 'DELIVERED' && (
+                        <Button variant="ghost" size="sm" onClick={() => setInvoiceModal(order)} className="text-xs h-7 text-emerald-400 hover:text-emerald-300">
+                          Register Invoice
+                        </Button>
                       )}
                     </td>
                   </tr>
@@ -236,6 +301,47 @@ export default function PurchaseOrdersPage() {
               <Button type="button" variant="ghost" onClick={() => setShowModal(false)}>Cancel</Button>
               <Button type="submit" className="bg-primary text-white">Submit for Approval</Button>
             </div>
+          </div>
+        </form>
+      </ModalShell>
+
+      {/* Receive Goods Modal */}
+      <ModalShell open={!!receiveModal} onClose={() => setReceiveModal(null)} title={`Receive Goods - PO ${receiveModal?.orderNumber}`}>
+        <form onSubmit={handleReceiveGoods} className="space-y-4">
+          <div>
+            <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-2 block">Target Location</label>
+            <select required value={receiveForm.targetLocation} onChange={e => setReceiveForm({ ...receiveForm, targetLocation: e.target.value })} className="w-full bg-[#1a1a24] border border-white/10 rounded-lg p-2.5 text-sm text-white">
+              <option value="MAIN_WAREHOUSE">Main Warehouse</option>
+              <option value="KITCHEN_STORE">Kitchen Store</option>
+              <option value="BAR_STORE">Bar Store</option>
+              <option value="HOUSEKEEPING">Housekeeping Depot</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-2 block">Delivery Notes</label>
+            <Input value={receiveForm.notes} onChange={e => setReceiveForm({ ...receiveForm, notes: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white" placeholder="Optional notes..." />
+          </div>
+          <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+            <Button type="button" variant="ghost" onClick={() => setReceiveModal(null)}>Cancel</Button>
+            <Button type="submit" className="bg-blue-600 text-white hover:bg-blue-500">Confirm Receipt</Button>
+          </div>
+        </form>
+      </ModalShell>
+
+      {/* Register Invoice Modal */}
+      <ModalShell open={!!invoiceModal} onClose={() => setInvoiceModal(null)} title={`Register Vendor Invoice - PO ${invoiceModal?.orderNumber}`}>
+        <form onSubmit={handleRegisterInvoice} className="space-y-4">
+          <div>
+            <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-2 block">Invoice Number</label>
+            <Input required value={invoiceForm.invoiceNumber} onChange={e => setInvoiceForm({ ...invoiceForm, invoiceNumber: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white" placeholder="INV-..." />
+          </div>
+          <div>
+            <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-2 block">Billed Amount ($)</label>
+            <Input type="number" step="0.01" required value={invoiceForm.amount} onChange={e => setInvoiceForm({ ...invoiceForm, amount: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white" />
+          </div>
+          <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+            <Button type="button" variant="ghost" onClick={() => setInvoiceModal(null)}>Cancel</Button>
+            <Button type="submit" className="bg-emerald-600 text-white hover:bg-emerald-500">Register Invoice</Button>
           </div>
         </form>
       </ModalShell>

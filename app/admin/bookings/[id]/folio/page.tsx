@@ -24,6 +24,9 @@ export default function AdvancedFolioPage({ params }: { params: Promise<{ id: st
   const [chargeForm, setChargeForm] = useState({ amount: '', category: 'MINIBAR', description: '' })
   const [routingModal, setRoutingModal] = useState<any>(null) // holds the source folio
   const [routingForm, setRoutingForm] = useState({ category: 'ROOM_CHARGE', targetWindow: '2' })
+  
+  const [adjModal, setAdjModal] = useState<any>(null)
+  const [adjForm, setAdjForm] = useState({ amount: '', type: 'DISCOUNT', reason: '' })
 
   // Fetch Folios
   const { data: folios, isLoading } = useQuery({
@@ -66,6 +69,29 @@ export default function AdvancedFolioPage({ params }: { params: Promise<{ id: st
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['booking-folios', bookingId] })
       toast.success('Folio Window added')
+    }
+  })
+
+  // Post Adjustment Mutation
+  const postAdjMut = useMutation({
+    mutationFn: async (payload: any) => {
+      const res = await fetch(`/api/folios/${payload.folioId}/adjustments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      if (!res.ok) {
+         const data = await res.json()
+         throw new Error(data.error || 'Failed to post adjustment')
+      }
+      return res.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['booking-folios', bookingId] })
+      toast.success('Financial adjustment posted and logged to General Ledger')
+    },
+    onError: (err: any) => {
+      toast.error(err.message)
     }
   })
 
@@ -135,7 +161,12 @@ export default function AdvancedFolioPage({ params }: { params: Promise<{ id: st
                   </div>
                   <div className="text-right">
                     <span className="text-xl font-bold text-emerald-400">${totalAmount.toFixed(2)}</span>
-                    <span className="text-[10px] text-slate-500 block uppercase tracking-wider">Balance</span>
+                    <div className="flex items-center justify-end gap-2 mt-1">
+                      <span className="text-[10px] text-slate-500 block uppercase tracking-wider">Balance</span>
+                      <Button variant="ghost" size="sm" className="h-4 p-0 text-[10px] text-amber-400 hover:text-amber-300" onClick={() => setAdjModal(folio)}>
+                        Adjust
+                      </Button>
+                    </div>
                   </div>
                 </div>
 
@@ -289,6 +320,50 @@ export default function AdvancedFolioPage({ params }: { params: Promise<{ id: st
               <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
                 <Button type="button" variant="ghost" onClick={() => setRoutingModal(null)}>Cancel</Button>
                 <Button type="submit" className="bg-primary text-white"><MoveRight className="w-4 h-4 mr-2" /> Add Rule</Button>
+              </div>
+            </form>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+
+      {/* Post Adjustment Modal */}
+      <Dialog.Root open={!!adjModal} onOpenChange={(o: boolean) => !o && setAdjModal(null)}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50" />
+          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-[#0a0a0f] border border-amber-500/30 rounded-2xl shadow-2xl p-6 z-50">
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h2 className="text-xl font-bold text-amber-500">Financial Adjustment</h2>
+                <p className="text-xs text-amber-500/60 mt-1">Write-offs and discounts form an immutable audit trail.</p>
+              </div>
+              <button onClick={() => setAdjModal(null)} className="text-white/40 hover:text-white"><X className="w-5 h-5" /></button>
+            </div>
+            <form onSubmit={(e) => {
+              e.preventDefault()
+              postAdjMut.mutate({ folioId: adjModal.id, amount: parseFloat(adjForm.amount), type: adjForm.type, reason: adjForm.reason })
+              setAdjModal(null)
+              setAdjForm({ amount: '', type: 'DISCOUNT', reason: '' })
+            }} className="space-y-4">
+              <div>
+                <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-2 block">Amount to Deduct ($)</label>
+                <Input type="number" step="0.01" required value={adjForm.amount} onChange={e => setAdjForm({ ...adjForm, amount: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white" />
+              </div>
+              <div>
+                <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-2 block">Adjustment Type</label>
+                <select value={adjForm.type} onChange={e => setAdjForm({ ...adjForm, type: e.target.value })} className="w-full bg-[#1a1a24] border border-white/10 rounded-lg p-2.5 text-sm text-white">
+                  <option value="DISCOUNT">Discount</option>
+                  <option value="WRITE_OFF">Write-Off (Bad Debt)</option>
+                  <option value="REBATE">Service Rebate</option>
+                  <option value="LATE_FEE">Late Fee / Penalty (Negative adjustment)</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-2 block">Managerial Reason</label>
+                <Input required minLength={5} value={adjForm.reason} onChange={e => setAdjForm({ ...adjForm, reason: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white" placeholder="Reason for override..." />
+              </div>
+              <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+                <Button type="button" variant="ghost" onClick={() => setAdjModal(null)}>Cancel</Button>
+                <Button type="submit" className="bg-amber-600 text-white hover:bg-amber-500">Authorize Adjustment</Button>
               </div>
             </form>
           </Dialog.Content>
