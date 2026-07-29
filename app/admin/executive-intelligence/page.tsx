@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
 interface RegionalTrend {
@@ -20,17 +20,20 @@ interface AnomalyLog {
 }
 
 export default function ExecutiveIntelligenceDashboard() {
-  const [regionStats] = useState<RegionalTrend[]>([
-    { region: "APAC (Singapore/Maldives)", revpar: 762, adr: 825, occupancy: 91, growth: 14.8 },
-    { region: "EMEA (London/Paris)", revpar: 417, adr: 580, occupancy: 72, growth: 8.2 },
-    { region: "AMER (New York/Miami)", revpar: 253, adr: 390, occupancy: 65, growth: -2.1 }
-  ]);
+  const [regionStats, setRegionStats] = useState<RegionalTrend[]>([]);
+  const [anomalies, setAnomalies] = useState<AnomalyLog[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const [anomalies, setAnomalies] = useState<AnomalyLog[]>([
-    { id: "anom-088", source: "PAYMENT_SECURE", severity: "CRITICAL", description: "Suspicious checkout refunds: Account refunded $120.00 twice within 300ms.", flaggedAt: "15:02:11" },
-    { id: "anom-091", source: "PRESENCE_SRE", severity: "WARNING", description: "Orphaned websocket connection spike: 42 connections dropped abruptly from same class-C subnet.", flaggedAt: "15:04:02" },
-    { id: "anom-094", source: "OTA_PARITY", severity: "WARNING", description: "Comp pricing discrepancy: Booking.com rate is $70 lower than standard base rates.", flaggedAt: "15:04:15" }
-  ]);
+  useEffect(() => {
+    fetch('/api/admin/executive/olap-cube')
+      .then(res => res.json())
+      .then(data => {
+        if (data.regionStats) setRegionStats(data.regionStats);
+        if (data.anomalies) setAnomalies(data.anomalies);
+      })
+      .catch(err => console.error('Failed to fetch OLAP data:', err))
+      .finally(() => setLoading(false));
+  }, []);
 
   const handleClearAnomaly = (id: string) => {
     setAnomalies(prev => prev.filter(a => a.id !== id));

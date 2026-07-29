@@ -13,13 +13,8 @@ export default function PayrollPage() {
   const [showForm, setShowForm] = useState(false)
   
   const [formData, setFormData] = useState({
-    employeeId: '',
     periodStart: '',
     periodEnd: '',
-    baseAmount: '' as string | number,
-    overtimeAmount: '' as string | number,
-    bonuses: '' as string | number,
-    deductions: '' as string | number
   })
 
   const [pagination, setPagination] = useState<any>(null)
@@ -31,13 +26,12 @@ export default function PayrollPage() {
   const fetchData = async () => {
     try {
       const [payrollRes, empRes] = await Promise.all([
-        fetch('/api/admin/hr/payroll'),
+        fetch('/api/admin/hr/payroll/run'),
         fetch('/api/admin/hr/employees?compact=true')
       ])
       if (payrollRes.ok) {
         const data = await payrollRes.json()
-        setPayrolls(data.payrolls || [])
-        setPagination(data.pagination)
+        setPayrolls(data.runs || []) // backend returns runs
       }
       if (empRes.ok) setEmployees(await empRes.json())
     } catch (e) {
@@ -47,25 +41,17 @@ export default function PayrollPage() {
     }
   }
 
-  const handleEmployeeSelect = (empId: string) => {
-      const emp = employees.find(e => e.id === empId)
-      setFormData({
-          ...formData,
-          employeeId: empId,
-          baseAmount: emp ? emp.baseSalary : 0
-      })
-  }
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      const res = await fetch('/api/admin/hr/payroll', {
+      const res = await fetch('/api/admin/hr/payroll/run', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       })
       if (res.ok) {
-        toast.success("Payroll record generated")
+        const data = await res.json()
+        toast.success(data.message || "Global Payroll run generated")
         setShowForm(false)
         fetchData()
       } else {
@@ -83,30 +69,21 @@ export default function PayrollPage() {
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold font-serif">Payroll Center</h1>
-          <p className="text-slate-400">Process salaries and payslips</p>
+          <p className="text-slate-400">Process global salaries and itemized payslips</p>
         </div>
         <Button onClick={() => setShowForm(!showForm)}>
-          <Plus className="w-4 h-4 mr-2" /> Generate Payslip
+          <Plus className="w-4 h-4 mr-2" /> Execute Global Run
         </Button>
       </div>
 
       {showForm && (
         <Card className="mb-8 bg-[#1a1a1a] border-white/10 text-white">
           <CardHeader>
-            <CardTitle>Generate New Payslip</CardTitle>
+            <CardTitle>Execute Global Payroll Run</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <div className="col-span-2">
-                  <label className="text-xs text-slate-400">Employee</label>
-                  <select required value={formData.employeeId} onChange={e=>handleEmployeeSelect(e.target.value)} className="w-full p-2 rounded bg-black/50 border border-white/10 mt-1">
-                    <option value="">Select Employee...</option>
-                    {employees.map(emp => (
-                        <option key={emp.id} value={emp.id}>{emp.firstName} {emp.lastName} - {emp.department} (${emp.baseSalary}/mo)</option>
-                    ))}
-                  </select>
-                </div>
                 <div>
                   <label className="text-xs text-slate-400">Period Start Date</label>
                   <input type="date" required value={formData.periodStart} onChange={e=>setFormData({...formData, periodStart: e.target.value})} className="w-full p-2 rounded bg-black/50 border border-white/10 mt-1" />
@@ -115,33 +92,11 @@ export default function PayrollPage() {
                   <label className="text-xs text-slate-400">Period End Date</label>
                   <input type="date" required value={formData.periodEnd} onChange={e=>setFormData({...formData, periodEnd: e.target.value})} className="w-full p-2 rounded bg-black/50 border border-white/10 mt-1" />
                 </div>
-                
-                <div className="col-span-2 border-t border-white/10 my-2 pt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div>
-                        <label className="text-xs text-slate-400">Base Amount ($)</label>
-                        <input type="number" required value={formData.baseAmount} onChange={e=>setFormData({...formData, baseAmount: e.target.value})} className="w-full p-2 rounded bg-black/50 border border-white/10 mt-1" />
-                    </div>
-                    <div>
-                        <label className="text-xs text-emerald-400">Overtime ($)</label>
-                        <input type="number" value={formData.overtimeAmount} onChange={e=>setFormData({...formData, overtimeAmount: e.target.value})} className="w-full p-2 rounded bg-black/50 border border-emerald-500/30 mt-1 text-emerald-400" />
-                    </div>
-                    <div>
-                        <label className="text-xs text-emerald-400">Bonuses ($)</label>
-                        <input type="number" value={formData.bonuses} onChange={e=>setFormData({...formData, bonuses: e.target.value})} className="w-full p-2 rounded bg-black/50 border border-emerald-500/30 mt-1 text-emerald-400" />
-                    </div>
-                    <div>
-                        <label className="text-xs text-rose-400">Deductions/Tax ($)</label>
-                        <input type="number" value={formData.deductions} onChange={e=>setFormData({...formData, deductions: e.target.value})} className="w-full p-2 rounded bg-black/50 border border-rose-500/30 mt-1 text-rose-400" />
-                    </div>
-                </div>
               </div>
-              <div className="flex justify-between items-center mt-6 pt-4 border-t border-white/10">
-                <div className="text-xl font-bold">
-                    Net Pay: <span className="text-emerald-400">${((Number(formData.baseAmount) || 0) + (Number(formData.overtimeAmount) || 0) + (Number(formData.bonuses) || 0) - (Number(formData.deductions) || 0)).toFixed(2)}</span>
-                </div>
+              <div className="flex justify-end mt-6 pt-4 border-t border-white/10">
                 <div className="flex gap-2">
                     <Button type="button" variant="ghost" onClick={() => setShowForm(false)}>Cancel</Button>
-                    <Button type="submit">Generate Payslip</Button>
+                    <Button type="submit">Execute Run</Button>
                 </div>
               </div>
             </form>
@@ -164,31 +119,31 @@ export default function PayrollPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-white/5">
-            {payrolls.map(pay => (
-              <tr key={pay.id} className="hover:bg-white/5">
+            {payrolls.map((run: any) => (
+              <tr key={run.id} className="hover:bg-white/5">
                 <td className="p-4 font-medium flex items-center gap-3">
                   <div className="w-8 h-8 rounded bg-emerald-500/20 flex items-center justify-center text-emerald-400">
                     <FileText className="w-4 h-4" />
                   </div>
                   <div>
-                      <div>{pay.employee?.firstName} {pay.employee?.lastName}</div>
-                      <div className="text-xs text-slate-500">{pay.employee?.department}</div>
+                      <div>Run #{run.id.substring(0, 8)}</div>
+                      <div className="text-xs text-slate-500">{run.lineItems?.length || 0} Employees Paid</div>
                   </div>
                 </td>
                 <td className="p-4 text-slate-300">
-                    {new Date(pay.periodStart).toLocaleDateString()} - {new Date(pay.periodEnd).toLocaleDateString()}
+                    {new Date(run.periodStart).toLocaleDateString()} - {new Date(run.periodEnd).toLocaleDateString()}
                 </td>
-                <td className="p-4 text-right">${Number(pay.baseAmount).toFixed(2)}</td>
-                <td className="p-4 text-right text-emerald-400">+${(Number(pay.overtimeAmount) + Number(pay.bonuses)).toFixed(2)}</td>
-                <td className="p-4 text-right text-rose-400">-${Number(pay.deductions).toFixed(2)}</td>
-                <td className="p-4 text-right font-bold text-emerald-400">${Number(pay.netPay).toFixed(2)}</td>
+                <td className="p-4 text-right">—</td>
+                <td className="p-4 text-right">—</td>
+                <td className="p-4 text-right">—</td>
+                <td className="p-4 text-right font-bold text-emerald-400">${Number(run.totalAmount).toFixed(2)}</td>
                 <td className="p-4 text-center">
-                  <span className={`px-2 py-1 rounded text-xs font-bold ${pay.status === 'PAID' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}`}>
-                      {pay.status}
+                  <span className={`px-2 py-1 rounded text-xs font-bold ${run.status === 'COMPLETED' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}`}>
+                      {run.status}
                   </span>
                 </td>
                 <td className="p-4 text-right">
-                  <Button variant="ghost" size="sm" onClick={() => window.open(`/admin/hr/payroll/${pay.id}/print`, '_blank')} title="Print Payslip">
+                  <Button variant="ghost" size="sm" onClick={() => window.open(`/admin/hr/payroll/run/${run.id}/print`, '_blank')} title="Print Manifest">
                     <Printer className="w-4 h-4" />
                   </Button>
                 </td>

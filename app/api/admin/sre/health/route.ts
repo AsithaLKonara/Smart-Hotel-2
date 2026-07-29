@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { Redis } from '@upstash/redis'
-import { getRequestSession } from '@/lib/session'
+import { requirePermission } from '@/lib/server-rbac'
 
 export async function GET(request: NextRequest) {
-  const session = await getRequestSession(request)
-  if (!session || !['SUPER_ADMIN'].includes((session.user as any).roleName as string)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const authError = await requirePermission('analytics:read')
+  if (authError) return authError
 
   try {
     const routeStart = Date.now()

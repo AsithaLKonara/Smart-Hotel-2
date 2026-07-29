@@ -126,9 +126,9 @@ export default function MasterOperationsRoomV2() {
   const router = useRouter()
 
   const [loading, setLoading] = useState(true)
-  const [rooms, setRooms] = useState<any[]>(INITIAL_ROOMS)
-  const [kitchenOrders, setKitchenOrders] = useState<any[]>(INITIAL_KITCHEN_ORDERS)
-  const [dispatches, setDispatches] = useState<any[]>(INITIAL_DISPATCHES)
+  const [rooms, setRooms] = useState<any[]>([])
+  const [kitchenOrders, setKitchenOrders] = useState<any[]>([])
+  const [dispatches, setDispatches] = useState<any[]>([])
   const [selectedRoom, setSelectedRoom] = useState<any | null>(null)
   const [logs, setLogs] = useState<any[]>(INITIAL_LOGS)
   const [searchQuery, setSearchQuery] = useState('')
@@ -162,6 +162,18 @@ export default function MasterOperationsRoomV2() {
   // Checkout saga simulator state
   const [activeSaga, setActiveSaga] = useState<any | null>(null)
 
+  const fetchLiveRack = async () => {
+    try {
+      const res = await fetch('/api/admin/operations/live-rack')
+      const data = await res.json()
+      if (data.rooms) setRooms(data.rooms)
+      if (data.dispatches) setDispatches(data.dispatches)
+      if (data.kitchenOrders) setKitchenOrders(data.kitchenOrders)
+    } catch (e) {
+      console.error('Failed to fetch live rack data', e)
+    }
+  }
+
   useEffect(() => {
     if (status === 'loading') return
 
@@ -171,9 +183,7 @@ export default function MasterOperationsRoomV2() {
       return
     }
 
-    setTimeout(() => {
-      setLoading(false)
-    }, 450)
+    fetchLiveRack().finally(() => setLoading(false))
   }, [session, status]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Helpers
@@ -234,24 +244,24 @@ export default function MasterOperationsRoomV2() {
     }
   }
 
-  // SLA Auditor Simulation (Sweeping)
-  const handleSlaAuditSweep = () => {
-    // Simulate time progression of 20 minutes across all tasks, triggering breaches!
-    setDispatches(prev => prev.map(task => {
-      if (task.state === 'COMPLETED' || task.state === 'CANCELLED' || task.state === 'SLA_BREACHED') {
-        return task
+  // Live Database SLA Chronometric Sweep
+  const handleSlaAuditSweep = async () => {
+    try {
+      const res = await fetch('/api/admin/operations/sla-sweep', { method: 'POST' })
+      const data = await res.json()
+      
+      if (data.success && data.escalatedCount > 0) {
+        addLog('DANGER', `SRE SLA sweep completed: Elevated ${data.escalatedCount} active dispatches to SLA_BREACHED due to response latency.`)
+        toast.error('SLA breach detected! Active tasks escalated to VIP_CRITICAL.', { icon: '🚨' })
+      } else {
+        addLog('INFO', 'SRE SLA sweep completed: All tasks are within acceptable operational thresholds.')
+        toast.success('No SLA breaches detected. Operations stable.', { icon: '✅' })
       }
-      // Simulate that the task has elapsed past its SLA limits
-      return {
-        ...task,
-        state: 'SLA_BREACHED',
-        priority: 'VIP_CRITICAL',
-        assignedStaffId: 'supervisor_on_duty',
-        notes: 'SLA Breach Auto-Escalated to Supervisor'
-      }
-    }))
-    addLog('DANGER', 'SRE SLA sweep completed: Elevated 2 active dispatches to SLA_BREACHED due to response latency.')
-    toast.error('SLA breach detected! Active tasks escalated to VIP_CRITICAL.', { icon: '🚨' })
+      
+      fetchLiveRack() // Live UI Refresh
+    } catch (e) {
+      toast.error('Failed to execute SLA Sweep')
+    }
   }
 
   // Create Task

@@ -1,52 +1,40 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-interface GlobalNode {
-  id: string;
-  name: string;
-  lat: string;
-  lon: string;
-  status: 'ONLINE' | 'DEGRADED' | 'OFFLINE';
-  occupancy: number;
-  activeIncidents: number;
-  p95LatencyMs: number;
-}
-
 export default function GlobalCommandCenter() {
-  const [nodes, setNodes] = useState<GlobalNode[]>([
-    { id: "node-sing", name: "Singapore Gateway Node (APAC-Core)", lat: "1.3521° N", lon: "103.8198° E", status: "ONLINE", occupancy: 88, activeIncidents: 0, p95LatencyMs: 42 },
-    { id: "node-lond", name: "London Regency Node (EMEA-Core)", lat: "51.5074° N", lon: "0.1278° W", status: "ONLINE", occupancy: 72, activeIncidents: 1, p95LatencyMs: 84 },
-    { id: "node-mald", name: "Maldives Satellite Node (APAC-Edge)", lat: "3.2028° N", lon: "73.2207° E", status: "DEGRADED", occupancy: 94, activeIncidents: 0, p95LatencyMs: 140 },
-    { id: "node-ny", name: "New York Hub Node (AMER-Core)", lat: "40.7128° N", lon: "74.0060° W", status: "ONLINE", occupancy: 65, activeIncidents: 0, p95LatencyMs: 55 }
-  ]);
+  const [healthData, setHealthData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  const [activeRegionFailover, setActiveRegionFailover] = useState(false);
-  const [failoverLogs, setFailoverLogs] = useState<string[]>([]);
-
-  const triggerFailoverSim = () => {
-    setActiveRegionFailover(true);
-    setFailoverLogs([]);
-    
-    // Add sequential SRE automated geo-failover simulation logs
-    const addLog = (msg: string, delay: number) => {
-      setTimeout(() => {
-        setFailoverLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] SRE_ORCHESTRATOR: ${msg}`]);
-      }, delay);
-    };
-
-    addLog("Detecting degraded satellite latency on Maldives Edge Node...", 200);
-    addLog("Initiating active-active cluster diversion logic...", 600);
-    addLog("Rerouting persistent client websockets to Singapore Gateway Core...", 1100);
-    addLog("Securing transactional database isolation locks...", 1600);
-    addLog("Maldives traffic fully failover-diversified. Latency normalized to 45ms.", 2100);
-    
-    setTimeout(() => {
-      setNodes(prev => prev.map(n => n.id === 'node-mald' ? { ...n, status: 'ONLINE', p95LatencyMs: 45 } : n));
-      setActiveRegionFailover(false);
-    }, 2400);
+  const fetchHealth = async () => {
+    try {
+      const res = await fetch('/api/admin/sre/health');
+      const data = await res.json();
+      setHealthData(data);
+    } catch (e) {
+      console.error('Failed to fetch telemetry', e);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  useEffect(() => {
+    fetchHealth();
+    const interval = setInterval(fetchHealth, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  if (loading && !healthData) {
+    return <div className="min-h-screen bg-[#060308] text-[#FBFAF7] p-8 font-sans flex items-center justify-center">Loading SRE Telemetry...</div>;
+  }
+
+  const nodes = [
+    { id: 'node-db', name: 'PostgreSQL Relational Core', lat: 'us-east-1 (Primary)', lon: 'Port 5432', status: healthData?.database?.status || 'OFFLINE', activeIncidents: healthData?.errors?.rate > 5 ? 1 : 0, p95LatencyMs: healthData?.database?.latency || 0 },
+    { id: 'node-redis', name: 'Upstash Redis Edge Cache', lat: 'Global Distributed', lon: 'Port 6379', status: healthData?.redis?.status || 'OFFLINE', activeIncidents: 0, p95LatencyMs: healthData?.redis?.latency || 0 },
+    { id: 'node-api', name: 'Next.js App Router API', lat: 'Vercel Edge Network', lon: 'Serverless', status: healthData?.api?.status || 'OFFLINE', activeIncidents: 0, p95LatencyMs: healthData?.api?.latency || 0 },
+    { id: 'node-queue', name: 'Transactional Outbox Queue', lat: 'Memory Managed', lon: `Depth: ${healthData?.queue?.pending || 0}`, status: healthData?.queue?.status || 'OFFLINE', activeIncidents: healthData?.queue?.pending > 100 ? 1 : 0, p95LatencyMs: (healthData?.queue?.latencySeconds || 0) * 1000 }
+  ];
 
   return (
     <div className="min-h-screen bg-[#060308] text-[#FBFAF7] p-8 font-sans">
@@ -58,17 +46,9 @@ export default function GlobalCommandCenter() {
             <span className="text-xs uppercase tracking-[0.25em] text-[#D4AF37] font-medium">Worldwide Operational Watch</span>
             <h1 className="text-4xl font-serif font-light tracking-wide text-white">Global Command Center</h1>
             <p className="text-[#8E8C94] text-sm">
-              Worldwide property directory, live cluster latencies, geo-redundancy failover switches, and real-time SLA metrics.
+              Live physical architecture latency, cache redundancy states, and queue transaction backpressure.
             </p>
           </div>
-
-          <button
-            onClick={triggerFailoverSim}
-            disabled={activeRegionFailover}
-            className="px-5 py-2.5 rounded-xl text-xs font-semibold uppercase tracking-wider bg-gradient-to-r from-[#D4AF37] to-[#9C8259] text-[#09050D] hover:opacity-95 active:scale-[0.98] transition-all disabled:opacity-50"
-          >
-            {activeRegionFailover ? 'FAILOVER IN PROGRESS...' : 'TRIGGER GEOGRAPHICAL FAILOVER'}
-          </button>
         </div>
 
         {/* Global SLA Health parameters Grid */}
@@ -82,40 +62,39 @@ export default function GlobalCommandCenter() {
           </div>
 
           <div className="bg-[#121118]/85 border border-white/[0.04] rounded-2xl p-5">
-            <span className="text-xs text-[#8E8C94] uppercase tracking-wider block">Financial Accounting Drift</span>
-            <span className="text-2xl font-light font-serif text-emerald-400 mt-2 block">0 (Balanced)</span>
-            <span className="text-[10px] text-emerald-400/80 font-mono mt-2 block">Double-Entry aligned</span>
+            <span className="text-xs text-[#8E8C94] uppercase tracking-wider block">Edge Error Rate</span>
+            <span className={`text-2xl font-light font-serif mt-2 block ${healthData?.errors?.rate > 5 ? 'text-rose-400' : 'text-emerald-400'}`}>{healthData?.errors?.rate}%</span>
+            <span className="text-[10px] text-emerald-400/80 font-mono mt-2 block">Last 60 Minutes</span>
           </div>
 
           <div className="bg-[#121118]/85 border border-white/[0.04] rounded-2xl p-5">
-            <span className="text-xs text-[#8E8C94] uppercase tracking-wider block">Global Median Latency</span>
-            <span className="text-2xl font-light font-serif text-white mt-2 block">55ms P95</span>
+            <span className="text-xs text-[#8E8C94] uppercase tracking-wider block">API Median Latency</span>
+            <span className="text-2xl font-light font-serif text-white mt-2 block">{healthData?.api?.latency}ms P95</span>
             <span className="text-[10px] text-[#8E8C94] font-mono mt-2 block">Routing within limits</span>
           </div>
 
           <div className="bg-[#121118]/85 border border-white/[0.04] rounded-2xl p-5">
-            <span className="text-xs text-[#8E8C94] uppercase tracking-wider block">Reconciliation Replay Drift</span>
-            <span className="text-2xl font-light font-serif text-emerald-400 mt-2 block">0 Out of Sync</span>
-            <span className="text-[10px] text-emerald-400/80 font-mono mt-2 block">Satellite edge synced</span>
+            <span className="text-xs text-[#8E8C94] uppercase tracking-wider block">Outbox Queue Depth</span>
+            <span className={`text-2xl font-light font-serif mt-2 block ${healthData?.queue?.pending > 10 ? 'text-rose-400' : 'text-emerald-400'}`}>{healthData?.queue?.pending} Pending</span>
+            <span className="text-[10px] text-emerald-400/80 font-mono mt-2 block">Max latency: {healthData?.queue?.latencySeconds}s</span>
           </div>
         </div>
 
         {/* Console Workspace layouts */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
-          {/* 1. Worldwide Node Directory Table */}
+          {/* 1. Infrastructure Node Table */}
           <div className="lg:col-span-8 bg-[#121118]/85 border border-white/[0.04] rounded-2xl p-6 space-y-4">
-            <h2 className="text-lg font-serif font-light text-white tracking-wider">Geographic Operational Nodes</h2>
+            <h2 className="text-lg font-serif font-light text-white tracking-wider">Infrastructure Node Diagnostics</h2>
             
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm border-collapse">
                 <thead>
                   <tr className="border-b border-white/[0.04] text-[#8E8C94] text-xs uppercase tracking-wider">
-                    <th className="pb-3 font-semibold">Gateway Location</th>
+                    <th className="pb-3 font-semibold">Service Node</th>
                     <th className="pb-3 font-semibold">Status</th>
-                    <th className="pb-3 font-semibold">Active Occupancy</th>
                     <th className="pb-3 font-semibold">Incidents</th>
-                    <th className="pb-3 text-right font-semibold">P95 Latency</th>
+                    <th className="pb-3 text-right font-semibold">Ping Latency</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/[0.02]">
@@ -127,14 +106,13 @@ export default function GlobalCommandCenter() {
                       </td>
                       <td className="py-4">
                         <span className={`px-2 py-0.5 rounded text-[9px] font-bold ${
-                          node.status === 'ONLINE' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
-                          node.status === 'DEGRADED' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+                          node.status === 'HEALTHY' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                          node.status === 'WARNING' || node.status === 'DEGRADED' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
                           'bg-red-500/10 text-red-400 border border-red-500/20'
                         }`}>
                           {node.status}
                         </span>
                       </td>
-                      <td className="py-4 font-semibold text-white">{node.occupancy}%</td>
                       <td className="py-4 text-[#8E8C94] font-mono">{node.activeIncidents}</td>
                       <td className="py-4 text-right font-mono font-semibold text-[#D4AF37]">{node.p95LatencyMs}ms</td>
                     </tr>
@@ -144,34 +122,29 @@ export default function GlobalCommandCenter() {
             </div>
           </div>
 
-          {/* 2. Failover console output logs */}
+          {/* 2. SRE Live Telemetry Output */}
           <div className="lg:col-span-4 bg-black/40 border border-white/[0.02] rounded-2xl p-6 min-h-[350px] flex flex-col justify-between">
             <div className="space-y-4">
-              <span className="text-[10px] uppercase tracking-wider text-[#8E8C94] font-medium block border-b border-white/[0.04] pb-2">
-                SRE Failover Log Stream
+              <span className="text-[10px] uppercase tracking-wider text-[#8E8C94] font-medium block border-b border-white/[0.04] pb-2 flex justify-between">
+                SRE Operations Telemetry Stream
+                <span className="text-emerald-400 font-bold animate-pulse text-[8px]">LIVE</span>
               </span>
               
-              {failoverLogs.length > 0 ? (
-                <div className="space-y-2 font-mono text-[11px] text-[#8E8C94] max-h-[220px] overflow-y-auto">
-                  {failoverLogs.map((log, idx) => (
-                    <div key={idx} className={log.includes('normalized') ? 'text-emerald-400' : log.includes('Initiating') ? 'text-amber-400' : ''}>
-                      {log}
+              {healthData?.lineage && healthData.lineage.length > 0 ? (
+                <div className="space-y-3 font-mono text-[11px] text-[#8E8C94] max-h-[280px] overflow-y-auto">
+                  {healthData.lineage.map((log: any, idx: number) => (
+                    <div key={idx} className={`p-2 border rounded ${log.severity === 'ERROR' ? 'border-rose-500/30 bg-rose-500/5 text-rose-300' : 'border-white/[0.05] bg-white/[0.02]'}`}>
+                      <div className="text-white mb-1 font-sans font-semibold text-[10px] flex items-center justify-between">
+                        {log.type} <span className="text-[#8E8C94] font-mono text-[9px] font-normal">{log.time}</span>
+                      </div>
+                      {log.message}
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-xs text-[#8E8C94] italic text-center py-12">No active failover procedures in progress. Standby secure.</p>
+                <p className="text-xs text-[#8E8C94] italic text-center py-12">No active diagnostic alerts.</p>
               )}
             </div>
-
-            {failoverLogs.length > 0 && !activeRegionFailover && (
-              <button
-                onClick={() => setFailoverLogs([])}
-                className="text-[10px] font-mono text-[#D4AF37] hover:underline self-start mt-4"
-              >
-                Flush log streams
-              </button>
-            )}
           </div>
 
         </div>

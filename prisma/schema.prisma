@@ -321,7 +321,6 @@ model Folio {
   deletedAt          DateTime?
   propertyId         String
   booking            Booking?        @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  company            CompanyProfile? @relation(fields: [companyId], references: [id])
   property           Property        @relation(fields: [propertyId], references: [id])
   lineItems          FolioLineItem[]
   internalOrders     InternalOrder[]
@@ -365,18 +364,6 @@ model RevenuePosting {
   amount          Decimal
   createdAt       DateTime      @default(now())
   nightAuditLog   NightAuditLog @relation(fields: [nightAuditLogId], references: [id])
-}
-
-model CompanyProfile {
-  id           String   @id @default(uuid())
-  name         String
-  taxId        String?
-  address      String?
-  billingEmail String?
-  creditLimit  Decimal?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  folios       Folio[]
 }
 
 model TransactionCode {
@@ -909,18 +896,6 @@ model Complaint {
   user        User      @relation(fields: [userId], references: [id])
 }
 
-model Testimonial {
-  id        String   @id @default(uuid())
-  name      String
-  role      String?
-  content   String
-  rating    Int      @default(5)
-  image     String?
-  active    Boolean  @default(true)
-  order     Int      @default(0)
-  createdAt DateTime @default(now())
-}
-
 model FooterLink {
   id        String   @id @default(uuid())
   label     String
@@ -1325,17 +1300,6 @@ model ResortFacility {
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
   bookings       ResortBooking[]
-  services       ResortService[]
-}
-
-model ResortService {
-  id           String         @id @default(uuid())
-  facilityId   String
-  name         String
-  durationMins Int
-  price        Decimal
-  createdAt    DateTime       @default(now())
-  facility     ResortFacility @relation(fields: [facilityId], references: [id])
 }
 
 model ResortBooking {

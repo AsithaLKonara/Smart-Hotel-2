@@ -48,6 +48,7 @@ export async function POST(req: Request) {
             await tx.folioLineItem.create({
               data: {
                 folioId: targetFolioId,
+                transactionCodeId: '200-FB-REV',
                 description: `POS: ${item.name}`,
                 amount: item.price * item.quantity,
                 category: 'FOOD_AND_BEVERAGE',
@@ -134,6 +135,7 @@ export async function POST(req: Request) {
         await tx.folioLineItem.create({
           data: {
             folioId: targetFolioId,
+            transactionCodeId: '900-PAY',
             description: `Payment Received (${paymentType})`,
             amount: -settleFolioAmount,
             category: 'PAYMENT',
