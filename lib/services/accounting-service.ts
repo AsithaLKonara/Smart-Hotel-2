@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client'
 import prisma from '@/lib/prisma'
 
 export interface FinancialAdjustmentDTO {
@@ -53,7 +54,7 @@ export class AccountingGovernanceService {
    * Activating Dead Schema: FinancialAdjustment
    */
   static async recordFinancialAdjustment(dto: FinancialAdjustmentDTO) {
-    return await prisma.$transaction(async (tx) => {
+    return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // Validate payment existence
       const payment = await tx.payment.findUnique({
         where: { id: dto.paymentId }

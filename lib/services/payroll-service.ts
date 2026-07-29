@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client'
 import prisma from '@/lib/prisma'
 
 export interface PayrollRunDTO {
@@ -20,7 +21,7 @@ export class PayrollService {
     const end = new Date(dto.periodEnd)
     const taxRate = dto.defaultTaxRate ?? 0.15
 
-    return await prisma.$transaction(async (tx) => {
+    return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // 1. Fetch active staff list
       const employees = await tx.employee.findMany({
         where: { status: 'ACTIVE' },

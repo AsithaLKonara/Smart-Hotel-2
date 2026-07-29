@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { logAction, AUDIT_ACTIONS } from '@/lib/audit'
 import { sendBookingStatusUpdate } from '@/lib/email'
 import { handleZodError } from '@/lib/api-utils'
+import { Prisma } from '@prisma/client'
 import { getEffectivePropertyId } from '@/lib/server-rbac'
 
 const bookingUpdateSchema = z.object({
@@ -158,7 +159,7 @@ export async function PATCH(
     // ATOMIC STATE TRANSITION
     let updatedBooking;
     try {
-      updatedBooking = await prisma.$transaction(async (tx: any) => {
+      updatedBooking = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // Idempotency & Lock check for Checkout
       if (validatedData.status === 'CHECKED_OUT') {
         const currentBookingState = await tx.booking.findUnique({ where: { id } })
@@ -178,6 +179,21 @@ export async function PATCH(
         // State Machine Strictness
         if (currentBookingState.status !== 'CHECKED_IN') {
           throw new Error('Booking must be CHECKED_IN to checkout');
+        }
+      }
+
+      // State Machine Strictness & Cleanliness Guardrail for Check-In
+      if (validatedData.status === 'CHECKED_IN') {
+        const checkInState = await tx.booking.findUnique({
+          where: { id },
+          include: { roomAssignments: { include: { room: true } } }
+        })
+        const assignedRoom = checkInState?.roomAssignments?.[0]?.room
+        if (assignedRoom) {
+          const forbiddenStatuses = ['DIRTY', 'CLEANING', 'INSPECTION_PENDING', 'MAINTENANCE', 'OUT_OF_ORDER']
+          if (forbiddenStatuses.includes(assignedRoom.status)) {
+            throw new Error(`CLEANLINESS_GUARDRAIL_VIOLATION: Room ${assignedRoom.number} is currently marked as ${assignedRoom.status}. Check-in forbidden by operational safety protocol.`)
+          }
         }
       }
 
@@ -248,6 +264,9 @@ export async function PATCH(
       }
       if (error.message === 'Booking must be CHECKED_IN to checkout') {
         return NextResponse.json({ error: 'State Machine Error: Booking not checked in' }, { status: 422 })
+      }
+      if (error.message && error.message.startsWith('CLEANLINESS_GUARDRAIL_VIOLATION:')) {
+        return NextResponse.json({ error: error.message }, { status: 422 })
       }
       throw error;
     }

@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client'
 import prisma from '@/lib/prisma'
 
 export interface GoodsReceiptDTO {
@@ -23,7 +24,7 @@ export class ProcurementService {
    * Atomically increments location-specific stock totals in InventoryStock.
    */
   static async receiveGoods(dto: GoodsReceiptDTO) {
-    return await prisma.$transaction(async (tx) => {
+    return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // 1. Validate Purchase Order existence
       const po = await tx.purchaseOrder.findUnique({
         where: { id: dto.purchaseOrderId },
@@ -93,7 +94,7 @@ export class ProcurementService {
    * Activating Dead Schema: VendorInvoice
    */
   static async registerVendorInvoice(dto: VendorInvoiceDTO) {
-    return await prisma.$transaction(async (tx) => {
+    return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const po = await tx.purchaseOrder.findUnique({
         where: { id: dto.purchaseOrderId },
         include: { goodsReceipts: true }

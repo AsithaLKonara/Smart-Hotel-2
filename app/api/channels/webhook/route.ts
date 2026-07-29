@@ -1,13 +1,48 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/db'
+import { Prisma } from '@prisma/client'
+import { Redis } from '@upstash/redis'
+
+function getRedisClient(): Redis | null {
+  if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+    try {
+      return Redis.fromEnv()
+    } catch {
+      return null
+    }
+  }
+  return null
+}
 
 export async function POST(req: NextRequest) {
+  // 1. AUTHENTICATION VALIDATION (Bearer Token)
+  const authHeader = req.headers.get('Authorization')
+  const expectedSecret = process.env.OTA_WEBHOOK_SECRET || 'dev_ota_secret'
+  if (!authHeader || authHeader !== `Bearer ${expectedSecret}`) {
+    return NextResponse.json({ error: 'Unauthorized: Invalid or missing Bearer token' }, { status: 401 })
+  }
+
   let payload: any = {};
+  let eventKey = `ota:webhook:${Date.now()}`;
+  const redis = getRedisClient();
+
   try {
     try {
       payload = await req.json()
+      // Generate deterministic idempotency key if OTA provides a transaction ID, else fallback
+      eventKey = `ota:webhook:${payload.otaTransactionId || payload.guestEmail || Date.now()}`
     } catch (e) {
       return NextResponse.json({ error: 'Invalid JSON payload' }, { status: 400 })
+    }
+    
+    // 2. DISTRIBUTED IDEMPOTENCY (Redis)
+    if (redis) {
+      try {
+        const isProcessed = await redis.set(eventKey, 'processed', { nx: true, ex: 86400 })
+        if (!isProcessed) return NextResponse.json({ received: true, duplicate: true, message: 'Idempotency Hit: Ignored duplicate payload.' })
+      } catch (redisError) {
+        console.error('[OTA_WEBHOOK_ERROR] Redis connection failed during deduplication:', redisError)
+      }
     }
     
     // Simulate OTA payload:
@@ -15,92 +50,92 @@ export async function POST(req: NextRequest) {
     
     const { otaRoomTypeId, guestName, guestEmail, checkIn, checkOut, totalAmount } = payload
 
-    // 1. Resolve Mapping
-    const mapping = await prisma.roomMapping.findFirst({
-      where: { otaRoomTypeId, syncEnabled: true }
-    })
+    // ATOMIC TRANSACTION WRAPPER
+    const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      // 1. Resolve Mapping
+      const mapping = await tx.roomMapping.findFirst({
+        where: { otaRoomTypeId, syncEnabled: true }
+      })
 
-    if (!mapping) {
-      // Create an audit log for failed mapping
-      await prisma.auditLog.create({
+      if (!mapping) {
+        // Send to Dead-Letter Queue atomically
+        await tx.webhookDLQ.create({
+          data: {
+            provider: 'OTA_WEBHOOK',
+            payload: payload,
+            error: 'Unmapped OTA Room Type: ' + otaRoomTypeId
+          }
+        })
+        throw new Error(`UNMAPPED_ROOM_TYPE:${otaRoomTypeId}`)
+      }
+
+      // 2. Resolve or Create User (Guest)
+      let user = await tx.user.findFirst({ where: { email: guestEmail, deletedAt: null } })
+      if (!user) {
+        let role = await tx.role.findFirst({ where: { name: 'GUEST' } })
+        user = await tx.user.create({
+          data: {
+            email: guestEmail,
+            name: guestName,
+            password: 'ota-placeholder-password',
+            roleId: role?.id,
+          }
+        })
+      }
+
+      const property = await tx.property.findFirst()
+
+      // 3. Create Booking
+      const booking = await tx.booking.create({
+        data: {
+          userId: user.id,
+          propertyId: property?.id || '',
+          checkIn: new Date(checkIn),
+          checkOut: new Date(checkOut),
+          guests: 2,
+          totalAmount: totalAmount,
+          status: 'CONFIRMED',
+          confirmationCode: `OTA-${Math.random().toString(36).substring(2, 8).toUpperCase()}`
+        }
+      })
+
+      // 4. Create Folio
+      await tx.folio.create({
+        data: {
+          bookingId: booking.id,
+          balance: totalAmount,
+          status: 'OPEN'
+        }
+      })
+
+      // Log success
+      await tx.auditLog.create({
         data: {
           actor: 'CHANNEL_MANAGER',
-          action: 'WEBHOOK_FAILED_MAPPING',
-          resource: 'RoomMapping',
-          details: { otaRoomTypeId, error: 'Unmapped room type received from OTA' }
+          action: 'WEBHOOK_SUCCESS',
+          resource: 'Booking',
+          resourceId: booking.id,
+          details: { source: 'OTA', originalPayload: payload }
         }
       })
       
-      // Send to Dead-Letter Queue
-      await prisma.webhookDLQ.create({
-        data: {
-          provider: 'OTA_WEBHOOK',
-          payload: payload,
-          error: 'Unmapped OTA Room Type: ' + otaRoomTypeId
-        }
-      })
-      
+      return booking
+    });
+
+    return NextResponse.json({ success: true, bookingId: result.id, confirmationCode: result.confirmationCode })
+
+  } catch (error: any) {
+    if (redis && eventKey) await redis.del(eventKey) // Allow retry on systemic failure
+    
+    if (error.message && error.message.startsWith('UNMAPPED_ROOM_TYPE:')) {
       return NextResponse.json({ error: 'Unmapped OTA Room Type. Logged to DLQ.' }, { status: 400 })
     }
 
-    // 2. Resolve or Create User (Guest)
-    let user = await prisma.user.findFirst({ where: { email: guestEmail, deletedAt: null } })
-    if (!user) {
-      let role = await prisma.role.findFirst({ where: { name: 'GUEST' } })
-      user = await prisma.user.create({
-        data: {
-          email: guestEmail,
-          name: guestName,
-          password: 'ota-placeholder-password', // Would use secure random in prod
-          roleId: role?.id,
-        }
-      })
-    }
-
-    const property = await prisma.property.findFirst()
-
-    // 3. Create Booking
-    const booking = await prisma.booking.create({
-      data: {
-        userId: user.id,
-        propertyId: property?.id || '',
-        checkIn: new Date(checkIn),
-        checkOut: new Date(checkOut),
-        guests: 2,
-        totalAmount: totalAmount,
-        status: 'CONFIRMED',
-        confirmationCode: `OTA-${Math.random().toString(36).substring(2, 8).toUpperCase()}`
-      }
-    })
-
-    // 4. Create Folio
-    await prisma.folio.create({
-      data: {
-        bookingId: booking.id,
-        balance: totalAmount,
-        status: 'OPEN'
-      }
-    })
-
-    // Log success
-    await prisma.auditLog.create({
-      data: {
-        actor: 'CHANNEL_MANAGER',
-        action: 'WEBHOOK_SUCCESS',
-        resource: 'Booking',
-        resourceId: booking.id,
-        details: { source: 'OTA', originalPayload: payload }
-      }
-    })
-
-    return NextResponse.json({ success: true, bookingId: booking.id, confirmationCode: booking.confirmationCode })
-
-  } catch (error: any) {
     console.error('Channel Webhook Error:', error)
     
-    // Attempt to write to DLQ even on massive systemic failure (e.g. Booking creation failed)
+    // Attempt to write to DLQ even on massive systemic failure
     try {
-      if (typeof payload !== 'undefined') {
+      if (typeof payload !== 'undefined' && Object.keys(payload).length > 0) {
         await prisma.webhookDLQ.create({
           data: {
             provider: 'OTA_WEBHOOK',

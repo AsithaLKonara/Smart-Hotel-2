@@ -1,22 +1,44 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/db'
 import { startOfDay, endOfDay } from 'date-fns'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
+import { getEffectivePropertyId } from '@/lib/server-rbac'
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    const property = await prisma.property.findFirst()
-    if (!property) throw new Error("Property not found")
+    const session = await getServerSession(authOptions)
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized: Authentication Required' }, { status: 401 })
+    }
+    
+    const role = (session.user as any).roleName
+    if (role !== 'SUPER_ADMIN' && role !== 'MANAGER') {
+      return NextResponse.json({ error: 'Forbidden: Insufficient privileges to view KPIs' }, { status: 403 })
+    }
+
+    const effectivePropertyId = await getEffectivePropertyId(req as any)
+    const propertyWhere = effectivePropertyId ? { id: effectivePropertyId } : {}
+    
+    const property = await prisma.property.findFirst({
+      where: propertyWhere
+    })
+    
+    if (!property) throw new Error("Property not found or unauthorized")
     
     const businessDate = property.businessDate || new Date()
     const start = startOfDay(businessDate)
     const end = endOfDay(businessDate)
 
+    const roomWhere = effectivePropertyId ? { propertyId: effectivePropertyId, status: { not: 'OUT_OF_ORDER' } } : { status: { not: 'OUT_OF_ORDER' } }
+    
     // 1. Total Inventory
-    const totalRooms = await prisma.room.count({ where: { status: { not: 'OUT_OF_ORDER' } } })
+    const totalRooms = await prisma.room.count({ where: roomWhere })
     
     // 2. Active Occupancy (CheckIn <= BusinessDate < CheckOut AND Status != CANCELLED)
     const activeBookings = await prisma.booking.findMany({
       where: {
+        ...(effectivePropertyId ? { propertyId: effectivePropertyId } : {}),
         status: { in: ['CONFIRMED', 'CHECKED_IN'] },
         checkIn: { lte: end },
         checkOut: { gt: start }
@@ -47,6 +69,7 @@ export async function GET() {
     // 4. Operations (Arrivals / Departures for the Business Date)
     const arrivals = await prisma.booking.count({
       where: {
+        ...(effectivePropertyId ? { propertyId: effectivePropertyId } : {}),
         status: { notIn: ['CANCELLED', 'NO_SHOW'] },
         checkIn: { gte: start, lte: end }
       }
@@ -54,6 +77,7 @@ export async function GET() {
 
     const departures = await prisma.booking.count({
       where: {
+        ...(effectivePropertyId ? { propertyId: effectivePropertyId } : {}),
         status: { notIn: ['CANCELLED', 'NO_SHOW'] },
         checkOut: { gte: start, lte: end }
       }

@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client'
 import prisma from '@/lib/prisma'
 
 export interface ResortServiceDTO {
@@ -41,7 +42,7 @@ export class GuestExperienceService {
    * Activating Dead Schema: ResortService
    */
   static async addResortService(dto: ResortServiceDTO) {
-    return await prisma.$transaction(async (tx) => {
+    return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // Locate or create parent facility
       let facility = await tx.resortFacility.findFirst({
         where: { name: dto.facilityName }
@@ -154,7 +155,7 @@ export class GuestExperienceService {
    * Activating Dead Schema: GuestHistory
    */
   static async updateGuestHistory(dto: GuestHistoryDTO) {
-    return await prisma.$transaction(async (tx) => {
+    return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // Ensure target User exists
       const user = await tx.user.findUnique({
         where: { id: dto.userId }

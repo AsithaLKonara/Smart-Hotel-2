@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 import { getEffectivePropertyId } from '@/lib/server-rbac';
 
 export async function POST(req: Request) {
@@ -12,7 +13,7 @@ export async function POST(req: Request) {
 
     const effectivePropertyId = await getEffectivePropertyId(req);
 
-    const result = await prisma.$transaction(async (tx: any) => {
+    const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       let defaultOutlet = await tx.pOSOutlet.findFirst();
       if (!defaultOutlet) {
         defaultOutlet = await tx.pOSOutlet.create({
@@ -75,6 +76,27 @@ export async function POST(req: Request) {
               subtotal: item.price * item.quantity
             }
           });
+
+          // Activate POS Recipe Stock Depletion & Cost of Goods Integration
+          const invItem = await tx.inventoryItem.findFirst({
+            where: { OR: [{ name: item.name }, { sku: item.sku || item.id }] },
+            include: { stocks: true }
+          });
+          if (invItem && invItem.stocks && invItem.stocks.length > 0) {
+            const primaryStock = invItem.stocks[0];
+            await tx.inventoryStock.update({
+              where: { id: primaryStock.id },
+              data: { quantity: { decrement: item.quantity }, lastCountedAt: new Date() }
+            });
+            await tx.inventoryMovement.create({
+              data: {
+                itemId: invItem.id,
+                type: 'POS_CONSUMPTION',
+                quantity: -Number(item.quantity || 1),
+                notes: `Consumed via POS Order #${order.id.substring(0, 8)} (${item.name} x${item.quantity})`
+              }
+            });
+          }
         }
 
         if (paymentType === 'CARD' || paymentType === 'CASH') {
