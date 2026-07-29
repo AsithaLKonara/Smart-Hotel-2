@@ -45,6 +45,13 @@ async function main() {
     { action: 'invoice:read', description: 'Read invoices' },
     { action: 'invoice:write', description: 'Modify invoices' },
     { action: 'order:write', description: 'Place F&B orders' },
+    { action: 'pos:read', description: 'View POS and Menus' },
+    { action: 'pos:write', description: 'Manage POS and Menus' },
+    { action: 'housekeeping:read', description: 'View housekeeping tasks' },
+    { action: 'housekeeping:write', description: 'Manage housekeeping' },
+    { action: 'analytics:read', description: 'View analytics' },
+    { action: 'inventory:manage', description: 'Manage inventory' },
+    { action: 'users:manage', description: 'Manage users' },
   ]
 
   for (const perm of permissions) {
@@ -66,13 +73,32 @@ async function main() {
     createdRoles[role.name] = await prisma.role.upsert({ where: { name: role.name }, update: {}, create: role })
   }
 
-  const adminPerm = await prisma.permission.findUnique({ where: { action: '*' } })
-  if (adminPerm) {
-    await prisma.rolePermission.upsert({
-      where: { roleId_permissionId: { roleId: createdRoles['SUPER_ADMIN'].id, permissionId: adminPerm.id } },
-      update: {},
-      create: { roleId: createdRoles['SUPER_ADMIN'].id, permissionId: adminPerm.id }
-    })
+  // 1.5. MATRIX BINDING
+  console.log('Binding Permission Matrix...')
+  const roleMatrix: Record<string, string[]> = {
+    'SUPER_ADMIN': ['*'],
+    'MANAGER': ['booking:read', 'booking:write', 'payment:write', 'invoice:read', 'invoice:write', 'order:write', 'pos:read', 'pos:write', 'housekeeping:read', 'housekeeping:write', 'analytics:read', 'inventory:manage', 'users:manage'],
+    'RECEPTIONIST': ['booking:read', 'booking:write', 'payment:write', 'invoice:read', 'invoice:write'],
+    'KITCHEN': ['pos:read', 'pos:write', 'order:write', 'inventory:manage'],
+    'HOUSEKEEPING': ['housekeeping:read', 'housekeeping:write'],
+    'MAINTENANCE': ['housekeeping:read', 'housekeeping:write'],
+    'GUEST': []
+  }
+
+  for (const [roleName, actions] of Object.entries(roleMatrix)) {
+    const roleId = createdRoles[roleName]?.id
+    if (!roleId) continue
+
+    for (const action of actions) {
+      const perm = await prisma.permission.findUnique({ where: { action } })
+      if (perm) {
+        await prisma.rolePermission.upsert({
+          where: { roleId_permissionId: { roleId, permissionId: perm.id } },
+          update: {},
+          create: { roleId, permissionId: perm.id }
+        })
+      }
+    }
   }
 
   // ==========================================

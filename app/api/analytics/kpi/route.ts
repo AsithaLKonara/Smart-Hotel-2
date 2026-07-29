@@ -1,21 +1,12 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/db'
 import { startOfDay, endOfDay } from 'date-fns'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
-import { getEffectivePropertyId } from '@/lib/server-rbac'
+import { getEffectivePropertyId, requirePermission } from '@/lib/server-rbac'
 
 export async function GET(req: Request) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized: Authentication Required' }, { status: 401 })
-    }
-    
-    const role = (session.user as any).roleName
-    if (role !== 'SUPER_ADMIN' && role !== 'MANAGER') {
-      return NextResponse.json({ error: 'Forbidden: Insufficient privileges to view KPIs' }, { status: 403 })
-    }
+    const authError = await requirePermission('analytics:read')
+    if (authError) return authError
 
     const effectivePropertyId = await getEffectivePropertyId(req as any)
     const propertyWhere = effectivePropertyId ? { id: effectivePropertyId } : {}

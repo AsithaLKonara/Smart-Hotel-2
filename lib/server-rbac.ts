@@ -1,4 +1,5 @@
 import { getServerSession } from 'next-auth'
+import { NextResponse } from 'next/server'
 import { authOptions } from './auth'
 import { getBroadRole } from './rbac-utils'
 
@@ -28,4 +29,32 @@ export async function getEffectivePropertyId(req?: Request): Promise<string | nu
   }
 
   return null // Global scope
+}
+
+/**
+ * Validates if the current session holds the required granular permission.
+ * Bypasses database lookups by reading the JWT session token injected by NextAuth.
+ * Returns null if valid, or returns a 403 NextResponse if unauthorized.
+ */
+export async function requirePermission(action: string): Promise<NextResponse | null> {
+  const session = await getServerSession(authOptions)
+  
+  if (!session?.user) {
+    return NextResponse.json({ error: 'Unauthorized: Authentication required.' }, { status: 401 })
+  }
+
+  const permissions = (session.user as any).permissions || []
+  const roleName = (session.user as any).roleName || 'GUEST'
+
+  // Super Admin implicitly holds all permissions
+  if (roleName === 'SUPER_ADMIN') return null
+
+  if (!permissions.includes(action)) {
+    return NextResponse.json({ 
+      error: 'Forbidden: Insufficient privileges.', 
+      message: `Action [${action}] is restricted. You do not hold this capability in your Role Matrix.`
+    }, { status: 403 })
+  }
+
+  return null
 }
