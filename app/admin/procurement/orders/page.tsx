@@ -57,7 +57,10 @@ export default function PurchaseOrdersPage() {
         fetch('/api/admin/procurement/vendors'),
         fetch('/api/admin/procurement/items')
       ])
-      if (or.ok) setOrders(await or.json())
+      if (or.ok) {
+        const payload = await or.json()
+        setOrders(payload.data || payload) 
+      }
       if (vr.ok) setVendors(await vr.json())
       if (ir.ok) setItems(await ir.json())
     } catch (e) { console.error(e) }

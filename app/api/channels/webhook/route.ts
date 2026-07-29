@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/db'
 import { Prisma } from '@prisma/client'
 import { Redis } from '@upstash/redis'
+import crypto from 'crypto'
 
 function getRedisClient(): Redis | null {
   if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
@@ -15,20 +16,41 @@ function getRedisClient(): Redis | null {
 }
 
 export async function POST(req: NextRequest) {
-  // 1. AUTHENTICATION VALIDATION (Bearer Token)
-  const authHeader = req.headers.get('Authorization')
+  // 1. AUTHENTICATION VALIDATION (HMAC Signature)
+  const signature = req.headers.get('x-ota-signature')
   const expectedSecret = process.env.OTA_WEBHOOK_SECRET || 'dev_ota_secret'
-  if (!authHeader || authHeader !== `Bearer ${expectedSecret}`) {
-    return NextResponse.json({ error: 'Unauthorized: Invalid or missing Bearer token' }, { status: 401 })
+  
+  if (!signature) {
+    return NextResponse.json({ error: 'Unauthorized: Missing x-ota-signature header' }, { status: 401 })
+  }
+
+  const rawBody = await req.text()
+  
+  const hmac = crypto.createHmac('sha256', expectedSecret).update(rawBody).digest('hex')
+  if (hmac !== signature) {
+    return NextResponse.json({ error: 'Unauthorized: Invalid signature digest' }, { status: 401 })
   }
 
   let payload: any = {};
   let eventKey = `ota:webhook:${Date.now()}`;
   const redis = getRedisClient();
 
+  // Rate Limiting (100 req/min)
+  if (redis) {
+    const ip = req.headers.get('x-forwarded-for') || '127.0.0.1';
+    const rateLimitKey = `rate:webhook:${ip}`;
+    try {
+      const requests = await redis.incr(rateLimitKey);
+      if (requests === 1) await redis.expire(rateLimitKey, 60);
+      if (requests > 100) return NextResponse.json({ error: 'Too Many Requests' }, { status: 429 });
+    } catch (e) {
+      console.error('[OTA_WEBHOOK_ERROR] Rate limit Redis error:', e);
+    }
+  }
+
   try {
     try {
-      payload = await req.json()
+      payload = JSON.parse(rawBody)
       // Generate deterministic idempotency key if OTA provides a transaction ID, else fallback
       eventKey = `ota:webhook:${payload.otaTransactionId || payload.guestEmail || Date.now()}`
     } catch (e) {

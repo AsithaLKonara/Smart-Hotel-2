@@ -8,6 +8,21 @@ import { Globe, ArrowRightLeft, ShieldCheck, Link as LinkIcon, Zap, Loader2 } fr
 import { PremiumSpinner } from '@/components/ui/premium-spinner'
 import toast from 'react-hot-toast'
 
+async function generateHMAC(secret: string, data: string) {
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    'raw',
+    enc.encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  const signature = await crypto.subtle.sign('HMAC', key, enc.encode(data));
+  return Array.from(new Uint8Array(signature))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
 export default function ChannelManagerDashboard() {
   const queryClient = useQueryClient()
 
@@ -15,8 +30,6 @@ export default function ChannelManagerDashboard() {
   const { data: config, isLoading } = useQuery({
     queryKey: ['channel-config'],
     queryFn: async () => {
-      // Auto-seed if needed
-      await fetch('/api/channels/seed', { method: 'POST' })
       const res = await fetch('/api/channels/config')
       return res.json()
     }
@@ -34,10 +47,16 @@ export default function ChannelManagerDashboard() {
         checkOut: new Date(Date.now() + 86400000 * 2).toISOString(), // +2 days
         totalAmount: 350.00
       }
+      const payloadString = JSON.stringify(payload)
+      const signature = await generateHMAC('dev_ota_secret', payloadString)
+      
       const res = await fetch('/api/channels/webhook', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-ota-signature': signature
+        },
+        body: payloadString
       })
       if (!res.ok) throw new Error('Webhook processing failed')
       return res.json()

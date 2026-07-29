@@ -123,14 +123,30 @@ export class PayrollService {
   /**
    * Retrieves all completed payroll runs alongside their itemized staff wage details.
    */
-  static async getPayrollRuns() {
-    return await prisma.payrollRun.findMany({
-      include: {
-        lineItems: {
-          include: { employee: true }
-        }
-      },
-      orderBy: { createdAt: 'desc' }
-    })
+  static async getPayrollRuns(page: number = 1, limit: number = 50) {
+    const skip = (page - 1) * limit
+    const [runs, total] = await prisma.$transaction([
+      prisma.payrollRun.findMany({
+        skip,
+        take: limit,
+        include: {
+          lineItems: {
+            include: { employee: true }
+          }
+        },
+        orderBy: { createdAt: 'desc' }
+      }),
+      prisma.payrollRun.count()
+    ])
+
+    return {
+      runs,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit)
+      }
+    }
   }
 }

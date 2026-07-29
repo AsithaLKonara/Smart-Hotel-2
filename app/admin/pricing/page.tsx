@@ -42,6 +42,16 @@ export default function PricingOperations() {
     }
   })
 
+  // Fetch Live Yield Rules
+  const { data: yieldRules } = useQuery({
+    queryKey: ['yield-rules'],
+    queryFn: async () => {
+      const res = await fetch('/api/pricing/yield-rules')
+      const data = await res.json()
+      return data.yieldRules || []
+    }
+  })
+
   // Mutations
   const createRatePlan = useMutation({
     mutationFn: async (payload: any) => {
@@ -197,25 +207,34 @@ export default function PricingOperations() {
             </div>
           </div>
 
-          {/* Quick Actions / Yield Settings */}
           <div className="space-y-6">
             <h2 className="text-xl font-bold flex items-center"><TrendingUp className="w-5 h-5 mr-2 text-emerald-500" /> Yield Settings</h2>
             <Card className="bg-[#0a0a0f] border-white/10">
               <CardContent className="p-6 space-y-4">
-                <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="font-bold text-emerald-400">Weekend Premium</span>
-                    <Badge className="bg-emerald-500/20 text-emerald-300">Active</Badge>
-                  </div>
-                  <p className="text-xs text-emerald-500/70">Fridays & Saturdays automatically yield a +15% premium across all quotes.</p>
-                </div>
+                {yieldRules?.length === 0 ? (
+                  <p className="text-xs text-slate-500">No active yield rules configured.</p>
+                ) : (
+                  yieldRules?.map((rule: any) => (
+                    <div key={rule.id} className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="font-bold text-emerald-400">{rule.name}</span>
+                        <Badge className="bg-emerald-500/20 text-emerald-300">Active</Badge>
+                      </div>
+                      <p className="text-xs text-emerald-500/70">
+                        {rule.adjustmentType === 'FLAT' ? `Flat rate override: $${rule.adjustmentValue}` : `${rule.adjustmentValue}% adjustment`}. 
+                        Valid {format(new Date(rule.startDate), 'MMM d')} - {format(new Date(rule.endDate), 'MMM d')}.
+                      </p>
+                    </div>
+                  ))
+                )}
                 
+                {/* Fallback baseline indicator */}
                 <div className="p-4 bg-white/5 border border-white/5 rounded-xl opacity-50">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="font-bold text-white">High Occupancy Yield</span>
-                    <Badge className="bg-slate-500/20 text-slate-400">Inactive</Badge>
+                    <span className="font-bold text-white">Baseline Weekend Premium</span>
+                    <Badge className="bg-slate-500/20 text-slate-400">Default</Badge>
                   </div>
-                  <p className="text-xs text-slate-400">Automatically increase rates by 10% when occupancy exceeds 80%.</p>
+                  <p className="text-xs text-slate-400">Automatically increases base fallback rates by 15% on weekends.</p>
                 </div>
               </CardContent>
             </Card>
@@ -238,20 +257,41 @@ export default function PricingOperations() {
             ))}
             
             {lookaheadDays.map((date, idx) => {
-              // Extremely simplified mock visualization logic for demo purposes
+              // Real Yield logic driven by DB configuration
               const isWeekend = date.getDay() === 5 || date.getDay() === 6
-              const isPeak = false // Mock logic
+              let baseRate = 250 // Base fallback 
+              
+              const applicableRule = yieldRules?.find((r: any) => {
+                 const d = new Date(date).getTime()
+                 const start = new Date(r.startDate).getTime()
+                 const end = new Date(r.endDate).getTime()
+                 return d >= start && d <= end
+              })
+
+              if (applicableRule) {
+                if (applicableRule.adjustmentType === 'FLAT') {
+                   baseRate = parseFloat(applicableRule.adjustmentValue)
+                } else if (applicableRule.adjustmentType === 'PERCENTAGE') {
+                   baseRate = baseRate * (1 + (parseFloat(applicableRule.adjustmentValue) / 100))
+                }
+              }
+
+              if (isWeekend) {
+                 baseRate *= 1.15
+              }
               
               return (
                 <div 
                   key={idx} 
-                  className={`p-4 rounded-xl border ${isWeekend ? 'bg-primary/5 border-primary/20' : 'bg-white/[0.02] border-white/5'} min-h-[100px] flex flex-col justify-between`}
+                  className={`p-4 rounded-xl border ${applicableRule ? 'bg-amber-500/5 border-amber-500/20' : isWeekend ? 'bg-primary/5 border-primary/20' : 'bg-white/[0.02] border-white/5'} min-h-[100px] flex flex-col justify-between`}
                 >
-                  <span className="text-sm font-bold text-white/70">{format(date, 'd')}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-bold text-white/70">{format(date, 'd')}</span>
+                    {applicableRule && <TrendingUp className="w-3 h-3 text-amber-500" />}
+                  </div>
                   <div className="text-center mt-2">
-                    <span className={`text-xl font-black ${isWeekend ? 'text-primary' : 'text-white'}`}>
-                      {/* Using mock values since we aren't quoting dynamically for every room type in UI yet */}
-                      ${isWeekend ? '287' : '250'}
+                    <span className={`text-xl font-black ${applicableRule ? 'text-amber-500' : isWeekend ? 'text-primary' : 'text-white'}`}>
+                      ${Math.round(baseRate)}
                     </span>
                   </div>
                 </div>

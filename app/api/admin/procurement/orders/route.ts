@@ -1,18 +1,35 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const orders = await prisma.purchaseOrder.findMany({
-      include: {
-        vendor: true,
-        items: {
-          include: { item: true }
-        }
-      },
-      orderBy: { createdAt: 'desc' },
+    const { searchParams } = new URL(request.url)
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10))
+    const limit = Math.max(1, parseInt(searchParams.get('limit') || '25', 10))
+    const skip = (page - 1) * limit
+
+    const [orders, total] = await prisma.$transaction([
+      prisma.purchaseOrder.findMany({
+        skip,
+        take: limit,
+        include: {
+          vendor: true,
+          items: { include: { item: true } }
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.purchaseOrder.count()
+    ])
+
+    return NextResponse.json({
+      data: orders,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit)
+      }
     })
-    return NextResponse.json(orders)
   } catch (error) {
     console.error('Failed to fetch POs:', error)
     return NextResponse.json({ error: 'Failed to fetch POs' }, { status: 500 })
