@@ -164,6 +164,10 @@ export async function PATCH(
       if (validatedData.status === 'CHECKED_OUT') {
         const currentBookingState = await tx.booking.findUnique({ where: { id } })
         
+        if (!currentBookingState) {
+          throw new Error('Booking not found');
+        }
+
         // Idempotency return
         if (checkoutRequestId && currentBookingState.checkoutRequestId === checkoutRequestId) {
           // Instead of returning, we can just throw a specific exception to return 200 later,

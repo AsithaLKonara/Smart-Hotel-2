@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import prisma from '@/lib/db'
 import { logger } from '@/lib/logger'
+import { Prisma } from '@prisma/client'
 
 // GET /api/pos - Fetch all occupied rooms with guest info for the room selector
 export async function GET(request: NextRequest) {
@@ -84,7 +85,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 1. Transaction wrapping to ensure ACID compliance
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // Create the InternalOrder with its items
       const order = await tx.internalOrder.create({
         data: {

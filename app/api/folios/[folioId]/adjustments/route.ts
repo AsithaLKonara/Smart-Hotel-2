@@ -3,6 +3,7 @@ import { AccountingGovernanceService } from '@/lib/services/accounting-service'
 import { z } from 'zod'
 
 const adjustmentSchema = z.object({
+  paymentId: z.string(),
   amount: z.number(),
   type: z.enum(['DISCOUNT', 'WRITE_OFF', 'LATE_FEE', 'REBATE']),
   reason: z.string().min(5),
@@ -23,11 +24,11 @@ export async function POST(
     }
 
     const adjustment = await AccountingGovernanceService.recordFinancialAdjustment({
-      folioId,
+      paymentId: parsed.data.paymentId,
       amount: parsed.data.amount,
       type: parsed.data.type,
       reason: parsed.data.reason,
-      authorizedBy: parsed.data.authorizedBy || 'SYSTEM_ADMIN' // Fallback if RBAC not injected via UI
+      authorizingUser: parsed.data.authorizedBy || 'SYSTEM_ADMIN' // Fallback if RBAC not injected via UI
     })
 
     return NextResponse.json({ success: true, adjustment }, { status: 201 })

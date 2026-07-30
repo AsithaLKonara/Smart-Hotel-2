@@ -92,6 +92,8 @@ export async function POST(req: NextRequest) {
       }
 
       // 2. Resolve or Create User (Guest)
+      const property = await tx.property.findFirst()
+
       let user = await tx.user.findFirst({ where: { email: guestEmail, deletedAt: null } })
       if (!user) {
         let role = await tx.role.findFirst({ where: { name: 'GUEST' } })
@@ -100,17 +102,16 @@ export async function POST(req: NextRequest) {
             email: guestEmail,
             name: guestName,
             password: 'ota-placeholder-password',
-            roleId: role?.id,
+            propertyId: property?.id || '',
+            ...(role ? { roleId: role.id } : {})
           }
         })
       }
 
-      const property = await tx.property.findFirst()
-
       // 3. Create Booking
       const booking = await tx.booking.create({
         data: {
-          userId: user.id,
+          primaryGuestId: user.id,
           propertyId: property?.id || '',
           checkIn: new Date(checkIn),
           checkOut: new Date(checkOut),
@@ -125,7 +126,7 @@ export async function POST(req: NextRequest) {
       await tx.folio.create({
         data: {
           bookingId: booking.id,
-          balance: totalAmount,
+          propertyId: property?.id || '',
           status: 'OPEN'
         }
       })

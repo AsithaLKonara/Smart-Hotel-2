@@ -18,7 +18,7 @@ export async function GET() {
       }
     })
 
-    const rooms = roomsData.map(r => {
+    const rooms = roomsData.map((r: any) => {
       const activeBooking = r.bookings[0]
       const guestName = activeBooking ? `${activeBooking.guest.firstName} ${activeBooking.guest.lastName}` : ''
       const isVip = activeBooking?.guest.isVip || false
@@ -54,7 +54,7 @@ export async function GET() {
       orderBy: { createdAt: 'desc' }
     })
 
-    const dispatches = tasks.map(t => ({
+    const dispatches = tasks.map((t: any) => ({
       id: t.id,
       domain: t.type,
       priority: t.priority,
@@ -76,7 +76,7 @@ export async function GET() {
       }
     })
 
-    const kitchenOrders = kitchenTasks.map(t => {
+    const kitchenOrders = kitchenTasks.map((t: any) => {
       const elapsedMinutes = Math.floor((Date.now() - new Date(t.createdAt).getTime()) / 60000)
       return {
         id: t.id,
