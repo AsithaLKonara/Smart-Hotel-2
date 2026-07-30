@@ -3,6 +3,7 @@
 import DashboardSidebar from '@/components/dashboard/dashboard-sidebar'
 import { SessionProvider } from 'next-auth/react'
 import { SidebarProvider, useSidebar } from '@/lib/sidebar-context'
+import { PropertyProvider } from '@/contexts/property-context'
 import { cn } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
@@ -31,9 +32,11 @@ export default function GuestLayout({
   return (
     <SessionProvider>
       <SidebarProvider>
-        <GuestLayoutContent>
-          {children}
-        </GuestLayoutContent>
+        <PropertyProvider>
+          <GuestLayoutContent>
+            {children}
+          </GuestLayoutContent>
+        </PropertyProvider>
       </SidebarProvider>
     </SessionProvider>
   )
