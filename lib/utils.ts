@@ -36,6 +36,10 @@ export function generateId() {
   return Math.random().toString(36).substr(2, 9)
 }
 
+export function generateConfirmationCode() {
+  return Math.random().toString(36).substring(2, 10).toUpperCase()
+}
+
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
   wait: number
