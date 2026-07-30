@@ -3,6 +3,7 @@
 import DashboardSidebar from '@/components/dashboard/dashboard-sidebar'
 import { SessionProvider } from 'next-auth/react'
 import { SidebarProvider, useSidebar } from '@/lib/sidebar-context'
+import { PropertyProvider } from '@/contexts/property-context'
 import { cn } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
@@ -31,9 +32,11 @@ export default function ReceptionLayout({
   return (
     <SessionProvider>
       <SidebarProvider>
-        <ReceptionLayoutContent>
-          {children}
-        </ReceptionLayoutContent>
+        <PropertyProvider>
+          <ReceptionLayoutContent>
+            {children}
+          </ReceptionLayoutContent>
+        </PropertyProvider>
       </SidebarProvider>
     </SessionProvider>
   )
