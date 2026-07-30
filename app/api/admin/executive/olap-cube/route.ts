@@ -76,7 +76,7 @@ export async function GET() {
       take: 5
     })
 
-    const anomalies = urgentTasks.map(task => ({
+    const anomalies = urgentTasks.map((task: any) => ({
       id: task.id,
       source: `TASK_${task.type}`,
       severity: 'CRITICAL',
