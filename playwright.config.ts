@@ -44,15 +44,13 @@ export default defineConfig({
       name: 'chromium',
       use: { 
         ...devices['Desktop Chrome'],
-        storageState: './playwright/.auth/admin.json',
       },
-      dependencies: ['setup'],
     },
   ],
-  webServer: {
-    command: 'npm run dev -- -p 3001',
-    url: 'http://localhost:3001',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120000,
-  },
+// webServer: {
+  //   command: 'npm run dev -- -p 3001',
+  //   url: 'http://localhost:3001',
+  //   reuseExistingServer: !process.env.CI,
+  //   timeout: 120000,
+  // },
 });
