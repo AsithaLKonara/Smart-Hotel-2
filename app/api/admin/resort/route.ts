@@ -5,7 +5,6 @@ export async function GET() {
   try {
     const facilities = await prisma.resortFacility.findMany({
         include: {
-            services: true,
             bookings: {
                 include: { guest: { select: { name: true } } },
                 orderBy: { startTime: 'asc' }

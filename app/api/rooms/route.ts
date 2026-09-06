@@ -14,6 +14,7 @@ const roomSchema = z.object({
   floor: z.number().int().min(0).optional().default(0),
   size: z.number().int().min(0).optional().default(25),
   status: z.enum(['AVAILABLE', 'OCCUPIED', 'DIRTY', 'CLEANING', 'INSPECTION_PENDING', 'MAINTENANCE', 'OUT_OF_ORDER']).default('AVAILABLE'),
+  images: z.array(z.string().url()).optional()
 })
 
 export async function GET(request: NextRequest) {
@@ -102,18 +103,36 @@ export async function POST(request: NextRequest) {
         roomType: {
           connect: { id: validatedData.roomTypeId }
         },
+        ...(validatedData.images && validatedData.images.length > 0 ? {
+          roomImages: {
+            create: validatedData.images.map((url, idx) => ({
+              imageUrl: url,
+              isMain: idx === 0,
+              displayOrder: idx
+            }))
+          }
+        } : {})
       } as any,
       include: { 
         roomType: true,
+        roomImages: true
       } as any
     })
 
     return NextResponse.json(room, { status: 201 })
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
       return handleZodError(error)
     }
     console.error('Error creating room:', error)
+    
+    // Check for Prisma P2025 "Record to update not found" / connection error for missing property
+    if (error.code === 'P2025' && error.meta?.cause?.includes('Property')) {
+      return NextResponse.json({ 
+        error: 'Invalid Property selected. Please clear your cache or select a valid property in the top bar.' 
+      }, { status: 400 })
+    }
+
     return NextResponse.json({ 
       error: 'Failed to create room', 
       details: error instanceof Error ? error.message : String(error)

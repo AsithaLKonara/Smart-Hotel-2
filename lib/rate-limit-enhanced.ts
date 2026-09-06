@@ -44,7 +44,7 @@ class EnhancedRateLimiter {
           redis: redis,
           limiter: Ratelimit.slidingWindow(this.config.limit, `${durationSeconds} s`),
           prefix: `@upstash/ratelimit:${prefix}`,
-          analytics: true,
+          analytics: false,
         })
       } catch (err) {
         console.warn(`[SRE] Failed to initialize Upstash Redis ratelimiter for prefix "${prefix}", falling back to memory:`, err)

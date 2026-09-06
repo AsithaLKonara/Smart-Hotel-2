@@ -15,7 +15,7 @@ import {
     formatMenuItem
 } from "@/lib/chatbot/hotel-tools";
 import { Ratelimit } from "@upstash/ratelimit";
-import { Redis } from "@upstash/redis";
+import { Redis } from "@/lib/redis-local";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +27,7 @@ if (process.env.REDIS_URL) {
     ratelimit = new Ratelimit({
         redis: redisClient,
         limiter: Ratelimit.slidingWindow(20, "1 m"),
-        analytics: true,
+        analytics: false,
     });
 }
 
@@ -187,10 +187,10 @@ export async function POST(req: NextRequest) {
                     if (fullContent) {
                         if (redisClient) {
                             redisClient.rpush('chat:history:queue', JSON.stringify({ sessionId, userId, userMessage, response: fullContent }))
-                                .catch(err => console.error("Redis rpush error:", err));
+                                .catch((err: unknown) => console.error("Redis rpush error:", err));
                         } else {
                             saveMessage(sessionId, userId, userMessage, fullContent)
-                                .catch(err => console.error("saveMessage error:", err));
+                                .catch((err: unknown) => console.error("saveMessage error:", err));
                         }
                     }
                     controller.close();

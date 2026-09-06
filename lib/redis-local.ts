@@ -5,7 +5,8 @@ export class Redis {
 
   constructor(config?: { url?: string } & RedisOptions) {
     const url = config?.url || process.env.REDIS_URL || 'redis://127.0.0.1:6379';
-    this.client = new IORedis(url, config || {});
+    // Use maxRetriesPerRequest: 0 to fail fast if Redis is down, preventing unhandled promise rejections
+    this.client = new IORedis(url, { maxRetriesPerRequest: 0, ...config });
 
     // Suppress connection errors from spamming the console
     this.client.on('error', (err: any) => {
@@ -77,6 +78,13 @@ export class Redis {
       typeof v === 'string' ? v : JSON.stringify(v)
     );
     return this.client.lpush(key, ...serializedValues);
+  }
+
+  async rpush(key: string, ...values: any[]) {
+    const serializedValues = values.map((v) =>
+      typeof v === 'string' ? v : JSON.stringify(v)
+    );
+    return this.client.rpush(key, ...serializedValues);
   }
 
   async ping() {

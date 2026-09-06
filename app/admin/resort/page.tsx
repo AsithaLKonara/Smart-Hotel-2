@@ -33,7 +33,12 @@ export default function ResortPage() {
     try {
       const res = await fetch('/api/admin/resort')
       const data = await res.json()
-      setFacilities(data)
+      if (res.ok && Array.isArray(data)) {
+        setFacilities(data)
+      } else {
+        console.error('Failed to load facilities:', data)
+        setFacilities([])
+      }
     } catch (e) {
       console.error(e)
     } finally {
@@ -128,7 +133,7 @@ export default function ResortPage() {
     }
   }
 
-  const activeFacility = facilities.find(f => f.id === formData.facilityId)
+  const activeFacility = Array.isArray(facilities) ? facilities.find(f => f.id === formData.facilityId) : undefined
 
   if (loading) return <div className="flex justify-center p-12"><Loader2 className="animate-spin w-8 h-8 text-white" /></div>
 
@@ -171,7 +176,7 @@ export default function ResortPage() {
                       <div className="w-1/3 border-r border-white/10 p-4 bg-black/10">
                           <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Menu</h3>
                           <div className="space-y-2">
-                              {facility.services.map((svc: any) => (
+                              {(facility.services || []).map((svc: any) => (
                                   <div key={svc.id} className="bg-white/5 p-2 rounded border border-white/5">
                                       <div className="font-bold text-sm truncate">{svc.name}</div>
                                       <div className="flex justify-between text-xs text-slate-400 mt-1">

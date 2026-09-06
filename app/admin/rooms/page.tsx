@@ -36,6 +36,7 @@ interface Room {
   status: 'AVAILABLE' | 'OCCUPIED' | 'MAINTENANCE' | 'RESERVED'
   floor?: number
   size?: number
+  roomImages?: { imageUrl: string }[]
 }
 
 export default function AdminRoomsPage() {
@@ -58,7 +59,9 @@ export default function AdminRoomsPage() {
     floor: '',
     size: '',
     status: 'AVAILABLE',
+    images: [] as string[],
   })
+  const [uploadingImages, setUploadingImages] = useState(false)
 
   useEffect(() => {
     if (status === 'loading') return
@@ -158,7 +161,8 @@ export default function AdminRoomsPage() {
         roomTypeId: formData.roomTypeId,
         status: formData.status,
         floor: formData.floor ? parseInt(formData.floor) : undefined,
-        size: formData.size ? parseInt(formData.size) : undefined
+        size: formData.size ? parseInt(formData.size) : undefined,
+        images: formData.images
       }
 
       const url = editingRoom ? `/api/rooms/${editingRoom.id}` : '/api/rooms'
@@ -199,6 +203,7 @@ export default function AdminRoomsPage() {
       floor: room.floor?.toString() || '',
       size: room.size?.toString() || '',
       status: room.status,
+      images: room.roomImages ? room.roomImages.map((img: any) => img.imageUrl) : []
     })
     setShowModal(true)
   }
@@ -224,6 +229,54 @@ export default function AdminRoomsPage() {
     }
   }
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+
+    setUploadingImages(true)
+    const newImages = [...formData.images]
+    
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i]
+        
+        // 1. Get presigned URL
+        const presignedRes = await fetch('/api/upload/presigned', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ filename: file.name, contentType: file.type })
+        })
+        
+        if (!presignedRes.ok) throw new Error('Failed to get upload URL')
+        const { signedUrl, publicUrl } = await presignedRes.json()
+        
+        // 2. Upload to S3 directly
+        const uploadRes = await fetch(signedUrl, {
+          method: 'PUT',
+          headers: { 'Content-Type': file.type },
+          body: file
+        })
+        
+        if (!uploadRes.ok) throw new Error('Failed to upload image')
+        newImages.push(publicUrl)
+      }
+      
+      setFormData(prev => ({ ...prev, images: newImages }))
+      toast.success('Images uploaded successfully')
+    } catch (error) {
+      console.error('Upload error:', error)
+      toast.error('Failed to upload images')
+    } finally {
+      setUploadingImages(false)
+    }
+  }
+
+  const handleDeleteImage = (index: number) => {
+    const newImages = [...formData.images]
+    newImages.splice(index, 1)
+    setFormData(prev => ({ ...prev, images: newImages }))
+  }
+
   const resetForm = () => {
     setFormData({
       number: '',
@@ -232,6 +285,7 @@ export default function AdminRoomsPage() {
       floor: '',
       size: '',
       status: 'AVAILABLE',
+      images: [],
     })
   }
 
@@ -568,6 +622,7 @@ export default function AdminRoomsPage() {
                 value={formData.floor || ''}
                 onChange={(e) => setFormData({ ...formData, floor: e.target.value })}
                 className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-primary/50 text-sm"
+                placeholder="0"
                 min="0"
               />
             </div>
@@ -581,8 +636,40 @@ export default function AdminRoomsPage() {
                 value={formData.size || ''}
                 onChange={(e) => setFormData({ ...formData, size: e.target.value })}
                 className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-primary/50 text-sm"
+                placeholder="25"
                 min="0"
               />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+              <span>Room Images</span>
+              {uploadingImages && <Loader2 className="w-3 h-3 animate-spin" />}
+            </label>
+            <div className="flex gap-2 flex-wrap mb-2">
+              {formData.images.map((url, idx) => (
+                <div key={idx} className="relative w-20 h-20 bg-black/40 border border-white/10 rounded-lg overflow-hidden group">
+                  <Image src={url} alt={`Preview ${idx}`} fill className="object-cover" />
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                    <button type="button" onClick={() => handleDeleteImage(idx)} className="text-red-400 hover:text-red-300">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+              <label className="w-20 h-20 flex flex-col items-center justify-center border border-dashed border-white/20 rounded-lg cursor-pointer hover:bg-white/5 hover:border-white/40 transition-colors">
+                <ImageIcon className="w-5 h-5 text-slate-400 mb-1" />
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Upload</span>
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  multiple 
+                  className="hidden" 
+                  onChange={handleImageUpload}
+                  disabled={uploadingImages}
+                />
+              </label>
             </div>
           </div>
 
