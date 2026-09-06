@@ -23,28 +23,34 @@ export async function POST(request: NextRequest) {
       credentials: {
         accessKeyId: process.env.S3_ACCESS_KEY_ID || '',
         secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || '',
-      },
-      // When using non-AWS S3 endpoints (like MinIO or Railway S3 plugins), forcePathStyle is often required
-      forcePathStyle: true,
+      }
     })
 
     const extension = filename.split('.').pop()
     const uniqueFilename = `${crypto.randomBytes(16).toString('hex')}.${extension}`
     const key = `rooms/${uniqueFilename}`
 
-    const command = new PutObjectCommand({
+    const { createPresignedPost } = require('@aws-sdk/s3-presigned-post')
+    
+    const { url, fields } = await createPresignedPost(s3Client, {
       Bucket: process.env.S3_BUCKET_NAME,
       Key: key,
-      ContentType: contentType,
+      Conditions: [
+        ['content-length-range', 0, 5 * 1024 * 1024], // 5MB limit
+        ['starts-with', '$Content-Type', 'image/'], // Must be an image
+      ],
+      Fields: {
+        'Content-Type': contentType,
+      },
+      Expires: 3600, // 1 hour
     })
 
-    const signedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 })
-    
-    // Determine the public URL (this is a simplified approach, some S3 providers need a custom public domain)
-    // Often it's endpoint/bucket/key or bucket.endpoint/key
-    const publicUrl = `${process.env.S3_ENDPOINT}/${process.env.S3_BUCKET_NAME}/${key}`
+    const endpointUrl = new URL(process.env.S3_ENDPOINT || '')
+    const publicUrl = `${endpointUrl.protocol}//${process.env.S3_BUCKET_NAME}.${endpointUrl.host}/${key}`
 
-    return NextResponse.json({ signedUrl, publicUrl, key })
+    console.log('✅ Generated POST Policy:', url)
+
+    return NextResponse.json({ url, fields, publicUrl, key })
   } catch (error) {
     console.error('Error generating presigned URL:', error)
     return NextResponse.json({ error: 'Failed to generate upload URL' }, { status: 500 })

@@ -12,6 +12,7 @@ const roomUpdateSchema = z.object({
   floor: z.number().optional(),
   size: z.number().optional(),
   status: z.string().optional(),
+  images: z.array(z.string().url()).optional(),
 })
 
 export async function PATCH(
@@ -107,7 +108,8 @@ export async function GET(
     const room = await prisma.room.findUnique({
       where: { id },
       include: {
-        roomType: true
+        roomType: true,
+        roomImages: true
       } as any
     })
 
@@ -185,12 +187,23 @@ export async function PUT(
     if (validatedData.size !== undefined) updateData.size = validatedData.size;
     if (validatedData.status) updateData.status = validatedData.status;
     if (validatedData.roomTypeId) updateData.roomTypeId = validatedData.roomTypeId;
+    if (validatedData.images !== undefined) {
+      updateData.roomImages = {
+        deleteMany: {},
+        create: validatedData.images.map((url, idx) => ({
+          imageUrl: url,
+          isMain: idx === 0,
+          displayOrder: idx
+        }))
+      }
+    }
 
     const room = await prisma.room.update({
       where: { id: id },
       data: updateData,
       include: {
         roomType: true,
+        roomImages: true,
       } as any
     })
 

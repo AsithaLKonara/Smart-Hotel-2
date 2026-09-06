@@ -1,0 +1,42 @@
+[
+  {
+    "id": "AUDIT-001",
+    "flow": "Image Upload / Room Creation",
+    "layer": "API / Backend",
+    "type": "Broken",
+    "severity": "High",
+    "effort": "Medium",
+    "description": "The S3 presigned URL generation uses a standard PUT object command instead of a POST policy. This means the 5MB file size limit is only enforced on the frontend, and a malicious user could bypass it to upload massive files to the bucket.",
+    "fix_plan": "Refactor /api/upload/presigned to use S3 Presigned POST (createPresignedPost) with a `content-length-range` condition restricting uploads to 5MB."
+  },
+  {
+    "id": "AUDIT-002",
+    "flow": "Application Load",
+    "layer": "Middleware",
+    "type": "Broken",
+    "severity": "Medium",
+    "effort": "Small",
+    "description": "The NextAuth proxy/middleware intercepts manifest.json and icons because they are missing from the matcher exclusion regex. This results in a 307 redirect to /auth/signin, causing a syntax error when the browser tries to parse the HTML login page as JSON.",
+    "fix_plan": "Add `manifest.json` and `icons` to the matcher exclusion regex in proxy.ts."
+  },
+  {
+    "id": "AUDIT-003",
+    "flow": "Image Upload / Room Creation",
+    "layer": "UI",
+    "type": "Inconsistent",
+    "severity": "Low",
+    "effort": "Small",
+    "description": "The Next.js <Image> component for previewing room images uses the 'fill' layout but lacks a 'sizes' prop. This triggers a console warning and prevents the browser from downloading the optimally sized image.",
+    "fix_plan": "Add `sizes=\"(max-width: 768px) 100vw, 80px\"` to the <Image> component in app/admin/rooms/page.tsx."
+  },
+  {
+    "id": "AUDIT-004",
+    "flow": "Room Creation",
+    "layer": "State / UX",
+    "type": "Inconsistent",
+    "severity": "Medium",
+    "effort": "Small",
+    "description": "If a user's local activePropertyId state (cached in localStorage) references a Property UUID that was deleted from the database, the API throws 'Invalid Property selected'. However, the frontend doesn't gracefully recover by clearing the stale cache, requiring manual user intervention.",
+    "fix_plan": "When catching the 'Invalid Property selected' error in the UI, automatically clear the activePropertyId from local storage or prompt a strict modal to reselect."
+  }
+]

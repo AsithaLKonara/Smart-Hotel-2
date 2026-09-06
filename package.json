@@ -76,6 +76,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1127.0",
+    "@aws-sdk/s3-presigned-post": "^3.1127.0",
     "@aws-sdk/s3-request-presigner": "^3.1127.0",
     "@hookform/resolvers": "^3.3.2",
     "@next-auth/prisma-adapter": "^1.0.7",

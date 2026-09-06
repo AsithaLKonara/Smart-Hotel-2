@@ -111,7 +111,7 @@ async function main() {
         name: user.name, 
         password: hashedPassword, 
         roleId: createdRoles[user.roleName].id,
-        propertyId: defaultProperty.id
+        propertyId: user.roleName === 'SUPER_ADMIN' ? undefined : defaultProperty.id
       }
     })
   }

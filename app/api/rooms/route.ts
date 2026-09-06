@@ -31,7 +31,9 @@ export async function GET(request: NextRequest) {
 
     const getCachedRooms = unstable_cache(
       async (tId: string | null, stat: string | null, availOnly: boolean, pId: string | null) => {
-        const whereClause: any = {}
+        const whereClause: any = {
+          deletedAt: null
+        }
         if (tId) whereClause.roomTypeId = tId
         if (stat) whereClause.status = stat
         if (availOnly) whereClause.status = 'AVAILABLE'
@@ -41,6 +43,7 @@ export async function GET(request: NextRequest) {
           where: whereClause,
           include: {
             roomType: true,
+            roomImages: true
           } as any,
           orderBy: { number: 'asc' }
         })

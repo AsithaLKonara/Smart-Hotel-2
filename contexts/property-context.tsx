@@ -26,6 +26,8 @@ export function PropertyProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
 
   const userPropertyId = session?.user?.propertyId as string | undefined
+  const roleName = (session?.user as any)?.roleName as string | undefined
+  const isSuperAdmin = roleName === 'SUPER_ADMIN'
 
   useEffect(() => {
     async function fetchProperties() {
@@ -36,7 +38,7 @@ export function PropertyProvider({ children }: { children: React.ReactNode }) {
           setProperties(data)
           
           // Determine the initial active property
-          if (userPropertyId) {
+          if (userPropertyId && !isSuperAdmin) {
             // User is locked to a property
             setActivePropertyIdState(userPropertyId)
           } else {
@@ -60,7 +62,7 @@ export function PropertyProvider({ children }: { children: React.ReactNode }) {
   }, [userPropertyId])
 
   const setActivePropertyId = (id: string) => {
-    if (userPropertyId) return // Cannot change if locked
+    if (userPropertyId && !isSuperAdmin) return // Cannot change if locked
 
     setActivePropertyIdState(id)
     localStorage.setItem('smarthotel_active_property', id)
@@ -74,7 +76,7 @@ export function PropertyProvider({ children }: { children: React.ReactNode }) {
         setActivePropertyId, 
         properties, 
         isLoading,
-        isLocked: !!userPropertyId
+        isLocked: !!(userPropertyId && !isSuperAdmin)
       }}
     >
       {children}

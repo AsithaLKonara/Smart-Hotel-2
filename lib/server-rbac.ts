@@ -12,13 +12,14 @@ export async function getEffectivePropertyId(req?: Request): Promise<string | nu
   const session = await getServerSession(authOptions)
   if (!session?.user) return null
 
-  // 1. Strict isolation: If the user is assigned a specific property in DB, enforce it.
-  if (session.user.propertyId) {
+  const broadRole = getBroadRole(session.user.roleName || '')
+  
+  // 1. Strict isolation: If the user is assigned a specific property in DB and is NOT a SUPER_ADMIN, enforce it.
+  if (session.user.propertyId && broadRole !== 'SUPER_ADMIN') {
     return session.user.propertyId
   }
 
   // 2. Global roles (e.g. SUPER_ADMIN) can view specific properties via header switcher
-  const broadRole = getBroadRole(session.user.roleName || '')
   if (broadRole === 'SUPER_ADMIN') {
     if (req) {
       const headerPropertyId = req.headers.get('x-property-id')

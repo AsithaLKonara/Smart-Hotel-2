@@ -62,6 +62,7 @@ export default function AdminRoomsPage() {
     images: [] as string[],
   })
   const [uploadingImages, setUploadingImages] = useState(false)
+  const [pendingImageFiles, setPendingImageFiles] = useState<{file: File, preview: string}[]>([])
 
   useEffect(() => {
     if (status === 'loading') return
@@ -128,6 +129,9 @@ export default function AdminRoomsPage() {
       return;
     }
 
+    setUploadingImages(true)
+    let finalImages = [...formData.images]
+
     try {
       // 1. Sync Base Rate to Room Type if custom price provided
       if (formData.roomTypeId && formData.price) {
@@ -151,14 +155,47 @@ export default function AdminRoomsPage() {
         }
       }
 
-      // 2. Save Room
+      // 2. Pre-flight Upload Pending Images
+      if (pendingImageFiles.length > 0) {
+        for (let i = 0; i < pendingImageFiles.length; i++) {
+          const { file } = pendingImageFiles[i]
+          
+          const presignedRes = await fetch('/api/upload/presigned', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ filename: file.name, contentType: file.type })
+          })
+          
+          if (!presignedRes.ok) throw new Error('Failed to get upload URL')
+          const { url, fields, publicUrl } = await presignedRes.json()
+          
+          const formData = new FormData()
+          Object.entries(fields).forEach(([key, value]) => {
+            formData.append(key, value as string)
+          })
+          formData.append('file', file)
+
+          const uploadRes = await fetch(url, {
+            method: 'POST',
+            body: formData
+          })
+          
+          if (!uploadRes.ok) {
+             const errorText = await uploadRes.text()
+             throw new Error(`Failed to upload ${file.name}: ${errorText}`)
+          }
+          finalImages.push(publicUrl)
+        }
+      }
+
+      // 3. Save Room
       const roomData = {
         number: formData.number,
         roomTypeId: formData.roomTypeId,
         status: formData.status,
         floor: formData.floor ? parseInt(formData.floor) : undefined,
         size: formData.size ? parseInt(formData.size) : undefined,
-        images: formData.images
+        images: finalImages
       }
 
       const url = editingRoom ? `/api/rooms/${editingRoom.id}` : '/api/rooms'
@@ -187,6 +224,13 @@ export default function AdminRoomsPage() {
     } catch (error: any) {
       console.error('Error saving room:', error)
       toast.error(error.message || 'Failed to save room')
+      
+      if (error.message?.includes('Invalid Property selected')) {
+        localStorage.removeItem('smarthotel_active_property')
+        window.location.reload()
+      }
+    } finally {
+      setUploadingImages(false)
     }
   }
 
@@ -201,6 +245,7 @@ export default function AdminRoomsPage() {
       status: room.status,
       images: room.roomImages ? room.roomImages.map((img: any) => img.imageUrl) : []
     })
+    setPendingImageFiles([])
     setShowModal(true)
   }
 
@@ -225,52 +270,47 @@ export default function AdminRoomsPage() {
     }
   }
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (!files || files.length === 0) return
 
-    setUploadingImages(true)
-    const newImages = [...formData.images]
-    
-    try {
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i]
-        
-        // 1. Get presigned URL
-        const presignedRes = await fetch('/api/upload/presigned', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ filename: file.name, contentType: file.type })
-        })
-        
-        if (!presignedRes.ok) throw new Error('Failed to get upload URL')
-        const { signedUrl, publicUrl } = await presignedRes.json()
-        
-        // 2. Upload to S3 directly
-        const uploadRes = await fetch(signedUrl, {
-          method: 'PUT',
-          headers: { 'Content-Type': file.type },
-          body: file
-        })
-        
-        if (!uploadRes.ok) throw new Error('Failed to upload image')
-        newImages.push(publicUrl)
+    const allowedTypes = ['image/webp', 'image/jpeg', 'image/jpg', 'image/png', 'image/heic']
+    const maxSize = 5 * 1024 * 1024 // 5MB
+
+    const validFiles: {file: File, preview: string}[] = []
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i]
+      if (!allowedTypes.includes(file.type)) {
+        toast.error(`File type not allowed: ${file.name}`)
+        continue
       }
-      
-      setFormData(prev => ({ ...prev, images: newImages }))
-      toast.success('Images uploaded successfully')
-    } catch (error) {
-      console.error('Upload error:', error)
-      toast.error('Failed to upload images')
-    } finally {
-      setUploadingImages(false)
+      if (file.size > maxSize) {
+        toast.error(`File too large (max 5MB): ${file.name}`)
+        continue
+      }
+      validFiles.push({
+        file,
+        preview: URL.createObjectURL(file)
+      })
     }
+
+    setPendingImageFiles(prev => [...prev, ...validFiles])
   }
 
   const handleDeleteImage = (index: number) => {
     const newImages = [...formData.images]
     newImages.splice(index, 1)
     setFormData(prev => ({ ...prev, images: newImages }))
+  }
+
+  const handleDeletePendingImage = (index: number) => {
+    setPendingImageFiles(prev => {
+      const newPending = [...prev]
+      URL.revokeObjectURL(newPending[index].preview) // cleanup
+      newPending.splice(index, 1)
+      return newPending
+    })
   }
 
   const resetForm = () => {
@@ -283,6 +323,8 @@ export default function AdminRoomsPage() {
       status: 'AVAILABLE',
       images: [],
     })
+    pendingImageFiles.forEach(pf => URL.revokeObjectURL(pf.preview))
+    setPendingImageFiles([])
   }
 
   const safeRoomsArray = Array.isArray(rooms) ? rooms : []
@@ -645,10 +687,22 @@ export default function AdminRoomsPage() {
             </label>
             <div className="flex gap-2 flex-wrap mb-2">
               {formData.images.map((url, idx) => (
-                <div key={idx} className="relative w-20 h-20 bg-black/40 border border-white/10 rounded-lg overflow-hidden group">
-                  <Image src={url} alt={`Preview ${idx}`} fill className="object-cover" />
+                <div key={`existing-${idx}`} className="relative w-20 h-20 bg-black/40 border border-white/10 rounded-lg overflow-hidden group">
+                  <Image src={url} alt={`Preview ${idx}`} fill sizes="(max-width: 768px) 100vw, 80px" className="object-cover" />
                   <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                     <button type="button" onClick={() => handleDeleteImage(idx)} className="text-red-400 hover:text-red-300">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+              {pendingImageFiles.map((pf, idx) => (
+                <div key={`pending-${idx}`} className="relative w-20 h-20 bg-black/40 border border-white/10 rounded-lg overflow-hidden group">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={pf.preview} alt={`Pending Preview ${idx}`} className="w-full h-full object-cover" />
+                  <div className="absolute top-1 right-1 bg-primary text-[8px] px-1 rounded uppercase font-bold text-white z-10">Pending</div>
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity z-20">
+                    <button type="button" onClick={() => handleDeletePendingImage(idx)} className="text-red-400 hover:text-red-300">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
@@ -659,10 +713,10 @@ export default function AdminRoomsPage() {
                 <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Upload</span>
                 <input 
                   type="file" 
-                  accept="image/*" 
+                  accept="image/webp,image/jpeg,image/png,image/heic" 
                   multiple 
                   className="hidden" 
-                  onChange={handleImageUpload}
+                  onChange={handleImageSelect}
                   disabled={uploadingImages}
                 />
               </label>
