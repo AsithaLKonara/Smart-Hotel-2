@@ -10,22 +10,22 @@ const envSchema = z.object({
   // Core
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   DATABASE_URL: z.string().url(),
-  NEXTAUTH_SECRET: z.string().min(32),
+  NEXTAUTH_SECRET: z.string().min(1),
   NEXTAUTH_URL: z.string().url().optional(),
 
-  // Real-time (Pusher)
-  PUSHER_APP_ID: z.string(),
-  NEXT_PUBLIC_PUSHER_KEY: z.string(),
-  PUSHER_SECRET: z.string(),
+  // Real-time (Pusher) — optional, features degrade gracefully when not configured
+  PUSHER_APP_ID: z.string().optional(),
+  NEXT_PUBLIC_PUSHER_KEY: z.string().optional(),
+  PUSHER_SECRET: z.string().optional(),
   NEXT_PUBLIC_PUSHER_CLUSTER: z.string().default('mt1'),
 
-  // Persistence & Locking (Redis)
-  UPSTASH_REDIS_REST_URL: z.string().url(),
-  UPSTASH_REDIS_REST_TOKEN: z.string(),
+  // Persistence & Locking (Redis) — optional, features degrade gracefully
+  UPSTASH_REDIS_REST_URL: z.string().optional(),
+  UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
 
-  // Payments (Stripe)
-  STRIPE_SECRET_KEY: z.string().startsWith('sk_'),
-  STRIPE_PUBLISHABLE_KEY: z.string().startsWith('pk_'),
+  // Payments (Stripe) — optional for local dev
+  STRIPE_SECRET_KEY: z.string().startsWith('sk_').optional(),
+  STRIPE_PUBLISHABLE_KEY: z.string().startsWith('pk_').optional(),
   STRIPE_WEBHOOK_SECRET: z.string().startsWith('whsec_').optional(),
 
 

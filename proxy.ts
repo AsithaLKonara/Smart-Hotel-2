@@ -97,7 +97,7 @@ const PROTECTED_ROUTES = [
   { prefix: '/admin', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'HOUSEKEEPING', 'MAINTENANCE'] },
 ].sort((a, b) => b.prefix.length - a.prefix.length)
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   // 0. Reject WebSocket upgrades to mitigate SSRF (CVE-2026-44578)
   const upgradeHeader = request.headers.get('upgrade')
   const connectionHeader = request.headers.get('connection')
