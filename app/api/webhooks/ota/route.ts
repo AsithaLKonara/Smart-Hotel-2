@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { processOtaReservation } from '@/lib/ota/webhook-handler';
 import { log } from '@/lib/logger';
 import { enhancedRateLimit, createEnhancedRateLimitResponse } from '@/lib/rate-limit-enhanced';
-import { Redis } from '@upstash/redis';
+import { Redis } from '@/lib/redis-local';
 
 function getRedisClient(): Redis | null {
-  if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+  if (process.env.REDIS_URL) {
     try {
       return Redis.fromEnv()
     } catch {

@@ -17,6 +17,7 @@ export interface DashboardSummary {
   occupancyRate: number
   avgBookingValue: number
   bookingGrowthRate: number
+  serviceScore: number
 }
 
 export interface DashboardCharts {
@@ -64,11 +65,22 @@ export interface DashboardGuestStats {
   totalAdmins: number
 }
 
+export interface DashboardComplaint {
+  id: string
+  subject: string
+  description: string
+  priority: string
+  status: string
+  createdAt: string
+  roomNumber?: string | null
+}
+
 export interface DashboardAnalyticsPayload {
   summary: DashboardSummary
   charts: DashboardCharts
   recentActivity: DashboardActivity
   guestStats: DashboardGuestStats
+  vipComplaints: DashboardComplaint[]
 }
 
 function calculateGrowthRate(current: number, previous: number): number {
@@ -140,6 +152,20 @@ export async function computeDashboardAnalytics(referenceDate = new Date(), prop
         ...(propertyId ? { propertyId } : {}),
         role: { name: { in: ['RECEPTIONIST', 'HOUSEKEEPING', 'HOUSEKEEPER', 'MAINTENANCE', 'KITCHEN'] } } 
       } 
+    }),
+    prisma.feedback.aggregate({
+      _avg: { overallRating: true },
+      where: propertyId ? { booking: { propertyId } } : undefined
+    }),
+    prisma.complaint.findMany({
+      where: {
+        status: { not: 'RESOLVED' },
+        priority: { in: ['URGENT', 'HIGH'] },
+        ...(propertyId ? { booking: { propertyId } } : {})
+      },
+      include: { booking: { include: { roomAssignments: { include: { room: true } } } } },
+      orderBy: { createdAt: 'desc' },
+      take: 5
     })
   ])
 
@@ -246,6 +272,19 @@ export async function computeDashboardAnalytics(referenceDate = new Date(), prop
     totalAdmins: getRoleCount('SUPER_ADMIN') + getRoleCount('MANAGER')
   }
 
+  const serviceScoreAvg = userStatsAndScores[7]?._avg?.overallRating || 5;
+  const serviceScore = Number(((serviceScoreAvg / 5) * 100).toFixed(1));
+
+  const vipComplaints = userStatsAndScores[8].map((c: any) => ({
+    id: c.id,
+    subject: c.subject,
+    description: c.description,
+    priority: c.priority,
+    status: c.status,
+    createdAt: c.createdAt.toISOString(),
+    roomNumber: c.booking?.roomAssignments?.[0]?.room?.number || null,
+  }));
+
   return {
     summary: {
       totalBookings: monthlyBookings.length, // Displaying monthly as "Total" in this context is often preferred for dashboards
@@ -258,7 +297,8 @@ export async function computeDashboardAnalytics(referenceDate = new Date(), prop
       yearlyRevenue: Number(yearlyRevenue.toFixed(2)),
       occupancyRate: Number(occupancyChartData[29].occupancyRate),
       avgBookingValue: monthlyBookings.length > 0 ? Number((monthlyRevenue / monthlyBookings.length).toFixed(2)) : 0,
-      bookingGrowthRate
+      bookingGrowthRate,
+      serviceScore
     },
     charts: {
       occupancy: occupancyChartData,
@@ -273,7 +313,8 @@ export async function computeDashboardAnalytics(referenceDate = new Date(), prop
       bookings: recentActivityBookings,
       topRooms
     },
-    guestStats
+    guestStats,
+    vipComplaints
   }
 }
 

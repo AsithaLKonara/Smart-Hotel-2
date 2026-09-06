@@ -117,7 +117,7 @@ function AdminDashboardContent() {
           <div className="flex justify-between items-center">
             <div>
               <p className="text-[10px] text-white/20 uppercase font-black tracking-widest">Service Score</p>
-              <h3 className="text-2xl font-serif font-bold text-white mt-1">98.2%</h3>
+              <h3 className="text-2xl font-serif font-bold text-white mt-1">{summary.serviceScore ?? 0}%</h3>
             </div>
             <div className="w-12 h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform">
               <Star className="w-6 h-6" />
@@ -159,13 +159,19 @@ function AdminDashboardContent() {
               <ShieldAlert className="w-6 h-6" />
               <h3 className="text-lg font-serif font-bold">VIP Complaint Escalation</h3>
             </div>
-            <div className="p-6 bg-rose-500/10 border border-rose-500/20 rounded-2xl flex justify-between items-center">
-              <div>
-                <h5 className="text-sm font-bold text-white">Critical HVAC Issue</h5>
-                <p className="text-xs text-white/40 mt-1">Room 401: Reported by guest 15 mins ago.</p>
+            {dashboardData?.vipComplaints && dashboardData.vipComplaints.length > 0 ? (
+              <div className="p-6 bg-rose-500/10 border border-rose-500/20 rounded-2xl flex justify-between items-center">
+                <div>
+                  <h5 className="text-sm font-bold text-white">{dashboardData.vipComplaints[0].subject}</h5>
+                  <p className="text-xs text-white/40 mt-1 line-clamp-1">{dashboardData.vipComplaints[0].roomNumber ? `Room ${dashboardData.vipComplaints[0].roomNumber}: ` : ''}{dashboardData.vipComplaints[0].description}</p>
+                </div>
+                <Button className="bg-rose-600 hover:bg-rose-700 h-10 px-6 rounded-xl text-[10px] font-black uppercase tracking-widest text-white transition-all hover:scale-105 shrink-0 ml-4" onClick={() => router.push('/admin/complaints')}>Resolve Now</Button>
               </div>
-              <Button className="bg-rose-600 hover:bg-rose-700 h-10 px-6 rounded-xl text-[10px] font-black uppercase tracking-widest text-white transition-all hover:scale-105">Resolve Now</Button>
-            </div>
+            ) : (
+              <div className="p-6 bg-emerald-500/5 border border-emerald-500/10 rounded-2xl flex items-center justify-center">
+                <p className="text-sm font-bold text-emerald-500">All Clear - No Active Escalations</p>
+              </div>
+            )}
           </Card>
         </div>
 
@@ -178,7 +184,7 @@ function AdminDashboardContent() {
             <div className="space-y-4">
               <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
                 <div>
-                  <p className="text-xs font-bold text-white">18 Staff Active</p>
+                  <p className="text-xs font-bold text-white">{dashboardData?.guestStats?.totalStaff ?? 0} Staff Active</p>
                   <p className="text-[10px] text-white/40 uppercase font-black">All Sectors Operational</p>
                 </div>
                 <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-lg shadow-emerald-500/50" />

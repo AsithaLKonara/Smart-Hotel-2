@@ -22,7 +22,7 @@ export const dynamic = "force-dynamic";
 // ─── Rate limiter ─────────────────────────────────────────────────────────────
 let ratelimit: Ratelimit | null = null;
 export let redisClient: Redis | null = null;
-if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+if (process.env.REDIS_URL) {
     redisClient = Redis.fromEnv();
     ratelimit = new Ratelimit({
         redis: redisClient,

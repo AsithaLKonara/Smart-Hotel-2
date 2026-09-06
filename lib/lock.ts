@@ -1,4 +1,4 @@
-import { Redis } from '@upstash/redis'
+import { Redis } from '@/lib/redis-local'
 
 const globalLocks = globalThis as unknown as {
   inMemoryLocks: Map<string, Promise<void>> | undefined
@@ -18,7 +18,7 @@ const inMemoryLocks = globalLocks.inMemoryLocks
  * Returns a release function to unlock the resource.
  */
 export async function acquireLock(key: string, ttl = 15000): Promise<() => Promise<void>> {
-  const isRedisConfigured = !!(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN)
+  const isRedisConfigured = !!(process.env.REDIS_URL)
 
   if (isRedisConfigured) {
     try {

@@ -2,13 +2,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { prisma } from '@/lib/db'
 import { logAction, AUDIT_ACTIONS } from '@/lib/audit'
-import { Redis } from '@upstash/redis'
+import { Redis } from '@/lib/redis-local'
 import { RealtimeEvents } from '@/lib/realtime'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2023-10-16' })
 
 function getRedisClient(): Redis | null {
-  if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+  if (process.env.REDIS_URL) {
     try {
       return Redis.fromEnv()
     } catch {

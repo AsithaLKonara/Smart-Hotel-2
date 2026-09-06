@@ -32,8 +32,8 @@ export class SelfHealingRuntime {
 
     // 2. Audit Upstash Redis environment setups
     try {
-      const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
-      const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+      const redisUrl = process.env.REDIS_URL;
+      const redisToken = process.env.REDIS_URL;
       if (redisUrl && redisToken) {
         redisOk = true;
       }

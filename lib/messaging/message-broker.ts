@@ -1,4 +1,4 @@
-import { Redis } from '@upstash/redis'
+import { Redis } from '@/lib/redis-local'
 import logger from '@/lib/logger'
 
 export interface PublishMessage {
@@ -17,7 +17,7 @@ enum CircuitState {
 
 export class MessageBroker {
   private static get redis(): Redis | null {
-    if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+    if (process.env.REDIS_URL) {
       try {
         return Redis.fromEnv()
       } catch {

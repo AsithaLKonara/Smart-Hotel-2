@@ -51,6 +51,7 @@ export async function GET(request: NextRequest) {
           occupancyRate: 0,
           avgBookingValue: 0,
           bookingGrowthRate: 0,
+          serviceScore: 0,
         },
         charts: {
           occupancy: [],
@@ -70,6 +71,7 @@ export async function GET(request: NextRequest) {
           totalStaff: 0,
           totalAdmins: 0,
         },
+        vipComplaints: [],
       })
     }
   } catch (error: any) {

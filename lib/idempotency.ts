@@ -1,4 +1,4 @@
-import { Redis } from '@upstash/redis'
+import { Redis } from '@/lib/redis-local'
 
 interface IdempotencyResponse {
   status: number
@@ -29,7 +29,7 @@ export async function checkIdempotency(key: string): Promise<IdempotencyState> {
     return { state: 'new' }
   }
 
-  const isRedisConfigured = !!(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN)
+  const isRedisConfigured = !!(process.env.REDIS_URL)
   const fullKey = `idempotency:${key}`
 
   if (isRedisConfigured) {
@@ -96,7 +96,7 @@ export async function saveIdempotency(
     return
   }
 
-  const isRedisConfigured = !!(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN)
+  const isRedisConfigured = !!(process.env.REDIS_URL)
   const fullKey = `idempotency:${key}`
 
   if (isRedisConfigured) {
@@ -126,7 +126,7 @@ export async function clearIdempotency(key: string): Promise<void> {
     return
   }
 
-  const isRedisConfigured = !!(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN)
+  const isRedisConfigured = !!(process.env.REDIS_URL)
   const fullKey = `idempotency:${key}`
 
   if (isRedisConfigured) {

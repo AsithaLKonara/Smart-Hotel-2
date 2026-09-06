@@ -22,12 +22,12 @@ export class PubSubEngine {
       timestamp: new Date().toISOString()
     }
 
-    const isRedisConfigured = !!(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN)
+    const isRedisConfigured = !!(process.env.REDIS_URL)
 
     if (isRedisConfigured) {
       try {
         // Publish to Redis REST API
-        const { Redis } = require('@upstash/redis')
+        const { Redis } = require('@/lib/redis-local')
         const redis = Redis.fromEnv()
         await redis.publish(channel, JSON.stringify(message))
         return

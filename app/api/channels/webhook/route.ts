@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/db'
 import { Prisma } from '@prisma/client'
-import { Redis } from '@upstash/redis'
+import { Redis } from '@/lib/redis-local'
 import crypto from 'crypto'
 
 function getRedisClient(): Redis | null {
-  if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+  if (process.env.REDIS_URL) {
     try {
       return Redis.fromEnv()
     } catch {

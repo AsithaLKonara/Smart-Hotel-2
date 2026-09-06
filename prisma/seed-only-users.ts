@@ -71,6 +71,23 @@ async function main() {
   }
 
   // ==========================================
+  // 1.5. DEFAULT PROPERTY
+  // ==========================================
+  console.log('Seeding Default Property...')
+  const defaultProperty = await prisma.property.create({
+    data: {
+      name: 'SmartHotel Grand Palace',
+      code: 'SH-GP',
+      address: '123 Smart Way',
+      city: 'Techville',
+      country: 'USA',
+      timezone: 'America/New_York',
+      totalRooms: 50,
+      status: 'ACTIVE'
+    }
+  })
+
+  // ==========================================
   // 2. USERS
   // ==========================================
   console.log('Seeding Users...')
@@ -88,10 +105,14 @@ async function main() {
   const createdUsers: Record<string, any> = {}
   for (const user of demoUsers) {
     const hashedPassword = await bcrypt.hash(user.password, 10)
-    createdUsers[user.email] = await prisma.user.upsert({
-      where: { email: user.email },
-      update: { roleId: createdRoles[user.roleName].id },
-      create: { email: user.email, name: user.name, password: hashedPassword, roleId: createdRoles[user.roleName].id }
+    createdUsers[user.email] = await prisma.user.create({
+      data: { 
+        email: user.email, 
+        name: user.name, 
+        password: hashedPassword, 
+        roleId: createdRoles[user.roleName].id,
+        propertyId: defaultProperty.id
+      }
     })
   }
 

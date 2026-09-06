@@ -17,7 +17,7 @@ export class RedisLockCoordinator {
     ttlMs: number = 5000
   ): Promise<LeaseLock> {
     const lockKey = `lock:${key}`
-    const isRedisConfigured = !!(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN)
+    const isRedisConfigured = !!(process.env.REDIS_URL)
 
     this.monotonicCounter += 1
     const token = this.monotonicCounter
@@ -32,7 +32,7 @@ export class RedisLockCoordinator {
 
     if (isRedisConfigured) {
       try {
-        const { Redis } = require('@upstash/redis')
+        const { Redis } = require('@/lib/redis-local')
         const redis = Redis.fromEnv()
 
         // Acquire lock and write fencing token atomically
@@ -86,11 +86,11 @@ export class RedisLockCoordinator {
       clearInterval(lease.renewTimer)
     }
 
-    const isRedisConfigured = !!(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN)
+    const isRedisConfigured = !!(process.env.REDIS_URL)
 
     if (isRedisConfigured) {
       try {
-        const { Redis } = require('@upstash/redis')
+        const { Redis } = require('@/lib/redis-local')
         const redis = Redis.fromEnv()
 
         const currentStr = await redis.get(lease.lockKey)

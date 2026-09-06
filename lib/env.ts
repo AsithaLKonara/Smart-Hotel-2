@@ -20,8 +20,7 @@ const envSchema = z.object({
   NEXT_PUBLIC_PUSHER_CLUSTER: z.string().default('mt1'),
 
   // Persistence & Locking (Redis) — optional, features degrade gracefully
-  UPSTASH_REDIS_REST_URL: z.string().optional(),
-  UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
+  REDIS_URL: z.string().optional(),
 
   // Payments (Stripe) — optional for local dev
   STRIPE_SECRET_KEY: z.string().startsWith('sk_').optional(),

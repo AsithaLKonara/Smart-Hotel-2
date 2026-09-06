@@ -37,10 +37,10 @@ describe('Stripe Webhook Redis Failure', () => {
   });
 
   it('should fail closed and return 503 if Redis is unavailable (fromEnv throws)', async () => {
-    process.env.UPSTASH_REDIS_REST_URL = 'http://test';
-    process.env.UPSTASH_REDIS_REST_TOKEN = 'test';
+    process.env.REDIS_URL = 'http://test';
+    process.env.REDIS_URL = 'test';
     
-    const { Redis } = require('@upstash/redis');
+    const { Redis } = require('@/lib/redis-local');
     Redis.fromEnv.mockImplementation(() => {
       throw new Error('Redis initialization failed');
     });
@@ -53,8 +53,8 @@ describe('Stripe Webhook Redis Failure', () => {
   });
 
   it('should fail closed and return 503 if Redis is unconfigured', async () => {
-    delete process.env.UPSTASH_REDIS_REST_URL;
-    delete process.env.UPSTASH_REDIS_REST_TOKEN;
+    delete process.env.REDIS_URL;
+    delete process.env.REDIS_URL;
     
     const response = await POST(mockRequest);
     
@@ -64,10 +64,10 @@ describe('Stripe Webhook Redis Failure', () => {
   });
 
   it('should fail closed and return 503 if Redis set operation fails', async () => {
-    process.env.UPSTASH_REDIS_REST_URL = 'http://test';
-    process.env.UPSTASH_REDIS_REST_TOKEN = 'test';
+    process.env.REDIS_URL = 'http://test';
+    process.env.REDIS_URL = 'test';
     
-    const { Redis } = require('@upstash/redis');
+    const { Redis } = require('@/lib/redis-local');
     const mockSet = jest.fn().mockRejectedValue(new Error('Network error'));
     Redis.fromEnv.mockImplementation(() => ({
       set: mockSet

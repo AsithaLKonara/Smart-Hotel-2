@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { Redis } from '@upstash/redis'
+import { Redis } from '@/lib/redis-local'
 import { requirePermission } from '@/lib/server-rbac'
 
 export async function GET(request: NextRequest) {

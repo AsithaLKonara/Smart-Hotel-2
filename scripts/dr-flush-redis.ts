@@ -1,4 +1,4 @@
-import { Redis } from '@upstash/redis'
+import { Redis } from '@/lib/redis-local'
 import dotenv from 'dotenv'
 
 dotenv.config()
@@ -11,8 +11,8 @@ dotenv.config()
  * or rate limits are erroneously blocking all traffic.
  */
 
-const UPSTASH_REDIS_REST_URL = process.env.UPSTASH_REDIS_REST_URL
-const UPSTASH_REDIS_REST_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN
+const UPSTASH_REDIS_REST_URL = process.env.REDIS_URL
+const UPSTASH_REDIS_REST_TOKEN = process.env.REDIS_URL
 
 if (!UPSTASH_REDIS_REST_URL || !UPSTASH_REDIS_REST_TOKEN) {
   console.error('❌ Missing Upstash Redis credentials in environment.')

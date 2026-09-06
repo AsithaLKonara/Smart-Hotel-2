@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { Redis } from '@upstash/redis'
+import { Redis } from '@/lib/redis-local'
 import { Ratelimit } from '@upstash/ratelimit'
 
 interface RateLimitConfig {
@@ -19,11 +19,9 @@ interface RateLimitResult {
 // Check if Upstash Redis credentials exist AND are not placeholder/dummy values
 const DUMMY_VALUES = new Set(['dummy', 'http://dummy', 'https://dummy', 'placeholder', '', 'sk_dummy', 'pk_dummy'])
 const hasRedis = !!(
-  process.env.UPSTASH_REDIS_REST_URL &&
-  process.env.UPSTASH_REDIS_REST_TOKEN &&
-  !DUMMY_VALUES.has(process.env.UPSTASH_REDIS_REST_URL) &&
-  !DUMMY_VALUES.has(process.env.UPSTASH_REDIS_REST_TOKEN) &&
-  process.env.UPSTASH_REDIS_REST_URL.startsWith('https://')
+  process.env.REDIS_URL &&
+  !DUMMY_VALUES.has(process.env.REDIS_URL) &&
+  (process.env.REDIS_URL.startsWith('redis://') || process.env.REDIS_URL.startsWith('rediss://'))
 )
 
 class EnhancedRateLimiter {

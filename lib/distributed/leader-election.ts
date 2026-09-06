@@ -14,11 +14,11 @@ export class LeaderElection {
     heartbeatWindowMs: number = 3000
   ): Promise<boolean> {
     const now = Date.now()
-    const isRedisConfigured = !!(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN)
+    const isRedisConfigured = !!(process.env.REDIS_URL)
 
     if (isRedisConfigured) {
       try {
-        const { Redis } = require('@upstash/redis')
+        const { Redis } = require('@/lib/redis-local')
         const redis = Redis.fromEnv()
 
         const currentStr = await redis.get(this.leadershipKey)
