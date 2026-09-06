@@ -1,5 +1,5 @@
 import { endOfDay, startOfDay, startOfMonth, subDays, subMonths } from 'date-fns'
-import { Booking, Room, InternalOrder } from '@prisma/client'
+import type { Booking, Room, InternalOrder } from '@prisma/client'
 import prisma from '@/lib/db'
 
 const ALLOWED_ROLES = ['MANAGER', 'SUPER_ADMIN'] as const
@@ -107,7 +107,9 @@ export async function computeDashboardAnalytics(referenceDate = new Date(), prop
     bookingsPreviousMonth,
     recentBookings,
     userStats,
-    staffCount
+    staffCount,
+    feedbackStats,
+    complaints
   ] = await Promise.all([
     prisma.room.findMany({ 
       where: propertyId ? { propertyId } : undefined,
@@ -272,10 +274,10 @@ export async function computeDashboardAnalytics(referenceDate = new Date(), prop
     totalAdmins: getRoleCount('SUPER_ADMIN') + getRoleCount('MANAGER')
   }
 
-  const serviceScoreAvg = userStatsAndScores[7]?._avg?.overallRating || 5;
+  const serviceScoreAvg = feedbackStats?._avg?.overallRating || 5;
   const serviceScore = Number(((serviceScoreAvg / 5) * 100).toFixed(1));
 
-  const vipComplaints = userStatsAndScores[8].map((c: any) => ({
+  const vipComplaints = complaints.map((c: any) => ({
     id: c.id,
     subject: c.subject,
     description: c.description,

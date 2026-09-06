@@ -5,7 +5,16 @@ export class Redis {
 
   constructor(config?: { url?: string } & RedisOptions) {
     const url = config?.url || process.env.REDIS_URL || 'redis://127.0.0.1:6379';
-    this.client = new IORedis(url, config);
+    this.client = new IORedis(url, config || {});
+
+    // Suppress connection errors from spamming the console
+    this.client.on('error', (err: any) => {
+      if (err.code === 'ECONNREFUSED') {
+        // Silently fail or log once to avoid terminal spam
+      } else {
+        console.error('[Redis Error]', err.message);
+      }
+    });
   }
 
   static fromEnv() {
@@ -76,5 +85,46 @@ export class Redis {
 
   async flushdb() {
     return this.client.flushdb();
+  }
+
+  // Fallbacks for @upstash/ratelimit
+  async evalsha(sha1: string, keys: string[], args: any[]): Promise<any> {
+    return this.client.evalsha(sha1, keys.length, ...keys, ...args);
+  }
+  async eval(script: string, keys: string[], args: any[]): Promise<any> {
+    return this.client.eval(script, keys.length, ...keys, ...args);
+  }
+  async scriptLoad(script: string): Promise<string> {
+    return (this.client as any).script('LOAD', script);
+  }
+  async zadd(key: string, ...args: any[]): Promise<number> {
+    return (this.client.zadd as any)(key, ...args);
+  }
+  async zremrangebyscore(key: string, min: number | string, max: number | string): Promise<number> {
+    return this.client.zremrangebyscore(key, min, max);
+  }
+  async zcard(key: string): Promise<number> {
+    return this.client.zcard(key);
+  }
+  async zincrby(key: string, increment: number, member: string): Promise<string> {
+    return this.client.zincrby(key, increment, member);
+  }
+  async sadd(key: string, ...members: any[]): Promise<number> {
+    return this.client.sadd(key, ...members);
+  }
+  async smembers(key: string): Promise<string[]> {
+    return this.client.smembers(key);
+  }
+  async hset(key: string, obj: Record<string, any>): Promise<number> {
+    return this.client.hset(key, obj);
+  }
+  async hgetall(key: string): Promise<Record<string, string>> {
+    return this.client.hgetall(key);
+  }
+  async keys(pattern: string): Promise<string[]> {
+    return this.client.keys(pattern);
+  }
+  pipeline() {
+    return this.client.pipeline();
   }
 }
