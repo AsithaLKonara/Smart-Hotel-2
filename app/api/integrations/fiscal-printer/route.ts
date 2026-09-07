@@ -42,8 +42,14 @@ export async function POST(req: NextRequest) {
     }
 
     // 1. Generate Cryptographic Signature (simulating a Fiscal Private Key signing)
+    const secret = process.env.FISCAL_SECRET;
+    if (!secret) {
+      console.error('[FISCAL_PRINTER] FISCAL_SECRET is missing. Failing closed.');
+      return NextResponse.json({ error: 'Internal server error: Fiscal integration not configured securely' }, { status: 500 })
+    }
+
     const payloadToSign = `${targetId}|${totalAmount}|${createdAtDate.toISOString()}`
-    const signature = crypto.createHmac('sha256', process.env.FISCAL_SECRET || 'fallback_secret')
+    const signature = crypto.createHmac('sha256', secret)
       .update(payloadToSign)
       .digest('hex')
 

@@ -15,6 +15,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Unauthorized OTA Request' }, { status: 401 })
     }
 
+    const apiKey = authHeader.replace(/^Bearer\s+/i, '').trim();
+    
+    const channelConfig = await prisma.channelConfig.findFirst({
+      where: { apiKey: apiKey, isEnabled: true }
+    });
+
+    if (!channelConfig) {
+      return NextResponse.json({ error: 'Unauthorized OTA Request' }, { status: 401 })
+    }
+
     // Check if it's an OTA_HotelResNotifRQ (Reservation Notification)
     if (rawXml.includes('OTA_HotelResNotifRQ')) {
       // Mock parsing out of the XML
@@ -27,7 +37,8 @@ export async function POST(req: Request) {
           actor: 'CHANNEL_MANAGER',
           details: {
             xmlLength: rawXml.length,
-            otaBookingId: mockBookingId
+            otaBookingId: mockBookingId,
+            provider: channelConfig.provider
           }
         }
       })

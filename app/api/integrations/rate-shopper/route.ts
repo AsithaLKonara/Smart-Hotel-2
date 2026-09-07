@@ -23,6 +23,20 @@ const RateShopperPayloadSchema = z.object({
 
 export async function POST(req: Request) {
   try {
+    const authHeader = req.headers.get('authorization')
+    if (!authHeader) {
+      return NextResponse.json({ error: 'Unauthorized Rate Shopper Request' }, { status: 401 })
+    }
+
+    const apiKey = authHeader.replace(/^Bearer\s+/i, '').trim();
+    const integrationConfig = await prisma.integration.findFirst({
+      where: { appName: 'LIGHTHOUSE', apiKey: apiKey, status: 'ACTIVE' }
+    });
+
+    if (!integrationConfig) {
+      return NextResponse.json({ error: 'Unauthorized Rate Shopper Request' }, { status: 401 })
+    }
+
     const body = await req.json()
     const validatedData = RateShopperPayloadSchema.parse(body)
 

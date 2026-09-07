@@ -227,6 +227,24 @@ export default function AdminSettingsPage() {
                     />
                   </div>
                 </div>
+                <div className="grid grid-cols-2 gap-4 mt-4">
+                  <div className="space-y-2">
+                    <label className="text-[10px] uppercase tracking-widest font-black text-white/20 ml-1">Latitude</label>
+                    <Input 
+                      value={formData.hotel_latitude} 
+                      onChange={(e) => handleChange('hotel_latitude', e.target.value)}
+                      className="bg-white/5 border-white/5 rounded-2xl h-12"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] uppercase tracking-widest font-black text-white/20 ml-1">Longitude</label>
+                    <Input 
+                      value={formData.hotel_longitude} 
+                      onChange={(e) => handleChange('hotel_longitude', e.target.value)}
+                      className="bg-white/5 border-white/5 rounded-2xl h-12"
+                    />
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </motion.div>
@@ -302,6 +320,15 @@ export default function AdminSettingsPage() {
                       className="bg-white/5 border-white/5 rounded-2xl focus:border-primary/50 transition-all resize-none"
                     />
                   </div>
+                </div>
+                <div className="space-y-2 mt-2">
+                  <label className="text-[10px] uppercase tracking-widest font-black text-white/20 ml-1">Milestones (One per line)</label>
+                  <Textarea 
+                    value={formData.hotel_milestones} 
+                    onChange={(e) => handleChange('hotel_milestones', e.target.value)}
+                    rows={4}
+                    className="bg-white/5 border-white/5 rounded-2xl focus:border-primary/50 transition-all resize-none"
+                  />
                 </div>
               </CardContent>
             </Card>

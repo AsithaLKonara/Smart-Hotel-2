@@ -4,7 +4,14 @@ export class Redis {
   private client: IORedis;
 
   constructor(config?: { url?: string } & RedisOptions) {
-    const url = config?.url || process.env.REDIS_URL || 'redis://127.0.0.1:6379';
+    let url = config?.url || process.env.REDIS_URL || 'redis://127.0.0.1:6379';
+    
+    // Prevent Next.js build crash when Railway template variables are unresolved locally
+    if (url.includes('${{')) {
+      console.warn('[REDIS] Unresolved template variable in REDIS_URL. Falling back to localhost for build.');
+      url = 'redis://127.0.0.1:6379';
+    }
+
     // Use maxRetriesPerRequest: 0 to fail fast if Redis is down, preventing unhandled promise rejections
     this.client = new IORedis(url, { maxRetriesPerRequest: 0, ...config });
 
@@ -85,6 +92,10 @@ export class Redis {
       typeof v === 'string' ? v : JSON.stringify(v)
     );
     return this.client.rpush(key, ...serializedValues);
+  }
+
+  async lpop(key: string) {
+    return this.client.lpop(key);
   }
 
   async ping() {

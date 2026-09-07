@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { PrismaClient } from '@prisma/client'
 import { handleZodError } from '@/lib/api-utils'
+import { requireRoles } from '@/lib/auth-utils'
 
 const prisma = new PrismaClient()
 
@@ -17,21 +18,39 @@ const DoorLockRequestSchema = z.object({
 
 export async function POST(req: Request) {
   try {
+    const { errorResponse, session } = await requireRoles(['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN']);
+    if (errorResponse) return errorResponse;
+
     const body = await req.json()
     const validatedData = DoorLockRequestSchema.parse(body)
 
     // 1. Verify Booking & Room Association
     const booking = await prisma.booking.findUnique({
       where: { id: validatedData.bookingId },
-      select: { status: true }
+      include: {
+        stay: true,
+        roomAssignments: true,
+        property: true
+      }
     })
 
     if (!booking) {
       return NextResponse.json({ error: 'Booking not found' }, { status: 404 })
     }
 
+    if (session.user.roleName !== 'SUPER_ADMIN' && booking.propertyId !== session.user.propertyId) {
+      return NextResponse.json({ error: 'Forbidden: Booking belongs to a different property' }, { status: 403 })
+    }
+
     if (booking.status !== 'CHECKED_IN' && booking.status !== 'CONFIRMED') {
       return NextResponse.json({ error: 'Invalid booking status for keycard encoding' }, { status: 400 })
+    }
+
+    const hasValidRoomAssignment = booking.stay?.roomId === validatedData.roomId || 
+                                   booking.roomAssignments.some(ra => ra.roomId === validatedData.roomId);
+
+    if (!hasValidRoomAssignment) {
+      return NextResponse.json({ error: 'The specified room is not assigned to this booking' }, { status: 403 })
     }
 
     // 2. Audit Log the Request
@@ -40,7 +59,7 @@ export async function POST(req: Request) {
         action: `KEYCARD_${validatedData.action}`,
         resource: 'ROOM',
         resourceId: validatedData.roomId,
-        actor: 'SYSTEM', // In real app: session.user.id
+        actor: session.user.id,
         details: {
           provider: validatedData.provider,
           keyCount: validatedData.keyCount,

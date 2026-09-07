@@ -736,20 +736,25 @@ model AuditLog {
 }
 
 model ChannelConfig {
-  id         String  @id @default(uuid())
-  provider   String
-  apiKey     String
-  propertyId String
-  isEnabled  Boolean @default(true)
+  id           String        @id @default(uuid())
+  provider     String
+  apiKey       String
+  propertyId   String
+  isEnabled    Boolean       @default(true)
+  roomMappings RoomMapping[]
 }
 
 model RoomMapping {
-  id                    String  @id @default(uuid())
+  id                    String        @id @default(uuid())
   localRoomTypeId       String
   otaRoomTypeId         String
   otaRatePlanId         String?
-  priceMarkupPercentage Decimal @default(15.0)
-  syncEnabled           Boolean @default(true)
+  priceMarkupPercentage Decimal       @default(15.0)
+  syncEnabled           Boolean       @default(true)
+  channelConfigId       String
+  channelConfig         ChannelConfig @relation(fields: [channelConfigId], references: [id], onDelete: Cascade)
+  
+  @@unique([channelConfigId, otaRoomTypeId])
 }
 
 model Gallery {

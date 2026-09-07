@@ -3,6 +3,7 @@ import prisma from '@/lib/db'
 import { Prisma } from '@prisma/client'
 import { Redis } from '@/lib/redis-local'
 import crypto from 'crypto'
+import bcrypt from 'bcryptjs'
 
 function getRedisClient(): Redis | null {
   if (process.env.REDIS_URL) {
@@ -18,8 +19,13 @@ function getRedisClient(): Redis | null {
 export async function POST(req: NextRequest) {
   // 1. AUTHENTICATION VALIDATION (HMAC Signature)
   const signature = req.headers.get('x-ota-signature')
-  const expectedSecret = process.env.OTA_WEBHOOK_SECRET || 'dev_ota_secret'
+  const expectedSecret = process.env.OTA_WEBHOOK_SECRET
   
+  if (!expectedSecret) {
+    console.error('[OTA_WEBHOOK] OTA_WEBHOOK_SECRET is missing. Failing closed.');
+    return NextResponse.json({ error: 'Internal server error: Webhook not configured securely' }, { status: 500 })
+  }
+
   if (!signature) {
     return NextResponse.json({ error: 'Unauthorized: Missing x-ota-signature header' }, { status: 401 })
   }
@@ -29,6 +35,12 @@ export async function POST(req: NextRequest) {
   const hmac = crypto.createHmac('sha256', expectedSecret).update(rawBody).digest('hex')
   if (hmac !== signature) {
     return NextResponse.json({ error: 'Unauthorized: Invalid signature digest' }, { status: 401 })
+  }
+
+  // Retrieve integration instance to determine property context
+  const configId = req.nextUrl.searchParams.get('configId')
+  if (!configId) {
+    return NextResponse.json({ error: 'Missing configId query parameter' }, { status: 400 })
   }
 
   let payload: any = {};
@@ -74,45 +86,60 @@ export async function POST(req: NextRequest) {
 
     // ATOMIC TRANSACTION WRAPPER
     const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-      // 1. Resolve Mapping
-      const mapping = await tx.roomMapping.findFirst({
-        where: { otaRoomTypeId, syncEnabled: true }
+      
+      const channelConfig = await tx.channelConfig.findUnique({
+        where: { id: configId }
       })
 
-      if (!mapping) {
+      if (!channelConfig || !channelConfig.isEnabled) {
+        throw new Error('INVALID_OR_DISABLED_CHANNEL_CONFIG')
+      }
+
+      // 1. Resolve Mapping (Strictly scoped to this integration/property)
+      const mapping = await tx.roomMapping.findUnique({
+        where: {
+          channelConfigId_otaRoomTypeId: {
+            channelConfigId: channelConfig.id,
+            otaRoomTypeId: otaRoomTypeId
+          }
+        }
+      })
+
+      if (!mapping || !mapping.syncEnabled) {
         // Send to Dead-Letter Queue atomically
         await tx.webhookDLQ.create({
           data: {
             provider: 'OTA_WEBHOOK',
             payload: payload,
-            error: 'Unmapped OTA Room Type: ' + otaRoomTypeId
+            error: 'Unmapped OTA Room Type: ' + otaRoomTypeId + ' for config ' + configId
           }
         })
         throw new Error(`UNMAPPED_ROOM_TYPE:${otaRoomTypeId}`)
       }
 
-      // 2. Resolve or Create User (Guest)
-      const property = await tx.property.findFirst()
+      const propertyId = channelConfig.propertyId;
 
+      // 2. Resolve or Create User (Guest)
       let user = await tx.user.findFirst({ where: { email: guestEmail, deletedAt: null } })
       if (!user) {
         let role = await tx.role.findFirst({ where: { name: 'GUEST' } })
+        const secureRandomPassword = await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 10)
         user = await tx.user.create({
           data: {
             email: guestEmail,
             name: guestName,
-            password: 'ota-placeholder-password',
-            propertyId: property?.id || '',
+            password: secureRandomPassword,
+            propertyId: propertyId,
             ...(role ? { roleId: role.id } : {})
           }
         })
       }
 
-      // 3. Create Booking
+      // 3. Create Booking scoped strictly to the mapped property
       const booking = await tx.booking.create({
         data: {
           primaryGuestId: user.id,
-          propertyId: property?.id || '',
+          propertyId: propertyId,
           checkIn: new Date(checkIn),
           checkOut: new Date(checkOut),
           guests: 2,
@@ -126,7 +153,7 @@ export async function POST(req: NextRequest) {
       await tx.folio.create({
         data: {
           bookingId: booking.id,
-          propertyId: property?.id || '',
+          propertyId: propertyId,
           status: 'OPEN'
         }
       })
