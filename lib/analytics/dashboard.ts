@@ -127,7 +127,7 @@ export async function computeDashboardAnalytics(referenceDate = new Date(), prop
     }),
     prisma.internalOrder.findMany({
       where: { 
-        ...(propertyId ? { propertyId } : {}),
+        ...(propertyId ? { room: { propertyId } } : {}),
         createdAt: { gte: previousMonthStart }, 
         status: 'DELIVERED' 
       }
