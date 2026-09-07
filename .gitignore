@@ -50,8 +50,6 @@ debug-*.js
 prisma/schema.prisma.backup.mongodb
 *.backup.*
 .env*.backup*
-.env
-.env.production
 .env*.local
 config.bat
 
