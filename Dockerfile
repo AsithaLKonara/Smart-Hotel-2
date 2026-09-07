@@ -9,7 +9,7 @@ COPY package*.json ./
 COPY prisma ./prisma/
 
 # Install dependencies including development packages for Next.js build compilation
-RUN npm ci
+RUN npm ci --legacy-peer-deps
 
 COPY . .
 
