@@ -36,10 +36,22 @@ export default function RoomsPage() {
     async function fetchRooms() {
       try {
         setIsLoading(true)
-        const response = await fetch('/api/rooms', { cache: 'no-store' })
+        const response = await fetch('/api/rooms?available=true', { cache: 'no-store' })
         const data = await response.json()
-        if (Array.isArray(data)) setRooms(data)
-        else if (data?.rooms) setRooms(data.rooms)
+        let fetchedRooms = []
+        if (Array.isArray(data)) fetchedRooms = data
+        else if (data?.rooms) fetchedRooms = data.rooms
+        
+        // Map nested Prisma fields to the flat UI interface
+        const mappedRooms = fetchedRooms.map((r: any) => ({
+          ...r,
+          type: r.roomType?.name || 'Standard',
+          price: r.roomType?.baseRate || 0,
+          capacity: r.roomType?.capacity || 2,
+          description: r.roomType?.description || r.description,
+          amenities: r.roomType?.amenities || r.amenities || [],
+        }))
+        setRooms(mappedRooms)
       } catch (err) {
         setError('Failed to load rooms')
       } finally {
@@ -141,7 +153,7 @@ export default function RoomsPage() {
                   {/* Image container */}
                   <div className="relative aspect-[3/4] overflow-hidden rounded-2xl shadow-2xl">
                     <Image 
-                      src={room.roomImages?.[0]?.imageUrl || 'https://images.unsplash.com/photo-1590490359683-658d3d23f972?auto=format&fit=crop&q=80&w=800'} 
+                      src={room.roomImages?.[0]?.imageUrl || room.images?.[0] || 'https://images.unsplash.com/photo-1590490359683-658d3d23f972?auto=format&fit=crop&q=80&w=800'} 
                       alt={room.type} 
                       fill 
                       className="object-cover group-hover:scale-110 transition-transform duration-1000" 
@@ -154,7 +166,7 @@ export default function RoomsPage() {
                       </div>
                     </div>
                     {/* Room type badge — top right */}
-                    <div className="absolute top-4 right-4 z-10">
+                    <div className="absolute top-4 right-4 z-10 flex gap-2">
                       <div className="bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10">
                         <span className="text-[9px] uppercase tracking-widest text-white font-bold">{room.type}</span>
                       </div>
@@ -180,7 +192,7 @@ export default function RoomsPage() {
                             Details
                           </Button>
                         </Link>
-                        <Link href={`/booking?room=${room.id}`} className="flex-1">
+                        <Link href={`/booking?roomType=${room.type}`} className="flex-1">
                           <Button className="w-full bg-gold-gradient text-white rounded-xl h-10 uppercase tracking-widest text-[9px] font-bold border-none shadow-luxury">
                             Reserve
                           </Button>
@@ -192,7 +204,7 @@ export default function RoomsPage() {
                   {/* Below image info */}
                   <div className="pt-5 space-y-2">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-xl font-serif font-bold text-white group-hover:text-primary transition-colors duration-300">{room.type} Suite</h3>
+                      <h3 className="text-xl font-serif font-bold text-white group-hover:text-primary transition-colors duration-300">{room.type} - Room {room.number}</h3>
                       <span className="text-primary font-serif italic text-sm">{formatPrice(room.price)}<span className="text-[9px] text-white/30 not-italic ml-1">/night</span></span>
                     </div>
                     <p className="text-xs text-white/40 font-light leading-relaxed line-clamp-1">

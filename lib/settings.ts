@@ -38,7 +38,7 @@ export const getHotelSettings = cache(async () => {
     }
     
     const records = await prisma.setting.findMany().catch((error: any) => {
-      console.error('Error fetching hotel settings:', error)
+      console.warn('Error fetching hotel settings:', error?.message || String(error))
       return []
     })
     
@@ -46,8 +46,8 @@ export const getHotelSettings = cache(async () => {
     acc[setting.key] = setting.value
     return acc
   }, {} as SettingsMap)
-  } catch (error) {
-    console.error('Error in getHotelSettings:', error)
+  } catch (error: any) {
+    console.warn('Error in getHotelSettings:', error?.message || String(error))
     // Return empty object if database query fails
     // This allows getHotelContactInfo to use default values
     return {}
@@ -76,8 +76,8 @@ export async function getHotelContactInfo() {
       lng: Number(settings.hotel_longitude ?? -73.9851),
     },
     }
-  } catch (error) {
-    console.error('Error fetching hotel contact info:', error)
+  } catch (error: any) {
+    console.warn('Error fetching hotel contact info:', error?.message || String(error))
     // Return default values if database query fails
     return {
       name: 'SmartHotel Grand Palace',
@@ -123,8 +123,8 @@ export async function getHotelAboutContent() {
           orderBy: { createdAt: 'asc' },
           take: 6,
         })
-      } catch (error) {
-        console.error('Error fetching staff:', error)
+      } catch (error: any) {
+        console.warn('Error fetching staff:', error?.message || String(error))
         staff = []
       }
     } else {
@@ -137,8 +137,8 @@ export async function getHotelAboutContent() {
     milestones,
     staff,
     }
-  } catch (error) {
-    console.error('Error in getHotelAboutContent:', error)
+  } catch (error: any) {
+    console.warn('Error in getHotelAboutContent:', error?.message || String(error))
     return {
       story: 'Since opening our doors in 1985, we have embraced guests with impeccable service, timeless design, and unforgettable experiences.',
       founded: '1985',

@@ -15,6 +15,11 @@ import Link from 'next/link'
 import { PremiumSpinner } from '@/components/ui/premium-spinner'
 import { motion } from 'framer-motion'
 import { createBooking } from '@/lib/booking-api'
+import { loadStripe } from '@stripe/stripe-js'
+import { Elements } from '@stripe/react-stripe-js'
+import { StripeCheckout } from '@/components/booking/StripeCheckout'
+
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '')
 
 function BookingPageContent() {
   const searchParams = useSearchParams()
@@ -24,20 +29,22 @@ function BookingPageContent() {
 
    const [step, setStep] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
-  const [searchData, setSearchData] = useState({ checkIn: '', checkOut: '', guests: 2, roomType: 'all' })
+  const [searchData, setSearchData] = useState({ checkIn: '', checkOut: '', guests: 2, roomType: searchParams.get('roomType') || 'all' })
   const [availableRooms, setAvailableRooms] = useState<any[]>([])
   const [selectedRoom, setSelectedRoom] = useState<any>(null)
   const [detailsModalRoom, setDetailsModalRoom] = useState<any>(null)
   const [bookingData, setBookingData] = useState({
     roomId: '', specialRequests: '',
     paymentMethod: 'pay_later' as 'pay_now' | 'pay_later',
-    guestName: '', guestEmail: '', guestPhone: ''
+    guestName: '', guestEmail: '', guestPhone: '',
+    extras: { breakfast: false, lateCheckout: false, airportShuttle: false, spaAccess: false }
   })
   const [nights, setNights] = useState(0)
   const [totalAmount, setTotalAmount] = useState(0)
   const [isSearching, setIsSearching] = useState(false)
   const [carouselIdx, setCarouselIdx] = useState(0)
   const [idempotencyKey] = useState(() => typeof window !== 'undefined' ? crypto.randomUUID() : '')
+  const [clientSecret, setClientSecret] = useState('')
 
   // Load cached details from localStorage if present after redirect/login
   useEffect(() => {
@@ -69,10 +76,19 @@ function BookingPageContent() {
 
   useEffect(() => {
     if (selectedRoom && nights > 0) {
-      setTotalAmount(selectedRoom.totalPrice)
+      let extrasTotal = 0
+      if (bookingData.extras.breakfast) extrasTotal += 25 * nights
+      if (bookingData.extras.lateCheckout) extrasTotal += 50
+      if (bookingData.extras.airportShuttle) extrasTotal += 75
+      if (bookingData.extras.spaAccess) extrasTotal += 100
+      
+      const subtotal = selectedRoom.baseRate * nights + extrasTotal
+      const tax = Math.round(subtotal * 0.15 * 100) / 100
+      setTotalAmount(subtotal + tax)
+      
       setBookingData(prev => ({ ...prev, roomId: selectedRoom.id }))
     }
-  }, [selectedRoom, nights])
+  }, [selectedRoom, nights, bookingData.extras])
 
   const searchRooms = async () => {
     if (!searchData.checkIn || !searchData.checkOut) { toast.error('Please select dates'); return }
@@ -119,7 +135,7 @@ function BookingPageContent() {
         guests: searchData.guests, 
         totalAmount, 
         specialRequests: bookingData.specialRequests,
-        extras: { breakfast: false, lateCheckout: false, airportShuttle: false, spaAccess: false },
+        extras: bookingData.extras,
         paymentMethod: bookingData.paymentMethod as 'pay_now' | 'pay_later',
         guestInfo: {
           firstName: bookingData.guestName.split(' ')[0] || '',
@@ -132,10 +148,12 @@ function BookingPageContent() {
       const data = await createBooking(payload, idempotencyKey)
       
       if (data.success || data.booking) {
-        if ((data as any).paymentFailed) {
-          toast.error('Booking confirmed, but payment initialization failed. Please pay at the front desk.', { duration: 6000 })
+        if (bookingData.paymentMethod === 'pay_now' && (data as any).clientSecret) {
+          setClientSecret((data as any).clientSecret)
+          setStep(4)
+        } else {
+          setStep(5)
         }
-        setStep(4)
       } else {
         toast.error(data.error || 'Failed to create booking')
       }
@@ -182,7 +200,7 @@ function BookingPageContent() {
           <div className="max-w-2xl mx-auto pt-8">
             <div className="flex items-center justify-between relative">
               <div className="absolute top-6 left-0 w-full h-px bg-white/10" />
-              {[{ s: 1, t: 'Dates', i: Calendar }, { s: 2, t: 'Select', i: Users }, { s: 3, t: 'Details', i: CreditCard }, { s: 4, t: 'Done', i: CheckCircle }].map(({ s, t, i: Icon }) => (
+              {[{ s: 1, t: 'Dates', i: Calendar }, { s: 2, t: 'Select', i: Users }, { s: 3, t: 'Details', i: CreditCard }, { s: 4, t: 'Payment', i: Shield }, { s: 5, t: 'Done', i: CheckCircle }].map(({ s, t, i: Icon }) => (
                 <div key={s} className="relative z-10 flex flex-col items-center space-y-2">
                   <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-500 border ${step >= s ? 'bg-gold-gradient border-primary/50 text-white shadow-luxury' : 'bg-white/5 border-white/10 text-white/30'}`}>
                     <Icon className="w-5 h-5" />
@@ -401,6 +419,33 @@ function BookingPageContent() {
                   />
                 </div>
 
+                {/* Extras */}
+                <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-8 space-y-4">
+                  <h2 className="text-2xl font-serif font-bold text-white">Enhance Your Stay</h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {[
+                      { id: 'breakfast', t: 'Gourmet Breakfast', p: 25, unit: '/night' },
+                      { id: 'lateCheckout', t: 'Late Checkout (2 PM)', p: 50, unit: ' flat' },
+                      { id: 'airportShuttle', t: 'Airport Transfer', p: 75, unit: ' flat' },
+                      { id: 'spaAccess', t: 'Premium Spa Access', p: 100, unit: ' flat' }
+                    ].map(extra => (
+                      <div key={extra.id} onClick={() => setBookingData(prev => ({...prev, extras: {...prev.extras, [extra.id]: !(prev.extras as any)[extra.id]}}))}
+                        className={`p-4 border rounded-xl cursor-pointer flex justify-between items-center transition-all ${
+                          (bookingData.extras as any)[extra.id] ? 'border-primary/40 bg-primary/10' : 'border-white/10 hover:border-white/20 bg-white/5'
+                        }`}
+                      >
+                        <div>
+                          <div className="text-sm font-bold text-white">{extra.t}</div>
+                          <div className="text-xs text-primary">${extra.p}{extra.unit}</div>
+                        </div>
+                        <div className={`w-5 h-5 rounded-full flex items-center justify-center border ${(bookingData.extras as any)[extra.id] ? 'bg-primary border-primary text-black' : 'border-white/30 text-transparent'}`}>
+                          <CheckCircle className="w-3 h-3" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
                 {/* Payment */}
                 <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-8 space-y-6">
                   <h2 className="text-2xl font-serif font-bold text-white">Payment Method</h2>
@@ -435,8 +480,12 @@ function BookingPageContent() {
                     ))}
                   </div>
                   <div className="pt-4 border-t border-white/10 space-y-5">
+                    <div className="flex justify-between items-end text-white/50 text-xs">
+                      <span>Taxes & Fees (15%)</span>
+                      <span>Included</span>
+                    </div>
                     <div className="flex justify-between items-end">
-                      <span className="text-primary uppercase tracking-widest text-[9px] font-bold">Total</span>
+                      <span className="text-primary uppercase tracking-widest text-[9px] font-bold">Total Amount</span>
                       <span className="text-3xl font-serif font-bold text-primary">{formatPrice(totalAmount)}</span>
                     </div>
                     <Button onClick={handleCreateBooking} disabled={isLoading} className="w-full bg-gold-gradient text-white h-14 rounded-xl uppercase tracking-[0.2em] text-xs font-bold border-none shadow-luxury hover:opacity-90">
@@ -451,8 +500,32 @@ function BookingPageContent() {
             </motion.div>
           )}
 
-          {/* Step 4: Confirmation */}
-          {step === 4 && (
+          {/* Step 4: Payment */}
+          {step === 4 && clientSecret && (
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="max-w-2xl mx-auto space-y-8"
+            >
+              <div className="text-center space-y-4">
+                <h2 className="text-3xl font-serif font-bold text-white">Complete Payment</h2>
+                <p className="text-white/40 text-sm">Please provide your card details to secure the reservation.</p>
+              </div>
+              <div className="bg-white rounded-2xl p-8">
+                <Elements stripe={stripePromise} options={{ clientSecret, appearance: { theme: 'stripe' } }}>
+                  <StripeCheckout 
+                    clientSecret={clientSecret} 
+                    onPaymentSuccess={() => setStep(5)} 
+                    onPaymentError={(err) => toast.error(err)} 
+                  />
+                </Elements>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Step 5: Confirmation */}
+          {step === 5 && (
             <motion.div 
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}

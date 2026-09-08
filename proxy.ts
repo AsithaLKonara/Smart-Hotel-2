@@ -258,6 +258,7 @@ export const config = {
 // Routes that are explicitly PUBLIC and bypass middleware
 const PUBLIC_API_PREFIXES = [
   '/api/auth',
+  '/api/images',
   '/api/health',
   '/api/webhooks',
   '/api/rooms',

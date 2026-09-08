@@ -688,7 +688,8 @@ export default function AdminRoomsPage() {
             <div className="flex gap-2 flex-wrap mb-2">
               {formData.images.map((url, idx) => (
                 <div key={`existing-${idx}`} className="relative w-20 h-20 bg-black/40 border border-white/10 rounded-lg overflow-hidden group">
-                  <Image src={url} alt={`Preview ${idx}`} fill sizes="(max-width: 768px) 100vw, 80px" className="object-cover" />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={url} alt={`Preview ${idx}`} className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                     <button type="button" onClick={() => handleDeleteImage(idx)} className="text-red-400 hover:text-red-300">
                       <Trash2 className="w-4 h-4" />

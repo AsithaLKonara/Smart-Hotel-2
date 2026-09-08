@@ -66,8 +66,8 @@ export default async function HomePage() {
       })
       aboutContent = await getHotelAboutContent()
     }
-  } catch (error) {
-    console.error('CRITICAL: Failed to fetch homepage data:', error)
+  } catch (error: any) {
+    console.warn('CRITICAL: Failed to fetch homepage data. Falling back to defaults.', error?.message || String(error))
   }
 
   return (

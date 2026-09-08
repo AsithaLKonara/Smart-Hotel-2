@@ -85,7 +85,9 @@ export async function POST(request: NextRequest) {
         let guestId = session?.user?.id
         if (!guestId && validated.guestEmail) {
           const existing = await tx.user.findFirst({ where: { email: validated.guestEmail, propertyId: room.propertyId, deletedAt: null } })
-          if (existing) { guestId = existing.id }
+          if (existing) { 
+            throw new Error('ACCOUNT_EXISTS') 
+          }
           else {
             const guestRole = await tx.role.findUnique({ where: { name: 'GUEST' } })
             const newUser = await tx.user.create({
@@ -348,6 +350,9 @@ export async function POST(request: NextRequest) {
     if (err.message === 'DOUBLE_BOOKING') {
       return NextResponse.json({ error: 'LOCK_ACQUISITION_FAILED - Double booking detected.' }, { status: 409 })
     }
+    if (err.message === 'ROOM_UNAVAILABLE') return NextResponse.json({ error: 'Room is no longer available' }, { status: 409 })
+    if (err.message === 'GUEST_DATA_REQUIRED') return NextResponse.json({ error: 'Guest details required' }, { status: 400 })
+    if (err.message === 'ACCOUNT_EXISTS') return NextResponse.json({ error: 'An account with this email exists. Please log in to continue.' }, { status: 401 })
     
     return NextResponse.json({ error: err.message || 'Booking failed' }, { status: 400 })
   }

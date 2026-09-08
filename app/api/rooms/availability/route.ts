@@ -49,6 +49,9 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // Apply room type constraints
+    const nights = getNightCount(checkInDate, checkOutDate)
+
     const candidateRooms = await prisma.room.findMany({
       where: whereClause,
       include: {
@@ -58,7 +61,13 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    // 2. Identify conflicting bookings in the requested period
+    // Filter by min/max length of stay constraints
+    const validCandidateRooms = candidateRooms.filter((room: any) => {
+      const minStay = room.roomType.minLengthOfStay || 1
+      const maxStay = room.roomType.maxLengthOfStay || 30
+      return nights >= minStay && nights <= maxStay
+    })
+
     const conflictingBookings = await prisma.booking.findMany({
       where: {
         status: { in: ['CONFIRMED', 'CHECKED_IN'] },
@@ -75,18 +84,33 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    const bookedRoomIds = new Set(
-      conflictingBookings.flatMap((b: any) => b.roomAssignments.map((ra: any) => ra.roomId))
-    )
+    const conflictingOutOfOrder = await prisma.outOfOrderRecord.findMany({
+      where: {
+        OR: [
+          { startDate: { gte: checkInDate, lt: checkOutDate } },
+          { endDate: { gt: checkInDate, lte: checkOutDate } },
+          { startDate: { lte: checkInDate }, endDate: { gte: checkOutDate } }
+        ]
+      },
+      select: { roomId: true }
+    })
+
+    const bookedRoomIds = new Set([
+      ...conflictingBookings.flatMap((b: any) => b.roomAssignments.map((ra: any) => ra.roomId)),
+      ...conflictingOutOfOrder.map((o: any) => o.roomId)
+    ])
 
     // 3. Filter and enrich available rooms
-    const nights = getNightCount(checkInDate, checkOutDate)
-    const availableRooms = candidateRooms
+    const availableRooms = validCandidateRooms
       .filter((room: any) => !bookedRoomIds.has(room.id))
       .map((room: any) => {
         const avgRating = room.feedback && room.feedback.length > 0
           ? room.feedback.reduce((sum: number, r: any) => sum + r.rating, 0) / room.feedback.length
           : 0
+          
+        const subtotal = room.roomType.baseRate * nights
+        const tax = Math.round(subtotal * 0.15 * 100) / 100
+        const totalPrice = subtotal + tax
 
         return {
           id: room.id,
@@ -97,7 +121,9 @@ export async function GET(request: NextRequest) {
           description: room.roomType.description,
           amenities: room.roomType.amenities,
           baseRate: room.roomType.baseRate,
-          totalPrice: room.roomType.baseRate * nights,
+          subtotal,
+          tax,
+          totalPrice,
           nights,
           averageRating: Math.round(avgRating * 10) / 10,
           reviewCount: room.feedback ? room.feedback.length : 0,

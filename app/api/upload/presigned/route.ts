@@ -45,8 +45,7 @@ export async function POST(request: NextRequest) {
       Expires: 3600, // 1 hour
     })
 
-    const endpointUrl = new URL(process.env.S3_ENDPOINT || '')
-    const publicUrl = `${endpointUrl.protocol}//${process.env.S3_BUCKET_NAME}.${endpointUrl.host}/${key}`
+    const publicUrl = `/api/images/${key}`
 
     console.log('✅ Generated POST Policy:', url)
 
