@@ -3,20 +3,20 @@
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { 
-  TrendingUp, 
-  TrendingDown, 
-  Users, 
-  Bed, 
-  Utensils, 
-  DollarSign, 
-  Calendar,
-  Clock,
-  Star,
-  Activity,
-  AlertCircle,
-  CheckCircle,
-  ArrowUpRight,
-  ArrowDownRight
+ TrendingUp, 
+ TrendingDown, 
+ Users, 
+ Bed, 
+ Utensils, 
+ DollarSign, 
+ Calendar,
+ Clock,
+ Star,
+ Activity,
+ AlertCircle,
+ CheckCircle,
+ ArrowUpRight,
+ ArrowDownRight
 } from "lucide-react"
 import { KpiCard } from "../ui/kpi-card"
 import { ChartCard } from "../ui/chart-card"
@@ -24,499 +24,499 @@ import { cn } from "@/lib/utils"
 
 // Types
 interface DashboardMetrics {
-  occupancy: {
-    current: number
-    total: number
-    percentage: number
-    trend: 'up' | 'down' | 'stable'
-    change: number
-  }
-  revenue: {
-    today: number
-    thisMonth: number
-    lastMonth: number
-    trend: 'up' | 'down' | 'stable'
-    change: number
-  }
-  bookings: {
-    today: number
-    thisWeek: number
-    pending: number
-    confirmed: number
-    trend: 'up' | 'down' | 'stable'
-    change: number
-  }
-  restaurant: {
-    ordersToday: number
-    revenueToday: number
-    averageOrderValue: number
-    popularItem: string
-    trend: 'up' | 'down' | 'stable'
-    change: number
-  }
-  tasks: {
-    total: number
-    completed: number
-    pending: number
-    overdue: number
-    completionRate: number
-  }
-  guestSatisfaction: {
-    rating: number
-    reviews: number
-    trend: 'up' | 'down' | 'stable'
-    change: number
-  }
+ occupancy: {
+ current: number
+ total: number
+ percentage: number
+ trend: 'up' | 'down' | 'stable'
+ change: number
+ }
+ revenue: {
+ today: number
+ thisMonth: number
+ lastMonth: number
+ trend: 'up' | 'down' | 'stable'
+ change: number
+ }
+ bookings: {
+ today: number
+ thisWeek: number
+ pending: number
+ confirmed: number
+ trend: 'up' | 'down' | 'stable'
+ change: number
+ }
+ restaurant: {
+ ordersToday: number
+ revenueToday: number
+ averageOrderValue: number
+ popularItem: string
+ trend: 'up' | 'down' | 'stable'
+ change: number
+ }
+ tasks: {
+ total: number
+ completed: number
+ pending: number
+ overdue: number
+ completionRate: number
+ }
+ guestSatisfaction: {
+ rating: number
+ reviews: number
+ trend: 'up' | 'down' | 'stable'
+ change: number
+ }
 }
 
 interface RecentActivity {
-  id: string
-  type: 'booking' | 'order' | 'task' | 'checkin' | 'checkout'
-  title: string
-  description: string
-  timestamp: Date
-  status: 'success' | 'warning' | 'info' | 'error'
-  amount?: number
+ id: string
+ type: 'booking' | 'order' | 'task' | 'checkin' | 'checkout'
+ title: string
+ description: string
+ timestamp: Date
+ status: 'success' | 'warning' | 'info' | 'error'
+ amount?: number
 }
 
 interface DashboardOverviewProps {
-  onNavigate?: (section: string) => void
+ onNavigate?: (section: string) => void
 }
 
 // Trend indicator component
 function TrendIndicator({ trend, change }: { trend: 'up' | 'down' | 'stable', change: number }) {
-  const isPositive = trend === 'up'
-  const isNegative = trend === 'down'
-  
-  return (
-    <div className={cn(
-      "flex items-center gap-1 text-sm font-medium",
-      isPositive && "text-green-600",
-      isNegative && "text-red-600",
-      trend === 'stable' && "text-gray-600"
-    )}>
-      {isPositive && <ArrowUpRight className="w-4 h-4" />}
-      {isNegative && <ArrowDownRight className="w-4 h-4" />}
-      <span>{Math.abs(change)}%</span>
-    </div>
-  )
+ const isPositive = trend === 'up'
+ const isNegative = trend === 'down'
+ 
+ return (
+ <div className={cn(
+ "flex items-center gap-1 text-sm font-medium",
+ isPositive && "text-green-600",
+ isNegative && "text-red-600",
+ trend === 'stable' && "text-gray-600"
+ )}>
+ {isPositive && <ArrowUpRight className="w-4 h-4" />}
+ {isNegative && <ArrowDownRight className="w-4 h-4" />}
+ <span>{Math.abs(change)}%</span>
+ </div>
+ )
 }
 
 // Activity item component
 function ActivityItem({ activity, index }: { activity: RecentActivity, index: number }) {
-  const getStatusIcon = () => {
-    switch (activity.status) {
-      case 'success': return <CheckCircle className="w-4 h-4 text-green-600" />
-      case 'warning': return <AlertCircle className="w-4 h-4 text-yellow-600" />
-      case 'error': return <AlertCircle className="w-4 h-4 text-red-600" />
-      default: return <Activity className="w-4 h-4 text-blue-600" />
-    }
-  }
+ const getStatusIcon = () => {
+ switch (activity.status) {
+ case 'success': return <CheckCircle className="w-4 h-4 text-green-600" />
+ case 'warning': return <AlertCircle className="w-4 h-4 text-yellow-600" />
+ case 'error': return <AlertCircle className="w-4 h-4 text-red-600" />
+ default: return <Activity className="w-4 h-4 text-blue-600" />
+ }
+ }
 
-  const getTypeIcon = () => {
-    switch (activity.type) {
-      case 'booking': return <Calendar className="w-4 h-4" />
-      case 'order': return <Utensils className="w-4 h-4" />
-      case 'task': return <CheckCircle className="w-4 h-4" />
-      case 'checkin': return <Users className="w-4 h-4" />
-      case 'checkout': return <Users className="w-4 h-4" />
-      default: return <Activity className="w-4 h-4" />
-    }
-  }
+ const getTypeIcon = () => {
+ switch (activity.type) {
+ case 'booking': return <Calendar className="w-4 h-4" />
+ case 'order': return <Utensils className="w-4 h-4" />
+ case 'task': return <CheckCircle className="w-4 h-4" />
+ case 'checkin': return <Users className="w-4 h-4" />
+ case 'checkout': return <Users className="w-4 h-4" />
+ default: return <Activity className="w-4 h-4" />
+ }
+ }
 
-  const formatTime = (timestamp: Date) => {
-    const now = new Date()
-    const diffMs = now.getTime() - timestamp.getTime()
-    const diffMins = Math.floor(diffMs / 60000)
-    
-    if (diffMins < 1) return 'Just now'
-    if (diffMins < 60) return `${diffMins}m ago`
-    
-    const diffHours = Math.floor(diffMins / 60)
-    if (diffHours < 24) return `${diffHours}h ago`
-    
-    return timestamp.toLocaleDateString()
-  }
+ const formatTime = (timestamp: Date) => {
+ const now = new Date()
+ const diffMs = now.getTime() - timestamp.getTime()
+ const diffMins = Math.floor(diffMs / 60000)
+ 
+ if (diffMins < 1) return 'Just now'
+ if (diffMins < 60) return `${diffMins}m ago`
+ 
+ const diffHours = Math.floor(diffMins / 60)
+ if (diffHours < 24) return `${diffHours}h ago`
+ 
+ return timestamp.toLocaleDateString()
+ }
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: index * 0.1 }}
-      className="flex items-start gap-3 p-4 bg-white rounded-xl border border-gray-100 hover:shadow-md transition-shadow"
-    >
-      <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-amber-100 to-amber-200 rounded-lg flex items-center justify-center">
-        {getTypeIcon()}
-      </div>
-      
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-1">
-          <h4 className="font-medium text-gray-900 truncate">{activity.title}</h4>
-          {getStatusIcon()}
-        </div>
-        <p className="text-sm text-gray-600 mb-2">{activity.description}</p>
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-gray-500">{formatTime(activity.timestamp)}</span>
-          {activity.amount && (
-            <span className="text-sm font-medium text-amber-600">
-              ${activity.amount.toFixed(2)}
-            </span>
-          )}
-        </div>
-      </div>
-    </motion.div>
-  )
+ return (
+ <motion.div
+ initial={{ opacity: 0, x: -20 }}
+ animate={{ opacity: 1, x: 0 }}
+ transition={{ delay: index * 0.1 }}
+ className="flex items-start gap-3 p-4 bg-white rounded-xl border border-gray-100 hover:shadow-md transition-shadow"
+ >
+ <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-amber-100 to-amber-200 rounded-lg flex items-center justify-center">
+ {getTypeIcon()}
+ </div>
+ 
+ <div className="flex-1 min-w-0">
+ <div className="flex items-center gap-2 mb-1">
+ <h4 className="font-medium text-gray-900 truncate">{activity.title}</h4>
+ {getStatusIcon()}
+ </div>
+ <p className="text-sm text-gray-600 mb-2">{activity.description}</p>
+ <div className="flex items-center justify-between">
+ <span className="text-xs text-gray-500">{formatTime(activity.timestamp)}</span>
+ {activity.amount && (
+ <span className="text-sm font-medium text-amber-600">
+ ${activity.amount.toFixed(2)}
+ </span>
+ )}
+ </div>
+ </div>
+ </motion.div>
+ )
 }
 
 // Main Dashboard Component
 function DashboardOverviewContent({ onNavigate }: DashboardOverviewProps) {
-  const [metrics, setMetrics] = useState<DashboardMetrics | null>(null)
-  const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+ const [metrics, setMetrics] = useState<DashboardMetrics | null>(null)
+ const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([])
+ const [isLoading, setIsLoading] = useState(true)
 
-  // Fetch real data from API
-  useEffect(() => {
-    fetchDashboardData()
-  }, [])
+ // Fetch real data from API
+ useEffect(() => {
+ fetchDashboardData()
+ }, [])
 
-  const fetchDashboardData = async () => {
-    try {
-      setIsLoading(true)
-      const response = await fetch('/api/analytics/dashboard')
-      
-      if (response.status === 401) {
-        // Unauthorized - redirect to sign in
-        window.location.href = '/auth/signin?callbackUrl=' + encodeURIComponent('/dashboard')
-        return
-      }
-      
-      if (!response.ok) {
-        throw new Error('Failed to load dashboard metrics')
-      }
+ const fetchDashboardData = async () => {
+ try {
+ setIsLoading(true)
+ const response = await fetch('/api/analytics/dashboard')
+ 
+ if (response.status === 401) {
+ // Unauthorized - redirect to sign in
+ window.location.href = '/auth/signin?callbackUrl=' + encodeURIComponent('/dashboard')
+ return
+ }
+ 
+ if (!response.ok) {
+ throw new Error('Failed to load dashboard metrics')
+ }
 
-        const data = await response.json()
-      const summary = data.summary ?? {}
-      const recent = data.recentActivity ?? {}
+ const data = await response.json()
+ const summary = data.summary ?? {}
+ const recent = data.recentActivity ?? {}
 
-      const bookingGrowthRate = summary.bookingGrowthRate ?? 0
-      const revenueGrowthRate = summary.revenueGrowthRate ?? 0
-        
-        const transformedMetrics: DashboardMetrics = {
-          occupancy: {
-          current: Math.round(summary.occupancyRate ?? 0),
-            total: 100,
-          percentage: Math.round(summary.averageOccupancyRate ?? summary.occupancyRate ?? 0),
-          trend: bookingGrowthRate > 0 ? 'up' : bookingGrowthRate < 0 ? 'down' : 'stable',
-          change: Math.abs(bookingGrowthRate)
-          },
-          revenue: {
-          today: summary.todayRevenue ?? 0,
-          thisMonth: summary.monthlyRevenue ?? 0,
-          lastMonth: summary.monthlyRevenue ?? 0,
-          trend: revenueGrowthRate > 0 ? 'up' : revenueGrowthRate < 0 ? 'down' : 'stable',
-          change: Math.abs(revenueGrowthRate)
-          },
-          bookings: {
-          today: summary.todayBookings ?? 0,
-          thisWeek: summary.monthlyBookings ?? 0,
-          pending: (recent.bookings || []).filter((b: any) => b.status === 'PENDING').length,
-          confirmed: (recent.bookings || []).filter((b: any) => b.status === 'CONFIRMED').length,
-          trend: bookingGrowthRate > 0 ? 'up' : bookingGrowthRate < 0 ? 'down' : 'stable',
-          change: Math.abs(bookingGrowthRate)
-          },
-          restaurant: {
-          ordersToday: summary.restaurantOrdersToday ?? 0,
-          revenueToday: summary.restaurantRevenueToday ?? 0,
-          averageOrderValue: summary.averageOrderValueToday ?? 0,
-          popularItem: (recent.orders && recent.orders[0]?.items?.[0]?.name) || 'Signature Dish',
-          trend: (summary.restaurantOrdersToday ?? 0) >= 0 ? 'up' : 'stable',
-          change: summary.restaurantOrdersToday ?? 0
-          },
-          tasks: {
-          total: summary.taskStats?.total ?? 0,
-          completed: summary.taskStats?.completed ?? 0,
-          pending: summary.taskStats?.pending ?? 0,
-          overdue: summary.taskStats?.overdue ?? 0,
-          completionRate: summary.taskStats?.completionRate ?? 0
-          },
-          guestSatisfaction: {
-          rating: summary.guestSatisfaction?.rating ?? 4.5,
-          reviews: summary.guestSatisfaction?.reviews ?? 0,
-            trend: 'stable',
-            change: 0
-          }
-        }
-        
-        setMetrics(transformedMetrics)
-        
-      const bookingActivities: RecentActivity[] = (recent.bookings || []).map((booking: any) => ({
-          id: booking.id,
-        type: 'booking',
-          title: 'New Booking',
-          description: `Room ${booking.roomNumber} - ${booking.guestName}`,
-          timestamp: new Date(booking.createdAt),
-        status: booking.status === 'CANCELLED' ? 'error' : 'success',
-          amount: booking.totalAmount
-        }))
-        
-      const orderActivities: RecentActivity[] = (recent.orders || []).map((order: any) => ({
-        id: order.id,
-        type: 'order',
-        title: 'Restaurant Order',
-        description: `Room ${order.roomNumber} • ${order.items?.length ?? 0} items`,
-        timestamp: new Date(order.createdAt),
-        status: order.status === 'DELIVERED' ? 'success' : 'info',
-        amount: order.totalAmount
-      }))
+ const bookingGrowthRate = summary.bookingGrowthRate ?? 0
+ const revenueGrowthRate = summary.revenueGrowthRate ?? 0
+ 
+ const transformedMetrics: DashboardMetrics = {
+ occupancy: {
+ current: Math.round(summary.occupancyRate ?? 0),
+ total: 100,
+ percentage: Math.round(summary.averageOccupancyRate ?? summary.occupancyRate ?? 0),
+ trend: bookingGrowthRate > 0 ? 'up' : bookingGrowthRate < 0 ? 'down' : 'stable',
+ change: Math.abs(bookingGrowthRate)
+ },
+ revenue: {
+ today: summary.todayRevenue ?? 0,
+ thisMonth: summary.monthlyRevenue ?? 0,
+ lastMonth: summary.monthlyRevenue ?? 0,
+ trend: revenueGrowthRate > 0 ? 'up' : revenueGrowthRate < 0 ? 'down' : 'stable',
+ change: Math.abs(revenueGrowthRate)
+ },
+ bookings: {
+ today: summary.todayBookings ?? 0,
+ thisWeek: summary.monthlyBookings ?? 0,
+ pending: (recent.bookings || []).filter((b: any) => b.status === 'PENDING').length,
+ confirmed: (recent.bookings || []).filter((b: any) => b.status === 'CONFIRMED').length,
+ trend: bookingGrowthRate > 0 ? 'up' : bookingGrowthRate < 0 ? 'down' : 'stable',
+ change: Math.abs(bookingGrowthRate)
+ },
+ restaurant: {
+ ordersToday: summary.restaurantOrdersToday ?? 0,
+ revenueToday: summary.restaurantRevenueToday ?? 0,
+ averageOrderValue: summary.averageOrderValueToday ?? 0,
+ popularItem: (recent.orders && recent.orders[0]?.items?.[0]?.name) || 'Signature Dish',
+ trend: (summary.restaurantOrdersToday ?? 0) >= 0 ? 'up' : 'stable',
+ change: summary.restaurantOrdersToday ?? 0
+ },
+ tasks: {
+ total: summary.taskStats?.total ?? 0,
+ completed: summary.taskStats?.completed ?? 0,
+ pending: summary.taskStats?.pending ?? 0,
+ overdue: summary.taskStats?.overdue ?? 0,
+ completionRate: summary.taskStats?.completionRate ?? 0
+ },
+ guestSatisfaction: {
+ rating: summary.guestSatisfaction?.rating ?? 4.5,
+ reviews: summary.guestSatisfaction?.reviews ?? 0,
+ trend: 'stable',
+ change: 0
+ }
+ }
+ 
+ setMetrics(transformedMetrics)
+ 
+ const bookingActivities: RecentActivity[] = (recent.bookings || []).map((booking: any) => ({
+ id: booking.id,
+ type: 'booking',
+ title: 'New Booking',
+ description: `Room ${booking.roomNumber} - ${booking.guestName}`,
+ timestamp: new Date(booking.createdAt),
+ status: booking.status === 'CANCELLED' ? 'error' : 'success',
+ amount: booking.totalAmount
+ }))
+ 
+ const orderActivities: RecentActivity[] = (recent.orders || []).map((order: any) => ({
+ id: order.id,
+ type: 'order',
+ title: 'Restaurant Order',
+ description: `Room ${order.roomNumber} • ${order.items?.length ?? 0} items`,
+ timestamp: new Date(order.createdAt),
+ status: order.status === 'DELIVERED' ? 'success' : 'info',
+ amount: order.totalAmount
+ }))
 
-      const taskActivities: RecentActivity[] = (recent.tasks || []).map((task: any) => ({
-        id: task.id,
-        type: 'task',
-        title: task.title,
-        description: `${task.assignedTo ? `Assigned to ${task.assignedTo}` : 'Unassigned'} • ${task.priority.toLowerCase()} priority`,
-        timestamp: new Date(task.createdAt),
-        status: task.status === 'OVERDUE' ? 'error' : task.status === 'COMPLETED' ? 'success' : 'info'
-      }))
+ const taskActivities: RecentActivity[] = (recent.tasks || []).map((task: any) => ({
+ id: task.id,
+ type: 'task',
+ title: task.title,
+ description: `${task.assignedTo ? `Assigned to ${task.assignedTo}` : 'Unassigned'} • ${task.priority.toLowerCase()} priority`,
+ timestamp: new Date(task.createdAt),
+ status: task.status === 'OVERDUE' ? 'error' : task.status === 'COMPLETED' ? 'success' : 'info'
+ }))
 
-      const combinedActivity = [...bookingActivities, ...orderActivities, ...taskActivities]
-        .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
-        .slice(0, 10)
+ const combinedActivity = [...bookingActivities, ...orderActivities, ...taskActivities]
+ .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+ .slice(0, 10)
 
-      setRecentActivity(combinedActivity)
-    } catch (error) {
-      console.error('Failed to fetch dashboard data:', error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
+ setRecentActivity(combinedActivity)
+ } catch (error) {
+ console.error('Failed to fetch dashboard data:', error)
+ } finally {
+ setIsLoading(false)
+ }
+ }
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
-        <div className="container mx-auto px-4 py-8">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-1/3 mb-8"></div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="h-32 bg-gray-200 rounded-xl"></div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
+ if (isLoading) {
+ return (
+ <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+ <div className="container mx-auto px-4 py-8">
+ <div className="animate-pulse">
+ <div className="h-8 bg-gray-200 rounded w-1/3 mb-8"></div>
+ <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+ {Array.from({ length: 8 }).map((_, i) => (
+ <div key={i} className="h-32 bg-gray-200 rounded-xl"></div>
+ ))}
+ </div>
+ </div>
+ </div>
+ </div>
+ )
+ }
 
-  if (!metrics) return null
+ if (!metrics) return null
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard Overview</h1>
-          <p className="text-gray-600">Real-time insights for hotel and restaurant operations</p>
-        </motion.div>
+ return (
+ <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+ <div className="container mx-auto px-4 py-8">
+ {/* Header */}
+ <motion.div
+ initial={{ opacity: 0, y: 20 }}
+ animate={{ opacity: 1, y: 0 }}
+ className="mb-8"
+ >
+ <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard Overview</h1>
+ <p className="text-gray-600">Real-time insights for hotel and restaurant operations</p>
+ </motion.div>
 
-        {/* Main KPI Grid */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
-        >
-          {/* Occupancy */}
-          <KpiCard
-            title="Occupancy Rate"
-            value={`${metrics.occupancy.current}/${metrics.occupancy.total}`}
-            subtitle={`${metrics.occupancy.percentage}%`}
-            icon={<Bed className="w-5 h-5" />}
-            color="primary"
-            trend={<TrendIndicator trend={metrics.occupancy.trend} change={metrics.occupancy.change} />}
-          />
+ {/* Main KPI Grid */}
+ <motion.div
+ initial={{ opacity: 0, y: 20 }}
+ animate={{ opacity: 1, y: 0 }}
+ transition={{ delay: 0.1 }}
+ className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+ >
+ {/* Occupancy */}
+ <KpiCard
+ title="Occupancy Rate"
+ value={`${metrics.occupancy.current}/${metrics.occupancy.total}`}
+ subtitle={`${metrics.occupancy.percentage}%`}
+ icon={<Bed className="w-5 h-5" />}
+ color="primary"
+ trend={<TrendIndicator trend={metrics.occupancy.trend} change={metrics.occupancy.change} />}
+ />
 
-          {/* Revenue */}
-          <KpiCard
-            title="Today's Revenue"
-            value={`$${metrics.revenue.today.toLocaleString()}`}
-            subtitle={`This month: $${metrics.revenue.thisMonth.toLocaleString()}`}
-            icon={<DollarSign className="w-5 h-5" />}
-            color="success"
-            trend={<TrendIndicator trend={metrics.revenue.trend} change={metrics.revenue.change} />}
-          />
+ {/* Revenue */}
+ <KpiCard
+ title="Today's Revenue"
+ value={`$${metrics.revenue.today.toLocaleString()}`}
+ subtitle={`This month: $${metrics.revenue.thisMonth.toLocaleString()}`}
+ icon={<DollarSign className="w-5 h-5" />}
+ color="success"
+ trend={<TrendIndicator trend={metrics.revenue.trend} change={metrics.revenue.change} />}
+ />
 
-          {/* Bookings */}
-          <KpiCard
-            title="Bookings Today"
-            value={metrics.bookings.today}
-            subtitle={`${metrics.bookings.confirmed} confirmed, ${metrics.bookings.pending} pending`}
-            icon={<Calendar className="w-5 h-5" />}
-            color="info"
-            trend={<TrendIndicator trend={metrics.bookings.trend} change={metrics.bookings.change} />}
-          />
+ {/* Bookings */}
+ <KpiCard
+ title="Bookings Today"
+ value={metrics.bookings.today}
+ subtitle={`${metrics.bookings.confirmed} confirmed, ${metrics.bookings.pending} pending`}
+ icon={<Calendar className="w-5 h-5" />}
+ color="info"
+ trend={<TrendIndicator trend={metrics.bookings.trend} change={metrics.bookings.change} />}
+ />
 
-          {/* Restaurant */}
-          <KpiCard
-            title="Restaurant Orders"
-            value={metrics.restaurant.ordersToday}
-            subtitle={`Avg: $${metrics.restaurant.averageOrderValue.toFixed(2)}`}
-            icon={<Utensils className="w-5 h-5" />}
-            color="warning"
-            trend={<TrendIndicator trend={metrics.restaurant.trend} change={metrics.restaurant.change} />}
-          />
-        </motion.div>
+ {/* Restaurant */}
+ <KpiCard
+ title="Restaurant Orders"
+ value={metrics.restaurant.ordersToday}
+ subtitle={`Avg: $${metrics.restaurant.averageOrderValue.toFixed(2)}`}
+ icon={<Utensils className="w-5 h-5" />}
+ color="warning"
+ trend={<TrendIndicator trend={metrics.restaurant.trend} change={metrics.restaurant.change} />}
+ />
+ </motion.div>
 
-        {/* Secondary Metrics */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
-        >
-          {/* Tasks */}
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Task Management</h3>
-              <CheckCircle className="w-5 h-5 text-blue-600" />
-            </div>
-            <div className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-gray-600">Total Tasks</span>
-                <span className="font-medium">{metrics.tasks.total}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Completed</span>
-                <span className="font-medium text-green-600">{metrics.tasks.completed}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Pending</span>
-                <span className="font-medium text-yellow-600">{metrics.tasks.pending}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Overdue</span>
-                <span className="font-medium text-red-600">{metrics.tasks.overdue}</span>
-              </div>
-              <div className="mt-4">
-                <div className="flex justify-between text-sm mb-1">
-                  <span>Completion Rate</span>
-                  <span>{metrics.tasks.completionRate.toFixed(1)}%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${metrics.tasks.completionRate}%` }}
-                    transition={{ duration: 1, ease: 'easeOut' }}
-                    className="bg-gradient-to-r from-green-500 to-green-600 h-2 rounded-full"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
+ {/* Secondary Metrics */}
+ <motion.div
+ initial={{ opacity: 0, y: 20 }}
+ animate={{ opacity: 1, y: 0 }}
+ transition={{ delay: 0.2 }}
+ className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
+ >
+ {/* Tasks */}
+ <div className="bg-white rounded-lg shadow-lg border border-gray-100 p-6">
+ <div className="flex items-center justify-between mb-4">
+ <h3 className="text-lg font-semibold text-gray-900">Task Management</h3>
+ <CheckCircle className="w-5 h-5 text-blue-600" />
+ </div>
+ <div className="space-y-3">
+ <div className="flex justify-between">
+ <span className="text-gray-600">Total Tasks</span>
+ <span className="font-medium">{metrics.tasks.total}</span>
+ </div>
+ <div className="flex justify-between">
+ <span className="text-gray-600">Completed</span>
+ <span className="font-medium text-green-600">{metrics.tasks.completed}</span>
+ </div>
+ <div className="flex justify-between">
+ <span className="text-gray-600">Pending</span>
+ <span className="font-medium text-yellow-600">{metrics.tasks.pending}</span>
+ </div>
+ <div className="flex justify-between">
+ <span className="text-gray-600">Overdue</span>
+ <span className="font-medium text-red-600">{metrics.tasks.overdue}</span>
+ </div>
+ <div className="mt-4">
+ <div className="flex justify-between text-sm mb-1">
+ <span>Completion Rate</span>
+ <span>{metrics.tasks.completionRate.toFixed(1)}%</span>
+ </div>
+ <div className="w-full bg-gray-200 rounded-full h-2">
+ <motion.div
+ initial={{ width: 0 }}
+ animate={{ width: `${metrics.tasks.completionRate}%` }}
+ transition={{ duration: 1, ease: 'easeOut' }}
+ className="bg-gradient-to-r from-green-500 to-green-600 h-2 rounded-full"
+ />
+ </div>
+ </div>
+ </div>
+ </div>
 
-          {/* Guest Satisfaction */}
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Guest Satisfaction</h3>
-              <Star className="w-5 h-5 text-yellow-500" />
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-gray-900 mb-2">{metrics.guestSatisfaction.rating}</div>
-              <div className="flex justify-center mb-2">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star
-                    key={i}
-                    className={cn(
-                      "w-4 h-4",
-                      i < Math.floor(metrics.guestSatisfaction.rating)
-                        ? "text-yellow-400 fill-current"
-                        : "text-gray-300"
-                    )}
-                  />
-                ))}
-              </div>
-              <div className="text-sm text-gray-600 mb-2">{metrics.guestSatisfaction.reviews} reviews</div>
-              <TrendIndicator 
-                trend={metrics.guestSatisfaction.trend} 
-                change={metrics.guestSatisfaction.change} 
-              />
-            </div>
-          </div>
+ {/* Guest Satisfaction */}
+ <div className="bg-white rounded-lg shadow-lg border border-gray-100 p-6">
+ <div className="flex items-center justify-between mb-4">
+ <h3 className="text-lg font-semibold text-gray-900">Guest Satisfaction</h3>
+ <Star className="w-5 h-5 text-yellow-500" />
+ </div>
+ <div className="text-center">
+ <div className="text-3xl font-bold text-gray-900 mb-2">{metrics.guestSatisfaction.rating}</div>
+ <div className="flex justify-center mb-2">
+ {Array.from({ length: 5 }).map((_, i) => (
+ <Star
+ key={i}
+ className={cn(
+ "w-4 h-4",
+ i < Math.floor(metrics.guestSatisfaction.rating)
+ ? "text-yellow-400 fill-current"
+ : "text-gray-300"
+ )}
+ />
+ ))}
+ </div>
+ <div className="text-sm text-gray-600 mb-2">{metrics.guestSatisfaction.reviews} reviews</div>
+ <TrendIndicator 
+ trend={metrics.guestSatisfaction.trend} 
+ change={metrics.guestSatisfaction.change} 
+ />
+ </div>
+ </div>
 
-          {/* Restaurant Popular Item */}
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Popular Item</h3>
-              <Utensils className="w-5 h-5 text-amber-600" />
-            </div>
-            <div className="text-center">
-              <div className="text-xl font-bold text-gray-900 mb-2">{metrics.restaurant.popularItem}</div>
-              <div className="text-sm text-gray-600 mb-2">Most ordered today</div>
-              <div className="text-lg font-semibold text-amber-600">
-                ${metrics.restaurant.revenueToday.toFixed(2)}
-              </div>
-              <div className="text-xs text-gray-500 mt-1">Restaurant revenue</div>
-            </div>
-          </div>
-        </motion.div>
+ {/* Restaurant Popular Item */}
+ <div className="bg-white rounded-lg shadow-lg border border-gray-100 p-6">
+ <div className="flex items-center justify-between mb-4">
+ <h3 className="text-lg font-semibold text-gray-900">Popular Item</h3>
+ <Utensils className="w-5 h-5 text-amber-600" />
+ </div>
+ <div className="text-center">
+ <div className="text-xl font-bold text-gray-900 mb-2">{metrics.restaurant.popularItem}</div>
+ <div className="text-sm text-gray-600 mb-2">Most ordered today</div>
+ <div className="text-lg font-semibold text-amber-600">
+ ${metrics.restaurant.revenueToday.toFixed(2)}
+ </div>
+ <div className="text-xs text-gray-500 mt-1">Restaurant revenue</div>
+ </div>
+ </div>
+ </motion.div>
 
-        {/* Charts and Activity */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Revenue Chart */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            <ChartCard
-              title="Revenue Trends"
-              subtitle="Daily revenue for the last 7 days"
-              data={[
-                { label: 'Mon', value: 2100 },
-                { label: 'Tue', value: 2450 },
-                { label: 'Wed', value: 2800 },
-                { label: 'Thu', value: 2650 },
-                { label: 'Fri', value: 3200 },
-                { label: 'Sat', value: 3850 },
-                { label: 'Sun', value: metrics.revenue.today }
-              ]}
-              type="line"
-              color="success"
-            />
-          </motion.div>
+ {/* Charts and Activity */}
+ <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+ {/* Revenue Chart */}
+ <motion.div
+ initial={{ opacity: 0, x: -20 }}
+ animate={{ opacity: 1, x: 0 }}
+ transition={{ delay: 0.3 }}
+ >
+ <ChartCard
+ title="Revenue Trends"
+ subtitle="Daily revenue for the last 7 days"
+ data={[
+ { label: 'Mon', value: 2100 },
+ { label: 'Tue', value: 2450 },
+ { label: 'Wed', value: 2800 },
+ { label: 'Thu', value: 2650 },
+ { label: 'Fri', value: 3200 },
+ { label: 'Sat', value: 3850 },
+ { label: 'Sun', value: metrics.revenue.today }
+ ]}
+ type="line"
+ color="success"
+ />
+ </motion.div>
 
-          {/* Recent Activity */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.4 }}
-            className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6"
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-gray-900">Recent Activity</h3>
-              <Activity className="w-5 h-5 text-blue-600" />
-            </div>
-            
-            <div className="space-y-3 max-h-96 overflow-y-auto">
-              <AnimatePresence>
-                {recentActivity.map((activity, index) => (
-                  <ActivityItem key={activity.id} activity={activity} index={index} />
-                ))}
-              </AnimatePresence>
-            </div>
-          </motion.div>
-        </div>
-      </div>
-    </div>
-  )
+ {/* Recent Activity */}
+ <motion.div
+ initial={{ opacity: 0, x: 20 }}
+ animate={{ opacity: 1, x: 0 }}
+ transition={{ delay: 0.4 }}
+ className="bg-white rounded-lg shadow-lg border border-gray-100 p-6"
+ >
+ <div className="flex items-center justify-between mb-6">
+ <h3 className="text-lg font-semibold text-gray-900">Recent Activity</h3>
+ <Activity className="w-5 h-5 text-blue-600" />
+ </div>
+ 
+ <div className="space-y-3 max-h-96 overflow-y-auto">
+ <AnimatePresence>
+ {recentActivity.map((activity, index) => (
+ <ActivityItem key={activity.id} activity={activity} index={index} />
+ ))}
+ </AnimatePresence>
+ </div>
+ </motion.div>
+ </div>
+ </div>
+ </div>
+ )
 }
 
 // Export with error boundary
 export function DashboardOverview(props: DashboardOverviewProps) {
-  return (
-    <DashboardOverviewContent {...props} />
-  )
+ return (
+ <DashboardOverviewContent {...props} />
+ )
 }
