@@ -433,6 +433,18 @@ export default function UnifiedPOS({ role }: { role: string }) {
           </div>
 
           <div className="flex items-center gap-1">
+            {/* Reprint Last Receipt button — only visible after a transaction */}
+            {lastTransaction && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setPrintReceiptModal(true)}
+                className="hidden sm:flex items-center gap-1.5 text-amber-400 hover:text-amber-300 hover:bg-amber-400/10 border border-amber-500/30 rounded-lg text-[10px] font-bold px-2 h-7"
+                title="Reprint Last Receipt"
+              >
+                <Receipt className="w-3 h-3" /> Reprint
+              </Button>
+            )}
             <Button 
               variant="ghost" 
               size="icon" 
@@ -450,7 +462,7 @@ export default function UnifiedPOS({ role }: { role: string }) {
                 setPrintReceiptModal(true)
               }} 
               className="hover:bg-white/10 text-white/70 hover:text-white"
-              title="Print Receipt"
+              title="Print Current View"
             >
               <Printer className="w-4 h-4" />
             </Button>
@@ -458,6 +470,7 @@ export default function UnifiedPOS({ role }: { role: string }) {
               <X className="w-5 h-5" />
             </Button>
           </div>
+
         </div>
 
         {/* Selected Customer Header Banner */}
