@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
-import { ShoppingCart, Search, Printer, FileText, Bed, User, Plus, Minus, CreditCard, DollarSign, CheckCircle, Receipt, Sparkles, X, Loader2 } from 'lucide-react'
+import { ShoppingCart, Search, Printer, FileText, Bed, User, Plus, Minus, CreditCard, DollarSign, CheckCircle, Receipt, Sparkles, X, Loader2, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useProperty } from '@/contexts/property-context'
@@ -117,6 +117,10 @@ export default function UnifiedPOS({ role }: { role: string }) {
       }
       return item
     }).filter(item => item.quantity > 0))
+  }
+
+  const removeFromCart = (id: string) => {
+    setPosCart(prev => prev.filter(item => item.id !== id))
   }
 
   const cartSubtotal = posCart.reduce((sum, item) => sum + (Number(item.price || 0) * item.quantity), 0)
@@ -509,11 +513,24 @@ export default function UnifiedPOS({ role }: { role: string }) {
           <div className="flex-1 flex flex-col hide-on-print">
             <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
               {posCart.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-white/30 p-6 text-center">
-                  <ShoppingCart className="w-12 h-12 mb-3 opacity-20" />
-                  <p className="text-sm font-semibold">POS Cart is empty</p>
-                  <p className="text-xs text-white/40 mt-1">Select items from the catalog on the left to build an order.</p>
+                <div className="flex flex-col items-center justify-center h-full text-white/30 p-6 text-center select-none">
+                  {/* Pulsing glow ring behind the icon */}
+                  <div className="relative mb-4">
+                    <div className="absolute inset-0 rounded-full bg-primary/10 animate-ping opacity-60" style={{ animationDuration: '2.5s' }} />
+                    <div className="relative w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center animate-bounce" style={{ animationDuration: '2s' }}>
+                      <ShoppingCart className="w-7 h-7 text-white/30" />
+                    </div>
+                  </div>
+                  {/* Animated sparkle dots */}
+                  <div className="flex gap-1 mb-3">
+                    <span className="w-1 h-1 rounded-full bg-primary/40 animate-pulse" style={{ animationDelay: '0ms' }} />
+                    <span className="w-1 h-1 rounded-full bg-primary/40 animate-pulse" style={{ animationDelay: '300ms' }} />
+                    <span className="w-1 h-1 rounded-full bg-primary/40 animate-pulse" style={{ animationDelay: '600ms' }} />
+                  </div>
+                  <p className="text-sm font-semibold text-white/50">POS Cart is empty</p>
+                  <p className="text-xs text-white/30 mt-1 max-w-[180px] leading-relaxed">Select items from the catalog to build an order.</p>
                 </div>
+
               ) : (
                 posCart.map((item, i) => {
                   const thumb = item.imageUrls?.[0] || item.images?.[0] || null
@@ -541,6 +558,14 @@ export default function UnifiedPOS({ role }: { role: string }) {
                           <button onClick={() => updateQuantity(item.id, 1)} className="text-white/60 hover:text-white" aria-label="Increase quantity"><Plus className="w-3 h-3"/></button>
                         </div>
                         <span className="text-sm font-bold text-primary font-mono">${(Number(item.price || 0) * item.quantity).toFixed(2)}</span>
+                        <button 
+                          onClick={() => removeFromCart(item.id)}
+                          className="p-1.5 text-white/40 hover:text-red-400 hover:bg-red-400/10 rounded-md transition-colors"
+                          aria-label="Remove item"
+                          title="Remove item"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </div>
                     </div>
                   )
