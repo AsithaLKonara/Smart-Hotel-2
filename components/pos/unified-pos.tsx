@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
-import { ShoppingCart, Search, Printer, FileText, Bed, User, Plus, Minus, CreditCard, DollarSign, CheckCircle, Receipt, Sparkles } from 'lucide-react'
+import { ShoppingCart, Search, Printer, FileText, Bed, User, Plus, Minus, CreditCard, DollarSign, CheckCircle, Receipt, Sparkles, X } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useProperty } from '@/contexts/property-context'
@@ -20,6 +20,8 @@ export default function UnifiedPOS({ role }: { role: string }) {
   const [searchPos, setSearchPos] = useState('')
   const [searchGuest, setSearchGuest] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('All')
+  const [showGuestSidebar, setShowGuestSidebar] = useState(false)
+  const [showCartSidebar, setShowCartSidebar] = useState(false)
 
   // Settlement Form State
   const [settleAmount, setSettleAmount] = useState<string>('')
@@ -250,15 +252,23 @@ export default function UnifiedPOS({ role }: { role: string }) {
   }
 
   return (
-    <div className="flex h-[calc(100vh-80px)] overflow-hidden bg-[#0c0c0c] text-white print-container print:bg-white print:text-black">
+    <div className="flex relative h-[calc(100vh-80px)] overflow-hidden bg-[#0c0c0c] text-white print-container print:bg-white print:text-black">
+      
+      {/* Mobile Overlay for Guest Sidebar */}
+      {showGuestSidebar && <div className="fixed inset-0 bg-black/80 z-40 lg:hidden" onClick={() => setShowGuestSidebar(false)} />}
       
       {/* 1. LEFT COLUMN: Active Guests */}
-      <div className="w-[300px] border-r border-white/10 flex flex-col hide-on-print">
-        <div className="p-4 border-b border-white/10 bg-black/20">
-          <h2 className="text-lg font-bold flex items-center gap-2">
-            <Bed className="w-5 h-5 text-primary" /> Active Guests
-          </h2>
-          <p className="text-xs text-white/50 mt-1">{filteredBookings.length} rooms checked in</p>
+      <div className={`fixed inset-y-0 left-0 z-50 w-[300px] bg-[#0c0c0c] border-r border-white/10 flex flex-col hide-on-print transition-transform duration-300 lg:static lg:translate-x-0 ${showGuestSidebar ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="p-4 border-b border-white/10 bg-black/20 flex justify-between items-center">
+          <div>
+            <h2 className="text-lg font-bold flex items-center gap-2">
+              <Bed className="w-5 h-5 text-primary" /> Active Guests
+            </h2>
+            <p className="text-xs text-white/50 mt-1">{filteredBookings.length} rooms checked in</p>
+          </div>
+          <Button variant="ghost" size="icon" className="lg:hidden text-white/50 hover:text-white" onClick={() => setShowGuestSidebar(false)}>
+            <X className="w-5 h-5" />
+          </Button>
         </div>
         <div className="p-3 border-b border-white/10">
           <div className="relative mb-3">
@@ -328,19 +338,30 @@ export default function UnifiedPOS({ role }: { role: string }) {
       </div>
 
       {/* 2. MIDDLE COLUMN: POS Catalog / Items */}
-      <div className="flex-1 flex flex-col border-r border-white/10 hide-on-print">
+      <div className="flex-1 flex flex-col border-r border-white/10 hide-on-print w-full lg:w-auto">
         <div className="p-4 border-b border-white/10 bg-black/20">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold flex items-center gap-2">
-              <ShoppingCart className="w-5 h-5 text-primary" /> {role === 'KITCHEN' ? 'Kitchen Catalog' : 'Point of Sale Catalog'}
-            </h2>
-            <div className="relative w-64">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3">
+            <div className="flex justify-between items-center w-full sm:w-auto">
+              <h2 className="text-lg font-bold flex items-center gap-2">
+                <ShoppingCart className="w-5 h-5 text-primary" /> {role === 'KITCHEN' ? 'Kitchen Catalog' : 'POS Catalog'}
+              </h2>
+              <div className="flex gap-2 lg:hidden">
+                <Button variant="outline" size="icon" onClick={() => setShowGuestSidebar(true)} className="bg-white/5 border-white/10">
+                  <Bed className="w-4 h-4 text-white" />
+                </Button>
+                <Button variant="outline" size="icon" onClick={() => setShowCartSidebar(true)} className="bg-primary/20 border-primary/50 relative">
+                  <ShoppingCart className="w-4 h-4 text-primary" />
+                  {posCart.length > 0 && <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] rounded-full w-4 h-4 flex items-center justify-center">{posCart.length}</span>}
+                </Button>
+              </div>
+            </div>
+            <div className="relative w-full sm:w-64">
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-white/50" />
               <Input 
                 placeholder="Search catalog items..." 
                 value={searchPos}
                 onChange={(e) => setSearchPos(e.target.value)}
-                className="pl-9 h-9 bg-white/5 border-white/10 text-white text-sm"
+                className="pl-9 h-9 bg-white/5 border-white/10 text-white text-sm w-full"
               />
             </div>
           </div>
@@ -389,8 +410,11 @@ export default function UnifiedPOS({ role }: { role: string }) {
         </div>
       </div>
 
+      {/* Mobile Overlay for Cart Sidebar */}
+      {showCartSidebar && <div className="fixed inset-0 bg-black/80 z-40 lg:hidden" onClick={() => setShowCartSidebar(false)} />}
+      
       {/* 3. RIGHT COLUMN: Unified Cart & Live Folio Statement Terminal */}
-      <div className="w-[420px] flex flex-col print-section bg-[#1a1a1a] print:bg-white print:text-black">
+      <div className={`fixed inset-y-0 right-0 z-50 w-full sm:w-[420px] bg-[#1a1a1a] flex flex-col print-section print:bg-white print:text-black transition-transform duration-300 lg:static lg:translate-x-0 ${showCartSidebar ? 'translate-x-0' : 'translate-x-full'}`}>
         {/* Terminal Header Tabs */}
         <div className="p-3 border-b border-white/10 bg-black/30 flex justify-between items-center hide-on-print">
           <div className="flex bg-white/5 p-1 rounded-xl border border-white/10">
@@ -408,27 +432,32 @@ export default function UnifiedPOS({ role }: { role: string }) {
             </button>
           </div>
 
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={() => {
-              setLastTransaction({
-                type: activeTab === 'folio' ? 'FOLIO_STATEMENT' : 'POS_CART',
-                guestName: activeBooking?.guest?.name || 'Walk-in Customer',
-                roomNumber: activeBooking?.roomAssignments?.[0]?.room?.number || 'N/A',
-                items: posCart,
-                folioTotalCharges,
-                folioTotalPayments,
-                folioOutstandingBalance,
-                date: new Date().toLocaleString()
-              })
-              setPrintReceiptModal(true)
-            }} 
-            className="hover:bg-white/10 text-white/70 hover:text-white"
-            title="Print Receipt"
-          >
-            <Printer className="w-4 h-4" />
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => {
+                setLastTransaction({
+                  type: activeTab === 'folio' ? 'FOLIO_STATEMENT' : 'POS_CART',
+                  guestName: activeBooking?.guest?.name || 'Walk-in Customer',
+                  roomNumber: activeBooking?.roomAssignments?.[0]?.room?.number || 'N/A',
+                  items: posCart,
+                  folioTotalCharges,
+                  folioTotalPayments,
+                  folioOutstandingBalance,
+                  date: new Date().toLocaleString()
+                })
+                setPrintReceiptModal(true)
+              }} 
+              className="hover:bg-white/10 text-white/70 hover:text-white"
+              title="Print Receipt"
+            >
+              <Printer className="w-4 h-4" />
+            </Button>
+            <Button variant="ghost" size="icon" className="lg:hidden text-white/50 hover:text-white" onClick={() => setShowCartSidebar(false)}>
+              <X className="w-5 h-5" />
+            </Button>
+          </div>
         </div>
 
         {/* Selected Customer Header Banner */}
