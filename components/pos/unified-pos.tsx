@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
-import { ShoppingCart, Search, Printer, FileText, Bed, User, Plus, Minus, CreditCard, DollarSign, CheckCircle, Receipt, Sparkles, X } from 'lucide-react'
+import { ShoppingCart, Search, Printer, FileText, Bed, User, Plus, Minus, CreditCard, DollarSign, CheckCircle, Receipt, Sparkles, X, Loader2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useProperty } from '@/contexts/property-context'
@@ -525,9 +525,13 @@ export default function UnifiedPOS({ role }: { role: string }) {
                         action: handleChargeToRoom
                       })
                     }}
-                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs h-10"
+                   className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs h-10"
                   >
-                    Charge to Room {activeBooking.roomAssignments?.[0]?.room?.number || 'TBD'}
+                    {isSubmitting ? (
+                      <><Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" /> Processing...</>
+                    ) : (
+                      <>Charge to Room {activeBooking.roomAssignments?.[0]?.room?.number || 'TBD'}</>
+                    )}
                   </Button>
                 )}
                 
@@ -545,7 +549,11 @@ export default function UnifiedPOS({ role }: { role: string }) {
                     }}
                     className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs h-10"
                   >
-                    <DollarSign className="w-3.5 h-3.5 mr-1" /> Pay Cash
+                    {isSubmitting ? (
+                      <><Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" /> Processing...</>
+                    ) : (
+                      <><DollarSign className="w-3.5 h-3.5 mr-1" /> Pay Cash</>
+                    )}
                   </Button>
                   <Button 
                     disabled={posCart.length === 0 || isSubmitting}
@@ -560,7 +568,11 @@ export default function UnifiedPOS({ role }: { role: string }) {
                     }}
                     className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs h-10"
                   >
-                    <CreditCard className="w-3.5 h-3.5 mr-1" /> Pay Card
+                    {isSubmitting ? (
+                      <><Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" /> Processing...</>
+                    ) : (
+                      <><CreditCard className="w-3.5 h-3.5 mr-1" /> Pay Card</>
+                    )}
                   </Button>
                 </div>
               </div>
@@ -653,7 +665,11 @@ export default function UnifiedPOS({ role }: { role: string }) {
                       }}
                       className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs h-10"
                     >
-                      <DollarSign className="w-3.5 h-3.5 mr-1" /> Pay Cash
+                      {isSubmitting ? (
+                        <><Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" /> Processing...</>
+                      ) : (
+                        <><DollarSign className="w-3.5 h-3.5 mr-1" /> Pay Cash</>
+                      )}
                     </Button>
                     <Button 
                       disabled={folioOutstandingBalance === 0 || isSubmitting}
@@ -669,7 +685,11 @@ export default function UnifiedPOS({ role }: { role: string }) {
                       }}
                       className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs h-10"
                     >
-                      <CreditCard className="w-3.5 h-3.5 mr-1" /> Pay Card
+                      {isSubmitting ? (
+                        <><Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" /> Processing...</>
+                      ) : (
+                        <><CreditCard className="w-3.5 h-3.5 mr-1" /> Pay Card</>
+                      )}
                     </Button>
                   </div>
                 </div>
@@ -771,13 +791,20 @@ export default function UnifiedPOS({ role }: { role: string }) {
               Cancel
             </Button>
             <Button 
-              onClick={() => {
-                if (confirmPaymentDialog?.action) confirmPaymentDialog.action()
+              disabled={isSubmitting}
+              onClick={async () => {
+                if (confirmPaymentDialog?.action) {
+                  await confirmPaymentDialog.action()
+                }
                 setConfirmPaymentDialog(null)
               }} 
               className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex-1"
             >
-              <CheckCircle className="w-3.5 h-3.5 mr-1" /> Confirm
+              {isSubmitting ? (
+                <><Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" /> Processing...</>
+              ) : (
+                <><CheckCircle className="w-3.5 h-3.5 mr-1" /> Confirm</>
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
