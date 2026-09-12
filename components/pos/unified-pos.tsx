@@ -272,7 +272,7 @@ export default function UnifiedPOS({ role }: { role: string }) {
             </h2>
             <p className="text-xs text-white/50 mt-1">{filteredBookings.length} rooms checked in</p>
           </div>
-          <Button variant="ghost" size="icon" className="lg:hidden text-white/50 hover:text-white" onClick={() => setShowGuestSidebar(false)}>
+          <Button variant="ghost" size="icon" className="lg:hidden text-white/50 hover:text-white" onClick={() => setShowGuestSidebar(false)} aria-label="Close guest sidebar">
             <X className="w-5 h-5" />
           </Button>
         </div>
@@ -351,10 +351,10 @@ export default function UnifiedPOS({ role }: { role: string }) {
                 <ShoppingCart className="w-5 h-5 text-primary" /> {role === 'KITCHEN' ? 'Kitchen Catalog' : 'POS Catalog'}
               </h2>
               <div className="flex gap-2 lg:hidden">
-                <Button variant="outline" size="icon" onClick={() => setShowGuestSidebar(true)} className="bg-white/5 border-white/10">
+                <Button variant="outline" size="icon" onClick={() => setShowGuestSidebar(true)} className="bg-white/5 border-white/10" aria-label="Open guest list">
                   <Bed className="w-4 h-4 text-white" />
                 </Button>
-                <Button variant="outline" size="icon" onClick={() => setShowCartSidebar(true)} className="bg-primary/20 border-primary/50 relative">
+                <Button variant="outline" size="icon" onClick={() => setShowCartSidebar(true)} className="bg-primary/20 border-primary/50 relative" aria-label="Open cart">
                   <ShoppingCart className="w-4 h-4 text-primary" />
                   {posCart.length > 0 && <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] rounded-full w-4 h-4 flex items-center justify-center">{posCart.length}</span>}
                 </Button>
@@ -455,6 +455,7 @@ export default function UnifiedPOS({ role }: { role: string }) {
                 onClick={() => setPrintReceiptModal(true)}
                 className="hidden sm:flex items-center gap-1.5 text-amber-400 hover:text-amber-300 hover:bg-amber-400/10 border border-amber-500/30 rounded-lg text-[10px] font-bold px-2 h-7"
                 title="Reprint Last Receipt"
+                aria-label="Reprint last receipt"
               >
                 <Receipt className="w-3 h-3" /> Reprint
               </Button>
@@ -477,10 +478,11 @@ export default function UnifiedPOS({ role }: { role: string }) {
               }} 
               className="hover:bg-white/10 text-white/70 hover:text-white"
               title="Print Current View"
+              aria-label="Print current view"
             >
               <Printer className="w-4 h-4" />
             </Button>
-            <Button variant="ghost" size="icon" className="lg:hidden text-white/50 hover:text-white" onClick={() => setShowCartSidebar(false)}>
+            <Button variant="ghost" size="icon" className="lg:hidden text-white/50 hover:text-white" onClick={() => setShowCartSidebar(false)} aria-label="Close cart sidebar">
               <X className="w-5 h-5" />
             </Button>
           </div>
