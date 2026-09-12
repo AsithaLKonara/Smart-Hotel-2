@@ -99,52 +99,50 @@ export default function DashboardOrchestrator() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
           >
-            <Card className="p-10 bg-[#0c0c0c] border-white/[0.05] rounded-[40px] space-y-8 shadow-2xl relative overflow-hidden group">
-              <div className="absolute top-0 left-0 w-full h-1 bg-gold-gradient opacity-20" />
-              
+            <Card className="p-6 bg-card border-border rounded-xl space-y-8 shadow-sm">
               <div className="space-y-1">
-                <p className="text-[10px] font-black text-white/20 uppercase tracking-widest">Resort Connection</p>
-                <h4 className="text-2xl font-serif font-bold text-white">Your Concierge</h4>
+                <p className="text-sm font-medium text-muted-foreground">Resort Connection</p>
+                <h4 className="text-xl font-bold">Your Concierge</h4>
               </div>
               
-              <div className="flex items-center gap-6 p-6 bg-white/[0.02] rounded-3xl border border-white/5 group-hover:border-primary/20 transition-all">
-                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xl border border-primary/20">
+              <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg border border-border transition-all">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">
                   JP
                 </div>
                 <div>
-                  <p className="text-lg font-serif font-bold text-white">Jeevan Perera</p>
-                  <p className="text-[10px] text-white/40 uppercase font-black tracking-widest">Lead Experience</p>
+                  <p className="text-base font-bold">Jeevan Perera</p>
+                  <p className="text-sm text-muted-foreground">Lead Experience</p>
                 </div>
               </div>
 
               <div className="space-y-3">
-                <Button className="w-full h-14 bg-primary hover:bg-primary/90 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all hover:scale-[1.02] shadow-lg shadow-primary/20">
+                <Button className="w-full">
                   Instant Message
                 </Button>
-                <Button variant="outline" className="w-full h-14 bg-white/5 hover:bg-white/10 border-white/10 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">
+                <Button variant="outline" className="w-full">
                   Request Callback
                 </Button>
               </div>
             </Card>
           </motion.div>
 
-          <Card className="p-10 bg-[#0c0c0c] border-white/5 rounded-[40px] shadow-2xl space-y-6">
-            <h5 className="text-[10px] font-black text-white/20 uppercase tracking-widest">Quick Service</h5>
+          <Card className="p-6 bg-card border-border rounded-xl shadow-sm space-y-6">
+            <h5 className="text-sm font-medium text-muted-foreground">Quick Service</h5>
             <div className="grid grid-cols-2 gap-4">
                <button 
                   onClick={() => router.push('/dashboard/dining')}
-                  className="flex flex-col items-center gap-3 p-6 bg-white/5 rounded-3xl border border-white/5 hover:bg-primary/10 hover:border-primary/20 transition-all group"
+                  className="flex flex-col items-center gap-3 p-4 bg-muted/30 rounded-lg border border-border hover:bg-muted transition-all group"
                >
-                  <div className="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center text-white/40 group-hover:text-primary">
+                  <div className="w-10 h-10 rounded-md bg-background border flex items-center justify-center text-muted-foreground group-hover:text-foreground">
                     <ChefHat className="w-5 h-5" />
                   </div>
-                  <span className="text-[10px] font-black uppercase tracking-tighter">Dining</span>
+                  <span className="text-sm font-medium">Dining</span>
                </button>
-               <button className="flex flex-col items-center gap-3 p-6 bg-white/5 rounded-3xl border border-white/5 hover:bg-primary/10 hover:border-primary/20 transition-all group">
-                  <div className="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center text-white/40 group-hover:text-primary">
+               <button className="flex flex-col items-center gap-3 p-4 bg-muted/30 rounded-lg border border-border hover:bg-muted transition-all group">
+                  <div className="w-10 h-10 rounded-md bg-background border flex items-center justify-center text-muted-foreground group-hover:text-foreground">
                     <Users className="w-5 h-5" />
                   </div>
-                  <span className="text-[10px] font-black uppercase tracking-tighter">Spa</span>
+                  <span className="text-sm font-medium">Spa</span>
                </button>
             </div>
           </Card>
