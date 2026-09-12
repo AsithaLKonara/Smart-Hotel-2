@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import Image from 'next/image'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -65,31 +65,37 @@ export default function UnifiedPOS({ role }: { role: string }) {
   const folioLineItems = activeFolio?.lineItems || []
   const folioPayments = activeFolio?.payments || []
 
-  const folioTotalCharges = folioLineItems.reduce((sum: number, item: any) => sum + Number(item.amount || 0), 0)
-  const folioTotalPayments = folioPayments.reduce((sum: number, p: any) => sum + Number(p.amount || 0), 0)
-  const folioOutstandingBalance = Math.max(0, folioTotalCharges - folioTotalPayments)
+  // Use pre-calculated values from the backend (avoids reduce() in the render loop)
+  // Falls back to local calculation only for the currently active booking's detail view
+  const folioTotalCharges = activeBooking?.folioTotalCharges ?? folioLineItems.reduce((sum: number, item: any) => sum + Number(item.amount || 0), 0)
+  const folioTotalPayments = activeBooking?.folioTotalPayments ?? folioPayments.reduce((sum: number, p: any) => sum + Number(p.amount || 0), 0)
+  const folioOutstandingBalance = activeBooking?.folioBalance ?? Math.max(0, folioTotalCharges - folioTotalPayments)
 
-  // Guest Filtering
-  const filteredBookings = bookings.filter((booking: any) => {
-    if (!searchGuest) return true
+  // Guest Filtering — memoized to prevent re-computation on every render
+  const filteredBookings = useMemo(() => {
+    if (!searchGuest) return bookings
     const term = searchGuest.toLowerCase()
-    const name = booking.guest?.name?.toLowerCase() || ''
-    const room = booking.roomAssignments?.[0]?.room?.number?.toLowerCase() || ''
-    return name.includes(term) || room.includes(term)
-  })
+    return bookings.filter((booking: any) => {
+      const name = booking.guest?.name?.toLowerCase() || ''
+      const room = booking.roomAssignments?.[0]?.room?.number?.toLowerCase() || ''
+      return name.includes(term) || room.includes(term)
+    })
+  }, [bookings, searchGuest])
 
-  // Category Filtering
-  const allCategories = ['All', ...Array.from(new Set<string>(INVENTORY.map((item: any) => item.category)))]
+  // Category Filtering — memoized so Set/Array derivation only runs when INVENTORY changes
+  const allCategories = useMemo(() => ['All', ...Array.from(new Set<string>(INVENTORY.map((item: any) => item.category)))], [INVENTORY])
   const categories = role === 'KITCHEN' 
     ? allCategories.filter((c: any) => ['All', 'Food', 'Beverage'].includes(c))
     : allCategories
 
-  const filteredItems = INVENTORY.filter((item: any) => {
-    const matchesSearch = item.name.toLowerCase().includes(searchPos.toLowerCase())
-    const matchesCategory = categoryFilter === 'All' || item.category === categoryFilter
-    const matchesRole = role === 'KITCHEN' ? ['Food', 'Beverage'].includes(item.category) : true
-    return matchesSearch && matchesCategory && matchesRole
-  })
+  const filteredItems = useMemo(() => {
+    return INVENTORY.filter((item: any) => {
+      const matchesSearch = item.name.toLowerCase().includes(searchPos.toLowerCase())
+      const matchesCategory = categoryFilter === 'All' || item.category === categoryFilter
+      const matchesRole = role === 'KITCHEN' ? ['Food', 'Beverage'].includes(item.category) : true
+      return matchesSearch && matchesCategory && matchesRole
+    })
+  }, [INVENTORY, searchPos, categoryFilter, role])
 
   // Cart Handlers
   const addToCart = (product: any) => {
@@ -301,10 +307,8 @@ export default function UnifiedPOS({ role }: { role: string }) {
               const assignment = booking.roomAssignments?.[0]
               const roomNumber = assignment?.room?.number || 'N/A'
               const roomTypeName = assignment?.room?.roomType?.name || 'Standard'
-              const bFolio = booking.folios?.[0]
-              const bCharges = (bFolio?.lineItems || []).reduce((sum: number, i: any) => sum + Number(i.amount || 0), 0)
-              const bPayments = (bFolio?.payments || []).reduce((sum: number, p: any) => sum + Number(p.amount || 0), 0)
-              const bBalance = Math.max(0, bCharges - bPayments)
+              // Use the pre-calculated balance from the API — no reduce() in the render loop
+              const bBalance = booking.folioBalance ?? 0
 
               return (
                 <Card 
@@ -333,6 +337,7 @@ export default function UnifiedPOS({ role }: { role: string }) {
                 </Card>
               )
             })
+
           )}
         </div>
       </div>

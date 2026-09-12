@@ -407,17 +407,30 @@ export async function GET(request: NextRequest) {
   })
 
   // Map roomType to type to match the frontend expectations
-  const formattedBookings = bookings.map((booking: any) => ({
-    ...booking,
-    roomAssignments: booking.roomAssignments.map((assignment: any) => ({
-      ...assignment,
-      room: assignment.room ? {
-        ...assignment.room,
-        type: assignment.room.roomType?.name,
-        price: assignment.room.roomType?.baseRate
-      } : null
-    }))
-  }))
+  // Also pre-calculate folio balances on the server to avoid expensive
+  // reduce() calls inside the React render loop on the client.
+  const formattedBookings = bookings.map((booking: any) => {
+    const folio = booking.folios?.[0]
+    const totalCharges = (folio?.lineItems || []).reduce((sum: number, i: any) => sum + Number(i.amount || 0), 0)
+    const totalPayments = (folio?.payments || []).reduce((sum: number, p: any) => sum + Number(p.amount || 0), 0)
+    const folioBalance = Math.max(0, totalCharges - totalPayments)
+
+    return {
+      ...booking,
+      // Pre-calculated folio summary (avoids client-side reduce on every render)
+      folioBalance,
+      folioTotalCharges: totalCharges,
+      folioTotalPayments: totalPayments,
+      roomAssignments: booking.roomAssignments.map((assignment: any) => ({
+        ...assignment,
+        room: assignment.room ? {
+          ...assignment.room,
+          type: assignment.room.roomType?.name,
+          price: assignment.room.roomType?.baseRate
+        } : null
+      }))
+    }
+  })
 
   return NextResponse.json({
     bookings: formattedBookings
