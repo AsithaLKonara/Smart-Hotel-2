@@ -3,13 +3,14 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Loader2, Plus, Building2, Globe } from 'lucide-react'
+import { Loader2, Plus, Building2, Globe, Edit, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 export default function PropertiesPage() {
   const [properties, setProperties] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
   
   const [formData, setFormData] = useState({
     name: '',
@@ -37,20 +38,66 @@ export default function PropertiesPage() {
     }
   }
 
+  const handleEdit = (prop: any) => {
+    setFormData({
+      name: prop.name,
+      code: prop.code,
+      address: prop.address,
+      city: prop.city,
+      country: prop.country,
+      timezone: prop.timezone,
+      totalRooms: prop.totalRooms,
+      status: prop.status
+    })
+    setEditingId(prop.id)
+    setShowForm(true)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this property? This action cannot be undone.')) return
+    
+    try {
+      const res = await fetch(`/api/admin/corporate/properties/${id}`, {
+        method: 'DELETE'
+      })
+      
+      if (res.ok) {
+        toast.success('Property deleted successfully')
+        fetchData()
+      } else {
+        const errorData = await res.json()
+        toast.error(errorData.error || 'Failed to delete property')
+      }
+    } catch (e) {
+      toast.error('Error deleting property')
+    }
+  }
+
+  const handleCancel = () => {
+    setShowForm(false)
+    setEditingId(null)
+    setFormData({ name: '', code: '', address: '', city: '', country: '', timezone: 'UTC', totalRooms: 0, status: 'ACTIVE' })
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      const res = await fetch('/api/admin/corporate/properties', {
-        method: 'POST',
+      const url = editingId ? `/api/admin/corporate/properties/${editingId}` : '/api/admin/corporate/properties'
+      const method = editingId ? 'PUT' : 'POST'
+
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       })
       if (res.ok) {
-        toast.success("Property added to chain")
-        setShowForm(false)
+        toast.success(editingId ? "Property updated successfully" : "Property added to chain")
+        handleCancel()
         fetchData()
       } else {
-        toast.error("Failed to add property")
+        const errorData = await res.json()
+        toast.error(errorData.error || "Failed to save property")
       }
     } catch (e) {
       toast.error("Error submitting form")
@@ -113,8 +160,8 @@ export default function PropertiesPage() {
                 </div>
               </div>
               <div className="flex justify-end gap-2 mt-4">
-                <Button type="button" variant="ghost" onClick={() => setShowForm(false)}>Cancel</Button>
-                <Button type="submit">Save Property</Button>
+                <Button type="button" variant="ghost" onClick={handleCancel}>Cancel</Button>
+                <Button type="submit">{editingId ? 'Update Property' : 'Save Property'}</Button>
               </div>
             </form>
           </CardContent>
@@ -128,13 +175,21 @@ export default function PropertiesPage() {
                 <Globe className="w-24 h-24" />
             </div>
             <CardContent className="p-6 relative z-10">
-              <div className="flex items-start gap-4 mb-6">
-                <div className="w-12 h-12 rounded-xl bg-indigo-500/20 flex items-center justify-center">
+              <div className="flex items-start gap-4 mb-6 relative">
+                <div className="w-12 h-12 rounded-xl bg-indigo-500/20 flex items-center justify-center shrink-0">
                   <Building2 className="text-indigo-400 w-6 h-6" />
                 </div>
-                <div>
-                  <h3 className="font-bold text-lg">{prop.name}</h3>
+                <div className="flex-1">
+                  <h3 className="font-bold text-lg pr-4">{prop.name}</h3>
                   <p className="text-xs font-mono text-slate-500">{prop.code}</p>
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  <button onClick={() => handleEdit(prop)} className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded transition-colors" title="Edit Property">
+                    <Edit className="w-4 h-4" />
+                  </button>
+                  <button onClick={() => handleDelete(prop.id)} className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded transition-colors" title="Delete Property">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
               <div className="space-y-3 text-sm text-slate-300">

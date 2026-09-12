@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-
+import { Edit, Trash2 } from 'lucide-react';
 interface PropertyStat {
   id: string;
   name: string;
@@ -125,6 +125,7 @@ export default function OrganizationDashboard() {
                     <th className="pb-3 font-semibold">RevPAR</th>
                     <th className="pb-3 font-semibold">Revenue</th>
                     <th className="pb-3 text-right font-semibold">SLA Breach</th>
+                    <th className="pb-3 text-right font-semibold">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/[0.02]">
@@ -145,6 +146,16 @@ export default function OrganizationDashboard() {
                         }`}>
                           {prop.slaBreachRatio}%
                         </span>
+                      </td>
+                      <td className="py-4 text-right">
+                        <div className="flex items-center justify-end gap-3">
+                          <button className="text-[#8E8C94] hover:text-white transition-colors" title="Edit Property">
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button className="text-[#8E8C94] hover:text-rose-400 transition-colors" title="Delete Property">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}

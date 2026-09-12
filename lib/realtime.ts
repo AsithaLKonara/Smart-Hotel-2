@@ -45,7 +45,9 @@ export const realtime = pusherClient || ({ trigger: safeTrigger } as any);
 
 export class RealtimeEvents {
   private static CHANNEL_GLOBAL = 'global'
-  private static CHANNEL_ADMIN = 'admin'
+  private static CHANNEL_ADMIN(propertyId?: string | null) {
+    return propertyId && propertyId !== 'all' ? `admin-${propertyId}` : 'admin'
+  }
 
   private static createBase() {
     return {
@@ -63,7 +65,7 @@ export class RealtimeEvents {
       status: booking.status,
     })
     await safeTrigger(this.CHANNEL_GLOBAL, 'booking.created', payload)
-    await safeTrigger(this.CHANNEL_ADMIN, 'admin.alert.new_booking', payload)
+    await safeTrigger(this.CHANNEL_ADMIN(booking.propertyId), 'admin.alert.new_booking', payload)
   }
 
   static async emitBookingUpdated(booking: any) {
@@ -74,7 +76,7 @@ export class RealtimeEvents {
       status: booking.status,
     })
     await safeTrigger(`booking-${booking.id}`, 'updated', payload)
-    await safeTrigger(this.CHANNEL_ADMIN, 'booking.updated', payload)
+    await safeTrigger(this.CHANNEL_ADMIN(booking.propertyId), 'booking.updated', payload)
   }
 
   // Room & Inventory events
@@ -108,7 +110,7 @@ export class RealtimeEvents {
       status: task.status,
       assignedTo: task.assignedTo,
     })
-    await safeTrigger(this.CHANNEL_ADMIN, 'task.updated', payload)
+    await safeTrigger(this.CHANNEL_ADMIN(task.propertyId), 'task.updated', payload)
     if (task.assignedTo) {
       await safeTrigger(`staff-${task.assignedTo}`, 'task.assigned', payload)
     }
@@ -133,6 +135,6 @@ export class RealtimeEvents {
       type: 'kpis.refresh',
       metrics,
     })
-    await safeTrigger(this.CHANNEL_ADMIN, 'kpis.refresh', payload)
+    await safeTrigger(this.CHANNEL_ADMIN(metrics?.propertyId), 'kpis.refresh', payload)
   }
 }

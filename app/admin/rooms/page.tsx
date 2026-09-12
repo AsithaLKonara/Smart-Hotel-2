@@ -14,6 +14,7 @@ import toast from 'react-hot-toast'
 import { PremiumSpinner } from '@/components/ui/premium-spinner'
 import { formatPrice } from '@/lib/utils'
 import { useProperty } from '@/contexts/property-context'
+import { useApi } from '@/hooks/use-api'
 
 interface RoomType {
   id: string;
@@ -43,9 +44,14 @@ export default function AdminRoomsPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const { activePropertyId } = useProperty()
-  const [rooms, setRooms] = useState<Room[]>([])
-  const [roomTypes, setRoomTypes] = useState<RoomType[]>([])
-  const [loading, setLoading] = useState(true)
+  const { data: rawRooms, mutate: fetchRooms, isLoading: loading } = useApi('/api/rooms')
+  const { data: rawRoomTypes, mutate: fetchRoomTypes } = useApi('/api/room-types')
+  
+  const rooms: Room[] = Array.isArray(rawRooms) ? rawRooms : Array.isArray(rawRooms?.rooms) ? rawRooms.rooms : []
+  const roomTypes: RoomType[] = Array.isArray(rawRoomTypes) ? rawRoomTypes 
+    : Array.isArray(rawRoomTypes?.roomTypes) ? rawRoomTypes.roomTypes 
+    : Array.isArray(rawRoomTypes?.data) ? rawRoomTypes.data : []
+
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
   const [filterType, setFilterType] = useState('all')
@@ -63,63 +69,6 @@ export default function AdminRoomsPage() {
   })
   const [uploadingImages, setUploadingImages] = useState(false)
   const [pendingImageFiles, setPendingImageFiles] = useState<{file: File, preview: string}[]>([])
-
-  useEffect(() => {
-    if (status === 'loading') return
-    fetchRooms()
-    fetchRoomTypes()
-  }, [status, activePropertyId]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  const fetchRooms = async () => {
-    try {
-      const response = await fetch('/api/rooms', {
-        cache: 'no-store',
-        credentials: 'include',
-        headers: {
-          'x-property-id': activePropertyId || 'all'
-        }
-      })
-      if (!response.ok) throw new Error('Failed to fetch rooms')
-      const data = await response.json()
-
-      const roomsArray: Room[] = Array.isArray(data)
-        ? data
-        : Array.isArray(data?.rooms)
-        ? data.rooms
-        : []
-
-      setRooms(roomsArray)
-    } catch (error) {
-      console.error('Error fetching rooms:', error)
-      toast.error('Failed to load rooms')
-      setRooms([])
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const fetchRoomTypes = async () => {
-    try {
-      const response = await fetch('/api/room-types', { 
-        cache: 'no-store',
-        headers: {
-          'x-property-id': activePropertyId || 'all'
-        }
-      })
-      if (!response.ok) return;
-      const data = await response.json()
-      const list = Array.isArray(data) 
-        ? data 
-        : Array.isArray(data?.roomTypes) 
-        ? data.roomTypes 
-        : Array.isArray(data?.data) 
-        ? data.data 
-        : []
-      setRoomTypes(list)
-    } catch (error) {
-      console.error('Error fetching room types:', error)
-    }
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

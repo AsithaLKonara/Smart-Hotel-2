@@ -5,6 +5,7 @@ export const dynamic = "force-dynamic"
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import { useApi } from '@/hooks/use-api'
 import { canAccessReceptionistFeatures } from '@/lib/rbac-helpers'
 import { 
   Bed, 
@@ -57,28 +58,10 @@ export default function ReceptionistOperationsCenter() {
   }
 
   // Fetch Rooms Data
-  const { data: roomsData, isLoading: roomsLoading } = useQuery({
-    queryKey: ['rooms', activePropertyId],
-    queryFn: async () => {
-      const res = await fetch('/api/rooms', {
-        headers: { 'x-property-id': activePropertyId || 'all' }
-      })
-      if (!res.ok) throw new Error('Failed to fetch rooms')
-      return res.json()
-    }
-  })
+  const { data: roomsData, isLoading: roomsLoading } = useApi('/api/rooms')
 
   // Fetch Bookings Data
-  const { data: bookingsData, isLoading: bookingsLoading } = useQuery({
-    queryKey: ['bookings', activePropertyId],
-    queryFn: async () => {
-      const res = await fetch('/api/bookings', {
-        headers: { 'x-property-id': activePropertyId || 'all' }
-      })
-      if (!res.ok) throw new Error('Failed to fetch bookings')
-      return res.json()
-    }
-  })
+  const { data: bookingsData, isLoading: bookingsLoading } = useApi('/api/bookings')
 
   useEffect(() => {
     // Rely solely on middleware.ts for enterprise-grade edge protection.

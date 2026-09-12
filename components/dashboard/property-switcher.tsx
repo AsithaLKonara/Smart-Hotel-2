@@ -14,7 +14,12 @@ export function PropertySwitcher() {
     )
   }
 
-  const activeProperty = properties.find(p => p.id === activePropertyId) || properties[0]
+  let activeProperty = properties.find(p => p.id === activePropertyId)
+  if (activePropertyId === 'all') {
+    activeProperty = { id: 'all', name: 'All Properties', code: 'Global' }
+  } else if (!activeProperty && properties.length > 0) {
+    activeProperty = properties[0]
+  }
 
   if (!activeProperty) {
     return null
@@ -45,6 +50,11 @@ export function PropertySwitcher() {
               {property.name} ({property.code})
             </option>
           ))}
+          {!isLocked && (
+            <option value="all" className="bg-[#111] text-white font-bold border-t border-white/10">
+              🌍 All Properties (Global)
+            </option>
+          )}
         </select>
       )}
     </div>

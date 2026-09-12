@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { canAccessReceptionistFeatures } from '@/lib/rbac-helpers'
+import { useProperty } from '@/contexts/property-context'
+import { useApi } from '@/hooks/use-api'
 import { Calendar, Search, Filter, DollarSign, User, Bed, Edit, CheckCircle, XCircle, Clock, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -11,7 +13,6 @@ import { Badge } from '@/components/ui/badge'
 import { formatPrice, formatDate, cn } from '@/lib/utils'
 import toast from 'react-hot-toast'
 import { PremiumSpinner } from '@/components/ui/premium-spinner'
-import { useProperty } from '@/contexts/property-context'
 
 interface Booking {
   id: string
@@ -44,61 +45,13 @@ export function BookingsClient({ initialBookings }: { initialBookings: Booking[]
   const { data: session, status } = useSession()
   const router = useRouter()
   const { activePropertyId } = useProperty()
-  const [bookings, setBookings] = useState<Booking[]>(initialBookings)
-  const [loading, setLoading] = useState(false)
+  const { data: rawBookings, isLoading: apiLoading, mutate: fetchBookings } = useApi('/api/bookings')
+  const bookings: Booking[] = Array.isArray(rawBookings) ? rawBookings : (Array.isArray(rawBookings?.bookings) ? rawBookings.bookings : initialBookings)
+  const loading = apiLoading && !rawBookings
+
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
   const [filterPayment, setFilterPayment] = useState('all')
-
-  const fetchBookings = useCallback(async () => {
-    try {
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 10000)
-      const response = await fetch('/api/bookings', {
-        method: 'GET',
-        cache: 'no-store',
-        credentials: 'include',
-        signal: controller.signal,
-        headers: {
-          'x-property-id': activePropertyId || 'all'
-        }
-      })
-      clearTimeout(timeoutId)
-
-      if (controller.signal.aborted) {
-        throw new Error('Request timeout')
-      }
-
-      if (response.status === 401) {
-        router.push('/auth/signin?callbackUrl=/admin/bookings')
-        return
-      }
-
-      if (!response.ok) throw new Error('Failed to fetch bookings')
-
-      const data = await response.json()
-      const bookingsArray: Booking[] = Array.isArray(data)
-        ? data
-        : Array.isArray(data?.bookings)
-        ? data.bookings
-        : []
-
-      setBookings(bookingsArray)
-    } catch (error: any) {
-      console.error('Error fetching bookings:', error)
-      toast.error('Failed to load bookings')
-      setBookings([])
-    } finally {
-      setLoading(false)
-    }
-  }, [activePropertyId]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    // Only re-fetch if activePropertyId explicitly triggers it or session changes, but we skip initial waterfall
-    if (status === 'authenticated' && session && activePropertyId) {
-      fetchBookings()
-    }
-  }, [session, status, activePropertyId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleStatusUpdate = async (bookingId: string, newStatus: string) => {
     try {

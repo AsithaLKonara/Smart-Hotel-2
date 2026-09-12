@@ -9,6 +9,7 @@ import { Suspense } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
+import { useApi } from '@/hooks/use-api'
 import {
   TrendingUp,
   Users,
@@ -35,24 +36,11 @@ function AdminDashboardContent() {
   const { data: session, status } = useSession()
   const router = useRouter()
 
-  // Fix 3: Use React Query instead of a manual useEffect+fetch pattern.
-  // Gains automatic caching, background refetching (polls every 30s),
-  // deduplication, and a stable refetch() handle for the refresh button.
   const {
     data: dashboardData,
     isLoading,
-    refetch,
-  } = useQuery({
-    queryKey: ['dashboard'],
-    queryFn: async () => {
-      const res = await fetch('/api/analytics/dashboard', { cache: 'no-store' })
-      if (!res.ok) throw new Error('Failed to load dashboard data')
-      return res.json()
-    },
-    enabled: status === 'authenticated' && !!session,
-    refetchInterval: 30_000,  // Live dashboard: poll every 30 seconds
-    staleTime: 10_000,
-  })
+    mutate: refetch,
+  } = useApi('/api/analytics/dashboard')
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-LK', {
