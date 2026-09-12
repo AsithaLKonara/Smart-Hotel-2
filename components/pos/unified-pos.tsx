@@ -370,18 +370,27 @@ export default function UnifiedPOS({ role }: { role: string }) {
               />
             </div>
           </div>
-          <div className="flex gap-2 overflow-x-auto custom-scrollbar pb-1">
-            {categories.map((cat: any) => (
-              <Button
-                key={cat}
-                variant={categoryFilter === cat ? "default" : "outline"}
-                onClick={() => setCategoryFilter(cat)}
-                className={`h-8 text-xs whitespace-nowrap ${categoryFilter === cat ? 'bg-primary text-white' : 'bg-white/5 text-white/70 border-white/10 hover:bg-white/10 hover:text-white'}`}
-              >
-                {cat}
-              </Button>
-            ))}
+          {/* Gradient scroll affordance: the ::after pseudo fade is done with an absolutely positioned overlay div */}
+          <div className="relative">
+            <div className="flex gap-2 overflow-x-auto custom-scrollbar pb-1 pr-10 scrollbar-none" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+              {categories.map((cat: any) => (
+                <Button
+                  key={cat}
+                  variant={categoryFilter === cat ? "default" : "outline"}
+                  onClick={() => setCategoryFilter(cat)}
+                  className={`h-8 text-xs whitespace-nowrap flex-shrink-0 ${categoryFilter === cat ? 'bg-primary text-white' : 'bg-white/5 text-white/70 border-white/10 hover:bg-white/10 hover:text-white'}`}
+                >
+                  {cat}
+                </Button>
+              ))}
+            </div>
+            {/* Right-edge gradient fade to signal more content is scrollable */}
+            <div
+              className="pointer-events-none absolute inset-y-0 right-0 w-16"
+              style={{ background: 'linear-gradient(to right, transparent, #0c0c0c)' }}
+            />
           </div>
+
         </div>
         <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
