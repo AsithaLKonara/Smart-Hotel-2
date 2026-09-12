@@ -61,7 +61,8 @@ export async function seedTestHotel() {
         name: `Test Product ${i}`,
         category: 'Linens',
         minQuantity: 20,
-        unit: 'PIECE'
+        unit: 'PIECE',
+        propertyId: property.id
       });
     }
     await prisma.inventory.createMany({ data: productsToInsert });

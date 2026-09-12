@@ -1,11 +1,16 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/db'
+import { getEffectivePropertyId } from '@/lib/server-rbac'
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
+    const propertyId = await getEffectivePropertyId(req)
+    const propertyFilter = propertyId ? { propertyId } : {}
+
     // In a real app we'd filter by role="GUEST", but here we just find users who have guest profiles/history
     const guests = await prisma.user.findMany({
       where: {
+        ...propertyFilter,
         OR: [
           { guestHistory: { isNot: null } },
           { guestProfile: { isNot: null } },

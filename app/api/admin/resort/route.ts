@@ -1,9 +1,16 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
+import { getEffectivePropertyId } from '@/lib/server-rbac'
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
+    const propertyId = await getEffectivePropertyId(req)
+    if (!propertyId) {
+        return NextResponse.json({ error: 'Property context required' }, { status: 400 })
+    }
+
     const facilities = await prisma.resortFacility.findMany({
+        where: { propertyId },
         include: {
             bookings: {
                 include: { guest: { select: { name: true } } },
@@ -19,7 +26,20 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    const propertyId = await getEffectivePropertyId(req)
+    if (!propertyId) {
+        return NextResponse.json({ error: 'Property context required' }, { status: 400 })
+    }
+
     const data = await req.json()
+
+    // Validate facility belongs to this property
+    const facility = await prisma.resortFacility.findFirst({
+        where: { id: data.facilityId, propertyId }
+    })
+    if (!facility) {
+        return NextResponse.json({ error: 'Facility not found in active property' }, { status: 404 })
+    }
 
     // Conflict check
     const conflicts = await prisma.resortBooking.findMany({

@@ -14,10 +14,15 @@ export async function POST(req: Request) {
     const effectivePropertyId = await getEffectivePropertyId(req);
 
     const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-      let defaultOutlet = await tx.pOSOutlet.findFirst();
+      let defaultOutlet = await tx.pOSOutlet.findFirst({
+        where: effectivePropertyId && effectivePropertyId !== 'all' ? { propertyId: effectivePropertyId } : {}
+      });
       if (!defaultOutlet) {
+        if (!effectivePropertyId || effectivePropertyId === 'all') {
+          throw new Error('Property context required to create POS Outlet');
+        }
         defaultOutlet = await tx.pOSOutlet.create({
-          data: { name: 'Main Restaurant', type: 'RESTAURANT' }
+          data: { name: 'Main Restaurant', type: 'RESTAURANT', propertyId: effectivePropertyId }
         });
       }
 

@@ -434,10 +434,14 @@ model POSOutlet {
   type           String
   description    String?
   isActive       Boolean         @default(true)
+  propertyId     String
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
+  property       Property        @relation(fields: [propertyId], references: [id])
   internalOrders InternalOrder[]
   products       POSProduct[]
+
+  @@index([propertyId])
 }
 
 model POSProduct {
@@ -462,9 +466,13 @@ model EventSpace {
   hourlyRate Decimal
   dailyRate  Decimal
   isActive   Boolean        @default(true)
+  propertyId String
   createdAt  DateTime       @default(now())
   updatedAt  DateTime       @updatedAt
+  property   Property       @relation(fields: [propertyId], references: [id])
   bookings   EventBooking[]
+
+  @@index([propertyId])
 }
 
 model BanquetingEvent {
@@ -477,10 +485,14 @@ model BanquetingEvent {
   expectedAttendees Int
   organizerName     String
   organizerEmail    String?
+  propertyId        String
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
+  property          Property       @relation(fields: [propertyId], references: [id])
   spaceBookings     EventBooking[]
   groupBlocks       GroupBlock[]
+
+  @@index([propertyId])
 }
 
 model EventBooking {
@@ -758,14 +770,17 @@ model RoomMapping {
 }
 
 model Gallery {
-  id        String   @id @default(uuid())
-  title     String
-  imageUrl  String
-  category  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String   @id @default(uuid())
+  title      String
+  imageUrl   String
+  category   String
+  propertyId String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  property   Property @relation(fields: [propertyId], references: [id])
 
   @@index([category])
+  @@index([propertyId])
 }
 
 model HeroSlide {
@@ -792,11 +807,14 @@ model Inventory {
   unit        String
   minQuantity BigInt   @default(0)
   status      String   @default("IN_STOCK")
+  propertyId  String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  property    Property @relation(fields: [propertyId], references: [id])
 
   @@index([category])
   @@index([status])
+  @@index([propertyId])
 }
 
 model LoyaltyPoint {
@@ -1238,11 +1256,17 @@ model Property {
   status       String    @default("ACTIVE")
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
-  bookings     Booking[]
-  folios       Folio[]
-  rooms        Room[]
-  tasks        Task[]
-  users        User[]
+  bookings         Booking[]
+  folios           Folio[]
+  rooms            Room[]
+  tasks            Task[]
+  users            User[]
+  posOutlets       POSOutlet[]
+  eventSpaces      EventSpace[]
+  banquetingEvents BanquetingEvent[]
+  galleries        Gallery[]
+  inventory        Inventory[]
+  resortFacilities ResortFacility[]
 }
 
 model GuestConversation {
@@ -1315,9 +1339,13 @@ model ResortFacility {
   type           String
   operatingHours String          @default("09:00-18:00")
   status         String          @default("ACTIVE")
+  propertyId     String
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
+  property       Property        @relation(fields: [propertyId], references: [id])
   bookings       ResortBooking[]
+
+  @@index([propertyId])
 }
 
 model ResortBooking {
