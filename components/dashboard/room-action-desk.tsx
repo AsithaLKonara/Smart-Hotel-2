@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   X,
   User,
@@ -24,10 +24,13 @@ import {
   Loader2,
   Scan,
   QrCode,
-  KeyRound
+  KeyRound,
+  Camera
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
+import toast from 'react-hot-toast'
+import { WebcamCapture } from '@/components/dashboard/webcam-capture'
 
 interface Room {
   id: string
@@ -96,6 +99,31 @@ export function RoomActionDesk({
   const [isCreating, setIsCreating] = useState(false)
   const [isCheckingIn, setIsCheckingIn] = useState(false)
   const [isCheckingOut, setIsCheckingOut] = useState(false)
+  const [isScanning, setIsScanning] = useState(false)
+  const [showWebcam, setShowWebcam] = useState(false)
+
+  const handleCapturedImage = async (base64Data: string) => {
+    setShowWebcam(false)
+    setIsScanning(true)
+    try {
+      const res = await fetch('/api/integrations/ocr', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ base64Image: base64Data, documentType: 'PASSPORT' })
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setGuestName(`${data.parsedData.firstName} ${data.parsedData.lastName}`)
+        toast.success(`Scanned successfully: ${data.parsedData.firstName} ${data.parsedData.lastName}`)
+      } else {
+        toast.error('Scan failed: ' + (data.error || 'Invalid image format'))
+      }
+    } catch (err) {
+      toast.error('Scan failed to process')
+    } finally {
+      setIsScanning(false)
+    }
+  }
 
   const currentStatus = STATUS_CONFIG[room.status] ?? STATUS_CONFIG['AVAILABLE']
   const currentBooking = roomBookings.find(b => b.status === 'CHECKED_IN')
@@ -629,30 +657,25 @@ export function RoomActionDesk({
                   </div>
 
                   <div className="space-y-3">
-                    {/* OCR Scan Button */}
-                    <button
-                      onClick={async () => {
-                        try {
-                          const res = await fetch('/api/integrations/ocr', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ base64Image: 'mock_image_data', documentType: 'PASSPORT' })
-                          })
-                          const data = await res.json()
-                          if (res.ok) {
-                            setGuestName(`${data.parsedData.firstName} ${data.parsedData.lastName}`)
-                            alert(`Scanned Passport: ${data.parsedData.firstName} ${data.parsedData.lastName}`)
-                          } else {
-                            alert('Scan failed: ' + data.error)
-                          }
-                        } catch (err) {
-                          alert('Scan failed')
-                        }
-                      }}
-                      className="w-full flex justify-center items-center gap-2 p-3 bg-white/5 border border-white/10 hover:bg-white/10 rounded-xl text-sm text-white transition-all mb-4"
-                    >
-                      <Scan className="w-4 h-4" /> Scan ID / Passport (OCR)
-                    </button>
+                    {/* OCR Scan Component */}
+                    {showWebcam ? (
+                      <WebcamCapture 
+                        onCapture={handleCapturedImage} 
+                        onCancel={() => setShowWebcam(false)} 
+                      />
+                    ) : (
+                      <button
+                        onClick={() => setShowWebcam(true)}
+                        disabled={isScanning}
+                        className="w-full flex justify-center items-center gap-2 p-3 bg-white/5 border border-white/10 hover:bg-white/10 rounded-xl text-sm text-white transition-all mb-4 disabled:opacity-50"
+                      >
+                        {isScanning ? (
+                          <><Loader2 className="w-4 h-4 animate-spin" /> Processing Image...</>
+                        ) : (
+                          <><Camera className="w-4 h-4" /> Open Desktop WebCam (OCR)</>
+                        )}
+                      </button>
+                    )}
 
                     {/* Guest Name */}
                     <div>

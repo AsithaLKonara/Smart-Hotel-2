@@ -82,13 +82,13 @@ export async function POST(request: NextRequest) {
         })
         if (conflict) throw new Error('DOUBLE_BOOKING')
 
-        let guestId = session?.user?.id
-        if (!guestId && validated.guestEmail) {
+        let guestId = undefined;
+        
+        if (validated.guestEmail) {
           const existing = await tx.user.findFirst({ where: { email: validated.guestEmail, propertyId: room.propertyId, deletedAt: null } })
           if (existing) { 
-            throw new Error('ACCOUNT_EXISTS') 
-          }
-          else {
+            guestId = existing.id 
+          } else {
             const guestRole = await tx.role.findUnique({ where: { name: 'GUEST' } })
             const newUser = await tx.user.create({
               data: {
@@ -103,7 +103,10 @@ export async function POST(request: NextRequest) {
             })
             guestId = newUser.id
           }
+        } else {
+          guestId = session?.user?.id
         }
+        
         if (!guestId) throw new Error('GUEST_DATA_REQUIRED')
 
         const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24))
