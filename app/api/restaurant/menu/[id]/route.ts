@@ -48,7 +48,7 @@ export async function PUT(
     }
 
     const body = await request.json()
-    const { name, description, price, category, image, preparationTime, available } = body
+    const { name, description, price, category, images, preparationTime, available } = body
 
     if (!name || !price || !category) {
       return NextResponse.json(
@@ -57,8 +57,6 @@ export async function PUT(
       )
     }
 
-    // Note: FoodMenu schema doesn't have 'image' field
-    // Only update preparationTime if provided
     const updateData: any = {
         name,
         description,
@@ -66,9 +64,13 @@ export async function PUT(
         category,
         available
       }
+      
+    if (images !== undefined) {
+      updateData.images = Array.isArray(images) ? images : (images ? [images] : [])
+    }
     
     if (preparationTime) {
-      updateData.preparationTime = BigInt(parseInt(preparationTime))
+      updateData.preparationTime = parseInt(preparationTime)
     }
     
     const menuItem = await prisma.foodMenu.update({

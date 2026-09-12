@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -364,10 +365,20 @@ export default function UnifiedPOS({ role }: { role: string }) {
                   setActiveTab('cart')
                 }}
               >
-                <CardContent className="p-4 flex flex-col items-center justify-center text-center gap-2 min-h-[120px]">
-                  <span className="text-2xl">{item.category === 'Food' ? '🍔' : item.category === 'Beverage' ? '🥤' : '🛍️'}</span>
-                  <p className="font-semibold text-sm leading-tight text-white/90">{item.name}</p>
-                  <p className="text-primary font-bold text-sm">${Number(item.price || 0).toFixed(2)}</p>
+                <CardContent className="p-0 flex flex-col min-h-[140px] relative overflow-hidden group">
+                  {((item.imageUrls && item.imageUrls.length > 0) || (item.images && item.images.length > 0)) ? (
+                    <div className="w-full h-24 relative overflow-hidden bg-black/20">
+                      <Image src={item.imageUrls?.[0] || item.images?.[0]} alt={item.name} fill className="object-cover group-hover:scale-110 transition-transform duration-300" />
+                    </div>
+                  ) : (
+                    <div className="w-full h-24 flex items-center justify-center bg-white/5 border-b border-white/5">
+                      <span className="text-3xl opacity-50">{item.category === 'Food' ? '🍔' : item.category === 'Beverage' ? '🥤' : '🛍️'}</span>
+                    </div>
+                  )}
+                  <div className="p-3 flex flex-col items-center justify-center text-center gap-1 bg-[#1a1a1a]">
+                    <p className="font-semibold text-sm leading-tight text-white/90">{item.name}</p>
+                    <p className="text-primary font-bold text-sm">${Number(item.price || 0).toFixed(2)}</p>
+                  </div>
                 </CardContent>
               </Card>
             ))}

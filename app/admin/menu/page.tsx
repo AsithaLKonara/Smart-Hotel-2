@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { canAccessManagerFeatures } from '@/lib/rbac-helpers'
-import { Plus, Edit, Trash2, Search, UtensilsCrossed, DollarSign, Clock, Loader2, Save, X, Image as ImageIcon } from 'lucide-react'
+import { Plus, Edit, Trash2, Search, UtensilsCrossed, DollarSign, Clock, Loader2, Save, X, Image as ImageIcon, Upload } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -37,8 +38,10 @@ export default function AdminMenuPage() {
     price: '',
     category: 'MAIN_COURSE',
     preparationTime: '',
+    images: [] as string[],
     available: true
   })
+  const [isUploading, setIsUploading] = useState(false)
 
   useEffect(() => {
     if (status === 'loading') return
@@ -75,6 +78,7 @@ export default function AdminMenuPage() {
         price: parseFloat(formData.price),
         category: formData.category,
         preparationTime: formData.preparationTime ? parseInt(formData.preparationTime) : undefined,
+        images: formData.images,
         available: formData.available
       }
 
@@ -108,9 +112,56 @@ export default function AdminMenuPage() {
       price: item.price.toString(),
       category: item.category,
       preparationTime: item.preparationTime?.toString() || '',
+      images: (item as any).images || [],
       available: item.available
     })
     setShowModal(true)
+  }
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || [])
+    if (files.length === 0) return
+
+    try {
+      setIsUploading(true)
+      
+      const uploadPromises = files.map(async (file) => {
+        const uploadData = new FormData()
+        uploadData.append('file', file)
+        uploadData.append('folder', 'menu')
+
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          body: uploadData,
+        })
+
+        if (!response.ok) throw new Error('Upload failed')
+        const data = await response.json()
+        return data.url
+      })
+
+      const newUrls = await Promise.all(uploadPromises)
+      
+      setFormData(prev => ({ 
+        ...prev, 
+        images: [...prev.images, ...newUrls] 
+      }))
+      toast.success(`${newUrls.length} image(s) uploaded successfully`)
+    } catch (error) {
+      console.error('Error uploading image:', error)
+      toast.error('Failed to upload images')
+    } finally {
+      setIsUploading(false)
+      // Reset input
+      e.target.value = ''
+    }
+  }
+  
+  const removeImage = (indexToRemove: number) => {
+    setFormData(prev => ({
+      ...prev,
+      images: prev.images.filter((_, idx) => idx !== indexToRemove)
+    }))
   }
 
   const handleDelete = async (itemId: string) => {
@@ -156,6 +207,7 @@ export default function AdminMenuPage() {
       price: '',
       category: 'MAIN_COURSE',
       preparationTime: '',
+      images: [],
       available: true
     })
   }
@@ -305,9 +357,14 @@ export default function AdminMenuPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredItems.map((item) => (
           <Card key={item.id} className="hover:shadow-lg transition-shadow">
-            <CardHeader className="pb-3">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
+            <CardHeader className="pb-3 relative">
+              {((item as any).images?.length > 0) && (
+                <div className="absolute top-0 right-0 w-24 h-24 rounded-tr-xl overflow-hidden opacity-80 hover:opacity-100 transition-opacity">
+                  <Image src={(item as any).images[0]} alt={item.name} fill className="object-cover" />
+                </div>
+              )}
+              <div className="flex items-start justify-between relative z-10">
+                <div className="flex-1 pr-24">
                   <CardTitle className="text-lg mb-2">{item.name}</CardTitle>
                   <div className="flex gap-2 flex-wrap">
                     <Badge variant="secondary">{item.category.replace('_', ' ')}</Badge>
@@ -383,7 +440,7 @@ export default function AdminMenuPage() {
       {/* Add/Edit Menu Item Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-2xl">
+          <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>
@@ -451,6 +508,47 @@ export default function AdminMenuPage() {
                         <option key={cat} value={cat}>{cat.replace('_', ' ')}</option>
                       ))}
                     </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Item Images</label>
+                  <div className="flex flex-col gap-4">
+                    {formData.images.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {formData.images.map((img, idx) => (
+                          <div key={idx} className="relative w-20 h-20 rounded overflow-hidden border group">
+                            <Image src={img} alt={`Preview ${idx}`} fill className="object-cover" />
+                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                              <Button 
+                                type="button" 
+                                variant="destructive" 
+                                size="icon" 
+                                className="w-6 h-6 rounded-full"
+                                onClick={() => removeImage(idx)}
+                              >
+                                <X className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <label className="flex items-center justify-center w-full px-4 py-6 border-2 border-dashed rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                      <div className="flex flex-col items-center gap-2 text-gray-500">
+                        {isUploading ? <Loader2 className="w-8 h-8 animate-spin" /> : <Upload className="w-8 h-8 mb-2" />}
+                        <span className="font-medium text-sm">{isUploading ? 'Uploading...' : 'Click to upload images'}</span>
+                        <span className="text-xs opacity-70">You can select multiple files</span>
+                      </div>
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept="image/*"
+                        multiple
+                        onChange={handleImageUpload}
+                        disabled={isUploading}
+                      />
+                    </label>
                   </div>
                 </div>
 

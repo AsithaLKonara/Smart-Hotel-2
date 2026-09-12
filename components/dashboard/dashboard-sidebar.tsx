@@ -92,6 +92,7 @@ export default function DashboardSidebar() {
       { name: 'Event Command', href: '/admin/events/dashboard', icon: CalendarDays, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Operations & Inventory' },
       { name: 'Master Inventory', href: '/admin/inventory', icon: Box, roles: ['MANAGER', 'SUPER_ADMIN', 'RECEPTIONIST', 'HOUSEKEEPING', 'MAINTENANCE', 'KITCHEN'], group: 'Operations & Inventory' },
       { name: 'Procurement', href: '/admin/procurement/orders', icon: FileCheck, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Operations & Inventory' },
+      { name: 'Kitchen Menu', href: '/admin/menu', icon: UtensilsCrossed, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Operations & Inventory' },
       
       // 👥 HUMAN RESOURCES
       { name: 'Employee Directory', href: '/admin/hr/employees', icon: Briefcase, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Human Resources' },

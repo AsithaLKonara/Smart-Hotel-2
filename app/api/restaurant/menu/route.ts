@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { name, description, price, category, image, preparationTime } = body
+    const { name, description, price, category, images, preparationTime } = body
 
     if (!name || !price || !category) {
       return NextResponse.json(
@@ -85,14 +85,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Note: FoodMenu schema doesn't have 'image' or 'hotelId' fields
-    // preparationTime is required, so provide default if not specified
     const menuItem = await prisma.foodMenu.create({
       data: {
         name,
         description,
         price: parseFloat(price),
         category,
+        images: Array.isArray(images) ? images : (images ? [images] : []),
         preparationTime: preparationTime ? parseInt(preparationTime) : 30, // Default 30 minutes
         available: true,
         createdAt: new Date(),

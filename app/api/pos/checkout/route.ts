@@ -76,7 +76,7 @@ export async function POST(req: Request) {
           await tx.internalOrderItem.create({
             data: {
               orderId: order.id,
-              productId: item.id,
+              ...(item.type === 'KITCHEN_MENU' ? { menuItemId: item.id } : { productId: item.id }),
               quantity: item.quantity,
               price: item.price,
               subtotal: item.price * item.quantity
