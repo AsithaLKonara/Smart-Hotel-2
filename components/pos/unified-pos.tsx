@@ -135,6 +135,7 @@ export default function UnifiedPOS({ role }: { role: string }) {
         })
       })
 
+      const data = await res.json()
       if (res.ok) {
         const roomNum = activeBooking.roomAssignments?.[0]?.room?.number || 'TBD'
         toast.success(`Charged $${cartSubtotal.toFixed(2)} to Room ${roomNum}`)
@@ -142,10 +143,10 @@ export default function UnifiedPOS({ role }: { role: string }) {
         refetchBookings()
         setActiveTab('folio')
       } else {
-        toast.error("Failed to charge room")
+        toast.error(data.error || "Failed to charge room")
       }
-    } catch (e) {
-      toast.error("Error charging room")
+    } catch (e: any) {
+      toast.error(e.message || "Error charging room")
     } finally {
       setIsSubmitting(false)
     }
@@ -186,10 +187,10 @@ export default function UnifiedPOS({ role }: { role: string }) {
         setPosCart([])
         setPrintReceiptModal(true)
       } else {
-        toast.error("Failed to process transaction")
+        toast.error(data.error || "Failed to process transaction")
       }
-    } catch (e) {
-      toast.error("Error processing transaction")
+    } catch (e: any) {
+      toast.error(e.message || "Error processing transaction")
     } finally {
       setIsSubmitting(false)
     }
@@ -218,6 +219,7 @@ export default function UnifiedPOS({ role }: { role: string }) {
         })
       })
 
+      const data = await res.json()
       if (res.ok) {
         toast.success(`Folio payment of $${amountToPay.toFixed(2)} recorded via ${method}!`)
         setLastTransaction({
@@ -234,10 +236,10 @@ export default function UnifiedPOS({ role }: { role: string }) {
         refetchBookings()
         setPrintReceiptModal(true)
       } else {
-        toast.error("Failed to process folio settlement")
+        toast.error(data.error || "Failed to process folio settlement")
       }
-    } catch (e) {
-      toast.error("Error processing settlement")
+    } catch (e: any) {
+      toast.error(e.message || "Error processing settlement")
     } finally {
       setIsSubmitting(false)
     }
