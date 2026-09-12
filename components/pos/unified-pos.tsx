@@ -432,7 +432,7 @@ export default function UnifiedPOS({ role }: { role: string }) {
       {showCartSidebar && <div className="fixed inset-0 bg-black/80 z-40 lg:hidden" onClick={() => setShowCartSidebar(false)} />}
       
       {/* 3. RIGHT COLUMN: Unified Cart & Live Folio Statement Terminal */}
-      <div className={`fixed inset-y-0 right-0 z-50 w-full sm:w-[420px] bg-[#1a1a1a] flex flex-col print-section print:bg-white print:text-black transition-transform duration-300 lg:static lg:translate-x-0 ${showCartSidebar ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div className={`fixed inset-y-0 right-0 z-50 w-full sm:w-[420px] bg-[#1a1a1a] flex flex-col min-h-0 print-section print:bg-white print:text-black transition-transform duration-300 lg:static lg:translate-x-0 ${showCartSidebar ? 'translate-x-0' : 'translate-x-full'}`}>
         {/* Terminal Header Tabs */}
         <div className="p-3 border-b border-white/10 bg-black/30 flex justify-between items-center hide-on-print">
           <div className="flex bg-white/5 p-1 rounded-xl border border-white/10">
@@ -510,7 +510,7 @@ export default function UnifiedPOS({ role }: { role: string }) {
 
         {/* TAB 1: POS Cart View */}
         {activeTab === 'cart' && (
-          <div className="flex-1 flex flex-col hide-on-print">
+          <div className="flex-1 flex flex-col min-h-0 hide-on-print">
             <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
               {posCart.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-white/30 p-6 text-center select-none">
@@ -651,7 +651,7 @@ export default function UnifiedPOS({ role }: { role: string }) {
 
         {/* TAB 2: Live Room Folio View */}
         {activeTab === 'folio' && (
-          <div className="flex-1 flex flex-col hide-on-print">
+          <div className="flex-1 flex flex-col min-h-0 hide-on-print">
             {!activeBooking ? (
               <div className="flex-1 flex flex-col items-center justify-center p-6 text-center text-white/40">
                 <Bed className="w-12 h-12 mb-3 opacity-20 text-primary" />
