@@ -26,6 +26,7 @@ export default function UnifiedPOS({ role }: { role: string }) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [printReceiptModal, setPrintReceiptModal] = useState(false)
   const [lastTransaction, setLastTransaction] = useState<any>(null)
+  const [confirmPaymentDialog, setConfirmPaymentDialog] = useState<{ isOpen: boolean; title: string; description: string; amount: number; action: () => void } | null>(null)
   const { activePropertyId } = useProperty()
 
   // 1. Fetch POS Products
@@ -484,7 +485,15 @@ export default function UnifiedPOS({ role }: { role: string }) {
                 {activeBooking && (
                   <Button 
                     disabled={posCart.length === 0 || isSubmitting}
-                    onClick={handleChargeToRoom}
+                    onClick={() => {
+                      setConfirmPaymentDialog({
+                        isOpen: true,
+                        title: 'Charge to Room',
+                        description: `Are you sure you want to charge this order to Room ${activeBooking.roomAssignments?.[0]?.room?.number || 'TBD'}?`,
+                        amount: cartSubtotal,
+                        action: handleChargeToRoom
+                      })
+                    }}
                     className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs h-10"
                   >
                     Charge to Room {activeBooking.roomAssignments?.[0]?.room?.number || 'TBD'}
@@ -494,14 +503,30 @@ export default function UnifiedPOS({ role }: { role: string }) {
                 <div className="grid grid-cols-2 gap-2">
                   <Button 
                     disabled={posCart.length === 0 || isSubmitting}
-                    onClick={() => handleDirectPOSPayment('CASH')}
+                    onClick={() => {
+                      setConfirmPaymentDialog({
+                        isOpen: true,
+                        title: 'Cash Payment',
+                        description: 'Please confirm that you have received the exact cash amount.',
+                        amount: cartSubtotal,
+                        action: () => handleDirectPOSPayment('CASH')
+                      })
+                    }}
                     className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs h-10"
                   >
                     <DollarSign className="w-3.5 h-3.5 mr-1" /> Pay Cash
                   </Button>
                   <Button 
                     disabled={posCart.length === 0 || isSubmitting}
-                    onClick={() => handleDirectPOSPayment('CARD')}
+                    onClick={() => {
+                      setConfirmPaymentDialog({
+                        isOpen: true,
+                        title: 'Card Payment',
+                        description: 'Please confirm that the card terminal has processed the payment.',
+                        amount: cartSubtotal,
+                        action: () => handleDirectPOSPayment('CARD')
+                      })
+                    }}
                     className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs h-10"
                   >
                     <CreditCard className="w-3.5 h-3.5 mr-1" /> Pay Card
@@ -585,14 +610,32 @@ export default function UnifiedPOS({ role }: { role: string }) {
                   <div className="grid grid-cols-2 gap-2">
                     <Button 
                       disabled={folioOutstandingBalance === 0 || isSubmitting}
-                      onClick={() => handleSettleFolioBalance('CASH')}
+                      onClick={() => {
+                        const amountToPay = settleAmount ? Number(settleAmount) : folioOutstandingBalance;
+                        setConfirmPaymentDialog({
+                          isOpen: true,
+                          title: 'Settle with Cash',
+                          description: 'Please confirm that you have received the cash amount to settle the folio.',
+                          amount: amountToPay,
+                          action: () => handleSettleFolioBalance('CASH')
+                        })
+                      }}
                       className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs h-10"
                     >
                       <DollarSign className="w-3.5 h-3.5 mr-1" /> Pay Cash
                     </Button>
                     <Button 
                       disabled={folioOutstandingBalance === 0 || isSubmitting}
-                      onClick={() => handleSettleFolioBalance('CARD')}
+                      onClick={() => {
+                        const amountToPay = settleAmount ? Number(settleAmount) : folioOutstandingBalance;
+                        setConfirmPaymentDialog({
+                          isOpen: true,
+                          title: 'Settle with Card',
+                          description: 'Please confirm that the card terminal has processed the payment.',
+                          amount: amountToPay,
+                          action: () => handleSettleFolioBalance('CARD')
+                        })
+                      }}
                       className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs h-10"
                     >
                       <CreditCard className="w-3.5 h-3.5 mr-1" /> Pay Card
@@ -672,6 +715,38 @@ export default function UnifiedPOS({ role }: { role: string }) {
             </Button>
             <Button onClick={handleTriggerPrint} className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs">
               <Printer className="w-3.5 h-3.5 mr-1" /> Print Thermal Bill
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* CONFIRMATION DIALOG */}
+      <Dialog open={!!confirmPaymentDialog?.isOpen} onOpenChange={(open) => !open && setConfirmPaymentDialog(null)}>
+        <DialogContent className="bg-[#121212] border-white/10 text-white max-w-sm rounded-2xl p-6">
+          <DialogHeader className="mb-2">
+            <DialogTitle className="text-lg font-bold flex items-center gap-2 text-white">
+              {confirmPaymentDialog?.title}
+            </DialogTitle>
+            <DialogDescription className="text-slate-400 text-xs mt-1">
+              {confirmPaymentDialog?.description}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-center my-4">
+            <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1">Amount to Charge</p>
+            <p className="text-2xl font-mono text-primary font-bold">${confirmPaymentDialog?.amount?.toFixed(2)}</p>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-2">
+            <Button variant="ghost" onClick={() => setConfirmPaymentDialog(null)} className="text-xs text-slate-400 hover:text-white flex-1">
+              Cancel
+            </Button>
+            <Button 
+              onClick={() => {
+                if (confirmPaymentDialog?.action) confirmPaymentDialog.action()
+                setConfirmPaymentDialog(null)
+              }} 
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex-1"
+            >
+              <CheckCircle className="w-3.5 h-3.5 mr-1" /> Confirm
             </Button>
           </DialogFooter>
         </DialogContent>
