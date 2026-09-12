@@ -504,22 +504,37 @@ export default function UnifiedPOS({ role }: { role: string }) {
                   <p className="text-xs text-white/40 mt-1">Select items from the catalog on the left to build an order.</p>
                 </div>
               ) : (
-                posCart.map((item, i) => (
-                  <div key={i} className="bg-white/5 border border-white/10 p-3 rounded-xl flex justify-between items-center">
-                    <div className="flex-1 pr-2">
-                      <p className="text-sm font-semibold text-white">{item.name}</p>
-                      <p className="text-xs text-slate-400">${Number(item.price || 0).toFixed(2)} each</p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center gap-1.5 bg-black/40 px-2 py-1 rounded-lg border border-white/10">
-                        <button onClick={() => updateQuantity(item.id, -1)} className="text-white/60 hover:text-white"><Minus className="w-3 h-3"/></button>
-                        <span className="text-xs font-bold px-1">{item.quantity}</span>
-                        <button onClick={() => updateQuantity(item.id, 1)} className="text-white/60 hover:text-white"><Plus className="w-3 h-3"/></button>
+                posCart.map((item, i) => {
+                  const thumb = item.imageUrls?.[0] || item.images?.[0] || null
+                  const emoji = item.category === 'Food' ? '🍔' : item.category === 'Beverage' ? '🥤' : '🛍️'
+                  return (
+                    <div key={i} className="bg-white/5 border border-white/10 p-3 rounded-xl flex items-center gap-3">
+                      {/* Thumbnail */}
+                      <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 border border-white/10 bg-white/5 flex items-center justify-center">
+                        {thumb ? (
+                          <Image src={thumb} alt={item.name} width={40} height={40} className="object-cover w-full h-full" />
+                        ) : (
+                          <span className="text-lg">{emoji}</span>
+                        )}
                       </div>
-                      <span className="text-sm font-bold text-primary font-mono">${(Number(item.price || 0) * item.quantity).toFixed(2)}</span>
+                      {/* Name & Price */}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-white truncate">{item.name}</p>
+                        <p className="text-xs text-slate-400">${Number(item.price || 0).toFixed(2)} each</p>
+                      </div>
+                      {/* Qty Controls & Subtotal */}
+                      <div className="flex items-center gap-3 flex-shrink-0">
+                        <div className="flex items-center gap-1.5 bg-black/40 px-2 py-1 rounded-lg border border-white/10">
+                          <button onClick={() => updateQuantity(item.id, -1)} className="text-white/60 hover:text-white" aria-label="Decrease quantity"><Minus className="w-3 h-3"/></button>
+                          <span className="text-xs font-bold px-1">{item.quantity}</span>
+                          <button onClick={() => updateQuantity(item.id, 1)} className="text-white/60 hover:text-white" aria-label="Increase quantity"><Plus className="w-3 h-3"/></button>
+                        </div>
+                        <span className="text-sm font-bold text-primary font-mono">${(Number(item.price || 0) * item.quantity).toFixed(2)}</span>
+                      </div>
                     </div>
-                  </div>
-                ))
+                  )
+                })
+
               )}
             </div>
 
