@@ -37,6 +37,10 @@ export default function ShiftsPage() {
   const [showClockOutModal, setShowClockOutModal] = useState(false)
   const [clockOutAttId, setClockOutAttId] = useState('')
   const [clockingOut, setClockingOut] = useState(false)
+  const [showClockInModal, setShowClockInModal] = useState(false)
+  const [clockInEmpId, setClockInEmpId] = useState('')
+  const [clockInTime, setClockInTime] = useState('')
+  const [clockingIn, setClockingIn] = useState(false)
 
   const [formData, setFormData] = useState({
     employeeId: '', startTime: '', endTime: '', role: '', notes: ''
@@ -106,13 +110,41 @@ export default function ShiftsPage() {
     finally { setClockingOut(false) }
   }
 
+  const handleManualClockIn = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!clockInEmpId || !clockInTime) return
+    setClockingIn(true)
+    try {
+      const res = await fetch('/api/admin/hr/attendance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ employeeId: clockInEmpId, clockInTime })
+      })
+      if (res.ok) {
+        toast.success('Successfully clocked in employee manually')
+        setShowClockInModal(false)
+        setClockInEmpId('')
+        setClockInTime('')
+        fetchData()
+      } else {
+        const err = await res.json()
+        toast.error(err.error || 'Failed to manually clock in')
+      }
+    } catch { toast.error('Error during manual clock-in') }
+    finally { setClockingIn(false) }
+  }
+
   return (
     <AdminPageShell title="Shift Roster" subtitle="Schedule staff across departments and manage attendance." onRefresh={fetchData}>
 
       <div className="flex gap-3 justify-end mb-8">
+        <Button variant="outline" onClick={() => setShowClockInModal(true)}
+          className="border-emerald-500/30 text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20">
+          <Clock className="w-4 h-4 mr-2" /> Manual Clock-In
+        </Button>
         <Button variant="outline" onClick={() => setShowClockOutModal(true)}
           className="border-rose-500/30 text-rose-400 bg-rose-500/10 hover:bg-rose-500/20">
-          <Clock className="w-4 h-4 mr-2" /> Emergency Clock-Out
+          <AlertTriangle className="w-4 h-4 mr-2" /> Emergency Clock-Out
         </Button>
         <Button onClick={() => setShowShiftModal(true)} className="bg-primary text-white">
           <Plus className="w-4 h-4 mr-2" /> Assign Shift
@@ -154,8 +186,12 @@ export default function ShiftsPage() {
                   </td>
                   <td className="p-4 text-white/60">{shift.role || shift.employee?.position}</td>
                   <td className="p-4">
-                    <span className={`px-2 py-1 rounded text-[10px] font-bold ${shift.status === 'COMPLETED' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-500/20 text-slate-400'}`}>
-                      {shift.status}
+                    <span className={`px-2 py-1 rounded text-[10px] font-bold ${
+                      shift.status === 'COMPLETED' ? 'bg-emerald-500/20 text-emerald-400' : 
+                      shift.status === 'IN_PROGRESS' ? 'bg-blue-500/20 text-blue-400' : 
+                      'bg-slate-500/20 text-slate-400'
+                    }`}>
+                      {shift.status.replace('_', ' ')}
                     </span>
                   </td>
                 </tr>
@@ -217,7 +253,9 @@ export default function ShiftsPage() {
             <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-2 block">Select Employee to Clock-Out</label>
             <select required value={clockOutAttId} onChange={e => setClockOutAttId(e.target.value)}
               className="w-full bg-[#1a1a24] border border-white/10 rounded-lg p-2.5 text-sm text-white">
-              <option value="">Select an active shift...</option>
+              <option value="" disabled>
+                {activeAttendances.length === 0 ? "No employees currently clocked in" : "Select an active shift..."}
+              </option>
               {activeAttendances.map(att => (
                 <option key={att.id} value={att.id}>
                   {att.employee.firstName} {att.employee.lastName} ({att.employee.department}) - Clocked In: {new Date(att.clockIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -229,6 +267,38 @@ export default function ShiftsPage() {
             <Button type="button" variant="ghost" onClick={() => setShowClockOutModal(false)}>Cancel</Button>
             <Button type="submit" disabled={clockingOut} className="bg-rose-600 hover:bg-rose-500 text-white">
               {clockingOut ? 'Processing...' : 'Force Clock-Out'}
+            </Button>
+          </div>
+        </form>
+      </ModalShell>
+
+      {/* Manual Clock-In Modal */}
+      <ModalShell open={showClockInModal} onClose={() => setShowClockInModal(false)} title="Manual Clock-In">
+        <div className="flex items-start gap-3 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl mb-5">
+          <Clock className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-emerald-300">Manually clock-in an employee who forgot to punch in. This will bypass normal restrictions.</p>
+        </div>
+        <form onSubmit={handleManualClockIn} className="space-y-4">
+          <div>
+            <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-2 block">Employee</label>
+            <select required value={clockInEmpId} onChange={e => setClockInEmpId(e.target.value)}
+              className="w-full bg-[#1a1a24] border border-white/10 rounded-lg p-2.5 text-sm text-white">
+              <option value="">Select an employee...</option>
+              {employees.filter(emp => !activeAttendances.some(att => att.employeeId === emp.id)).map(emp => (
+                <option key={emp.id} value={emp.id}>
+                  {emp.firstName} {emp.lastName} ({emp.department})
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-2 block">Clock-In Time</label>
+            <Input type="datetime-local" required value={clockInTime} onChange={e => setClockInTime(e.target.value)} className="bg-[#1a1a24] border-white/10 text-white" />
+          </div>
+          <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+            <Button type="button" variant="ghost" onClick={() => setShowClockInModal(false)}>Cancel</Button>
+            <Button type="submit" disabled={clockingIn} className="bg-emerald-600 hover:bg-emerald-500 text-white">
+              {clockingIn ? 'Processing...' : 'Clock In Manually'}
             </Button>
           </div>
         </form>

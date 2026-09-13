@@ -31,6 +31,7 @@ import { canAccessAdminDashboard } from '@/lib/rbac-helpers'
 import { PremiumSpinner } from '@/components/ui/premium-spinner'
 
 import { AdminPageShell } from '@/components/dashboard/admin/admin-page-shell'
+import { EmployeeTimeClock } from '@/components/dashboard/admin/employee-time-clock'
 
 function AdminDashboardContent() {
   const { data: session, status } = useSession()
@@ -67,6 +68,8 @@ function AdminDashboardContent() {
       subtitle="High-level revenue tracking and system-wide governance."
       onRefresh={() => refetch()}
     >
+      <EmployeeTimeClock />
+      
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
         <Card className="bg-[#0c0c0c] border-white/5 p-6 rounded-3xl shadow-2xl group hover:border-primary/20 transition-all">
           <div className="flex justify-between items-center">
