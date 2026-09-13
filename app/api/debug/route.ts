@@ -70,12 +70,6 @@ export async function GET(request: NextRequest) {
       stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     }
     debugInfo.errors.push(`Database connection failed: ${error.message}`)
-  } finally {
-    try {
-      await prisma.$disconnect()
-    } catch (e) {
-      // Ignore disconnect errors
-    }
   }
 
   // Check Prisma Client

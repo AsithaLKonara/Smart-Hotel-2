@@ -176,15 +176,6 @@ export async function POST(request: NextRequest) {
           }
         });
 
-        await tx.folioLineItem.create({
-          data: {
-            folioId: folio.id,
-            description: `Room Charge (${nights} nights)`,
-            amount: room.roomType.baseRate * nights,
-            category: 'ROOM',
-          }
-        });
-
         // Add a folio line item for each selected extra
         const extraLineItems = [
           extras.breakfast      && { description: `Breakfast (${nights} nights)`, amount: 25 * nights,  category: 'FOOD' },
@@ -199,16 +190,7 @@ export async function POST(request: NextRequest) {
           })
         }
 
-        // Tax line item for full transparency in the folio
-        const taxAmount = Math.round((totalAmount - (room.roomType.baseRate * nights + extraLineItems.reduce((s, i) => s + i.amount, 0))) * 100) / 100
-        await tx.folioLineItem.create({
-          data: {
-            folioId: folio.id,
-            description: 'Tax (15%)',
-            amount: taxAmount,
-            category: 'TAX',
-          }
-        })
+        // Note: Room & Tax are now posted daily by the Night Audit process, not upfront.
 
         // Lock will automatically be released by PostgreSQL upon transaction commit
         return { booking, folioId: folio.id }

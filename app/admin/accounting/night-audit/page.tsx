@@ -5,8 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Moon, Clock, TrendingUp, AlertTriangle, SkipForward, Activity } from 'lucide-react'
 import { useToast } from '@/components/ui/use-toast'
+import { useProperty } from '@/contexts/property-context'
 
 export default function NightAuditPage() {
+  const { activePropertyId } = useProperty()
   const [logs, setLogs] = useState([])
   const [running, setRunning] = useState(false)
   const [rollingForward, setRollingForward] = useState(false)
@@ -14,7 +16,9 @@ export default function NightAuditPage() {
   const { success, error: toastError } = useToast()
 
   const fetchLogs = () => {
-    fetch('/api/admin/accounting/night-audit')
+    fetch('/api/admin/accounting/night-audit', {
+      headers: { 'x-property-id': activePropertyId || 'all' }
+    })
       .then(res => res.json())
       .then(data => {
         if (data.logs) setLogs(data.logs)
@@ -23,11 +27,14 @@ export default function NightAuditPage() {
 
   useEffect(() => {
     fetchLogs()
-  }, [])
+  }, [activePropertyId])
 
   const runAudit = () => {
     setRunning(true)
-    fetch('/api/admin/accounting/night-audit', { method: 'POST' })
+    fetch('/api/admin/accounting/night-audit', { 
+      method: 'POST',
+      headers: { 'x-property-id': activePropertyId || 'all' }
+    })
       .then(res => res.json())
       .then(data => {
         setRunning(false)
@@ -80,23 +87,7 @@ export default function NightAuditPage() {
                 variant="outline"
                 size="sm"
                 disabled={rollingForward}
-                onClick={async () => {
-                  setRollingForward(true)
-                  try {
-                    const res = await fetch('/api/cron/night-audit/roll-forward', {
-                      headers: { 'Authorization': `Bearer ${process.env.NEXT_PUBLIC_CRON_SECRET || ''}` }
-                    })
-                    const data = await res.json()
-                    if (res.ok) {
-                      success('Roll-Forward Complete', `Audit ID: ${data.auditId}`)
-                      fetchLogs()
-                    } else {
-                      toastError('Roll-Forward Failed', data.error)
-                    }
-                  } finally {
-                    setRollingForward(false)
-                  }
-                }}
+                onClick={runAudit}
                 className="border-amber-500/30 text-amber-400 bg-amber-500/10 hover:bg-amber-500/20"
               >
                 <SkipForward className="w-4 h-4 mr-2" />

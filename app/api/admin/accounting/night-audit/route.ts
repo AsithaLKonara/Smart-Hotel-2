@@ -3,6 +3,7 @@ import prisma from '@/lib/db'
 import { postCharge } from '@/lib/accounting'
 import { differenceInDays, addDays, startOfDay } from 'date-fns'
 import { getRequestSession } from '@/lib/session'
+import { getEffectivePropertyId } from '@/lib/server-rbac'
 import { realtime } from '@/lib/realtime'
 
 export async function GET(req: NextRequest) {
@@ -12,12 +13,15 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const effectivePropertyId = await getEffectivePropertyId(req)
+    const propertyWhere = effectivePropertyId && effectivePropertyId !== 'all' ? { id: effectivePropertyId } : {}
+
     const logs = await prisma.nightAuditLog.findMany({
       orderBy: { createdAt: 'desc' },
       take: 50
     })
 
-    const property = await prisma.property.findFirst()
+    const property = await prisma.property.findFirst({ where: propertyWhere })
     const businessDate = property?.businessDate || startOfDay(new Date())
 
     return NextResponse.json({
@@ -38,10 +42,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const effectivePropertyId = await getEffectivePropertyId(req)
+    const propertyWhere = effectivePropertyId && effectivePropertyId !== 'all' ? { id: effectivePropertyId } : {}
+
     const auditResult = await prisma.$transaction(async (tx: any) => {
-      let property = await tx.property.findFirst()
+      let property = await tx.property.findFirst({ where: propertyWhere })
       
       if (!property) {
+        if (effectivePropertyId && effectivePropertyId !== 'all') {
+          throw new Error('Specific property not found.')
+        }
         property = await tx.property.create({
           data: {
             name: 'SmartHotel Grand',
@@ -56,57 +66,106 @@ export async function POST(req: NextRequest) {
 
       const businessDate = property.businessDate
 
+      // 0. Idempotency Check
+      const existingAudit = await tx.nightAuditLog.findFirst({
+        where: {
+          businessDate: businessDate,
+          status: 'COMPLETED'
+        }
+      })
+
+      if (existingAudit) {
+        throw new Error(`Night audit already completed for business date: ${businessDate.toISOString().split('T')[0]}`)
+      }
+
       // 1. Process No-Shows (Bookings that were supposed to arrive today or earlier but are still CONFIRMED)
       const noShows = await tx.booking.findMany({
         where: {
           status: 'CONFIRMED',
-          checkIn: { lte: businessDate }
+          checkIn: { lte: businessDate },
+          propertyId: property.id
         }
       })
 
       let noShowCount = 0
+      let totalRevenuePosted = 0
+
       for (const noShow of noShows) {
         await tx.booking.update({
           where: { id: noShow.id },
-          data: { status: 'CANCELLED' }
+          data: { status: 'CANCELLED' } // Treating as CANCELLED/NO-SHOW
         })
+
+        // Post No-Show Penalty (1 night room + tax)
+        const total = Number(noShow.totalAmount || 0)
+        const duration = Math.max(1, differenceInDays(new Date(noShow.checkOut), new Date(noShow.checkIn)))
+        const nightlyRate = duration > 0 ? total / duration : total
+        const taxRate = 0.15
+        const taxAmount = Math.round(nightlyRate * taxRate * 100) / 100
+
+        await postCharge({
+          bookingId: noShow.id,
+          amount: nightlyRate,
+          category: 'ROOM_RATE',
+          description: `No-Show Penalty Room Charge`
+        }, tx)
+
+        await postCharge({
+          bookingId: noShow.id,
+          amount: taxAmount,
+          category: 'TAX',
+          description: `No-Show Penalty Tax (15%)`
+        }, tx)
+
+        totalRevenuePosted += (nightlyRate + taxAmount)
         noShowCount++
       }
 
       // 2. Post Room & Tax for all In-House Guests
       const inHouseBookings = await tx.booking.findMany({
         where: {
-          status: 'CHECKED_IN'
+          status: 'CHECKED_IN',
+          propertyId: property.id
         }
       })
 
       let roomsProcessed = 0
-      let totalRevenuePosted = 0
 
       for (const booking of inHouseBookings) {
         const total = Number(booking.totalAmount || 0)
         const duration = Math.max(1, differenceInDays(new Date(booking.checkOut), new Date(booking.checkIn)))
-        const nightlyRate = duration > 0 ? total / duration : total
+        
+        // Base nightly rate assuming total amount included a 15% tax originally
+        const grossNightlyRate = duration > 0 ? total / duration : total
+        const baseNightlyRate = Math.round((grossNightlyRate / 1.15) * 100) / 100
+        const dailyTax = Math.round((grossNightlyRate - baseNightlyRate) * 100) / 100
         
         await postCharge({
           bookingId: booking.id,
-          amount: nightlyRate,
+          amount: baseNightlyRate,
           category: 'ROOM_RATE',
           description: `Room Charge - ${businessDate.toISOString().split('T')[0]}`
         }, tx)
+
+        await postCharge({
+          bookingId: booking.id,
+          amount: dailyTax,
+          category: 'TAX',
+          description: `Room Tax (15%) - ${businessDate.toISOString().split('T')[0]}`
+        }, tx)
         
         roomsProcessed++
-        totalRevenuePosted += nightlyRate
+        totalRevenuePosted += (baseNightlyRate + dailyTax)
       }
 
-      // 3. Advance the Business Date
+      // 4. Advance the Business Date
       const nextBusinessDate = addDays(businessDate, 1)
       await tx.property.update({
         where: { id: property.id },
         data: { businessDate: nextBusinessDate }
       })
 
-      // 4. Log the Audit
+      // 5. Log the Audit
       const auditLog = await tx.nightAuditLog.create({
         data: {
           businessDate: businessDate,
@@ -127,7 +186,7 @@ export async function POST(req: NextRequest) {
           noShowsProcessed: noShowCount
         }
       }
-    })
+    }, { maxWait: 15000, timeout: 60000 })
 
     try {
       await realtime.trigger('admin', 'night_audit.completed', {
