@@ -5,12 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Loader2, Plus, DollarSign, FileText, Printer } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { PayrollPrintModal } from '@/components/hr/payroll-print-modal'
 
 export default function PayrollPage() {
   const [payrolls, setPayrolls] = useState<any[]>([])
   const [employees, setEmployees] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
+  const [printRunId, setPrintRunId] = useState<string | null>(null)
   
   const [formData, setFormData] = useState({
     periodStart: '',
@@ -26,12 +28,12 @@ export default function PayrollPage() {
   const fetchData = async () => {
     try {
       const [payrollRes, empRes] = await Promise.all([
-        fetch('/api/admin/hr/payroll/run'),
-        fetch('/api/admin/hr/employees?compact=true')
+        fetch('/api/admin/hr/payroll/run', { cache: 'no-store' }),
+        fetch('/api/admin/hr/employees?compact=true', { cache: 'no-store' })
       ])
       if (payrollRes.ok) {
         const data = await payrollRes.json()
-        setPayrolls(data.runs || []) // backend returns runs
+        setPayrolls(data.data || data.runs || []) // backend returns runs in data array
       }
       if (empRes.ok) setEmployees(await empRes.json())
     } catch (e) {
@@ -143,7 +145,7 @@ export default function PayrollPage() {
                   </span>
                 </td>
                 <td className="p-4 text-right">
-                  <Button variant="ghost" size="sm" onClick={() => window.open(`/admin/hr/payroll/run/${run.id}/print`, '_blank')} title="Print Manifest">
+                  <Button variant="ghost" size="sm" onClick={() => setPrintRunId(run.id)} title="Print Manifest">
                     <Printer className="w-4 h-4" />
                   </Button>
                 </td>
@@ -155,6 +157,12 @@ export default function PayrollPage() {
           <div className="p-12 text-center text-slate-500">No payroll records found.</div>
         )}
       </div>
+
+      <PayrollPrintModal 
+        runId={printRunId} 
+        open={!!printRunId} 
+        onOpenChange={(open) => !open && setPrintRunId(null)} 
+      />
     </div>
   )
 }

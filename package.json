@@ -122,6 +122,7 @@
     "react-hook-form": "^7.48.2",
     "react-hot-toast": "^2.4.1",
     "react-markdown": "9.0.1",
+    "react-to-print": "^3.3.0",
     "recharts": "^2.8.0",
     "remark-gfm": "^4.0.0",
     "sharp": "^0.35.4",

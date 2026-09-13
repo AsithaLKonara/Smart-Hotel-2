@@ -162,9 +162,9 @@ export default function RootLayout({
         <ErrorBoundary>
           <Providers>
             <HotelSchema />
-            <div className="flex min-h-screen flex-col relative z-10 bg-transparent">
+            <div className="flex min-h-screen flex-col relative z-10 bg-transparent print:block print:min-h-0 print:h-auto print:overflow-visible">
               <HotelNavigation />
-              <main id="main-content" role="main" className="flex-1 bg-transparent">
+              <main id="main-content" role="main" className="flex-1 bg-transparent print:block print:overflow-visible print:min-h-0">
                 {children}
               </main>
               <ConditionalFooter />

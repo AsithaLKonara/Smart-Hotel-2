@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { PayrollService } from '@/lib/services/payroll-service'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
+
+export const dynamic = 'force-dynamic'
 
 const payrollRunSchema = z.object({
   periodStart: z.string().min(1, 'periodStart date is required'),
@@ -40,6 +44,18 @@ export async function GET(request: NextRequest) {
 export async function POST(request: Request) {
   const traceId = `req_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 7)}`
   try {
+    const session = await getServerSession(authOptions)
+    
+    if (!session || !['SUPER_ADMIN', 'HR_MANAGER', 'HOTEL_MANAGER'].includes((session.user as any)?.roleName as string)) {
+      return NextResponse.json({
+        error: 'Unauthorized',
+        message: 'You do not have permission to execute a payroll run.',
+        statusCode: 403,
+        timestamp: new Date().toISOString(),
+        traceId
+      }, { status: 403 })
+    }
+
     const body = await request.json()
     const parsed = payrollRunSchema.safeParse(body)
 

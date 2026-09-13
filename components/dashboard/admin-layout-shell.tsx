@@ -11,11 +11,14 @@ export function AdminLayoutShell({ children }: { children: React.ReactNode }) {
   const { isCollapsed } = useSidebar()
 
   return (
-    <div className="min-h-screen bg-[#0c0c0c]">
-      <DashboardSidebar />
+    <div className="min-h-screen bg-[#0c0c0c] print:bg-white">
+      <div className="print:hidden">
+        <DashboardSidebar />
+      </div>
       <main className={cn(
         "transition-all duration-300 pt-16 lg:pt-0 min-h-screen",
-        isCollapsed ? "lg:pl-20" : "lg:pl-64"
+        isCollapsed ? "lg:pl-20" : "lg:pl-64",
+        "print:pl-0 print:pt-0 print:min-h-0"
       )}>
         {children}
       </main>

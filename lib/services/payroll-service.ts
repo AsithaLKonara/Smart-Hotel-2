@@ -21,26 +21,90 @@ export class PayrollService {
     const end = new Date(dto.periodEnd)
     const taxRate = dto.defaultTaxRate ?? 0.15
 
-    return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-      // 1. Fetch active staff list
-      const employees = await tx.employee.findMany({
-        where: { status: 'ACTIVE' },
-        include: {
-          shifts: {
-            where: {
-              startTime: { gte: start },
-              endTime: { lte: end },
-              status: 'COMPLETED'
-            }
+    // 0. Prevent overlapping payroll runs (Critical Audit Fix)
+    const existingRun = await prisma.payrollRun.findFirst({
+      where: {
+        OR: [
+          { periodStart: { lte: end }, periodEnd: { gte: start } }
+        ]
+      }
+    })
+
+    if (existingRun) {
+      throw new Error(`A payroll run already exists that overlaps with this period (${start.toLocaleDateString()} - ${end.toLocaleDateString()}).`)
+    }
+
+    // 1. Fetch active staff list OUTSIDE the transaction to prevent locking
+    const employees = await prisma.employee.findMany({
+      where: { status: 'ACTIVE' },
+      include: {
+        shifts: {
+          where: {
+            startTime: { gte: start },
+            endTime: { lte: end },
+            status: 'COMPLETED'
           }
         }
-      })
+      }
+    })
 
-      if (employees.length === 0) {
-        throw new Error('No active employees found for payroll generation')
+    if (employees.length === 0) {
+      throw new Error('No active employees found for payroll generation')
+    }
+
+    // Prepare in-memory calculation logic
+    let runTotalAmount = 0
+    const lineItemsData: any[] = []
+    const recordsData: any[] = []
+
+    for (const emp of employees) {
+      const baseSalary = Number(emp.baseSalary || 0)
+      
+      // Calculate standard base pay for period (approx bi-weekly fractional split if annual, or flat base)
+      const basePay = baseSalary > 0 ? baseSalary / 24 : 0
+      
+      // Estimate overtime from completed shifts exceeding standard 8h duration
+      let overtimePay = 0
+      for (const shift of emp.shifts) {
+        const durationHours = (new Date(shift.endTime).getTime() - new Date(shift.startTime).getTime()) / (1000 * 60 * 60)
+        if (durationHours > 8) {
+          const otHours = durationHours - 8
+          const hourlyRate = (basePay / 80) * 1.5 // 1.5x overtime rate
+          overtimePay += otHours * hourlyRate
+        }
       }
 
-      // 2. Create parent PayrollRun header
+      const grossPay = basePay + overtimePay
+      const deductions = Number((grossPay * taxRate).toFixed(2))
+      const netPay = Number((grossPay - deductions).toFixed(2))
+
+      runTotalAmount += netPay
+
+      lineItemsData.push({
+        employeeId: emp.id,
+        basePay: Number(basePay.toFixed(2)),
+        overtimePay: Number(overtimePay.toFixed(2)),
+        deductions,
+        netPay
+      })
+
+      recordsData.push({
+        employeeId: emp.id,
+        periodStart: start,
+        periodEnd: end,
+        baseAmount: Number(basePay.toFixed(2)),
+        overtimeAmount: Number(overtimePay.toFixed(2)),
+        deductions,
+        bonuses: 0,
+        netPay,
+        status: 'FINALIZED',
+        paidAt: new Date()
+      })
+    }
+
+    // 2. Fast Batch Transaction
+    return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      // Create parent PayrollRun header
       const payrollRun = await tx.payrollRun.create({
         data: {
           periodStart: start,
@@ -50,63 +114,14 @@ export class PayrollService {
         }
       })
 
-      let runTotalAmount = 0
-      const lineItems = []
+      // Link foreign key now that we have the header ID
+      lineItemsData.forEach(li => li.payrollRunId = payrollRun.id)
 
-      // 3. Generate itemized PayrollLineItem rows per employee (Activating Dead Schema: PayrollLineItem)
-      for (const emp of employees) {
-        const baseSalary = Number(emp.baseSalary || 0)
-        
-        // Calculate standard base pay for period (approx bi-weekly fractional split if annual, or flat base)
-        const basePay = baseSalary > 0 ? baseSalary / 24 : 1500.00 // fallback standard wage if unconfigured
-        
-        // Estimate overtime from completed shifts exceeding standard 8h duration
-        let overtimePay = 0
-        for (const shift of emp.shifts) {
-          const durationHours = (new Date(shift.endTime).getTime() - new Date(shift.startTime).getTime()) / (1000 * 60 * 60)
-          if (durationHours > 8) {
-            const otHours = durationHours - 8
-            const hourlyRate = (basePay / 80) * 1.5 // 1.5x overtime rate
-            overtimePay += otHours * hourlyRate
-          }
-        }
+      // Batch insert thousands of records efficiently
+      await tx.payrollLineItem.createMany({ data: lineItemsData })
+      await tx.payrollRecord.createMany({ data: recordsData })
 
-        const grossPay = basePay + overtimePay
-        const deductions = Number((grossPay * taxRate).toFixed(2))
-        const netPay = Number((grossPay - deductions).toFixed(2))
-
-        const lineItem = await tx.payrollLineItem.create({
-          data: {
-            payrollRunId: payrollRun.id,
-            employeeId: emp.id,
-            basePay: Number(basePay.toFixed(2)),
-            overtimePay: Number(overtimePay.toFixed(2)),
-            deductions,
-            netPay
-          }
-        })
-
-        // Also record paired employee PayrollRecord ledger
-        await tx.payrollRecord.create({
-          data: {
-            employeeId: emp.id,
-            periodStart: start,
-            periodEnd: end,
-            baseAmount: Number(basePay.toFixed(2)),
-            overtimeAmount: Number(overtimePay.toFixed(2)),
-            deductions,
-            bonuses: 0,
-            netPay,
-            status: 'FINALIZED',
-            paidAt: new Date()
-          }
-        })
-
-        runTotalAmount += netPay
-        lineItems.push(lineItem)
-      }
-
-      // 4. Update master payroll run sum
+      // Update master payroll run sum
       const finalizedRun = await tx.payrollRun.update({
         where: { id: payrollRun.id },
         data: { totalAmount: Number(runTotalAmount.toFixed(2)) }
@@ -114,10 +129,10 @@ export class PayrollService {
 
       return {
         payrollRun: finalizedRun,
-        lineItemsCount: lineItems.length,
+        lineItemsCount: lineItemsData.length,
         totalDisbursed: runTotalAmount
       }
-    })
+    }, { timeout: 15000 })
   }
 
   /**
@@ -148,5 +163,26 @@ export class PayrollService {
         totalPages: Math.ceil(total / limit)
       }
     }
+  }
+
+  /**
+   * Retrieves a single payroll run by its ID, including all itemized line items and associated employee records.
+   */
+  static async getPayrollRunById(id: string) {
+    const run = await prisma.payrollRun.findUnique({
+      where: { id },
+      include: {
+        lineItems: {
+          include: { employee: true },
+          orderBy: { employee: { firstName: 'asc' } }
+        }
+      }
+    })
+
+    if (!run) {
+      throw new Error('Payroll run not found')
+    }
+
+    return run
   }
 }
