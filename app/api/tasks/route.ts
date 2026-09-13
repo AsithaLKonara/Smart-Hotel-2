@@ -67,17 +67,17 @@ export async function GET(request: NextRequest) {
     // Fetch related data separately for each task
     const tasksWithRelations = await Promise.all(
       tasks.map(async (task: Task) => {
-        const [staff, user] = await Promise.all([
-          task.assignedTo ? prisma.staff.findUnique({ where: { id: task.assignedTo } }).catch(() => null) : null,
+        const [employee, user] = await Promise.all([
+          task.assignedTo ? prisma.employee.findUnique({ where: { id: task.assignedTo } }).catch(() => null) : null,
           task.createdBy ? prisma.user.findUnique({ where: { id: task.createdBy } }).catch(() => null) : null
         ])
         
         return {
           ...task,
-          staff: staff ? {
-            id: staff.id,
-            name: staff.name,
-            email: staff.email,
+          staff: employee ? {
+            id: employee.id,
+            name: `${employee.firstName} ${employee.lastName}`,
+            email: employee.email,
           } : null,
           user: user ? {
             id: user.id,
@@ -127,11 +127,11 @@ export async function POST(request: NextRequest) {
         description: validatedData.description || '',
         type: validatedData.type as any,
         priority: validatedData.priority as any,
-        assignedTo: validatedData.assignedTo || null, 
+        status: 'PENDING',
+        assignedTo: validatedData.assignedTo === '' ? null : validatedData.assignedTo,
         dueDate: validatedData.dueDate ? new Date(validatedData.dueDate) : null,
         createdBy: session.user.id,
         propertyId: propertyId,
-        status: 'PENDING',
       }
     })
     

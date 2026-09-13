@@ -117,8 +117,9 @@ export async function PUT(
     }
     
     // Only update assignedTo if provided, otherwise keep existing value
-    if (validatedData.assignedTo !== undefined) {
-      updateData.assignedTo = validatedData.assignedTo || existingTask.assignedTo
+    // Only update assignedTo if provided in the payload
+    if ('assignedTo' in validatedData) {
+      updateData.assignedTo = validatedData.assignedTo === '' ? null : validatedData.assignedTo;
     }
     if (validatedData.dueDate) {
       updateData.dueDate = new Date(validatedData.dueDate)
@@ -132,9 +133,9 @@ export async function PUT(
       data: updateData
     })
     
-    // Fetch related data separately (relations don't exist in schema)
-    const [updatedStaff, updatedUser] = await Promise.all([
-      updatedTask.assignedTo ? prisma.staff.findUnique({ where: { id: updatedTask.assignedTo } }).catch(() => null) : null,
+    // Fetch related data separately
+    const [updatedEmployee, updatedUser] = await Promise.all([
+      updatedTask.assignedTo ? prisma.employee.findUnique({ where: { id: updatedTask.assignedTo } }).catch(() => null) : null,
       updatedTask.createdBy ? prisma.user.findUnique({ where: { id: updatedTask.createdBy } }).catch(() => null) : null
     ])
 
@@ -157,10 +158,10 @@ export async function PUT(
     return NextResponse.json({
       task: {
         ...updatedTask,
-        staff: updatedStaff ? {
-          id: updatedStaff.id,
-          name: updatedStaff.name,
-          email: updatedStaff.email,
+        staff: updatedEmployee ? {
+          id: updatedEmployee.id,
+          name: `${updatedEmployee.firstName} ${updatedEmployee.lastName}`,
+          email: updatedEmployee.email,
         } : null,
         user: updatedUser ? {
           id: updatedUser.id,
@@ -216,9 +217,9 @@ export async function PATCH(
       updatedAt: new Date(),
     }
     
-    // Only update assignedTo if provided, otherwise keep existing value
-    if (validatedData.assignedTo !== undefined) {
-      updateData.assignedTo = validatedData.assignedTo || existingTask.assignedTo
+    // Only update assignedTo if provided in the payload
+    if ('assignedTo' in validatedData) {
+      updateData.assignedTo = validatedData.assignedTo === '' ? null : validatedData.assignedTo;
     }
     if (validatedData.dueDate) {
       updateData.dueDate = new Date(validatedData.dueDate)
@@ -271,9 +272,9 @@ export async function PATCH(
       }
     }
 
-    // Fetch related data separately (relations don't exist in schema)
-    const [updatedStaff, updatedUser] = await Promise.all([
-      updatedTask.assignedTo ? prisma.staff.findUnique({ where: { id: updatedTask.assignedTo } }).catch(() => null) : null,
+    // Fetch related data separately
+    const [updatedEmployee, updatedUser] = await Promise.all([
+      updatedTask.assignedTo ? prisma.employee.findUnique({ where: { id: updatedTask.assignedTo } }).catch(() => null) : null,
       updatedTask.createdBy ? prisma.user.findUnique({ where: { id: updatedTask.createdBy } }).catch(() => null) : null
     ])
 
@@ -296,10 +297,10 @@ export async function PATCH(
     return NextResponse.json({
       task: {
         ...updatedTask,
-        staff: updatedStaff ? {
-          id: updatedStaff.id,
-          name: updatedStaff.name,
-          email: updatedStaff.email,
+        staff: updatedEmployee ? {
+          id: updatedEmployee.id,
+          name: `${updatedEmployee.firstName} ${updatedEmployee.lastName}`,
+          email: updatedEmployee.email,
         } : null,
         user: updatedUser ? {
           id: updatedUser.id,

@@ -3,17 +3,17 @@ import prisma from '@/lib/db'
 
 export async function GET() {
   try {
-    // Fetch users who are NOT guests
-    const staff = await prisma.user.findMany({
+    // Fetch employees for task assignment
+    const employees = await prisma.employee.findMany({
       where: {
-        role: {
-          name: { not: 'GUEST' }
-        }
-      },
-      include: {
-        role: true
+        status: 'ACTIVE'
       }
     })
+
+    const staff = employees.map(emp => ({
+      ...emp,
+      name: `${emp.firstName} ${emp.lastName}`
+    }))
 
     return NextResponse.json({ staff })
   } catch (error: any) {
