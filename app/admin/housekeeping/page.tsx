@@ -18,14 +18,16 @@ import { Badge } from '@/components/ui/badge'
 import toast from 'react-hot-toast'
 import { PremiumSpinner } from '@/components/ui/premium-spinner'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useProperty } from '@/contexts/property-context'
 
 export default function HousekeepingOperations() {
   const queryClient = useQueryClient()
+  const { activePropertyId } = useProperty()
   const [activeTab, setActiveTab] = useState("ALL")
 
   // Fetch Tasks
   const { data: tasksData, isLoading: tasksLoading } = useQuery({
-    queryKey: ['housekeeping-tasks'],
+    queryKey: ['housekeeping-tasks', activePropertyId],
     queryFn: async () => {
       const res = await fetch('/api/tasks?type=HOUSEKEEPING')
       const data = await res.json()
@@ -35,7 +37,7 @@ export default function HousekeepingOperations() {
 
   // Fetch Staff for assignment
   const { data: staffData } = useQuery({
-    queryKey: ['staff'],
+    queryKey: ['staff', activePropertyId],
     queryFn: async () => {
       const res = await fetch('/api/staff')
       const data = await res.json()
@@ -44,7 +46,7 @@ export default function HousekeepingOperations() {
   })
 
   const { data: roomsData, isLoading: roomsLoading } = useQuery({
-    queryKey: ['housekeeping-rooms'],
+    queryKey: ['housekeeping-rooms', activePropertyId],
     queryFn: async () => {
       const res = await fetch('/api/admin/housekeeping/rooms')
       const data = await res.json()

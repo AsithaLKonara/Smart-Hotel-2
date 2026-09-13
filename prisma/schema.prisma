@@ -1090,6 +1090,8 @@ model Employee {
   status           String            @default("ACTIVE")
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
+  propertyId       String
+  property         Property          @relation(fields: [propertyId], references: [id])
   attendance       Attendance[]
   user             User?             @relation(fields: [userId], references: [id])
   leaves           LeaveRequest[]
@@ -1263,6 +1265,7 @@ model Property {
   rooms            Room[]
   tasks            Task[]
   users            User[]
+  employees        Employee[]
   posOutlets       POSOutlet[]
   eventSpaces      EventSpace[]
   banquetingEvents BanquetingEvent[]

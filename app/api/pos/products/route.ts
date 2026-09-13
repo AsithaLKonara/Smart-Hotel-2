@@ -18,7 +18,7 @@ export async function GET() {
     ]);
 
     // Map food menu items to match POS product structure
-    const mappedFoodItems = foodMenuItems.map(item => ({
+    const mappedFoodItems = foodMenuItems.map((item: any) => ({
       id: item.id,
       name: item.name,
       description: item.description,

@@ -136,17 +136,17 @@ export async function POST(request: NextRequest) {
     })
     
     // Fetch related data separately
-    const [staff, user] = await Promise.all([
-      task.assignedTo ? prisma.staff.findUnique({ where: { id: task.assignedTo } }).catch(() => null) : null,
+    const [employee, user] = await Promise.all([
+      task.assignedTo ? prisma.employee.findUnique({ where: { id: task.assignedTo } }).catch(() => null) : null,
       task.createdBy ? prisma.user.findUnique({ where: { id: task.createdBy } }).catch(() => null) : null
     ])
     
     const taskWithRelations = {
       ...task,
-      staff: staff ? {
-        id: staff.id,
-        name: staff.name,
-        email: staff.email,
+      staff: employee ? {
+        id: employee.id,
+        name: `${employee.firstName} ${employee.lastName}`,
+        email: employee.email,
       } : null,
       user: user ? {
         id: user.id,
