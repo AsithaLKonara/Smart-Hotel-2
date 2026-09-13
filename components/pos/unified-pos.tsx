@@ -87,7 +87,9 @@ export default function UnifiedPOS({ role }: { role: string }) {
 
   // Use pre-calculated values from the backend (avoids reduce() in the render loop)
   // Falls back to local calculation only for the currently active booking's detail view
-  const folioTotalCharges = activeBooking?.folioTotalCharges ?? folioLineItems.reduce((sum: number, item: any) => sum + Number(item.amount || 0), 0)
+  const folioTotalCharges = activeBooking?.folioTotalCharges ?? folioLineItems
+    .filter((item: any) => item.category !== 'PAYMENT')
+    .reduce((sum: number, item: any) => sum + Number(item.amount || 0), 0)
   const folioTotalPayments = activeBooking?.folioTotalPayments ?? folioPayments.reduce((sum: number, p: any) => sum + Number(p.amount || 0), 0)
   const folioOutstandingBalance = activeBooking?.folioBalance ?? Math.max(0, folioTotalCharges - folioTotalPayments)
 

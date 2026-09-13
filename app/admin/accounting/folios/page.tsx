@@ -164,7 +164,9 @@ export default function FoliosManagementPage() {
                    <p className="text-2xl font-bold text-white">
                      ${folios.reduce((sum, f) => {
                        if (f.status === 'PAID') return sum;
-                       const total = (f.lineItems || []).reduce((a: number, b: any) => a + Number(b.amount || 0), 0);
+                       const total = (f.lineItems || [])
+                         .filter((b: any) => b.category !== 'PAYMENT')
+                         .reduce((a: number, b: any) => a + Number(b.amount || 0), 0);
                        const paid = (f.payments || []).reduce((a: number, b: any) => a + Number(b.amount || 0), 0);
                        return sum + Math.max(0, total - paid);
                      }, 0).toFixed(2)}
@@ -189,7 +191,9 @@ export default function FoliosManagementPage() {
               </thead>
               <tbody className="divide-y divide-white/10">
                 {folios.map(folio => {
-                  const total = (folio.lineItems || []).reduce((a: number, b: any) => a + Number(b.amount || 0), 0);
+                  const total = (folio.lineItems || [])
+                    .filter((b: any) => b.category !== 'PAYMENT')
+                    .reduce((a: number, b: any) => a + Number(b.amount || 0), 0);
                   const paid = (folio.payments || []).reduce((a: number, b: any) => a + Number(b.amount || 0), 0);
                   const balance = Math.max(0, total - paid);
                   const roomAssignment = folio.booking?.roomAssignments?.[0];
@@ -299,8 +303,10 @@ export default function FoliosManagementPage() {
             <div className="p-6 bg-white/5 border-b border-white/10 grid grid-cols-3 gap-3 text-center">
               <div className="bg-black/30 p-3 rounded-xl border border-white/5">
                 <p className="text-[10px] uppercase font-bold text-slate-400">Total Charges</p>
-                <p className="text-sm font-bold text-white mt-1">
-                  ${(selectedFolioForDrawer.lineItems || []).reduce((a: number, b: any) => a + Number(b.amount || 0), 0).toFixed(2)}
+                <p className="font-mono text-white text-lg">
+                  ${(selectedFolioForDrawer.lineItems || [])
+                    .filter((b: any) => b.category !== 'PAYMENT')
+                    .reduce((a: number, b: any) => a + Number(b.amount || 0), 0).toFixed(2)}
                 </p>
               </div>
               <div className="bg-black/30 p-3 rounded-xl border border-white/5">
@@ -311,8 +317,10 @@ export default function FoliosManagementPage() {
               </div>
               <div className="bg-black/30 p-3 rounded-xl border border-white/5">
                 <p className="text-[10px] uppercase font-bold text-slate-400">Current Balance</p>
-                <p className="text-sm font-bold text-amber-400 mt-1">
-                  ${Math.max(0, (selectedFolioForDrawer.lineItems || []).reduce((a: number, b: any) => a + Number(b.amount || 0), 0) - (selectedFolioForDrawer.payments || []).reduce((a: number, b: any) => a + Number(b.amount || 0), 0)).toFixed(2)}
+                <p className="font-mono text-white font-bold text-lg">
+                  ${Math.max(0, (selectedFolioForDrawer.lineItems || [])
+                    .filter((b: any) => b.category !== 'PAYMENT')
+                    .reduce((a: number, b: any) => a + Number(b.amount || 0), 0) - (selectedFolioForDrawer.payments || []).reduce((a: number, b: any) => a + Number(b.amount || 0), 0)).toFixed(2)}
                 </p>
               </div>
             </div>

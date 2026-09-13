@@ -411,7 +411,9 @@ export async function GET(request: NextRequest) {
   // reduce() calls inside the React render loop on the client.
   const formattedBookings = bookings.map((booking: any) => {
     const folio = booking.folios?.[0]
-    const totalCharges = (folio?.lineItems || []).reduce((sum: number, i: any) => sum + Number(i.amount || 0), 0)
+    const totalCharges = (folio?.lineItems || [])
+      .filter((i: any) => i.category !== 'PAYMENT')
+      .reduce((sum: number, i: any) => sum + Number(i.amount || 0), 0)
     const totalPayments = (folio?.payments || []).reduce((sum: number, p: any) => sum + Number(p.amount || 0), 0)
     const folioBalance = Math.max(0, totalCharges - totalPayments)
 

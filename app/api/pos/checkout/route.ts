@@ -154,7 +154,9 @@ export async function POST(req: Request) {
         });
 
         if (currentFolio) {
-          const totalCharges = currentFolio.lineItems.reduce((sum: number, i: any) => sum + Number(i.amount || 0), 0);
+          const totalCharges = currentFolio.lineItems
+            .filter((i: any) => i.category !== 'PAYMENT')
+            .reduce((sum: number, i: any) => sum + Number(i.amount || 0), 0);
           const totalPayments = currentFolio.payments.reduce((sum: number, p: any) => sum + Number(p.amount || 0), 0);
           const remainingBalance = totalCharges - totalPayments;
 
