@@ -8,9 +8,70 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { PremiumSpinner } from '@/components/ui/premium-spinner'
 import * as Dialog from '@radix-ui/react-dialog'
-import { CalendarDays, Users, MapPin, Plus, Hotel, BookOpen, Calculator, X, DollarSign, CheckCircle } from 'lucide-react'
+import { CalendarDays, Users, MapPin, Plus, Hotel, BookOpen, Calculator, X, DollarSign, CheckCircle, Search } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useProperty } from '@/contexts/property-context'
+
+// ---- Guest Search Component ----
+function GuestSearch({ value, onChange }: { value: string, onChange: (id: string) => void }) {
+  const [query, setQuery] = useState('')
+  const [results, setResults] = useState<any[]>([])
+  const [isOpen, setIsOpen] = useState(false)
+  const { activePropertyId } = useProperty()
+
+  useEffect(() => {
+    if (query.length < 2) { setResults([]); return; }
+    const delay = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/admin/guests/search?q=${encodeURIComponent(query)}`, {
+          headers: { 'x-property-id': activePropertyId || '' }
+        })
+        const data = await res.json()
+        if (res.ok) setResults(data.data || [])
+      } catch (e) { console.error(e) }
+    }, 300)
+    return () => clearTimeout(delay)
+  }, [query, activePropertyId])
+
+  return (
+    <div className="relative">
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+        <Input 
+          placeholder="Search guest by name or email..." 
+          value={query} 
+          onChange={e => { setQuery(e.target.value); setIsOpen(true) }} 
+          onFocus={() => setIsOpen(true)}
+          className="bg-[#1a1a24] border-white/10 text-white pl-9" 
+        />
+      </div>
+      {isOpen && results.length > 0 && (
+        <div className="absolute z-50 w-full mt-1 bg-[#1a1a24] border border-white/10 rounded-lg shadow-xl overflow-hidden">
+          {results.map(guest => (
+            <button
+              key={guest.id}
+              type="button"
+              onClick={() => {
+                onChange(guest.id)
+                setQuery(guest.name)
+                setIsOpen(false)
+              }}
+              className="w-full text-left px-4 py-3 hover:bg-white/5 border-b border-white/5 last:border-0"
+            >
+              <div className="text-sm font-bold text-white">{guest.name}</div>
+              <div className="text-xs text-white/50">{guest.email}</div>
+            </button>
+          ))}
+        </div>
+      )}
+      {value && !isOpen && (
+        <div className="mt-2 text-xs text-emerald-400 flex items-center gap-1">
+          <CheckCircle className="w-3 h-3" /> Guest Selected
+        </div>
+      )}
+    </div>
+  )
+}
 
 // ---- Shared Modal Shell ----
 function ModalShell({ open, onClose, title, children }: { open: boolean, onClose: () => void, title: string, children: React.ReactNode }) {
@@ -46,6 +107,7 @@ export default function EventsDashboard() {
   const [spaces, setSpaces] = useState<any[]>([])
   const [blocks, setBlocks] = useState<any[]>([])
   const [roomTypes, setRoomTypes] = useState<any[]>([])
+  const [packages, setPackages] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
   // Modal state
@@ -54,6 +116,7 @@ export default function EventsDashboard() {
   const [newSpaceModal, setNewSpaceModal] = useState(false)
   const [newBlockModal, setNewBlockModal] = useState(false)
   const [newEventModal, setNewEventModal] = useState(false)
+  const [beoModal, setBeoModal] = useState<any>(null) // holds event object
   const [quoteResult, setQuoteResult] = useState<any>(null)
 
   // Form state
@@ -61,23 +124,28 @@ export default function EventsDashboard() {
   const [attendanceForm, setAttendanceForm] = useState({ userId: '', attendees: '1' })
   const [spaceForm, setSpaceForm] = useState({ name: '', capacity: '', hourlyRate: '', dailyRate: '' })
   const [blockForm, setBlockForm] = useState({ eventId: '', roomTypeId: '', blockedCount: '', contractedRate: '' })
+  const [packageForm, setPackageForm] = useState({ name: '', description: '', pricePerPax: '', flatFee: '', includesSpaceId: '', includesRoomId: '' })
   const [eventForm, setEventForm] = useState({ name: '', type: 'CONFERENCE', status: 'PROSPECT', startDate: '', endDate: '', expectedAttendees: '', organizerName: '', organizerEmail: '', spaceId: '' })
+  const [beoForm, setBeoForm] = useState({ guaranteedPax: '', agreedPricePerPax: '', agreedHallFee: '', packageId: '', status: 'DRAFT' })
+  const [newPackageModal, setNewPackageModal] = useState(false)
 
   const fetchAll = async () => {
     setLoading(true)
     try {
       const headers = { 'x-property-id': activePropertyId || '' }
-      const [evRes, spRes, blRes, rtRes] = await Promise.all([
+      const [evRes, spRes, blRes, rtRes, pkgRes] = await Promise.all([
         fetch('/api/admin/events', { headers }),
         fetch('/api/admin/events/spaces', { headers }),
         fetch('/api/admin/events/blocks', { headers }),
-        fetch('/api/room-types', { headers })
+        fetch('/api/room-types', { headers }),
+        fetch('/api/admin/events/packages', { headers })
       ])
-      const [evData, spData, blData, rtData] = await Promise.all([evRes.json(), spRes.json(), blRes.json(), rtRes.json()])
+      const [evData, spData, blData, rtData, pkgData] = await Promise.all([evRes.json(), spRes.json(), blRes.json(), rtRes.json(), pkgRes.json()])
       setEvents(evData.data || evData.events || [])
       setSpaces(spData.spaces || [])
       setBlocks(blData.data || [])
       setRoomTypes(Array.isArray(rtData) ? rtData : (rtData.roomTypes || []))
+      setPackages(pkgData.data || [])
     } finally {
       setLoading(false)
     }
@@ -86,6 +154,49 @@ export default function EventsDashboard() {
   useEffect(() => { 
     if (activePropertyId) fetchAll() 
   }, [activePropertyId])
+
+  const openBeoModal = async (event: any) => {
+    setBeoModal(event)
+    setBeoForm({ guaranteedPax: '', agreedPricePerPax: '', agreedHallFee: '', packageId: '', status: 'DRAFT' })
+    try {
+      const res = await fetch(`/api/admin/events/beo?eventId=${event.id}`, { headers: { 'x-property-id': activePropertyId || '' } })
+      const data = await res.json()
+      if (data.data) {
+        setBeoForm({
+          guaranteedPax: data.data.guaranteedPax?.toString() || '',
+          agreedPricePerPax: data.data.agreedPricePerPax?.toString() || '',
+          agreedHallFee: data.data.agreedHallFee?.toString() || '',
+          packageId: data.data.packageId || '',
+          status: data.data.status || 'DRAFT'
+        })
+      }
+    } catch { toast.error('Failed to load BEO data') }
+  }
+
+  const handleSaveBEO = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!beoModal) return
+    try {
+      const res = await fetch('/api/admin/events/beo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-property-id': activePropertyId || '' },
+        body: JSON.stringify({
+          eventId: beoModal.id,
+          packageId: beoForm.packageId || undefined,
+          guaranteedPax: parseInt(beoForm.guaranteedPax || '0'),
+          agreedPricePerPax: parseFloat(beoForm.agreedPricePerPax || '0'),
+          agreedHallFee: parseFloat(beoForm.agreedHallFee || '0'),
+          status: beoForm.status
+        })
+      })
+      if (res.ok) {
+        toast.success('BEO saved successfully')
+        setBeoModal(null)
+      } else {
+        toast.error('Failed to save BEO')
+      }
+    } catch { toast.error('Error saving BEO') }
+  }
 
   const handleGetQuote = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -136,6 +247,29 @@ export default function EventsDashboard() {
         fetchAll()
       } else toast.error('Failed to create space')
     } catch { toast.error('Error creating space') }
+  }
+
+  const handleCreatePackage = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      const res = await fetch('/api/admin/events/packages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-property-id': activePropertyId || '' },
+        body: JSON.stringify({
+          ...packageForm,
+          pricePerPax: parseFloat(packageForm.pricePerPax),
+          flatFee: parseFloat(packageForm.flatFee),
+          includesSpaceId: packageForm.includesSpaceId || undefined,
+          includesRoomId: packageForm.includesRoomId || undefined
+        })
+      })
+      if (res.ok) {
+        toast.success('Event package created')
+        setNewPackageModal(false)
+        setPackageForm({ name: '', description: '', pricePerPax: '', flatFee: '', includesSpaceId: '', includesRoomId: '' })
+        fetchAll()
+      } else toast.error('Failed to create package')
+    } catch { toast.error('Error creating package') }
   }
 
   const handleCreateBlock = async (e: React.FormEvent) => {
@@ -192,7 +326,7 @@ export default function EventsDashboard() {
       {/* Tab Bar + Actions */}
       <div className="flex flex-col sm:flex-row gap-3 mb-8 justify-between">
         <div className="flex gap-2 bg-white/5 p-1 rounded-xl">
-          {['EVENTS', 'SPACES', 'BLOCKS'].map(tab => (
+          {['EVENTS', 'PACKAGES', 'SPACES', 'BLOCKS'].map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -214,6 +348,11 @@ export default function EventsDashboard() {
           {activeTab === 'SPACES' && (
             <Button onClick={() => setNewSpaceModal(true)} className="bg-primary text-white">
               <Plus className="w-4 h-4 mr-2" /> New Space
+            </Button>
+          )}
+          {activeTab === 'PACKAGES' && (
+            <Button onClick={() => setNewPackageModal(true)} className="bg-primary text-white">
+              <Plus className="w-4 h-4 mr-2" /> New Package
             </Button>
           )}
           {activeTab === 'BLOCKS' && (
@@ -282,7 +421,15 @@ export default function EventsDashboard() {
                       </div>
                     )}
 
-                    <div className="mt-auto pt-4 border-t border-white/10 flex justify-end">
+                    <div className="mt-auto pt-4 border-t border-white/10 flex justify-end gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-amber-400 border-amber-400/30 bg-amber-400/10 hover:bg-amber-400/20 text-xs"
+                        onClick={() => openBeoModal(event)}
+                      >
+                        <DollarSign className="w-3.5 h-3.5 mr-1" /> Manage BEO
+                      </Button>
                       <Button
                         size="sm"
                         variant="outline"
@@ -344,6 +491,41 @@ export default function EventsDashboard() {
               {spaces.length === 0 && (
                 <div className="col-span-full p-12 text-center text-white/40 border-2 border-dashed border-white/10 rounded-xl">
                   No event spaces found. Click "New Space" to create one.
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ---- PACKAGES TAB ---- */}
+          {activeTab === 'PACKAGES' && (
+            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+              {packages.map((pkg: any) => (
+                <Card key={pkg.id} className="bg-white/5 border-white/10 hover:border-white/20 transition-all shadow-xl">
+                  <CardContent className="p-6 flex flex-col gap-4">
+                    <div>
+                      <h3 className="font-bold text-white text-lg">{pkg.name}</h3>
+                      <p className="text-xs text-white/50 mt-1">{pkg.description || 'No description'}</p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3 mt-2">
+                      <div className="bg-[#1a1a24] p-3 rounded-xl border border-white/5 text-center">
+                        <p className="text-xs text-white/40 mb-1 uppercase">Price / Plate</p>
+                        <p className="font-bold text-primary">${pkg.pricePerPax}</p>
+                      </div>
+                      <div className="bg-[#1a1a24] p-3 rounded-xl border border-white/5 text-center">
+                        <p className="text-xs text-white/40 mb-1 uppercase">Flat Fee</p>
+                        <p className="font-bold text-primary">${pkg.flatFee}</p>
+                      </div>
+                    </div>
+                    <div className="text-xs text-white/60 space-y-1 mt-2">
+                      <p><span className="font-bold text-white/80">Includes Hall:</span> {pkg.space ? pkg.space.name : 'None'}</p>
+                      <p><span className="font-bold text-white/80">Includes Room:</span> {pkg.roomType ? pkg.roomType.name : 'None'}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+              {packages.length === 0 && (
+                <div className="col-span-full p-12 text-center text-white/40 border-2 border-dashed border-white/10 rounded-xl">
+                  No packages found. Click "New Package" to create one.
                 </div>
               )}
             </div>
@@ -432,8 +614,8 @@ export default function EventsDashboard() {
       {/* ---- BOOK ATTENDANCE MODAL ---- */}
       <ModalShell open={!!attendanceModal} onClose={() => setAttendanceModal(null)} title={`Book Attendance: ${attendanceModal?.name}`}>
         <form onSubmit={handleBookAttendance} className="space-y-4">
-          <FormField label="Guest User ID">
-            <Input required placeholder="Paste the Guest's User ID" value={attendanceForm.userId} onChange={e => setAttendanceForm({ ...attendanceForm, userId: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white font-mono text-sm" />
+          <FormField label="Guest">
+            <GuestSearch value={attendanceForm.userId} onChange={id => setAttendanceForm({ ...attendanceForm, userId: id })} />
           </FormField>
           <FormField label="Number of Attendees">
             <Input type="number" min="1" required value={attendanceForm.attendees} onChange={e => setAttendanceForm({ ...attendanceForm, attendees: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white" />
@@ -551,6 +733,97 @@ export default function EventsDashboard() {
           <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
             <Button type="button" variant="ghost" onClick={() => setNewEventModal(false)}>Cancel</Button>
             <Button type="submit" className="bg-primary text-white">Create Event</Button>
+          </div>
+        </form>
+      </ModalShell>
+
+      {/* ---- NEW PACKAGE MODAL ---- */}
+      <ModalShell open={newPackageModal} onClose={() => setNewPackageModal(false)} title="Create Event Package">
+        <form onSubmit={handleCreatePackage} className="space-y-4">
+          <FormField label="Package Name">
+            <Input required value={packageForm.name} onChange={e => setPackageForm({ ...packageForm, name: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white" placeholder="e.g. Platinum Wedding Package" />
+          </FormField>
+          <FormField label="Description">
+            <Input value={packageForm.description} onChange={e => setPackageForm({ ...packageForm, description: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white" />
+          </FormField>
+          <div className="grid grid-cols-2 gap-4">
+            <FormField label="Price per Plate ($)">
+              <Input type="number" min="0" step="0.01" required value={packageForm.pricePerPax} onChange={e => setPackageForm({ ...packageForm, pricePerPax: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white" />
+            </FormField>
+            <FormField label="Flat Rental Fee ($)">
+              <Input type="number" min="0" step="0.01" required value={packageForm.flatFee} onChange={e => setPackageForm({ ...packageForm, flatFee: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white" />
+            </FormField>
+          </div>
+          <FormField label="Complimentary Hall (Optional)">
+            <select value={packageForm.includesSpaceId} onChange={e => setPackageForm({ ...packageForm, includesSpaceId: e.target.value })} className="w-full bg-[#1a1a24] border border-white/10 rounded-lg p-2.5 text-sm text-white">
+              <option value="">None</option>
+              {spaces.map((sp: any) => <option key={sp.id} value={sp.id}>{sp.name}</option>)}
+            </select>
+          </FormField>
+          <FormField label="Complimentary Room (Optional)">
+            <select value={packageForm.includesRoomId} onChange={e => setPackageForm({ ...packageForm, includesRoomId: e.target.value })} className="w-full bg-[#1a1a24] border border-white/10 rounded-lg p-2.5 text-sm text-white">
+              <option value="">None</option>
+              {roomTypes.map((rt: any) => <option key={rt.id} value={rt.id}>{rt.name}</option>)}
+            </select>
+          </FormField>
+          <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+            <Button type="button" variant="ghost" onClick={() => setNewPackageModal(false)}>Cancel</Button>
+            <Button type="submit" className="bg-primary text-white">Create Package</Button>
+          </div>
+        </form>
+      </ModalShell>
+
+      {/* ---- BEO MODAL ---- */}
+      <ModalShell open={!!beoModal} onClose={() => setBeoModal(null)} title={`BEO: ${beoModal?.name}`}>
+        <form onSubmit={handleSaveBEO} className="space-y-4">
+          <FormField label="Event Package (Optional)">
+            <select value={beoForm.packageId} onChange={e => {
+              const pkgId = e.target.value
+              setBeoForm(prev => ({ ...prev, packageId: pkgId }))
+              const pkg = packages.find(p => p.id === pkgId)
+              if (pkg) {
+                setBeoForm(prev => ({ ...prev, agreedPricePerPax: pkg.pricePerPax, agreedHallFee: pkg.flatFee }))
+              }
+            }} className="w-full bg-[#1a1a24] border border-white/10 rounded-lg p-2.5 text-sm text-white">
+              <option value="">No Package (Custom)</option>
+              {packages.map((pkg: any) => <option key={pkg.id} value={pkg.id}>{pkg.name}</option>)}
+            </select>
+          </FormField>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <FormField label="Guaranteed Pax (Plates)">
+              <Input type="number" min="0" required value={beoForm.guaranteedPax} onChange={e => setBeoForm({ ...beoForm, guaranteedPax: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white" />
+            </FormField>
+            <FormField label="Status">
+              <select required value={beoForm.status} onChange={e => setBeoForm({ ...beoForm, status: e.target.value })} className="w-full bg-[#1a1a24] border border-white/10 rounded-lg p-2.5 text-sm text-white">
+                <option value="DRAFT">Draft</option>
+                <option value="SIGNED">Signed</option>
+                <option value="COMPLETED">Completed</option>
+              </select>
+            </FormField>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <FormField label="Agreed Price per Plate ($)">
+              <Input type="number" min="0" step="0.01" required value={beoForm.agreedPricePerPax} onChange={e => setBeoForm({ ...beoForm, agreedPricePerPax: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white" />
+            </FormField>
+            <FormField label="Agreed Hall Fee ($)">
+              <Input type="number" min="0" step="0.01" required value={beoForm.agreedHallFee} onChange={e => setBeoForm({ ...beoForm, agreedHallFee: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white" />
+            </FormField>
+          </div>
+
+          {beoForm.guaranteedPax && beoForm.agreedPricePerPax && (
+            <div className="mt-6 bg-primary/10 border border-primary/30 rounded-xl p-5 text-white">
+              <p className="text-xs text-primary uppercase font-bold tracking-widest mb-2 flex items-center gap-2"><Calculator className="w-4 h-4" /> BEO Estimate</p>
+              <p className="text-2xl font-bold text-primary">
+                ${((parseFloat(beoForm.guaranteedPax) * parseFloat(beoForm.agreedPricePerPax)) + parseFloat(beoForm.agreedHallFee || '0')).toFixed(2)}
+              </p>
+            </div>
+          )}
+
+          <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+            <Button type="button" variant="ghost" onClick={() => setBeoModal(null)}>Cancel</Button>
+            <Button type="submit" className="bg-primary text-white">Save BEO</Button>
           </div>
         </form>
       </ModalShell>

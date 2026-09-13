@@ -29,6 +29,7 @@ model RoomType {
   groupBlocks      GroupBlock[]
   ratePlans        RatePlan[]
   rooms            Room[]
+  eventPackages    EventPackage[]
 }
 
 model Room {
@@ -472,6 +473,7 @@ model EventSpace {
   updatedAt  DateTime       @updatedAt
   property   Property       @relation(fields: [propertyId], references: [id])
   bookings   EventBooking[]
+  eventPackages EventPackage[]
 
   @@unique([propertyId, name])
   @@index([propertyId])
@@ -494,6 +496,7 @@ model BanquetingEvent {
   spaceBookings     EventBooking[]
   groupBlocks       GroupBlock[]
   attendees         EventAttendee[]
+  beo               BEO?
 
   @@index([propertyId])
 }
@@ -542,6 +545,46 @@ model GroupBlock {
 
   @@index([eventId])
   @@index([roomTypeId])
+}
+
+model EventPackage {
+  id              String       @id @default(uuid())
+  propertyId      String
+  name            String
+  description     String?
+  pricePerPax     Decimal      @default(0)
+  flatFee         Decimal      @default(0)
+  includesSpaceId String?
+  includesRoomId  String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  property        Property     @relation(fields: [propertyId], references: [id])
+  space           EventSpace?  @relation(fields: [includesSpaceId], references: [id])
+  roomType        RoomType?    @relation(fields: [includesRoomId], references: [id])
+  beos            BEO[]
+
+  @@index([propertyId])
+  @@index([includesSpaceId])
+  @@index([includesRoomId])
+}
+
+model BEO {
+  id                  String           @id @default(uuid())
+  eventId             String           @unique
+  packageId           String?
+  guaranteedPax       Int              @default(0)
+  agreedPricePerPax   Decimal          @default(0)
+  agreedHallFee       Decimal          @default(0)
+  totalAmount         Decimal          @default(0)
+  status              String           @default("DRAFT")
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  
+  event               BanquetingEvent  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  package             EventPackage?    @relation(fields: [packageId], references: [id])
+
+  @@index([packageId])
 }
 
 model FoodMenu {
@@ -1302,6 +1345,7 @@ model Property {
   maintenanceSchedules  MaintenanceSchedule[]
   maintenanceWorkOrders MaintenanceWorkOrder[]
   inspectionLogs        InspectionLog[]
+  eventPackages         EventPackage[]
 }
 
 model GuestConversation {
