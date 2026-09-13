@@ -3,10 +3,12 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Loader2, Plus, CalendarClock } from 'lucide-react'
+import { Loader2, Plus, CalendarClock, Trash } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { useProperty } from '@/contexts/property-context'
 
 export default function SchedulesPage() {
+  const { activePropertyId } = useProperty()
   const [schedules, setSchedules] = useState<any[]>([])
   const [assets, setAssets] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -20,14 +22,17 @@ export default function SchedulesPage() {
   })
 
   useEffect(() => {
-    fetchData()
-  }, [])
+    if (activePropertyId) {
+      fetchData()
+    }
+  }, [activePropertyId])
 
   const fetchData = async () => {
     try {
+      const headers = { 'x-property-id': activePropertyId || '' }
       const [schedRes, assetsRes] = await Promise.all([
-        fetch('/api/admin/cmms/schedules'),
-        fetch('/api/admin/cmms/assets')
+        fetch('/api/admin/cmms/schedules', { headers }),
+        fetch('/api/admin/cmms/assets', { headers })
       ])
       if (schedRes.ok) setSchedules(await schedRes.json())
       if (assetsRes.ok) setAssets(await assetsRes.json())
@@ -43,7 +48,10 @@ export default function SchedulesPage() {
     try {
       const res = await fetch('/api/admin/cmms/schedules', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-property-id': activePropertyId || ''
+        },
         body: JSON.stringify(formData)
       })
       if (res.ok) {
@@ -59,6 +67,24 @@ export default function SchedulesPage() {
   }
 
   if (loading) return <div className="flex justify-center p-12"><Loader2 className="animate-spin w-8 h-8" /></div>
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this schedule?')) return
+    try {
+      const res = await fetch(`/api/admin/cmms/schedules/${id}`, {
+        method: 'DELETE',
+        headers: { 'x-property-id': activePropertyId || '' }
+      })
+      if (res.ok) {
+        toast.success("Schedule deleted")
+        fetchData()
+      } else {
+        toast.error("Failed to delete schedule")
+      }
+    } catch (e) {
+      toast.error("Error deleting schedule")
+    }
+  }
 
   return (
     <div className="p-6 text-white max-w-6xl mx-auto">
@@ -120,6 +146,7 @@ export default function SchedulesPage() {
               <th className="p-4 font-medium text-slate-400">Frequency</th>
               <th className="p-4 font-medium text-slate-400">Next Run</th>
               <th className="p-4 font-medium text-slate-400">Status</th>
+              <th className="p-4 font-medium text-slate-400 text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-white/5">
@@ -144,6 +171,11 @@ export default function SchedulesPage() {
                   <span className={`px-2 py-1 bg-white/5 rounded text-xs ${sched.isActive ? 'text-emerald-400' : 'text-slate-500'}`}>
                       {sched.isActive ? 'ACTIVE' : 'INACTIVE'}
                   </span>
+                </td>
+                <td className="p-4 text-right">
+                  <Button variant="ghost" size="icon" onClick={() => handleDelete(sched.id)} className="text-slate-400 hover:text-rose-400 hover:bg-rose-400/10 h-8 w-8">
+                    <Trash className="w-4 h-4" />
+                  </Button>
                 </td>
               </tr>
             )})}

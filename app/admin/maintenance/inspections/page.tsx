@@ -5,8 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Loader2, Plus, ClipboardCheck } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { useProperty } from '@/contexts/property-context'
 
 export default function InspectionsPage() {
+  const { activePropertyId } = useProperty()
   const [inspections, setInspections] = useState<any[]>([])
   const [assets, setAssets] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -20,14 +22,17 @@ export default function InspectionsPage() {
   })
 
   useEffect(() => {
-    fetchData()
-  }, [])
+    if (activePropertyId) {
+      fetchData()
+    }
+  }, [activePropertyId])
 
   const fetchData = async () => {
     try {
+      const headers = { 'x-property-id': activePropertyId || '' }
       const [inspRes, assetsRes] = await Promise.all([
-        fetch('/api/admin/cmms/inspections'),
-        fetch('/api/admin/cmms/assets')
+        fetch('/api/admin/cmms/inspections', { headers }),
+        fetch('/api/admin/cmms/assets', { headers })
       ])
       if (inspRes.ok) setInspections(await inspRes.json())
       if (assetsRes.ok) setAssets(await assetsRes.json())
@@ -43,7 +48,10 @@ export default function InspectionsPage() {
     try {
       const res = await fetch('/api/admin/cmms/inspections', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-property-id': activePropertyId || ''
+        },
         body: JSON.stringify(formData)
       })
       if (res.ok) {

@@ -5,8 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Loader2, Plus, Box, Wrench } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { useProperty } from '@/contexts/property-context'
 
 export default function AssetsPage() {
+  const { activePropertyId } = useProperty()
   const [assets, setAssets] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
@@ -22,12 +24,16 @@ export default function AssetsPage() {
   })
 
   useEffect(() => {
-    fetchAssets()
-  }, [])
+    if (activePropertyId) {
+      fetchAssets()
+    }
+  }, [activePropertyId])
 
   const fetchAssets = async () => {
     try {
-      const res = await fetch('/api/admin/cmms/assets')
+      const res = await fetch('/api/admin/cmms/assets', {
+        headers: { 'x-property-id': activePropertyId || '' }
+      })
       if (res.ok) {
         setAssets(await res.json())
       }
@@ -43,7 +49,10 @@ export default function AssetsPage() {
     try {
       const res = await fetch('/api/admin/cmms/assets', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-property-id': activePropertyId || ''
+        },
         body: JSON.stringify(formData)
       })
       if (res.ok) {

@@ -1194,6 +1194,8 @@ model Asset {
   notes                 String?
   createdAt             DateTime               @default(now())
   updatedAt             DateTime               @updatedAt
+  propertyId            String
+  property              Property               @relation(fields: [propertyId], references: [id])
   inspections           InspectionLog[]
   schedules             MaintenanceSchedule[]
   maintenanceWorkOrders MaintenanceWorkOrder[]
@@ -1210,6 +1212,8 @@ model MaintenanceSchedule {
   isActive       Boolean   @default(true)
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
+  propertyId     String
+  property       Property  @relation(fields: [propertyId], references: [id])
   asset          Asset     @relation(fields: [assetId], references: [id])
 }
 
@@ -1222,6 +1226,8 @@ model InspectionLog {
   notes          String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+  propertyId     String
+  property       Property @relation(fields: [propertyId], references: [id])
   asset          Asset    @relation(fields: [assetId], references: [id])
 }
 
@@ -1233,6 +1239,8 @@ model MaintenanceWorkOrder {
   status    String   @default("OPEN")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  propertyId String
+  property  Property @relation(fields: [propertyId], references: [id])
   asset     Asset?   @relation(fields: [assetId], references: [id])
   room      Room?    @relation(fields: [roomId], references: [id])
 }
@@ -1269,9 +1277,13 @@ model Property {
   posOutlets       POSOutlet[]
   eventSpaces      EventSpace[]
   banquetingEvents BanquetingEvent[]
-  galleries        Gallery[]
-  inventory        Inventory[]
-  resortFacilities ResortFacility[]
+  galleries             Gallery[]
+  inventory             Inventory[]
+  resortFacilities      ResortFacility[]
+  assets                Asset[]
+  maintenanceSchedules  MaintenanceSchedule[]
+  maintenanceWorkOrders MaintenanceWorkOrder[]
+  inspectionLogs        InspectionLog[]
 }
 
 model GuestConversation {

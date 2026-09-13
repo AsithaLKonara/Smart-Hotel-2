@@ -12,7 +12,7 @@ import {
   Grid, Globe, ShieldCheck, Activity, History, Box, Gift, Building2, FileText, 
   Moon, Brush, Wrench, TrendingUp, CalendarDays, Plane, Truck, FileCheck,
   Briefcase, CalendarRange, Clock, CircleDollarSign, CalendarClock, ClipboardCheck, 
-  Award, MessageCircle, PieChart, Link as LinkIcon, Palmtree
+  Award, MessageCircle, PieChart, Link as LinkIcon, Palmtree, Layers
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useSidebar } from '@/lib/sidebar-context'
@@ -87,6 +87,7 @@ export default function DashboardSidebar() {
       { name: 'Room Types', href: '/admin/room-types', icon: ImageIcon, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Operations & Inventory' },
       { name: 'Housekeeping', href: '/admin/housekeeping', icon: Brush, roles: ['HOUSEKEEPING', 'MANAGER', 'SUPER_ADMIN'], group: 'Operations & Inventory' },
       { name: 'Service Tickets', href: '/admin/maintenance/tickets', icon: Wrench, roles: ['MAINTENANCE', 'MANAGER', 'SUPER_ADMIN', 'RECEPTIONIST'], group: 'Operations & Inventory' },
+      { name: 'Asset Register', href: '/admin/maintenance/assets', icon: Layers, roles: ['MAINTENANCE', 'MANAGER', 'SUPER_ADMIN'], group: 'Operations & Inventory' },
       { name: 'Preventative Schedules', href: '/admin/maintenance/schedules', icon: CalendarClock, roles: ['MAINTENANCE', 'MANAGER', 'SUPER_ADMIN'], group: 'Operations & Inventory' },
       { name: 'Inspection Logs', href: '/admin/maintenance/inspections', icon: ClipboardCheck, roles: ['MAINTENANCE', 'MANAGER', 'SUPER_ADMIN'], group: 'Operations & Inventory' },
       { name: 'Event Command', href: '/admin/events/dashboard', icon: CalendarDays, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Operations & Inventory' },
