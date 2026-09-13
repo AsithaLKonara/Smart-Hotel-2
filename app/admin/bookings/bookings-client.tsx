@@ -10,6 +10,7 @@ import { Calendar, Search, Filter, DollarSign, User, Bed, Edit, CheckCircle, XCi
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { formatPrice, formatDate, cn } from '@/lib/utils'
 import toast from 'react-hot-toast'
 import { PremiumSpinner } from '@/components/ui/premium-spinner'
@@ -52,6 +53,7 @@ export function BookingsClient({ initialBookings }: { initialBookings: Booking[]
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
   const [filterPayment, setFilterPayment] = useState('all')
+  const [checkoutDialog, setCheckoutDialog] = useState<{ isOpen: boolean; booking: Booking | null }>({ isOpen: false, booking: null })
 
   const handleStatusUpdate = async (bookingId: string, newStatus: string) => {
     try {
@@ -94,10 +96,12 @@ export function BookingsClient({ initialBookings }: { initialBookings: Booking[]
   }
 
   const getPaymentStatusColor = (status: string) => {
-    switch (status) {
-      case 'PAID': return 'text-emerald-500'
-      case 'PENDING': return 'text-amber-500'
-      case 'FAILED': return 'text-rose-500'
+    switch (status?.toLowerCase()) {
+      case 'paid':
+      case 'completed': return 'text-emerald-500'
+      case 'pending': return 'text-amber-500'
+      case 'failed': return 'text-rose-500'
+      case 'unpaid': return 'text-rose-500/70'
       default: return 'text-white/40'
     }
   }
@@ -107,7 +111,7 @@ export function BookingsClient({ initialBookings }: { initialBookings: Booking[]
     total: bookingsArray.length,
     confirmed: bookingsArray.filter(b => b.status === 'CONFIRMED').length,
     checkedIn: bookingsArray.filter(b => b.status === 'CHECKED_IN').length,
-    totalRevenue: bookingsArray.filter(b => b.paymentStatus === 'PAID').reduce((sum, b) => sum + (b.totalAmount || 0), 0)
+    totalRevenue: bookingsArray.filter(b => b.paymentStatus === 'completed' || b.paymentStatus === 'PAID').reduce((sum, b) => sum + (b.totalAmount || 0), 0)
   }
 
   if (status === 'loading' || loading) {
@@ -312,7 +316,19 @@ export function BookingsClient({ initialBookings }: { initialBookings: Booking[]
                         </Button>
                       )}
                       {booking.status === 'CHECKED_IN' && (
-                        <Button size="sm" className="bg-primary hover:bg-primary/90 text-white rounded-xl text-[10px] font-black uppercase tracking-widest h-8 px-4" onClick={() => handleStatusUpdate(booking.id, 'CHECKED_OUT')}>
+                        <Button 
+                          size="sm" 
+                          className="bg-primary hover:bg-primary/90 text-white rounded-xl text-[10px] font-black uppercase tracking-widest h-8 px-4" 
+                          onClick={() => {
+                            const isPaid = booking.paymentStatus?.toLowerCase() === 'completed' || booking.paymentStatus?.toLowerCase() === 'paid'
+                            if (!isPaid) {
+                              toast.error('Booking has an unpaid balance. Redirecting to POS to settle folio...')
+                              router.push(`/admin/pos?bookingId=${booking.id}&mode=checkout`)
+                            } else {
+                              setCheckoutDialog({ isOpen: true, booking })
+                            }
+                          }}
+                        >
                           Check Out
                         </Button>
                       )}
@@ -334,6 +350,32 @@ export function BookingsClient({ initialBookings }: { initialBookings: Booking[]
           </div>
         )}
       </Card>
+
+      {/* Checkout Confirmation Dialog */}
+      <Dialog open={checkoutDialog.isOpen} onOpenChange={(o) => setCheckoutDialog(prev => ({...prev, isOpen: o}))}>
+        <DialogContent className="bg-[#111] border-white/10 text-white">
+          <DialogHeader>
+            <DialogTitle>Confirm Checkout</DialogTitle>
+            <DialogDescription className="text-white/60">
+              Are you sure you want to checkout {checkoutDialog.booking?.guest?.name}? This will mark Room {checkoutDialog.booking?.roomAssignments?.[0]?.room?.number || 'TBD'} as needing cleaning.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-6 gap-3 sm:justify-start">
+            <Button variant="ghost" className="hover:bg-white/10" onClick={() => setCheckoutDialog({ isOpen: false, booking: null })}>Cancel</Button>
+            <Button 
+              className="bg-primary text-white" 
+              onClick={() => {
+                if (checkoutDialog.booking) {
+                  handleStatusUpdate(checkoutDialog.booking.id, 'CHECKED_OUT')
+                  setCheckoutDialog({ isOpen: false, booking: null })
+                }
+              }}
+            >
+              Confirm Checkout
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AdminPageShell>
   )
 }

@@ -415,8 +415,11 @@ export async function GET(request: NextRequest) {
     const totalPayments = (folio?.payments || []).reduce((sum: number, p: any) => sum + Number(p.amount || 0), 0)
     const folioBalance = Math.max(0, totalCharges - totalPayments)
 
+    const calculatedTotal = totalCharges > 0 ? totalCharges : Number(booking.totalAmount || 0)
+
     return {
       ...booking,
+      totalAmount: calculatedTotal,
       // Pre-calculated folio summary (avoids client-side reduce on every render)
       folioBalance,
       folioTotalCharges: totalCharges,
@@ -424,9 +427,9 @@ export async function GET(request: NextRequest) {
       roomAssignments: booking.roomAssignments.map((assignment: any) => ({
         ...assignment,
         room: assignment.room ? {
-          ...assignment.room,
+          number: assignment.room.number,
           type: assignment.room.roomType?.name,
-          price: assignment.room.roomType?.baseRate
+          price: Number(assignment.room.roomType?.baseRate || 0)
         } : null
       }))
     }

@@ -257,7 +257,7 @@ export async function PATCH(
       }
 
       return b
-    })
+    }, { maxWait: 10000, timeout: 30000 })
     } catch (error: any) {
       if (error.message === 'IDEMPOTENCY_HIT') {
         // Safe return on idempotency replay

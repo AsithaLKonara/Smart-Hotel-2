@@ -15,7 +15,7 @@ export async function POST(req: Request) {
 
     const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       let defaultOutlet = await tx.pOSOutlet.findFirst({
-        where: effectivePropertyId && effectivePropertyId !== 'all' ? { propertyId: effectivePropertyId } : {}
+        where: effectivePropertyId && effectivePropertyId !== 'all' ? { propertyId: effectivePropertyId } : undefined
       });
       if (!defaultOutlet) {
         if (!effectivePropertyId || effectivePropertyId === 'all') {
@@ -163,6 +163,13 @@ export async function POST(req: Request) {
               where: { id: targetFolioId },
               data: { status: 'PAID' }
             });
+            
+            if (bookingId) {
+              await tx.booking.update({
+                where: { id: bookingId },
+                data: { paymentStatus: 'completed' }
+              });
+            }
           }
         }
       }

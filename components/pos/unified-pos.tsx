@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import Image from 'next/image'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -22,6 +22,7 @@ export default function UnifiedPOS({ role }: { role: string }) {
   const [categoryFilter, setCategoryFilter] = useState('All')
   const [showGuestSidebar, setShowGuestSidebar] = useState(false)
   const [showCartSidebar, setShowCartSidebar] = useState(false)
+  const [checkoutMode, setCheckoutMode] = useState(false)
 
   // Settlement Form State
   const [settleAmount, setSettleAmount] = useState<string>('')
@@ -57,6 +58,25 @@ export default function UnifiedPOS({ role }: { role: string }) {
 
   const INVENTORY = productsData?.products || []
   const bookings = bookingsData?.bookings || []
+
+  // Auto-select folio if redirecting from checkout
+  useEffect(() => {
+    if (typeof window !== 'undefined' && bookings.length > 0 && !selectedBooking) {
+      const params = new URLSearchParams(window.location.search)
+      const bookingId = params.get('bookingId')
+      const mode = params.get('mode')
+      if (bookingId) {
+        const b = bookings.find((bk: any) => bk.id === bookingId)
+        if (b) {
+          setSelectedBooking(b)
+          setActiveTab('folio')
+          if (mode === 'checkout') setCheckoutMode(true)
+          // Clean up URL to prevent re-triggering on normal navigation
+          window.history.replaceState({}, '', window.location.pathname)
+        }
+      }
+    }
+  }, [bookings, selectedBooking])
 
   // Keep selected booking reference updated after refetch
   const activeBooking = bookings.find((b: any) => b.id === selectedBooking?.id) || selectedBooking
@@ -246,6 +266,28 @@ export default function UnifiedPOS({ role }: { role: string }) {
         })
         setSettleAmount('')
         refetchBookings()
+
+        const newBalance = Math.max(0, folioOutstandingBalance - amountToPay)
+        if (checkoutMode && newBalance === 0) {
+          toast.loading("Balance settled! Finalizing checkout...", { id: 'checkout-toast' })
+          try {
+            const checkoutRes = await fetch(`/api/bookings/${activeBooking.id}`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json', 'x-property-id': activePropertyId || 'all' },
+              body: JSON.stringify({ status: 'CHECKED_OUT' })
+            })
+            if (checkoutRes.ok) {
+              toast.success("Room Checked Out Successfully!", { id: 'checkout-toast' })
+              window.location.href = '/admin/bookings'
+              return
+            } else {
+              toast.error("Checkout failed. Please finalize in Reservations.", { id: 'checkout-toast' })
+            }
+          } catch (e) {
+            toast.error("Network error during checkout.", { id: 'checkout-toast' })
+          }
+        }
+
         setPrintReceiptModal(true)
       } else {
         toast.error(data.error || "Failed to process folio settlement")
@@ -660,6 +702,11 @@ export default function UnifiedPOS({ role }: { role: string }) {
               </div>
             ) : (
               <div className="flex-1 flex flex-col overflow-hidden">
+                {checkoutMode && (
+                  <div className="bg-amber-500/20 text-amber-500 border-b border-amber-500/20 px-4 py-2 flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest">
+                    <Sparkles className="w-3.5 h-3.5" /> Checkout Settlement Mode
+                  </div>
+                )}
                 {/* Folio Summary Totals */}
                 <div className="p-4 bg-white/5 border-b border-white/10 grid grid-cols-3 gap-2 text-center">
                   <div className="bg-black/40 p-2.5 rounded-lg border border-white/5">

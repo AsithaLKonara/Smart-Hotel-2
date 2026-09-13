@@ -32,22 +32,39 @@ export default async function AdminBookingsPage() {
             select: { number: true, roomType: { select: { name: true, baseRate: true } } }
           }
         }
+      },
+      folios: {
+        include: {
+          lineItems: true
+        }
       }
     }
   })
 
   // Format payload to match client expectations
-  const formattedBookings = bookings.map((booking: any) => ({
-    ...booking,
-    roomAssignments: booking.roomAssignments.map((assignment: any) => ({
-      ...assignment,
-      room: assignment.room ? {
-        ...assignment.room,
-        type: assignment.room.roomType?.name,
-        price: assignment.room.roomType?.baseRate
-      } : null
-    }))
-  }))
+  const formattedBookings = bookings.map((booking: any) => {
+    // Calculate total folio charges (including POS) if folios exist, otherwise fallback to booking.totalAmount
+    let calculatedTotal = Number(booking.totalAmount || 0)
+    if (booking.folios && booking.folios.length > 0) {
+      calculatedTotal = booking.folios.reduce((folioSum: number, folio: any) => {
+        return folioSum + folio.lineItems.reduce((lineSum: number, item: any) => lineSum + Number(item.amount || 0), 0)
+      }, 0)
+    }
+
+    return {
+      ...booking,
+      totalAmount: calculatedTotal,
+      roomAssignments: booking.roomAssignments.map((assignment: any) => ({
+        ...assignment,
+        room: assignment.room ? {
+          number: assignment.room.number,
+          type: assignment.room.roomType?.name,
+          price: Number(assignment.room.roomType?.baseRate || 0)
+        } : null
+      })),
+      folios: undefined // Don't send heavy folio data to client
+    }
+  })
 
   return <BookingsClient initialBookings={formattedBookings as any} />
 }
