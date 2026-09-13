@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
@@ -45,6 +45,36 @@ export default function DashboardSidebar() {
   const toggleGroup = (group: string) => {
     setOpenGroups(prev => ({ ...prev, [group]: !prev[group] }))
   }
+
+  // Auto-scroll active item into view and ensure its group is open
+  useEffect(() => {
+    const activeItem = getNavigation().find(i => 
+      pathname === i.href || (i.name === 'Procurement' && pathname.startsWith('/admin/procurement'))
+    );
+    
+    if (activeItem && activeItem.group && !openGroups[activeItem.group]) {
+      setOpenGroups(prev => ({ ...prev, [activeItem.group!]: true }))
+    }
+    
+    // Scroll active item within the nav container only, preventing window scroll jumps
+    setTimeout(() => {
+      const activeEl = document.getElementById('active-sidebar-item');
+      const navEl = document.getElementById('sidebar-nav-container');
+      
+      if (activeEl && navEl) {
+        const navRect = navEl.getBoundingClientRect();
+        const activeRect = activeEl.getBoundingClientRect();
+        
+        // If element is not fully visible, scroll the container
+        if (activeRect.top < navRect.top || activeRect.bottom > navRect.bottom) {
+          navEl.scrollTo({
+            top: navEl.scrollTop + (activeRect.top - navRect.top) - (navRect.height / 2) + (activeRect.height / 2),
+            behavior: 'smooth'
+          });
+        }
+      }
+    }, 150);
+  }, [pathname]); // Exclude getNavigation and openGroups to prevent infinite loops
 
   const getNavigation = () => {
     const items: NavItem[] = [
@@ -170,7 +200,7 @@ export default function DashboardSidebar() {
         )}
       </div>
 
-      <nav className="flex-1 p-4 space-y-4 overflow-y-auto custom-scrollbar">
+      <nav id="sidebar-nav-container" className="flex-1 p-4 space-y-4 overflow-y-auto custom-scrollbar">
         {/* Ungrouped Links (Dashboard, Guest stuff) */}
         {ungroupedItems.length > 0 && (
           <div className="space-y-1">
@@ -180,7 +210,9 @@ export default function DashboardSidebar() {
               return (
                 <Link
                   key={item.name}
+                  id={isActive ? "active-sidebar-item" : undefined}
                   href={item.href}
+                  scroll={false}
                   onClick={closeMobileMenu}
                   className={cn(
                     "flex items-center space-x-3 px-3 py-2.5 rounded-xl transition-all duration-200 group relative",
@@ -217,7 +249,9 @@ export default function DashboardSidebar() {
                     return (
                       <Link
                         key={item.name}
+                        id={isActive ? "active-sidebar-item" : undefined}
                         href={item.href}
+                        scroll={false}
                         onClick={closeMobileMenu}
                         className={cn(
                           "flex items-center space-x-3 px-3 py-2 rounded-lg transition-all duration-200 group",
@@ -244,7 +278,9 @@ export default function DashboardSidebar() {
               return (
                 <Link
                   key={item.name}
+                  id={isActive ? "active-sidebar-item" : undefined}
                   href={item.href}
+                  scroll={false}
                   onClick={closeMobileMenu}
                   title={item.name}
                   className={cn(
