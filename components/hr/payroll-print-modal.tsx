@@ -172,7 +172,7 @@ export function PayrollPrintModal({ runId, open, onOpenChange }: PayrollPrintMod
           )}
 
           {!loading && !error && run && (
-            <div ref={printRef} className="print-container w-full h-full bg-white">
+            <div ref={printRef} className="print-section w-full bg-white text-black">
               <PayrollManifestTemplate run={run} />
             </div>
           )}

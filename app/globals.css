@@ -160,50 +160,46 @@
 /* Print Styles */
 @media print {
   @page {
-    size: 80mm auto;
-    margin: 0;
-  }
-  
-  body {
-    background-color: white !important;
+    size: A4 portrait;
+    margin: 12mm;
   }
 
-  /* Hide Next.js errors, iframes (chatbots), and explicitly hidden elements */
-  .hide-on-print,
-  nextjs-portal,
-  [data-nextjs-dialog-overlay],
-  iframe,
-  aside,
-  nav,
-  header {
+  html,
+  body {
+    background: #fff !important;
+    color: #000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Hide controls */
+  .print-hidden,
+  .print\:hidden {
     display: none !important;
   }
 
-  /* Hide everything else visually but keep layout flow for the target */
-  body * {
-    visibility: hidden;
+  /* Preserve table layout */
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
   }
 
-  /* Unhide the print section and its children */
-  .print-section, .print-section * {
-    visibility: visible;
+  thead {
+    display: table-header-group;
   }
 
-  /* Position the receipt at the top left of the thermal roll */
-  .print-section {
-    position: absolute !important;
-    left: 0 !important;
-    top: 0 !important;
-    width: 80mm !important;
-    margin: 0 !important;
-    padding: 10px !important;
-    background: white !important;
-    color: black !important;
-    box-shadow: none !important;
-    border: none !important;
+  tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 
-  .print-content {
-    overflow: visible !important;
+  td,
+  th {
+    color: #000 !important;
+  }
+
+  /* Avoid ugly page breaks */
+  .print-section > div {
+    break-inside: avoid;
   }
 }
