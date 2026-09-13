@@ -79,8 +79,9 @@ export async function POST(req: Request) {
     if (!event) return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     if (!roomType) return NextResponse.json({ error: 'Room type not found' }, { status: 404 });
 
-    if (event.propertyId !== propertyId || roomType.propertyId !== propertyId) {
-      return NextResponse.json({ error: 'Event and Room Type must belong to the active property' }, { status: 400 });
+    // Only enforce property isolation on the event (RoomType is a global catalog, not property-scoped)
+    if (event.propertyId !== propertyId) {
+      return NextResponse.json({ error: 'Event does not belong to the active property' }, { status: 400 });
     }
 
     const block = await prisma.groupBlock.create({

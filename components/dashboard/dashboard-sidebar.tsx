@@ -91,6 +91,7 @@ export default function DashboardSidebar() {
       { name: 'Preventative Schedules', href: '/admin/maintenance/schedules', icon: CalendarClock, roles: ['MAINTENANCE', 'MANAGER', 'SUPER_ADMIN'], group: 'Operations & Inventory' },
       { name: 'Inspection Logs', href: '/admin/maintenance/inspections', icon: ClipboardCheck, roles: ['MAINTENANCE', 'MANAGER', 'SUPER_ADMIN'], group: 'Operations & Inventory' },
       { name: 'Event Command', href: '/admin/events/dashboard', icon: CalendarDays, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Operations & Inventory' },
+      { name: 'Halls & Venues', href: '/admin/halls', icon: Building2, roles: ['MANAGER', 'SUPER_ADMIN', 'RECEPTIONIST'], group: 'Operations & Inventory' },
       { name: 'Master Inventory', href: '/admin/inventory', icon: Box, roles: ['MANAGER', 'SUPER_ADMIN', 'RECEPTIONIST', 'HOUSEKEEPING', 'MAINTENANCE', 'KITCHEN'], group: 'Operations & Inventory' },
       { name: 'Procurement', href: '/admin/procurement/orders', icon: FileCheck, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Operations & Inventory' },
       { name: 'Kitchen Menu', href: '/admin/menu', icon: UtensilsCrossed, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Operations & Inventory' },

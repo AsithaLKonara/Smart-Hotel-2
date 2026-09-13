@@ -462,17 +462,22 @@ model POSProduct {
 }
 
 model EventSpace {
-  id         String         @id @default(uuid())
-  name       String
-  capacity   Int
-  hourlyRate Decimal
-  dailyRate  Decimal
-  isActive   Boolean        @default(true)
-  propertyId String
-  createdAt  DateTime       @default(now())
-  updatedAt  DateTime       @updatedAt
-  property   Property       @relation(fields: [propertyId], references: [id])
-  bookings   EventBooking[]
+  id            String         @id @default(uuid())
+  name          String
+  description   String?
+  type          String         @default("HALL") // HALL | CONFERENCE_ROOM | BALLROOM | BOARDROOM | OUTDOOR
+  capacity      Int
+  floorNumber   Int?
+  hourlyRate    Decimal
+  dailyRate     Decimal
+  amenities     String[]       @default([])
+  images        String[]       @default([])
+  isActive      Boolean        @default(true)
+  propertyId    String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  property      Property       @relation(fields: [propertyId], references: [id])
+  bookings      EventBooking[]
   eventPackages EventPackage[]
 
   @@unique([propertyId, name])
@@ -517,18 +522,30 @@ model EventAttendee {
 }
 
 model EventBooking {
-  id        String          @id @default(uuid())
-  eventId   String
-  spaceId   String
-  startTime DateTime
-  endTime   DateTime
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
-  event     BanquetingEvent @relation(fields: [eventId], references: [id])
-  space     EventSpace      @relation(fields: [spaceId], references: [id])
+  id               String           @id @default(uuid())
+  confirmationCode String           @unique @default(cuid())
+  eventId          String?          // Optional — standalone hall booking has no event
+  spaceId          String
+  startTime        DateTime
+  endTime          DateTime
+  status           String           @default("CONFIRMED") // PENDING | CONFIRMED | CANCELLED | COMPLETED
+  // Contact info for standalone bookings
+  contactName      String?
+  contactEmail     String?
+  contactPhone     String?
+  purpose          String?          // Wedding, Conference, Birthday, etc.
+  guestCount       Int              @default(1)
+  totalAmount      Decimal          @default(0)
+  paymentStatus    String           @default("UNPAID") // UNPAID | PARTIAL | PAID
+  notes            String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  event            BanquetingEvent? @relation(fields: [eventId], references: [id])
+  space            EventSpace       @relation(fields: [spaceId], references: [id])
 
   @@index([eventId])
   @@index([spaceId])
+  @@index([status])
 }
 
 model GroupBlock {

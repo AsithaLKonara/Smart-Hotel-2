@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { logAction, AUDIT_ACTIONS } from '@/lib/audit'
 import { isDatabaseConfigured } from '@/lib/db-helpers'
 import { handleZodError } from '@/lib/api-utils'
+import { getEffectivePropertyId } from '@/lib/server-rbac'
 
 const inventorySchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -114,8 +115,14 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const validatedData = inventorySchema.parse(body)
 
+    const propertyId = await getEffectivePropertyId(request)
+    if (!propertyId || propertyId === 'all') {
+      return NextResponse.json({ error: 'Valid property context is required' }, { status: 400 })
+    }
+
     const inventory = await prisma.inventory.create({
       data: {
+        propertyId,
         name: validatedData.name,
         description: validatedData.description || '',
         category: validatedData.category,
