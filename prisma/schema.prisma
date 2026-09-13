@@ -473,6 +473,7 @@ model EventSpace {
   property   Property       @relation(fields: [propertyId], references: [id])
   bookings   EventBooking[]
 
+  @@unique([propertyId, name])
   @@index([propertyId])
 }
 
@@ -489,11 +490,27 @@ model BanquetingEvent {
   propertyId        String
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
-  property          Property       @relation(fields: [propertyId], references: [id])
+  property          Property         @relation(fields: [propertyId], references: [id])
   spaceBookings     EventBooking[]
   groupBlocks       GroupBlock[]
+  attendees         EventAttendee[]
 
   @@index([propertyId])
+}
+
+model EventAttendee {
+  id                  String          @id @default(uuid())
+  eventId             String
+  userId              String
+  attendees           Int             @default(1)
+  specialRequirements String?
+  createdAt           DateTime        @default(now())
+  
+  event               BanquetingEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user                User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+  @@index([userId])
 }
 
 model EventBooking {
@@ -559,6 +576,7 @@ model User {
   propertyId         String
   auditLogs          AuditLog[]
   guestBookings      Booking[]           @relation("PrimaryGuest")
+  eventAttendees     EventAttendee[]
   complaints         Complaint[]
   employee           Employee?
   feedback           Feedback[]

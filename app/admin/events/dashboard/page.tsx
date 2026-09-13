@@ -10,6 +10,7 @@ import { PremiumSpinner } from '@/components/ui/premium-spinner'
 import * as Dialog from '@radix-ui/react-dialog'
 import { CalendarDays, Users, MapPin, Plus, Hotel, BookOpen, Calculator, X, DollarSign, CheckCircle } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { useProperty } from '@/contexts/property-context'
 
 // ---- Shared Modal Shell ----
 function ModalShell({ open, onClose, title, children }: { open: boolean, onClose: () => void, title: string, children: React.ReactNode }) {
@@ -39,6 +40,7 @@ function FormField({ label, children }: { label: string, children: React.ReactNo
 }
 
 export default function EventsDashboard() {
+  const { activePropertyId } = useProperty()
   const [events, setEvents] = useState<any[]>([])
   const [activeTab, setActiveTab] = useState('EVENTS')
   const [spaces, setSpaces] = useState<any[]>([])
@@ -64,11 +66,12 @@ export default function EventsDashboard() {
   const fetchAll = async () => {
     setLoading(true)
     try {
+      const headers = { 'x-property-id': activePropertyId || '' }
       const [evRes, spRes, blRes, rtRes] = await Promise.all([
-        fetch('/api/admin/events'),
-        fetch('/api/admin/events/spaces'),
-        fetch('/api/admin/events/blocks'),
-        fetch('/api/room-types')
+        fetch('/api/admin/events', { headers }),
+        fetch('/api/admin/events/spaces', { headers }),
+        fetch('/api/admin/events/blocks', { headers }),
+        fetch('/api/room-types', { headers })
       ])
       const [evData, spData, blData, rtData] = await Promise.all([evRes.json(), spRes.json(), blRes.json(), rtRes.json()])
       setEvents(evData.data || evData.events || [])
@@ -80,7 +83,9 @@ export default function EventsDashboard() {
     }
   }
 
-  useEffect(() => { fetchAll() }, [])
+  useEffect(() => { 
+    if (activePropertyId) fetchAll() 
+  }, [activePropertyId])
 
   const handleGetQuote = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -88,7 +93,7 @@ export default function EventsDashboard() {
     try {
       const res = await fetch('/api/pricing/quote', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-property-id': activePropertyId || '' },
         body: JSON.stringify({ ...quoteForm, guests: parseInt(quoteForm.guests) })
       })
       const data = await res.json()
@@ -103,7 +108,7 @@ export default function EventsDashboard() {
     try {
       const res = await fetch('/api/events/book', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-property-id': activePropertyId || '' },
         body: JSON.stringify({ eventId: attendanceModal.id, userId: attendanceForm.userId, attendees: parseInt(attendanceForm.attendees) })
       })
       const data = await res.json()
@@ -121,7 +126,7 @@ export default function EventsDashboard() {
     try {
       const res = await fetch('/api/admin/events/spaces', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-property-id': activePropertyId || '' },
         body: JSON.stringify({ ...spaceForm, capacity: parseInt(spaceForm.capacity), hourlyRate: parseFloat(spaceForm.hourlyRate), dailyRate: parseFloat(spaceForm.dailyRate) })
       })
       if (res.ok) {
@@ -138,7 +143,7 @@ export default function EventsDashboard() {
     try {
       const res = await fetch('/api/admin/events/blocks', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-property-id': activePropertyId || '' },
         body: JSON.stringify({ ...blockForm, blockedCount: parseInt(blockForm.blockedCount), contractedRate: parseFloat(blockForm.contractedRate) })
       })
       if (res.ok) {
@@ -152,10 +157,15 @@ export default function EventsDashboard() {
 
   const handleCreateEvent = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!activePropertyId || activePropertyId === 'all') {
+      toast.error('You must select a specific property to create an event.')
+      return
+    }
+    
     try {
       const res = await fetch('/api/admin/events', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-property-id': activePropertyId || '' },
         body: JSON.stringify({
           ...eventForm,
           startDate: new Date(eventForm.startDate).toISOString(),

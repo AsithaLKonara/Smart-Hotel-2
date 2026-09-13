@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { z } from 'zod';
 import { handleZodError } from '@/lib/api-utils';
+import { getEffectivePropertyId } from '@/lib/server-rbac';
 
 export async function GET(req: Request) {
   try {
@@ -58,12 +59,29 @@ export async function POST(req: Request) {
 
     const json = await req.json();
     const result = createBlockSchema.safeParse(json);
-
     if (!result.success) {
       return handleZodError(result.error);
     }
 
     const { eventId, roomTypeId, blockedCount, contractedRate } = result.data;
+    
+    const propertyId = await getEffectivePropertyId(req);
+    if (!propertyId || propertyId === 'all') {
+      return NextResponse.json({ error: 'Valid property context is required' }, { status: 400 });
+    }
+
+    // Verify property isolation
+    const [event, roomType] = await Promise.all([
+      prisma.banquetingEvent.findUnique({ where: { id: eventId } }),
+      prisma.roomType.findUnique({ where: { id: roomTypeId } })
+    ]);
+
+    if (!event) return NextResponse.json({ error: 'Event not found' }, { status: 404 });
+    if (!roomType) return NextResponse.json({ error: 'Room type not found' }, { status: 404 });
+
+    if (event.propertyId !== propertyId || roomType.propertyId !== propertyId) {
+      return NextResponse.json({ error: 'Event and Room Type must belong to the active property' }, { status: 400 });
+    }
 
     const block = await prisma.groupBlock.create({
       data: {

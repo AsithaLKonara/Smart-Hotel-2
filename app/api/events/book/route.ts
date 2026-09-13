@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import prisma from '@/lib/prisma'
 import { z } from 'zod'
 import { handleZodError } from '@/lib/api-utils'
-
-const prisma = new PrismaClient()
 
 const EventBookingSchema = z.object({
   eventId: z.string().uuid(),
@@ -17,20 +15,30 @@ export async function POST(req: Request) {
     const body = await req.json()
     const validated = EventBookingSchema.parse(body)
 
-    // For this mock, we assume there's an Event model. Since it might not exist in the current schema,
-    // we will record this in the AuditLog and simulate success.
-    // In a real system, we would create an EventRegistration record.
+    // Fetch the event to ensure it exists and has capacity
+    const event = await prisma.banquetingEvent.findUnique({ 
+      where: { id: validated.eventId },
+      include: { attendees: true, spaceBookings: { include: { space: true } } }
+    });
 
-    await prisma.auditLog.create({
+    if (!event) {
+      return NextResponse.json({ error: 'Event not found' }, { status: 404 });
+    }
+
+    // Capacity validation
+    let currentAttendees = event.attendees.reduce((sum: number, a: any) => sum + a.attendees, 0);
+    let maxCapacity = event.spaceBookings[0]?.space?.capacity || event.expectedAttendees;
+
+    if (currentAttendees + validated.attendees > maxCapacity) {
+      return NextResponse.json({ error: 'Event capacity exceeded' }, { status: 400 });
+    }
+
+    await prisma.eventAttendee.create({
       data: {
-        action: 'EVENT_SPACE_BOOKED',
-        resource: 'EVENT',
-        resourceId: validated.eventId,
-        actor: validated.userId,
-        details: {
-          attendees: validated.attendees,
-          requirements: validated.specialRequirements || 'None'
-        }
+        eventId: validated.eventId,
+        userId: validated.userId,
+        attendees: validated.attendees,
+        specialRequirements: validated.specialRequirements || null
       }
     })
 
