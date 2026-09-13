@@ -17,10 +17,16 @@ const employeeSchema = z.object({
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
+    const propertyId = req.headers.get('x-property-id');
     const compact = searchParams.get('compact') === 'true';
+
+    const where = propertyId && propertyId !== 'all' 
+      ? { propertyId, status: { not: 'TERMINATED' } } 
+      : { status: { not: 'TERMINATED' } };
 
     if (compact) {
       const employees = await prisma.employee.findMany({
+        where,
         select: { id: true, firstName: true, lastName: true, department: true, baseSalary: true },
         orderBy: { firstName: 'asc' },
       });
@@ -32,6 +38,7 @@ export async function GET(req: Request) {
     const skip = (page - 1) * limit;
 
     const employees = await prisma.employee.findMany({
+      where,
       orderBy: { firstName: 'asc' },
       take: limit,
       skip,
@@ -45,6 +52,11 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
+    const propertyId = req.headers.get('x-property-id');
+    if (!propertyId || propertyId === 'all') {
+      return NextResponse.json({ error: 'Property ID is required' }, { status: 400 });
+    }
+
     const json = await req.json()
     const result = employeeSchema.safeParse(json)
     
@@ -63,6 +75,7 @@ export async function POST(req: Request) {
         position: data.position,
         baseSalary: data.baseSalary,
         hireDate: data.hireDate,
+        propertyId,
       },
     })
     return NextResponse.json(employee, { status: 201 })

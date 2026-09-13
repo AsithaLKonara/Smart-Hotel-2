@@ -10,6 +10,7 @@ import { PremiumSpinner } from '@/components/ui/premium-spinner'
 import * as Dialog from '@radix-ui/react-dialog'
 import { Plus, Search, Building2, Mail, Phone, MapPin, X, ShoppingCart } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { ProcurementNavigation } from '@/components/dashboard/admin/procurement-navigation'
 
 function ModalShell({ open, onClose, title, children }: { open: boolean; onClose: () => void; title: string; children: React.ReactNode }) {
   return (
@@ -67,9 +68,10 @@ export default function VendorsPage() {
   )
 
   return (
-    <AdminPageShell title="Vendors & Suppliers" subtitle="Manage procurement partners and supply chain contacts." onRefresh={fetchVendors}>
+    <AdminPageShell title="Vendors" subtitle="Manage your suppliers and vendors." onRefresh={fetchVendors}>
+      <ProcurementNavigation />
 
-      <div className="flex flex-col sm:flex-row gap-4 mb-8">
+      <div className="flex flex-col md:flex-row gap-4 mb-8">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50" />
           <Input placeholder="Search vendors..." value={search} onChange={e => setSearch(e.target.value)} className="pl-10 bg-white/5 border-white/10 text-white" />

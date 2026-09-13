@@ -8,8 +8,9 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { PremiumSpinner } from '@/components/ui/premium-spinner'
 import * as Dialog from '@radix-ui/react-dialog'
-import { Users, Mail, Phone, Briefcase, Plus, Search, X } from 'lucide-react'
+import { Search, Plus, Mail, Phone, Building2, MapPin, X, Briefcase, Calendar, Edit, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { useProperty } from '@/contexts/property-context'
 
 function ModalShell({ open, onClose, title, children }: { open: boolean, onClose: () => void, title: string, children: React.ReactNode }) {
   return (
@@ -41,6 +42,8 @@ export default function EmployeesPage() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [showModal, setShowModal] = useState(false)
+  const [editingEmployeeId, setEditingEmployeeId] = useState<string | null>(null)
+  const { activePropertyId } = useProperty()
 
   const [formData, setFormData] = useState({
     firstName: '', lastName: '', email: '', phone: '',
@@ -50,7 +53,9 @@ export default function EmployeesPage() {
   const fetchEmployees = async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/admin/hr/employees')
+      const res = await fetch('/api/admin/hr/employees', {
+        headers: { 'x-property-id': activePropertyId || '' }
+      })
       if (res.ok) setEmployees(await res.json())
     } catch (e) { console.error(e) }
     finally { setLoading(false) }
@@ -61,20 +66,63 @@ export default function EmployeesPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      const res = await fetch('/api/admin/hr/employees', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const isEditing = !!editingEmployeeId
+      const url = isEditing ? `/api/admin/hr/employees/${editingEmployeeId}` : '/api/admin/hr/employees'
+      const method = isEditing ? 'PUT' : 'POST'
+      
+      const res = await fetch(url, {
+        method,
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-property-id': activePropertyId || ''
+        },
         body: JSON.stringify({ ...formData, baseSalary: parseFloat(formData.baseSalary) })
       })
+      
       if (res.ok) {
-        toast.success("Employee added")
+        toast.success(isEditing ? "Employee updated" : "Employee added")
         setShowModal(false)
+        setEditingEmployeeId(null)
         setFormData({ firstName: '', lastName: '', email: '', phone: '', department: 'FRONT_DESK', position: '', baseSalary: '', hireDate: '' })
         fetchEmployees()
       } else {
-        toast.error("Failed to add employee")
+        toast.error(isEditing ? "Failed to update employee" : "Failed to add employee")
       }
     } catch (e) { toast.error("Error submitting form") }
+  }
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm("Are you sure you want to terminate this employee?")) return
+    try {
+      const res = await fetch(`/api/admin/hr/employees/${id}`, { method: 'DELETE' })
+      if (res.ok) {
+        toast.success("Employee terminated")
+        fetchEmployees()
+      } else {
+        toast.error("Failed to terminate employee")
+      }
+    } catch (e) { toast.error("Error terminating employee") }
+  }
+
+  const openEditModal = (emp: any) => {
+    setEditingEmployeeId(emp.id)
+    setFormData({
+      firstName: emp.firstName,
+      lastName: emp.lastName,
+      email: emp.email,
+      phone: emp.phone || '',
+      department: emp.department,
+      position: emp.position,
+      baseSalary: emp.baseSalary?.toString() || '',
+      hireDate: emp.hireDate ? new Date(emp.hireDate).toISOString().split('T')[0] : ''
+    })
+    setShowModal(true)
+  }
+
+  const handleOpenAddModal = () => {
+    setEditingEmployeeId(null)
+    setFormData({ firstName: '', lastName: '', email: '', phone: '', department: 'FRONT_DESK', position: '', baseSalary: '', hireDate: '' })
+    setShowModal(true)
   }
 
   const filtered = employees.filter(e =>
@@ -90,7 +138,7 @@ export default function EmployeesPage() {
           <Input placeholder="Search employees..." value={search} onChange={e => setSearch(e.target.value)}
             className="pl-10 bg-white/5 border-white/10 text-white" />
         </div>
-        <Button onClick={() => setShowModal(true)} className="bg-primary text-white">
+        <Button onClick={handleOpenAddModal} className="bg-primary text-white">
           <Plus className="w-4 h-4 mr-2" /> Add Employee
         </Button>
       </div>
@@ -109,6 +157,14 @@ export default function EmployeesPage() {
                   <div className="flex-1 min-w-0">
                     <h3 className="font-bold text-lg text-white truncate">{emp.firstName} {emp.lastName}</h3>
                     <p className="text-sm text-primary/80 font-medium truncate">{emp.position}</p>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Button variant="ghost" size="icon" onClick={() => openEditModal(emp)} className="h-8 w-8 text-white/40 hover:text-white">
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => handleDelete(emp.id)} className="h-8 w-8 text-white/40 hover:text-red-400">
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
                   </div>
                 </div>
                 <div className="mt-4 space-y-2">
@@ -140,7 +196,7 @@ export default function EmployeesPage() {
         </div>
       )}
 
-      <ModalShell open={showModal} onClose={() => setShowModal(false)} title="Add New Employee">
+      <ModalShell open={showModal} onClose={() => setShowModal(false)} title={editingEmployeeId ? "Edit Employee" : "Add New Employee"}>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -185,7 +241,7 @@ export default function EmployeesPage() {
           </div>
           <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
             <Button type="button" variant="ghost" onClick={() => setShowModal(false)}>Cancel</Button>
-            <Button type="submit" className="bg-primary text-white">Save Employee</Button>
+            <Button type="submit" className="bg-primary text-white">{editingEmployeeId ? 'Save Changes' : 'Save Employee'}</Button>
           </div>
         </form>
       </ModalShell>

@@ -8,6 +8,7 @@ import { PremiumSpinner } from '@/components/ui/premium-spinner'
 import * as Dialog from '@radix-ui/react-dialog'
 import { Plus, Clock, Calendar as CalendarIcon, X, AlertTriangle } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { useProperty } from '@/contexts/property-context'
 
 function ModalShell({ open, onClose, title, children }: { open: boolean, onClose: () => void, title: string, children: React.ReactNode }) {
   return (
@@ -29,7 +30,9 @@ function ModalShell({ open, onClose, title, children }: { open: boolean, onClose
 export default function ShiftsPage() {
   const [shifts, setShifts] = useState<any[]>([])
   const [employees, setEmployees] = useState<any[]>([])
+  const [activeAttendances, setActiveAttendances] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const { activePropertyId } = useProperty()
   const [showShiftModal, setShowShiftModal] = useState(false)
   const [showClockOutModal, setShowClockOutModal] = useState(false)
   const [clockOutAttId, setClockOutAttId] = useState('')
@@ -40,26 +43,33 @@ export default function ShiftsPage() {
   })
 
   const fetchData = async () => {
+    if (!activePropertyId) return
     setLoading(true)
     try {
-      const [sr, er] = await Promise.all([
-        fetch('/api/admin/hr/shifts'),
-        fetch('/api/admin/hr/employees')
+      const headers = { 'x-property-id': activePropertyId }
+      const [sr, er, ar] = await Promise.all([
+        fetch('/api/admin/hr/shifts', { headers }),
+        fetch('/api/admin/hr/employees', { headers }),
+        fetch('/api/admin/hr/attendance/active', { headers })
       ])
       if (sr.ok) setShifts(await sr.json())
       if (er.ok) setEmployees(await er.json())
+      if (ar.ok) setActiveAttendances(await ar.json())
     } catch (e) { console.error(e) }
     finally { setLoading(false) }
   }
 
-  useEffect(() => { fetchData() }, [])
+  useEffect(() => { fetchData() }, [activePropertyId])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
       const res = await fetch('/api/admin/hr/shifts', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-property-id': activePropertyId || ''
+        },
         body: JSON.stringify(formData)
       })
       if (res.ok) {
@@ -204,10 +214,16 @@ export default function ShiftsPage() {
         </div>
         <form onSubmit={handleForceClockOut} className="space-y-4">
           <div>
-            <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-2 block">Attendance Record ID</label>
-            <Input required value={clockOutAttId} onChange={e => setClockOutAttId(e.target.value)}
-              placeholder="Paste the attendance record UUID"
-              className="bg-[#1a1a24] border-white/10 text-white font-mono text-sm" />
+            <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-2 block">Select Employee to Clock-Out</label>
+            <select required value={clockOutAttId} onChange={e => setClockOutAttId(e.target.value)}
+              className="w-full bg-[#1a1a24] border border-white/10 rounded-lg p-2.5 text-sm text-white">
+              <option value="">Select an active shift...</option>
+              {activeAttendances.map(att => (
+                <option key={att.id} value={att.id}>
+                  {att.employee.firstName} {att.employee.lastName} ({att.employee.department}) - Clocked In: {new Date(att.clockIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </option>
+              ))}
+            </select>
           </div>
           <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
             <Button type="button" variant="ghost" onClick={() => setShowClockOutModal(false)}>Cancel</Button>

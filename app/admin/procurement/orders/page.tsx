@@ -8,6 +8,7 @@ import { PremiumSpinner } from '@/components/ui/premium-spinner'
 import * as Dialog from '@radix-ui/react-dialog'
 import { Plus, FileText, CheckCircle2, Clock, Package, Truck, X } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { ProcurementNavigation } from '@/components/dashboard/admin/procurement-navigation'
 
 function ModalShell({ open, onClose, title, children }: { open: boolean; onClose: () => void; title: string; children: React.ReactNode }) {
   return (
@@ -31,6 +32,7 @@ const STATUS_CONFIG: Record<string, { label: string; className: string; icon: Re
   PENDING_APPROVAL: { label: 'Pending',   className: 'bg-amber-500/20 text-amber-400',   icon: <Clock className="w-3 h-3" /> },
   DELIVERED:        { label: 'Delivered', className: 'bg-blue-500/20 text-blue-400',      icon: <Package className="w-3 h-3" /> },
   SHIPPED:          { label: 'Shipped',   className: 'bg-violet-500/20 text-violet-400',  icon: <Truck className="w-3 h-3" /> },
+  REJECTED:         { label: 'Rejected',  className: 'bg-red-500/20 text-red-400',        icon: <X className="w-3 h-3" /> },
 }
 
 export default function PurchaseOrdersPage() {
@@ -61,7 +63,10 @@ export default function PurchaseOrdersPage() {
         const payload = await or.json()
         setOrders(payload.data || payload) 
       }
-      if (vr.ok) setVendors(await vr.json())
+      if (vr.ok) {
+        const vPayload = await vr.json()
+        setVendors(Array.isArray(vPayload) ? vPayload : (vPayload.data || []))
+      }
       if (ir.ok) setItems(await ir.json())
     } catch (e) { console.error(e) }
     finally { setLoading(false) }
@@ -137,6 +142,23 @@ export default function PurchaseOrdersPage() {
     } catch { toast.error("Error receiving goods") }
   }
 
+  const updateOrderStatus = async (orderId: string, status: string) => {
+    try {
+      const res = await fetch(`/api/admin/procurement/orders/${orderId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      })
+      if (res.ok) {
+        toast.success(`Order marked as ${status}`)
+        fetchData()
+      } else {
+        const data = await res.json()
+        toast.error(data.error || "Failed to update order status")
+      }
+    } catch { toast.error("Error updating order status") }
+  }
+
   const handleRegisterInvoice = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
@@ -165,6 +187,7 @@ export default function PurchaseOrdersPage() {
 
   return (
     <AdminPageShell title="Purchase Orders" subtitle="Draft and track supplier purchase orders." onRefresh={fetchData}>
+      <ProcurementNavigation />
 
       <div className="flex justify-end mb-8">
         <Button onClick={() => setShowModal(true)} className="bg-primary text-white">
@@ -204,7 +227,7 @@ export default function PurchaseOrdersPage() {
                     <td className="p-4 text-white/70">{order.vendor?.name}</td>
                     <td className="p-4 text-white/50 text-xs">{new Date(order.createdAt).toLocaleDateString()}</td>
                     <td className="p-4 text-white/50 text-xs">{order.expectedDate ? new Date(order.expectedDate).toLocaleDateString() : '—'}</td>
-                    <td className="p-4 font-bold text-right text-emerald-400">${order.totalAmount.toFixed(2)}</td>
+                    <td className="p-4 font-bold text-right text-emerald-400">${Number(order.totalAmount).toFixed(2)}</td>
                     <td className="p-4">
                       {st ? (
                         <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded ${st.className}`}>
@@ -215,6 +238,16 @@ export default function PurchaseOrdersPage() {
                       )}
                     </td>
                     <td className="p-4 text-right">
+                      {order.status === 'PENDING_APPROVAL' && (
+                        <div className="flex justify-end gap-2">
+                          <Button variant="ghost" size="sm" onClick={() => updateOrderStatus(order.id, 'APPROVED')} className="text-xs h-7 text-emerald-400 hover:text-emerald-300">
+                            Approve
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => updateOrderStatus(order.id, 'REJECTED')} className="text-xs h-7 text-red-400 hover:text-red-300">
+                            Reject
+                          </Button>
+                        </div>
+                      )}
                       {(order.status === 'APPROVED' || order.status === 'SHIPPED') && (
                         <Button variant="ghost" size="sm" onClick={() => setReceiveModal(order)} className="text-xs h-7 text-blue-400 hover:text-blue-300">
                           Receive Goods

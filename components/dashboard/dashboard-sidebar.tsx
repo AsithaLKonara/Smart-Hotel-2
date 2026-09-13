@@ -176,7 +176,7 @@ export default function DashboardSidebar() {
           <div className="space-y-1">
             {ungroupedItems.map((item) => {
               const Icon = item.icon
-              const isActive = pathname === item.href
+              const isActive = pathname === item.href || (item.name === 'Procurement' && pathname.startsWith('/admin/procurement'))
               return (
                 <Link
                   key={item.name}
@@ -213,7 +213,7 @@ export default function DashboardSidebar() {
                 <div className="space-y-1 pl-2 border-l border-white/5 ml-4">
                   {items.map((item) => {
                     const Icon = item.icon
-                    const isActive = pathname === item.href
+                    const isActive = pathname === item.href || (item.name === 'Procurement' && pathname.startsWith('/admin/procurement'))
                     return (
                       <Link
                         key={item.name}
@@ -240,7 +240,7 @@ export default function DashboardSidebar() {
           <div key={groupName} className="space-y-1 pt-2 border-t border-white/5">
             {groupedItems[groupName].map((item) => {
               const Icon = item.icon
-              const isActive = pathname === item.href
+              const isActive = pathname === item.href || (item.name === 'Procurement' && pathname.startsWith('/admin/procurement'))
               return (
                 <Link
                   key={item.name}

@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Loader2, Plus, Package, AlertTriangle } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { AdminPageShell } from '@/components/dashboard/admin/admin-page-shell'
+import { ProcurementNavigation } from '@/components/dashboard/admin/procurement-navigation'
 
 export default function ItemsPage() {
   const [items, setItems] = useState<any[]>([])
@@ -68,7 +70,9 @@ export default function ItemsPage() {
   if (loading) return <div className="flex justify-center p-12"><Loader2 className="animate-spin w-8 h-8" /></div>
 
   return (
-    <div className="p-6 text-white max-w-6xl mx-auto">
+    <AdminPageShell title="Catalog Items" subtitle="Manage the global catalog of procurement items." onRefresh={fetchData}>
+      <ProcurementNavigation />
+
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold font-serif">Master Inventory</h1>
@@ -169,7 +173,7 @@ export default function ItemsPage() {
                   </td>
                   <td className="p-4"><span className="px-2 py-1 bg-white/5 rounded text-xs">{item.category}</span></td>
                   <td className="p-4 text-slate-300">{item.unit}</td>
-                  <td className="p-4 text-slate-300">${item.unitPrice.toFixed(2)}</td>
+                  <td className="p-4 text-slate-300">${Number(item.unitPrice).toFixed(2)}</td>
                   <td className="p-4 text-slate-300">{item.vendor?.name || '-'}</td>
                   <td className="p-4 font-bold">{totalStock}</td>
                   <td className="p-4">
@@ -190,6 +194,6 @@ export default function ItemsPage() {
           <div className="p-12 text-center text-slate-500">No items in inventory.</div>
         )}
       </div>
-    </div>
+    </AdminPageShell>
   )
 }
