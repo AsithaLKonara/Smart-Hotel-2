@@ -10,7 +10,7 @@ export async function GET(req: Request) {
     }
 
     const facilities = await prisma.resortFacility.findMany({
-        where: { propertyId },
+        where: propertyId && propertyId !== 'all' ? { propertyId } : undefined,
         include: {
             bookings: {
                 include: { guest: { select: { name: true } } },
@@ -35,7 +35,9 @@ export async function POST(req: Request) {
 
     // Validate facility belongs to this property
     const facility = await prisma.resortFacility.findFirst({
-        where: { id: data.facilityId, propertyId }
+        where: propertyId && propertyId !== 'all' 
+          ? { id: data.facilityId, propertyId } 
+          : { id: data.facilityId }
     })
     if (!facility) {
         return NextResponse.json({ error: 'Facility not found in active property' }, { status: 404 })

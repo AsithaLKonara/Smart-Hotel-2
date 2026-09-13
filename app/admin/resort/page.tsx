@@ -7,8 +7,10 @@ import { Input } from '@/components/ui/input'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Loader2, Calendar, MapPin, Clock, User, Plus, X, Sparkles } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { useProperty } from '@/contexts/property-context'
 
 export default function ResortPage() {
+  const { activePropertyId } = useProperty()
   const [facilities, setFacilities] = useState<any[]>([])
   const [guests, setGuests] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -27,11 +29,15 @@ export default function ResortPage() {
   useEffect(() => {
     fetchData()
     fetchGuests()
-  }, [])
+  }, [activePropertyId])
 
   const fetchData = async () => {
     try {
-      const res = await fetch('/api/admin/resort')
+      const res = await fetch('/api/admin/resort', {
+        headers: {
+          'x-property-id': activePropertyId || 'all'
+        }
+      })
       const data = await res.json()
       if (res.ok && Array.isArray(data)) {
         setFacilities(data)
@@ -48,7 +54,11 @@ export default function ResortPage() {
 
   const fetchGuests = async () => {
     try {
-      const res = await fetch('/api/crm/guests')
+      const res = await fetch('/api/crm/guests', {
+        headers: {
+          'x-property-id': activePropertyId || 'all'
+        }
+      })
       if (res.ok) {
         const data = await res.json()
         setGuests(data)
@@ -108,7 +118,10 @@ export default function ResortPage() {
     try {
       const res = await fetch('/api/admin/resort', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-property-id': activePropertyId || 'all'
+        },
         body: JSON.stringify({
           facilityId: formData.facilityId,
           guestId: formData.guestId,
