@@ -86,17 +86,23 @@ export async function POST(req: Request) {
           // Activate POS Recipe Stock Depletion & Cost of Goods Integration
           const invItem = await tx.inventoryItem.findFirst({
             where: { OR: [{ name: item.name }, { sku: item.sku || item.id }] },
-            include: { stocks: true }
+            include: { 
+              stocks: effectivePropertyId && effectivePropertyId !== 'all' ? {
+                where: { propertyId: effectivePropertyId }
+              } : true 
+            }
           });
           if (invItem && invItem.stocks && invItem.stocks.length > 0) {
-            const primaryStock = invItem.stocks[0];
+            // Find POS stock or fallback to Main Storage
+            const posStock = invItem.stocks.find(s => s.location === 'POS') || invItem.stocks[0];
             await tx.inventoryStock.update({
-              where: { id: primaryStock.id },
+              where: { id: posStock.id },
               data: { quantity: { decrement: item.quantity }, lastCountedAt: new Date() }
             });
             await tx.inventoryMovement.create({
               data: {
                 itemId: invItem.id,
+                propertyId: posStock.propertyId,
                 type: 'POS_CONSUMPTION',
                 quantity: -Number(item.quantity || 1),
                 notes: `Consumed via POS Order #${order.id.substring(0, 8)} (${item.name} x${item.quantity})`

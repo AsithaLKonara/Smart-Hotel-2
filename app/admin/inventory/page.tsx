@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import { useProperty } from '@/contexts/property-context'
 import { canAccessManagerFeatures } from '@/lib/rbac-helpers'
 import { Plus, Edit, Trash2, Search, Package, AlertTriangle, CheckCircle, Loader2, Save, X, SlidersHorizontal } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -23,10 +24,12 @@ interface InventoryItem {
   unit: string
   minQuantity: number
   status: 'IN_STOCK' | 'LOW_STOCK' | 'OUT_OF_STOCK' | 'DISCONTINUED'
+  stocks?: any[]
 }
 
 export default function AdminInventoryPage() {
   const { data: session, status } = useSession()
+  const { activePropertyId } = useProperty()
   const router = useRouter()
   const [items, setItems] = useState<InventoryItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -54,12 +57,16 @@ export default function AdminInventoryPage() {
     
 
 
-    fetchInventory()
-  }, [session, status]) // eslint-disable-line react-hooks/exhaustive-deps
+    if (activePropertyId) {
+      fetchInventory()
+    }
+  }, [session, status, activePropertyId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchInventory = async () => {
     try {
-      const response = await fetch('/api/inventory')
+      const response = await fetch('/api/inventory', {
+        headers: { 'x-property-id': activePropertyId || '' }
+      })
       if (!response.ok) throw new Error('Failed to fetch inventory')
       const data = await response.json()
       // API returns { items: [...] } but we need an array
@@ -76,23 +83,31 @@ export default function AdminInventoryPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
+    if (activePropertyId === 'all') {
+      toast.error('Please select a specific property to add inventory')
+      return
+    }
+
     try {
       const itemData = {
         name: formData.name,
         description: formData.description || undefined,
         category: formData.category,
-        quantity: parseInt(formData.quantity),
+        quantity: parseInt(formData.quantity) || 0,
         unit: formData.unit,
-        minQuantity: parseInt(formData.minQuantity),
+        minQuantity: parseInt(formData.minQuantity) || 0,
         status: formData.status
       }
 
       const url = editingItem ? `/api/inventory/${editingItem.id}` : '/api/inventory'
-      const method = editingItem ? 'PATCH' : 'POST'
+      const method = editingItem ? 'PUT' : 'POST'
 
       const response = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-property-id': activePropertyId || ''
+        },
         body: JSON.stringify(itemData)
       })
 
@@ -128,7 +143,8 @@ export default function AdminInventoryPage() {
 
     try {
       const response = await fetch(`/api/inventory/${itemId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: { 'x-property-id': activePropertyId || '' }
       })
 
       if (!response.ok) throw new Error('Failed to delete item')
@@ -313,6 +329,10 @@ export default function AdminInventoryPage() {
 
         <Button
           onClick={() => {
+            if (activePropertyId === 'all') {
+              toast.error('Please select a specific property to add inventory')
+              return
+            }
             setEditingItem(null)
             resetForm()
             setShowModal(true)
@@ -385,13 +405,17 @@ export default function AdminInventoryPage() {
                           <Trash2 className="w-4 h-4" />
                         </Button>
                         <Button
+                          variant="ghost"
                           size="sm"
-                          variant="outline"
                           onClick={() => {
                             setAdjustModal(item)
-                            setAdjustForm({ newQuantity: String(item.quantity), location: 'Storeroom A', reason: 'Manual Count' })
+                            setAdjustForm({ 
+                              newQuantity: item.quantity.toString(), 
+                              location: item.stocks && item.stocks.length > 0 ? item.stocks[0].location : 'Main Storage', 
+                              reason: 'Manual Count' 
+                            })
                           }}
-                          title="Adjust Stock"
+                          className="text-white hover:text-white"
                         >
                           <SlidersHorizontal className="w-4 h-4" />
                         </Button>
@@ -494,10 +518,12 @@ export default function AdminInventoryPage() {
                       type="number"
                       value={formData.quantity}
                       onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
-                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
+                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
                       required
                       min="0"
+                      disabled={!!editingItem}
                     />
+                    {!!editingItem && <p className="text-xs text-white/50 mt-1">Use the Adjust Stock button to modify quantities.</p>}
                   </div>
 
                   <div>
@@ -569,11 +595,18 @@ export default function AdminInventoryPage() {
             <form onSubmit={async (e) => {
               e.preventDefault()
               if (!adjustModal) return
+              if (activePropertyId === 'all') {
+                toast.error('Please select a specific property')
+                return
+              }
               setSubmittingAdjust(true)
               try {
                 const res = await fetch(`/api/inventory/${adjustModal.id}/adjust`, {
                   method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
+                  headers: { 
+                    'Content-Type': 'application/json',
+                    'x-property-id': activePropertyId || ''
+                  },
                   body: JSON.stringify({
                     location: adjustForm.location,
                     newQuantity: parseInt(adjustForm.newQuantity),
@@ -600,8 +633,30 @@ export default function AdminInventoryPage() {
               </div>
               <div>
                 <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-2 block">Location</label>
-                <Input value={adjustForm.location} onChange={e => setAdjustForm({ ...adjustForm, location: e.target.value })}
-                  className="bg-[#1a1a24] border-white/10 text-white" placeholder="e.g. Storeroom A" />
+                {adjustModal?.stocks && adjustModal.stocks.length > 0 ? (
+                  <select 
+                    value={adjustForm.location} 
+                    onChange={e => setAdjustForm({ ...adjustForm, location: e.target.value })}
+                    className="w-full bg-[#1a1a24] border-white/10 text-white px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
+                  >
+                    {adjustModal.stocks.map((stock: any) => (
+                      <option key={stock.id} value={stock.location}>{stock.location} (Current: {stock.quantity})</option>
+                    ))}
+                    <option value="New Location...">+ Add New Location</option>
+                  </select>
+                ) : (
+                  <Input value={adjustForm.location} onChange={e => setAdjustForm({ ...adjustForm, location: e.target.value })}
+                    className="bg-[#1a1a24] border-white/10 text-white" placeholder="e.g. Main Storage" />
+                )}
+                {adjustForm.location === 'New Location...' && (
+                  <Input 
+                    value=""
+                    onChange={e => setAdjustForm({ ...adjustForm, location: e.target.value })}
+                    className="bg-[#1a1a24] border-white/10 text-white mt-2" 
+                    placeholder="Type new location name" 
+                    autoFocus
+                  />
+                )}
               </div>
               <div>
                 <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-2 block">Reason</label>

@@ -10,22 +10,22 @@ datasource db {
 }
 
 model RoomType {
-  id               String       @id @default(uuid())
-  name             String       @unique
+  id               String         @id @default(uuid())
+  name             String         @unique
   description      String
   baseRate         Decimal
-  capacity         Int          @default(2)
+  capacity         Int            @default(2)
   amenities        String[]
   images           String[]
-  totalRooms       Int          @default(0)
+  totalRooms       Int            @default(0)
   otaMappingId     String?
-  minLengthOfStay  Int          @default(1)
-  maxLengthOfStay  Int          @default(30)
-  closeToArrival   Boolean      @default(false)
-  closeToDeparture Boolean      @default(false)
-  nonRefundable    Boolean      @default(false)
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
+  minLengthOfStay  Int            @default(1)
+  maxLengthOfStay  Int            @default(30)
+  closeToArrival   Boolean        @default(false)
+  closeToDeparture Boolean        @default(false)
+  nonRefundable    Boolean        @default(false)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
   groupBlocks      GroupBlock[]
   ratePlans        RatePlan[]
   rooms            Room[]
@@ -485,19 +485,19 @@ model EventSpace {
 }
 
 model BanquetingEvent {
-  id                String         @id @default(uuid())
+  id                String          @id @default(uuid())
   name              String
   type              String
   status            String
-  startDate         DateTime       @db.Date
-  endDate           DateTime       @db.Date
+  startDate         DateTime        @db.Date
+  endDate           DateTime        @db.Date
   expectedAttendees Int
   organizerName     String
   organizerEmail    String?
   propertyId        String
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
-  property          Property         @relation(fields: [propertyId], references: [id])
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  property          Property        @relation(fields: [propertyId], references: [id])
   spaceBookings     EventBooking[]
   groupBlocks       GroupBlock[]
   attendees         EventAttendee[]
@@ -507,15 +507,15 @@ model BanquetingEvent {
 }
 
 model EventAttendee {
-  id                  String          @id @default(uuid())
+  id                  String   @id @default(uuid())
   eventId             String
   userId              String
-  attendees           Int             @default(1)
+  attendees           Int      @default(1)
   specialRequirements String?
-  createdAt           DateTime        @default(now())
-  
-  event               BanquetingEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  user                User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt           DateTime @default(now())
+
+  event BanquetingEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user  User            @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([eventId])
   @@index([userId])
@@ -524,7 +524,7 @@ model EventAttendee {
 model EventBooking {
   id               String           @id @default(uuid())
   confirmationCode String           @unique @default(cuid())
-  eventId          String?          // Optional — standalone hall booking has no event
+  eventId          String? // Optional — standalone hall booking has no event
   spaceId          String
   startTime        DateTime
   endTime          DateTime
@@ -533,7 +533,7 @@ model EventBooking {
   contactName      String?
   contactEmail     String?
   contactPhone     String?
-  purpose          String?          // Wedding, Conference, Birthday, etc.
+  purpose          String? // Wedding, Conference, Birthday, etc.
   guestCount       Int              @default(1)
   totalAmount      Decimal          @default(0)
   paymentStatus    String           @default("UNPAID") // UNPAID | PARTIAL | PAID
@@ -565,21 +565,21 @@ model GroupBlock {
 }
 
 model EventPackage {
-  id              String       @id @default(uuid())
+  id              String   @id @default(uuid())
   propertyId      String
   name            String
   description     String?
-  pricePerPax     Decimal      @default(0)
-  flatFee         Decimal      @default(0)
+  pricePerPax     Decimal  @default(0)
+  flatFee         Decimal  @default(0)
   includesSpaceId String?
   includesRoomId  String?
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  property        Property     @relation(fields: [propertyId], references: [id])
-  space           EventSpace?  @relation(fields: [includesSpaceId], references: [id])
-  roomType        RoomType?    @relation(fields: [includesRoomId], references: [id])
-  beos            BEO[]
+  property Property    @relation(fields: [propertyId], references: [id])
+  space    EventSpace? @relation(fields: [includesSpaceId], references: [id])
+  roomType RoomType?   @relation(fields: [includesRoomId], references: [id])
+  beos     BEO[]
 
   @@index([propertyId])
   @@index([includesSpaceId])
@@ -587,19 +587,19 @@ model EventPackage {
 }
 
 model BEO {
-  id                  String           @id @default(uuid())
-  eventId             String           @unique
-  packageId           String?
-  guaranteedPax       Int              @default(0)
-  agreedPricePerPax   Decimal          @default(0)
-  agreedHallFee       Decimal          @default(0)
-  totalAmount         Decimal          @default(0)
-  status              String           @default("DRAFT")
-  createdAt           DateTime         @default(now())
-  updatedAt           DateTime         @updatedAt
-  
-  event               BanquetingEvent  @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  package             EventPackage?    @relation(fields: [packageId], references: [id])
+  id                String   @id @default(uuid())
+  eventId           String   @unique
+  packageId         String?
+  guaranteedPax     Int      @default(0)
+  agreedPricePerPax Decimal  @default(0)
+  agreedHallFee     Decimal  @default(0)
+  totalAmount       Decimal  @default(0)
+  status            String   @default("DRAFT")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  event   BanquetingEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  package EventPackage?   @relation(fields: [packageId], references: [id])
 
   @@index([packageId])
 }
@@ -845,7 +845,7 @@ model RoomMapping {
   syncEnabled           Boolean       @default(true)
   channelConfigId       String
   channelConfig         ChannelConfig @relation(fields: [channelConfigId], references: [id], onDelete: Cascade)
-  
+
   @@unique([channelConfigId, otaRoomTypeId])
 }
 
@@ -1088,14 +1088,16 @@ model InventoryItem {
 model InventoryStock {
   id            String        @id @default(uuid())
   itemId        String
+  propertyId    String
   location      String
   quantity      Int           @default(0)
   lastCountedAt DateTime      @default(now())
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
   item          InventoryItem @relation(fields: [itemId], references: [id])
+  property      Property      @relation(fields: [propertyId], references: [id])
 
-  @@unique([itemId, location])
+  @@unique([itemId, propertyId, location])
 }
 
 model PurchaseOrder {
@@ -1128,13 +1130,15 @@ model PurchaseOrderItem {
 }
 
 model InventoryMovement {
-  id        String        @id @default(uuid())
-  itemId    String
-  type      String
-  quantity  Int
-  notes     String?
-  createdAt DateTime      @default(now())
-  item      InventoryItem @relation(fields: [itemId], references: [id])
+  id         String        @id @default(uuid())
+  itemId     String
+  propertyId String
+  type       String
+  quantity   Int
+  notes      String?
+  createdAt  DateTime      @default(now())
+  item       InventoryItem @relation(fields: [itemId], references: [id])
+  property   Property      @relation(fields: [propertyId], references: [id])
 }
 
 model GoodsReceipt {
@@ -1310,17 +1314,17 @@ model InspectionLog {
 }
 
 model MaintenanceWorkOrder {
-  id        String   @id @default(uuid())
-  roomId    String?
-  assetId   String?
-  issue     String
-  status    String   @default("OPEN")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String   @id @default(uuid())
+  roomId     String?
+  assetId    String?
+  issue      String
+  status     String   @default("OPEN")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
   propertyId String
-  property  Property @relation(fields: [propertyId], references: [id])
-  asset     Asset?   @relation(fields: [assetId], references: [id])
-  room      Room?    @relation(fields: [roomId], references: [id])
+  property   Property @relation(fields: [propertyId], references: [id])
+  asset      Asset?   @relation(fields: [assetId], references: [id])
+  room       Room?    @relation(fields: [roomId], references: [id])
 }
 
 model OutOfOrderRecord {
@@ -1334,27 +1338,27 @@ model OutOfOrderRecord {
 }
 
 model Property {
-  id           String    @id @default(uuid())
-  name         String
-  code         String    @unique
-  address      String
-  city         String
-  country      String
-  timezone     String    @default("UTC")
-  businessDate DateTime  @default(now()) @db.Date
-  totalRooms   Int       @default(0)
-  status       String    @default("ACTIVE")
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  bookings         Booking[]
-  folios           Folio[]
-  rooms            Room[]
-  tasks            Task[]
-  users            User[]
-  employees        Employee[]
-  posOutlets       POSOutlet[]
-  eventSpaces      EventSpace[]
-  banquetingEvents BanquetingEvent[]
+  id                    String                 @id @default(uuid())
+  name                  String
+  code                  String                 @unique
+  address               String
+  city                  String
+  country               String
+  timezone              String                 @default("UTC")
+  businessDate          DateTime               @default(now()) @db.Date
+  totalRooms            Int                    @default(0)
+  status                String                 @default("ACTIVE")
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  bookings              Booking[]
+  folios                Folio[]
+  rooms                 Room[]
+  tasks                 Task[]
+  users                 User[]
+  employees             Employee[]
+  posOutlets            POSOutlet[]
+  eventSpaces           EventSpace[]
+  banquetingEvents      BanquetingEvent[]
   galleries             Gallery[]
   inventory             Inventory[]
   resortFacilities      ResortFacility[]
@@ -1363,6 +1367,8 @@ model Property {
   maintenanceWorkOrders MaintenanceWorkOrder[]
   inspectionLogs        InspectionLog[]
   eventPackages         EventPackage[]
+  InventoryStock        InventoryStock[]
+  InventoryMovement     InventoryMovement[]
 }
 
 model GuestConversation {

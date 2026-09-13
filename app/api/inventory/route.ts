@@ -15,6 +15,7 @@ const inventorySchema = z.object({
   unit: z.string().min(1, 'Unit is required'),
   minQuantity: z.number().int().min(0, 'Minimum quantity must be non-negative').default(0),
   status: z.enum(['IN_STOCK', 'LOW_STOCK', 'OUT_OF_STOCK', 'DISCONTINUED']).default('IN_STOCK'),
+  location: z.string().optional(),
 })
 
 export async function GET(request: NextRequest) {
@@ -50,22 +51,32 @@ export async function GET(request: NextRequest) {
       whereClause.status = status
     }
 
+    const propertyId = await getEffectivePropertyId(request)
+    
+    if (propertyId && propertyId !== 'all') {
+      whereClause.stocks = {
+        some: { propertyId }
+      }
+    }
+    
     const items = await prisma.inventoryItem.findMany({
       where: whereClause,
       include: {
-        movements: true
+        stocks: propertyId && propertyId !== 'all' ? {
+          where: { propertyId }
+        } : true,
       },
       orderBy: {
         name: 'asc'
       }
     })
 
-    // Compute balance from movements
+    // Compute balance from property stock
     const serializedInventory = items.map((item: any) => {
+      // If we have a propertyId, we sum up stock for that property, otherwise sum all stocks
       let balance = 0;
-      item.movements.forEach((m: any) => {
-        if (m.type === 'RECEIPT') balance += m.quantity;
-        else if (m.type === 'CONSUMPTION') balance -= m.quantity;
+      item.stocks.forEach((s: any) => {
+        balance += s.quantity;
       });
       return {
         ...item,
@@ -77,6 +88,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ items: serializedInventory })
   } catch (error) {
+    require('fs').writeFileSync('debug.log', error instanceof Error ? error.stack || error.message : String(error));
     console.error('Error fetching inventory:', error)
     return NextResponse.json(
       { error: 'Failed to fetch inventory', message: error instanceof Error ? error.message : 'Unknown error' },
@@ -113,50 +125,56 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const validatedData = inventorySchema.parse(body)
+    const result = inventorySchema.safeParse(body)
+    if (!result.success) {
+      console.log('Zod validation failed:', result.error)
+      return handleZodError(result.error)
+    }
+    const validatedData = result.data
 
     const propertyId = await getEffectivePropertyId(request)
     if (!propertyId || propertyId === 'all') {
+      console.log('Property ID validation failed. Property ID:', propertyId)
       return NextResponse.json({ error: 'Valid property context is required' }, { status: 400 })
     }
 
-    const inventory = await prisma.inventory.create({
+    // Try to find the item in global catalog by name or sku
+    let item = await prisma.inventoryItem.findFirst({
+      where: { name: validatedData.name }
+    })
+
+    if (!item) {
+      item = await prisma.inventoryItem.create({
+        data: {
+          name: validatedData.name,
+          category: validatedData.category,
+          unit: validatedData.unit,
+          unitPrice: 0,
+          parLevel: validatedData.minQuantity
+        }
+      })
+    }
+
+    // Create or update the property-scoped stock
+    const stockLocation = validatedData.location || 'Main Storage'
+    const stock = await prisma.inventoryStock.create({
       data: {
+        itemId: item.id,
         propertyId,
-        name: validatedData.name,
-        description: validatedData.description || '',
-        category: validatedData.category,
-        quantity: BigInt(validatedData.quantity), // Convert to BigInt as per schema
-        unit: validatedData.unit,
-        minQuantity: BigInt(validatedData.minQuantity), // Convert to BigInt as per schema
-        status: validatedData.status,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        location: stockLocation,
+        quantity: validatedData.quantity
       }
     })
 
-    // Dual-Write: Create new DDD InventoryItem and initial InventoryMovement
-    try {
-      await prisma.inventoryItem.create({
-        data: {
-          id: inventory.id, // map 1:1 with legacy ID
-          name: inventory.name,
-          category: inventory.category,
-          unit: inventory.unit,
-          unitPrice: 0, // Default required field
-        }
-      })
-      await prisma.inventoryMovement.create({
-        data: {
-          itemId: inventory.id,
-          type: 'RECEIPT',
-          quantity: Number(inventory.quantity),
-          notes: 'Initial stock dual-write'
-        }
-      })
-    } catch (dualWriteErr) {
-      console.error('Dual write to new DDD inventory failed:', dualWriteErr)
-    }
+    await prisma.inventoryMovement.create({
+      data: {
+        itemId: item.id,
+        propertyId,
+        type: 'RECEIPT',
+        quantity: validatedData.quantity,
+        notes: `Initial stock dual-write into ${stockLocation}`
+      }
+    })
 
     // Log the action (non-blocking)
     try {
@@ -164,8 +182,8 @@ export async function POST(request: NextRequest) {
         request,
         session.user.id,
         AUDIT_ACTIONS.INVENTORY_CREATE,
-        'Inventory',
-        inventory.id,
+        'InventoryItem',
+        item.id,
         {
           name: validatedData.name,
           category: validatedData.category,
@@ -177,11 +195,11 @@ export async function POST(request: NextRequest) {
       console.error('Failed to log inventory action:', logError)
     }
 
-    // Convert BigInt values to numbers for JSON serialization
     const serializedInventory = {
-      ...inventory,
-      quantity: Number(inventory.quantity),
-      minQuantity: Number(inventory.minQuantity),
+      ...item,
+      quantity: stock.quantity,
+      minQuantity: item.parLevel,
+      status: stock.quantity > item.parLevel ? 'IN_STOCK' : (stock.quantity > 0 ? 'LOW_STOCK' : 'OUT_OF_STOCK')
     }
 
     return NextResponse.json({ item: serializedInventory }, { status: 201 })

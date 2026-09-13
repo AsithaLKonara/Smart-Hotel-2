@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { PrismaClient } from '@prisma/client'
 import { handleZodError } from '@/lib/api-utils'
+import { getEffectivePropertyId } from '@/lib/server-rbac'
 
 const prisma = new PrismaClient()
 
@@ -17,6 +18,11 @@ export async function POST(
 ) {
   try {
     const { id: itemId } = await params
+    const propertyId = await getEffectivePropertyId(req)
+    if (!propertyId || propertyId === 'all') {
+      return NextResponse.json({ error: 'Valid property context is required' }, { status: 400 })
+    }
+
     const body = await req.json()
     const validatedData = StockAdjustmentSchema.parse(body)
 
@@ -32,8 +38,9 @@ export async function POST(
     const result = await prisma.$transaction(async (tx) => {
       const stock = await tx.inventoryStock.findUnique({
         where: {
-          itemId_location: {
+          itemId_propertyId_location: {
             itemId,
+            propertyId,
             location: validatedData.location
           }
         }
@@ -48,8 +55,9 @@ export async function POST(
 
       const updatedStock = await tx.inventoryStock.upsert({
         where: {
-          itemId_location: {
+          itemId_propertyId_location: {
             itemId,
+            propertyId,
             location: validatedData.location
           }
         },
@@ -59,6 +67,7 @@ export async function POST(
         },
         create: {
           itemId,
+          propertyId,
           location: validatedData.location,
           quantity: validatedData.newQuantity,
           lastCountedAt: new Date()
@@ -68,6 +77,7 @@ export async function POST(
       await tx.inventoryMovement.create({
         data: {
           itemId,
+          propertyId,
           type: difference > 0 ? 'ADJUST_UP' : 'ADJUST_DOWN',
           quantity: Math.abs(difference),
           notes: `Location: ${validatedData.location} | Reason: ${validatedData.reason}`

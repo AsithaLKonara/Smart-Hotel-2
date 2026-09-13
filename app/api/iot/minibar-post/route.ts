@@ -62,7 +62,12 @@ export async function POST(req: Request) {
 
     // Lookup item price
     const item = await prisma.inventoryItem.findUnique({
-      where: { id: validatedData.itemId }
+      where: { id: validatedData.itemId },
+      include: {
+        stocks: {
+          where: { propertyId: room.propertyId }
+        }
+      }
     })
 
     if (!item) {
@@ -72,12 +77,34 @@ export async function POST(req: Request) {
     const amount = item.unitPrice.toNumber() * validatedData.quantity
 
     // Post charge to folio
-    await prisma.folioLineItem.create({
-      data: {
-        folioId,
-        amount,
-        description: `Minibar: ${item.name} (x${validatedData.quantity})`,
-        category: 'F_AND_B'
+    await prisma.$transaction(async (tx) => {
+      await tx.folioLineItem.create({
+        data: {
+          folioId,
+          amount,
+          description: `Minibar: ${item.name} (x${validatedData.quantity})`,
+          category: 'F_AND_B'
+        }
+      })
+
+      // Deplete physical stock (INV-002 Fix)
+      if (item.stocks && item.stocks.length > 0) {
+        const roomStock = item.stocks.find(s => s.location === `Room ${room.number}`) || item.stocks[0]
+        
+        await tx.inventoryStock.update({
+          where: { id: roomStock.id },
+          data: { quantity: { decrement: validatedData.quantity }, lastCountedAt: new Date() }
+        })
+
+        await tx.inventoryMovement.create({
+          data: {
+            itemId: item.id,
+            propertyId: room.propertyId,
+            type: 'MINIBAR_CONSUMPTION',
+            quantity: -validatedData.quantity,
+            notes: `Consumed from minibar in Room ${room.number}`
+          }
+        })
       }
     })
 

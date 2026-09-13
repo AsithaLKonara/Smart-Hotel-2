@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma'
 
 export interface GoodsReceiptDTO {
   purchaseOrderId: string
+  propertyId: string
   notes?: string
   targetLocation: string // e.g. "Main Kitchen Storage" or "Rooftop Bar Storage"
 }
@@ -49,8 +50,9 @@ export class ProcurementService {
         // Upsert multi-location stock tally
         await tx.inventoryStock.upsert({
           where: {
-            itemId_location: {
+            itemId_propertyId_location: {
               itemId: item.itemId,
+              propertyId: dto.propertyId,
               location: dto.targetLocation
             }
           },
@@ -60,6 +62,7 @@ export class ProcurementService {
           },
           create: {
             itemId: item.itemId,
+            propertyId: dto.propertyId,
             location: dto.targetLocation,
             quantity: item.quantity,
             lastCountedAt: new Date()
@@ -70,6 +73,7 @@ export class ProcurementService {
         await tx.inventoryMovement.create({
           data: {
             itemId: item.itemId,
+            propertyId: dto.propertyId,
             type: 'GOODS_RECEIPT_PO',
             quantity: item.quantity,
             notes: `Received via PO #${po.orderNumber} into ${dto.targetLocation} (Receipt ID: ${receipt.id})`

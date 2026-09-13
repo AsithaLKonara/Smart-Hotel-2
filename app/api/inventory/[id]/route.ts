@@ -5,12 +5,12 @@ import prisma from '@/lib/db'
 import { z } from 'zod'
 import { logAction, AUDIT_ACTIONS } from '@/lib/audit'
 import { handleZodError } from '@/lib/api-utils'
+import { getEffectivePropertyId } from '@/lib/server-rbac'
 
 const inventoryUpdateSchema = z.object({
   name: z.string().min(1, 'Name is required').optional(),
   description: z.string().optional(),
   category: z.string().min(1, 'Category is required').optional(),
-  quantity: z.number().int().min(0, 'Quantity must be non-negative').optional(),
   unit: z.string().min(1, 'Unit is required').optional(),
   minQuantity: z.number().int().min(0, 'Minimum quantity must be non-negative').optional(),
   status: z.enum(['IN_STOCK', 'LOW_STOCK', 'OUT_OF_STOCK', 'DISCONTINUED']).optional(),
@@ -31,8 +31,15 @@ export async function GET(
       )
     }
 
-    const inventory = await prisma.inventory.findUnique({
-      where: { id: id }
+    const propertyId = await getEffectivePropertyId(request as any)
+
+    const inventory = await prisma.inventoryItem.findUnique({
+      where: { id: id },
+      include: {
+        stocks: propertyId && propertyId !== 'all' ? {
+          where: { propertyId }
+        } : true
+      }
     })
 
     if (!inventory) {
@@ -42,7 +49,20 @@ export async function GET(
       )
     }
 
-    return NextResponse.json({ item: inventory })
+    // Compute balance from property stock
+    let balance = 0;
+    inventory.stocks.forEach((s: any) => {
+      balance += s.quantity;
+    });
+    
+    const serializedInventory = {
+      ...inventory,
+      quantity: balance,
+      minQuantity: inventory.parLevel || 0,
+      status: balance > (inventory.parLevel || 0) ? 'IN_STOCK' : (balance > 0 ? 'LOW_STOCK' : 'OUT_OF_STOCK')
+    }
+
+    return NextResponse.json({ item: serializedInventory })
   } catch (error) {
     console.error('Error fetching inventory item:', error)
     return NextResponse.json(
@@ -75,65 +95,42 @@ export async function PUT(
     const body = await request.json()
     const validatedData = inventoryUpdateSchema.parse(body)
 
-    const existingInventory = await prisma.inventory.findUnique({
+    const propertyId = await getEffectivePropertyId(request as any)
+
+    const existingItem = await prisma.inventoryItem.findUnique({
       where: { id: id }
     })
 
-    if (!existingInventory) {
+    if (!existingItem) {
       return NextResponse.json(
         { error: 'Inventory item not found' },
         { status: 404 }
       )
     }
 
-    const inventory = await prisma.inventory.update({
+    const item = await prisma.inventoryItem.update({
       where: { id: id },
-      data: validatedData
+      data: {
+        name: validatedData.name,
+        category: validatedData.category,
+        unit: validatedData.unit,
+        parLevel: validatedData.minQuantity
+      }
     })
 
-    // Dual-Write movement if quantity changed
-    if (validatedData.quantity !== undefined && validatedData.quantity !== Number(existingInventory.quantity)) {
-      try {
-        const qtyDiff = validatedData.quantity - Number(existingInventory.quantity)
-        const type = qtyDiff > 0 ? 'RECEIPT' : 'CONSUMPTION'
-        
-        // Ensure DDD InventoryItem exists before recording movement
-        await prisma.inventoryItem.upsert({
-          where: { id: inventory.id },
-          update: { name: inventory.name },
-          create: {
-            id: inventory.id,
-            name: inventory.name,
-            category: inventory.category,
-            unit: inventory.unit,
-            unitPrice: 0,
-          }
-        })
 
-        await prisma.inventoryMovement.create({
-          data: {
-            itemId: inventory.id,
-            type: type,
-            quantity: Math.abs(qtyDiff),
-            notes: 'Legacy API update dual-write'
-          }
-        })
-      } catch (err) {
-        console.error('Dual write movement failed', err)
-      }
-    }
 
     // Log the action
     await logAction(
       request,
       session.user.id,
       AUDIT_ACTIONS.INVENTORY_UPDATE,
-      'Inventory',
-      inventory.id,
+      'InventoryItem',
+      item.id,
       validatedData
     )
 
-    return NextResponse.json({ item: inventory })
+    return NextResponse.json({ item })
   } catch (error) {
     if (error instanceof z.ZodError) {
       return handleZodError(error)
@@ -167,21 +164,34 @@ export async function DELETE(
       )
     }
 
-    const inventory = await prisma.inventory.delete({
-      where: { id: id }
+    const propertyId = await getEffectivePropertyId(request as any)
+    if (!propertyId || propertyId === 'all') {
+      return NextResponse.json({ error: 'Valid property context required to delete inventory' }, { status: 400 })
+    }
+
+    // Instead of deleting the global item, we delete the property-scoped stock
+    await prisma.inventoryStock.deleteMany({
+      where: { itemId: id, propertyId: propertyId }
     })
+    
+    // We also delete the movements for that property so it's fully purged
+    await prisma.inventoryMovement.deleteMany({
+      where: { itemId: id, propertyId: propertyId }
+    })
+
+    const item = await prisma.inventoryItem.findUnique({ where: { id: id } })
 
     // Log the action
     await logAction(
       request,
       session.user.id,
       AUDIT_ACTIONS.INVENTORY_DELETE,
-      'Inventory',
-      inventory.id,
-      { name: inventory.name }
+      'InventoryStock',
+      id,
+      { name: item?.name || id, propertyId }
     )
 
-    return NextResponse.json({ message: 'Inventory item deleted successfully' })
+    return NextResponse.json({ message: 'Inventory item removed from property successfully' })
   } catch (error) {
     console.error('Error deleting inventory item:', error)
     return NextResponse.json(

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { ProcurementService } from '@/lib/services/procurement-service'
+import { getEffectivePropertyId } from '@/lib/server-rbac'
 
 // Strict Zod validation schema conforming to API Bible contracts
 const receiveGoodsSchema = z.object({
@@ -25,7 +26,21 @@ export async function POST(request: Request) {
       }, { status: 400 })
     }
 
-    const receipt = await ProcurementService.receiveGoods(parsed.data)
+    const propertyId = await getEffectivePropertyId(request as any)
+    if (!propertyId || propertyId === 'all') {
+      return NextResponse.json({
+        error: 'ERR_PROPERTY_REQUIRED',
+        message: 'Valid property context is required to receive goods',
+        statusCode: 400,
+        timestamp: new Date().toISOString(),
+        traceId
+      }, { status: 400 })
+    }
+
+    const receipt = await ProcurementService.receiveGoods({
+      ...parsed.data,
+      propertyId
+    })
 
     return NextResponse.json({
       success: true,
