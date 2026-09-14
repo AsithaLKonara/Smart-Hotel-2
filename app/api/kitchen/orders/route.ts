@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
         ...(statusFilter && statusFilter !== 'all' ? { status: statusFilter } : { status: { in: ['PENDING', 'CONFIRMED', 'PREPARING', 'READY', 'DELIVERED'] } }),
         ...(today ? { createdAt: { gte: startOfDay } } : {})
       },
-      include: { guest: true, items: { include: { menuItem: true } } },
+      include: { guest: true, room: true, items: { include: { menuItem: true } } },
       orderBy: { createdAt: 'asc' }
     })
 
@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
       totalAmount: order.totalAmount,
       kitchenNotes: order.specialRequests || '',
       createdAt: order.createdAt.toISOString(),
-      roomNumber: order.roomNumber,
+      roomNumber: order.room?.number,
       user: {
         id: order.guest?.id || '',
         name: order.guest?.name || 'Guest'
@@ -80,7 +80,7 @@ export async function PUT(request: NextRequest) {
     const updatedOrder = await prisma.internalOrder.update({
       where: { id: orderId },
       data: { status, updatedAt: new Date() },
-      include: { guest: true }
+      include: { guest: true, room: true }
     })
 
     // 1. Send Real-time Notification via Pusher
@@ -88,8 +88,30 @@ export async function PUT(request: NextRequest) {
       type: 'KITCHEN_ORDER_UPDATE',
       orderId,
       status,
-      roomNumber: updatedOrder.roomNumber
+      roomNumber: updatedOrder.room?.number
     })
+
+    if (status === 'DELIVERED' && updatedOrder.guestId) {
+      const activeBooking = await prisma.booking.findFirst({
+        where: { primaryGuestId: updatedOrder.guestId, status: 'CHECKED_IN' },
+        include: { folios: { where: { status: 'OPEN' } } },
+        orderBy: { createdAt: 'desc' }
+      })
+
+      const folio = activeBooking?.folios[0]
+      
+      if (folio) {
+        await prisma.folioLineItem.create({
+          data: {
+            folioId: folio.id,
+            transactionCodeId: '200-FB-REV',
+            description: `Room Service: Order #${updatedOrder.id.substring(0, 8).toUpperCase()}`,
+            amount: updatedOrder.totalAmount,
+            category: 'FOOD_AND_BEVERAGE'
+          }
+        })
+      }
+    }
 
     // 2. Create Persistent Notification for Guest
     await prisma.notification.create({

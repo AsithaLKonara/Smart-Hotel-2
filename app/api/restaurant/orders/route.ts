@@ -136,6 +136,10 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: `Menu item ${item.menuId} not found` }, { status: 400 })
       }
 
+      if (!menuItem.available) {
+        return NextResponse.json({ error: `Menu item ${menuItem.name} is currently unavailable` }, { status: 400 })
+      }
+
       totalAmount += menuItem.price * item.quantity
       orderItems.push({
         menuId: item.menuId,
@@ -175,6 +179,33 @@ export async function POST(request: NextRequest) {
     const normalizedTotal = Math.round(totalAmount * 100) / 100
     const responseBody = { order: { ...order, totalAmount: normalizedTotal } }
 
+    // Inventory Depletion
+    for (const orderItem of order.items) {
+      if (!orderItem.menuItem) continue;
+      
+      const invItem = await prisma.inventoryItem.findFirst({
+        where: { OR: [{ name: orderItem.menuItem.name }] },
+        include: { stocks: true }
+      });
+      
+      if (invItem && invItem.stocks && invItem.stocks.length > 0) {
+        const posStock = invItem.stocks.find((s: any) => s.location === 'POS') || invItem.stocks[0];
+        await prisma.inventoryStock.update({
+          where: { id: posStock.id },
+          data: { quantity: { decrement: orderItem.quantity }, lastCountedAt: new Date() }
+        });
+        await prisma.inventoryMovement.create({
+          data: {
+            itemId: invItem.id,
+            propertyId: posStock.propertyId,
+            type: 'POS_CONSUMPTION',
+            quantity: -Number(orderItem.quantity || 1),
+            notes: `Consumed via Room Service Order #${order.id.substring(0, 8)} (${orderItem.menuItem.name} x${orderItem.quantity})`
+          }
+        });
+      }
+    }
+
     // Emit Real-time Event to Kitchen
     const { RealtimeEvents } = await import('@/lib/realtime')
     await RealtimeEvents.emitOpsMessage({
@@ -210,8 +241,11 @@ export async function PATCH(request: NextRequest) {
     const session = await getRequestSession(request)
     const allowAnonymous = !session && Boolean(process.env.JEST_WORKER_ID)
 
+    const isGuest = session?.user && (session.user as any).roleName === 'GUEST';
+
     if (
       !allowAnonymous &&
+      !isGuest &&
       (!session || !['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'KITCHEN'].includes((session.user as any).roleName as string))
     ) {
       return NextResponse.json(
@@ -235,7 +269,8 @@ export async function PATCH(request: NextRequest) {
     }
 
     const existingOrder = await prisma.internalOrder.findUnique({
-      where: { id: orderId }
+      where: { id: orderId },
+      include: { room: true }
     })
 
     if (!existingOrder) {
@@ -243,6 +278,18 @@ export async function PATCH(request: NextRequest) {
         { error: 'Order not found' },
         { status: 404 }
       )
+    }
+
+    if (isGuest) {
+      if (existingOrder.guestId !== session.user.id) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+      }
+      if (existingOrder.status !== 'PENDING' && status === 'CANCELLED') {
+        return NextResponse.json({ error: 'Cannot cancel an order that is already being processed' }, { status: 400 })
+      }
+      if (status !== 'CANCELLED') {
+        return NextResponse.json({ error: 'Guests can only cancel orders' }, { status: 403 })
+      }
     }
 
     const immutableStatuses = ['DELIVERED', 'CANCELLED']
@@ -260,13 +307,34 @@ export async function PATCH(request: NextRequest) {
     // Note: preparationTime field doesn't exist in InternalOrder schema
     // Would need to be added to schema or stored differently
     if (status === 'PREPARING' && typeof estimatedPrepTime === 'number') {
-      // Store estimated prep time in specialRequests or a separate field if schema is updated
+      updateData.estimatedPrepTime = estimatedPrepTime
     }
 
     const order = await prisma.internalOrder.update({
       where: { id: orderId },
       data: updateData
     })
+
+    // Emit Real-time Event to Kitchen
+    const { RealtimeEvents } = await import('@/lib/realtime')
+    await RealtimeEvents.emitOpsMessage({
+      type: 'KITCHEN_ORDER_UPDATE',
+      orderId: order.id,
+      status,
+      roomNumber: existingOrder.room?.number
+    })
+
+    if (order.guestId) {
+      await prisma.notification.create({
+        data: {
+          userId: order.guestId,
+          title: 'Room Service Update',
+          message: `Your order is now ${status.toLowerCase()}.`,
+          type: 'ORDER_UPDATE',
+          createdAt: new Date()
+        }
+      })
+    }
 
     return NextResponse.json({ order })
   } catch (error) {
