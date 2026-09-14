@@ -7,13 +7,13 @@ type RouteRule = { prefix: string; roles: string[]; permissions?: string[] };
 const PROTECTED_ROUTES: RouteRule[] = [
   // 👑 SUPER ADMIN ONLY (SRE, Platform, Global)
   { prefix: '/admin/roles', roles: ['SUPER_ADMIN'], permissions: ['MANAGE_ROLES'] },
-  { prefix: '/admin/audit-logs', roles: ['SUPER_ADMIN'] },
+  { prefix: '/admin/audit-logs', roles: ['SUPER_ADMIN'], permissions: ['VIEW_REPORTS', 'MANAGE_ROLES'] },
+  { prefix: '/api/audit-logs', roles: ['SUPER_ADMIN'], permissions: ['VIEW_REPORTS', 'MANAGE_ROLES'] },
   { prefix: '/admin/corporate', roles: ['SUPER_ADMIN'] }, // Global properties, Loyalty
   { prefix: '/admin/settings/integrations', roles: ['SUPER_ADMIN'] },
 
   // API equivalents for SUPER ADMIN ONLY
   { prefix: '/api/admin/roles', roles: ['SUPER_ADMIN'] },
-  { prefix: '/api/admin/audit-logs', roles: ['SUPER_ADMIN'] },
   { prefix: '/api/admin/sre', roles: ['SUPER_ADMIN'] },
   { prefix: '/api/admin/settings/integrations', roles: ['SUPER_ADMIN'] },
   { prefix: '/api/admin/corporate/loyalty', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'] },

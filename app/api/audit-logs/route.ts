@@ -6,13 +6,23 @@ import { isDatabaseConfigured } from '@/lib/db-helpers'
 
 // SIMULATED_AUDIT_LOGS removed to enforce production constraints.
 
+import { requirePermission } from '@/lib/server-rbac'
+
 export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session) {
     return NextResponse.json({ error: 'Unauthorized: Authentication required.' }, { status: 401 })
   }
 
+  // Authorize: require either VIEW_REPORTS or MANAGE_ROLES
+  const reportGuard = await requirePermission('VIEW_REPORTS')
+  const roleGuard = await requirePermission('MANAGE_ROLES')
+  if (reportGuard && roleGuard) {
+    return reportGuard
+  }
+
   const { searchParams } = new URL(request.url)
+  const cursor = searchParams.get('cursor')
   const limit = Math.min(Number(searchParams.get('limit')) || 50, 100)
   const action = searchParams.get('action') || undefined
 
@@ -29,10 +39,22 @@ export async function GET(request: NextRequest) {
     const logs = await prisma.auditLog.findMany({
       where: whereClause,
       orderBy: { createdAt: 'desc' },
-      take: limit
+      take: limit + 1,
+      cursor: cursor ? { id: cursor } : undefined,
+      skip: cursor ? 1 : 0
     })
 
-    return NextResponse.json({ logs })
+    let nextCursor: string | undefined = undefined
+    if (logs.length > limit) {
+      const nextItem = logs.pop()
+      nextCursor = nextItem!.id
+    }
+
+    return NextResponse.json({ 
+      logs,
+      nextCursor,
+      hasMore: !!nextCursor
+    })
   } catch (error: any) {
     console.error('Error fetching audit logs:', error)
     return NextResponse.json({
@@ -47,6 +69,10 @@ export async function POST(request: NextRequest) {
   if (!session) {
     return NextResponse.json({ error: 'Unauthorized: Action blocked.' }, { status: 401 })
   }
+
+  // Authorize: require MANAGE_ROLES for executing manual rollbacks/audit records
+  const roleGuard = await requirePermission('MANAGE_ROLES')
+  if (roleGuard) return roleGuard
 
   try {
     const body = await request.json()

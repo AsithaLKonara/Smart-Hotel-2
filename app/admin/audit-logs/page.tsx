@@ -15,8 +15,6 @@ import {
   User, 
   Activity, 
   AlertCircle,
-  CheckCircle,
-  Database,
   ChevronDown,
   ChevronRight
 } from 'lucide-react'
@@ -30,11 +28,14 @@ export default function ForensicAuditTimeline() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [loading, setLoading] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [logs, setLogs] = useState<any[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [actionFilter, setActionFilter] = useState('ALL')
   const [expandedLogId, setExpandedLogId] = useState<string | null>(null)
   const [rollbackLoadingId, setRollbackLoadingId] = useState<string | null>(null)
+  const [nextCursor, setNextCursor] = useState<string | null>(null)
+  const [hasMore, setHasMore] = useState(false)
 
   useEffect(() => {
     if (status === 'loading') return
@@ -48,12 +49,17 @@ export default function ForensicAuditTimeline() {
     loadAuditLogs()
   }, [session, status]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const loadAuditLogs = async () => {
+  const loadAuditLogs = async (cursor?: string) => {
     try {
-      setLoading(true)
-      const res = await fetch('/api/admin/audit').then(r => r.json()).catch(() => null)
+      if (cursor) setLoadingMore(true)
+      else setLoading(true)
+
+      const url = `/api/audit-logs?limit=20${cursor ? `&cursor=${cursor}` : ''}`
+      const res = await fetch(url).then(r => r.json()).catch(() => null)
       if (res && res.logs) {
-        setLogs(res.logs)
+        setLogs(prev => cursor ? [...prev, ...res.logs] : res.logs)
+        setNextCursor(res.nextCursor ?? null)
+        setHasMore(res.hasMore ?? false)
       } else {
         toast.error('Failed to parse secure audit trail.')
       }
@@ -62,6 +68,7 @@ export default function ForensicAuditTimeline() {
       toast.error('Unable to fetch live governance metrics.')
     } finally {
       setLoading(false)
+      setLoadingMore(false)
     }
   }
 
@@ -83,7 +90,7 @@ export default function ForensicAuditTimeline() {
 
       toast.success(`System state successfully rolled back for ${action}!`, {
         icon: '🔄',
-        style: { background: '#8b5cf6', color: '#fff' }
+        style: { background: '#111', color: '#fff', border: '1px solid #D4AF37' }
       })
       loadAuditLogs()
     } catch (err) {
@@ -95,8 +102,8 @@ export default function ForensicAuditTimeline() {
   }
 
   const getActionBadgeColor = (action: string) => {
-    if (action.includes('CHAOS')) return 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-    if (action.includes('ROLLBACK')) return 'bg-purple-500/10 text-purple-400 border-purple-500/20'
+    if (action.includes('CHAOS')) return 'bg-red-500/10 text-red-400 border-red-500/20'
+    if (action.includes('ROLLBACK')) return 'bg-amber-500/10 text-amber-400 border-amber-500/20'
     if (action.includes('BOOKING')) return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
     if (action.includes('REASSIGNMENT')) return 'bg-blue-500/10 text-blue-400 border-blue-500/20'
     return 'bg-slate-500/10 text-slate-400 border-slate-500/20'
@@ -127,35 +134,34 @@ export default function ForensicAuditTimeline() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-slate-950">
+      <div className="flex items-center justify-center min-h-screen bg-[#0c0c0c]">
         <PremiumSpinner size="lg" text="Loading Forensic Cryptographic Timeline..." />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[#090514] text-slate-100 p-6 font-sans">
+    <div className="min-h-screen bg-[#0c0c0c] text-slate-100 p-6 font-sans">
       
       {/* Forensic Intelligence Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between border-b border-purple-900/40 pb-6 mb-8 gap-4">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between border-b border-white/10 pb-6 mb-8 gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <Badge className="bg-rose-500/10 text-rose-400 border border-rose-500/30 text-xs tracking-wider uppercase font-bold py-1 px-3">
+            <Badge className="bg-amber-500/10 text-amber-500 border border-amber-500/30 text-xs tracking-wider uppercase font-bold py-1 px-3">
               AUDIT TRAILS SECURED
             </Badge>
             <span className="flex h-2.5 w-2.5 relative">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
             </span>
           </div>
           <h1 className="text-4xl font-serif font-bold text-white mt-2">Administrative Forensic Console</h1>
           <p className="text-slate-400 text-sm mt-1">Immutable transaction history, live state inspection, operator validation & secure cryptographic rollbacks.</p>
         </div>
         <div className="flex items-center gap-3">
-          <Button onClick={loadAuditLogs} variant="outline" size="sm" className="bg-white/5 border-purple-900/50 text-purple-300 hover:bg-purple-900/30">
+              <Button onClick={() => { setNextCursor(null); setHasMore(false); loadAuditLogs() }} variant="outline" size="sm" className="bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:text-white">
             <RefreshCw className="w-4 h-4 mr-2" /> Force Refresh
           </Button>
-          <Button onClick={() => router.push('/admin/dashboard')} className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white border-0 font-semibold shadow-lg shadow-purple-950">
+          <Button onClick={() => router.push('/admin/dashboard')} className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white border-0 font-semibold shadow-lg">
             Operations Cockpit
           </Button>
         </div>
@@ -166,8 +172,8 @@ export default function ForensicAuditTimeline() {
         
         {/* Left Col: Live filters & statistics */}
         <div className="lg:col-span-3 space-y-6">
-          <Card className="bg-white/[0.02] border border-purple-900/30 rounded-none shadow-xl">
-            <CardHeader className="border-b border-purple-950/40">
+          <Card className="bg-[#111] border border-white/10 rounded-none shadow-xl">
+            <CardHeader className="border-b border-white/5">
               <CardTitle className="text-sm uppercase tracking-widest font-extrabold text-slate-300">Auditing Scope</CardTitle>
               <CardDescription className="text-slate-500 text-xs">Filter trail metrics sequentially</CardDescription>
             </CardHeader>
@@ -181,7 +187,7 @@ export default function ForensicAuditTimeline() {
                   placeholder="Filter by actor, details..." 
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
-                  className="w-full bg-slate-950 border border-purple-900/40 text-xs text-slate-200 rounded-none pl-9 pr-4 py-2 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                  className="w-full bg-[#1a1a1a] border border-white/10 text-xs text-slate-200 rounded-none pl-9 pr-4 py-2 focus:outline-none focus:ring-1 focus:ring-amber-500"
                 />
               </div>
 
@@ -192,7 +198,7 @@ export default function ForensicAuditTimeline() {
                   <button
                     key={act}
                     onClick={() => setActionFilter(act)}
-                    className={`w-full text-left text-xs px-3 py-2 flex items-center justify-between border transition-all ${actionFilter === act ? 'bg-purple-950/40 border-purple-500/50 text-white font-bold' : 'bg-transparent border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/[0.01]'}`}
+                    className={`w-full text-left text-xs px-3 py-2 flex items-center justify-between border transition-all ${actionFilter === act ? 'bg-[#1a1a1a] border-amber-500/50 text-white font-bold' : 'bg-transparent border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/[0.02]'}`}
                   >
                     <span>{act.replace('_', ' ')}</span>
                     <Badge className="bg-white/5 border-0 text-[10px] text-slate-400">
@@ -206,8 +212,8 @@ export default function ForensicAuditTimeline() {
           </Card>
 
           {/* Forensic Integrity card */}
-          <Card className="bg-gradient-to-b from-purple-950/10 to-transparent border border-purple-900/20 rounded-none p-5">
-            <div className="flex items-center gap-3 text-purple-400 mb-3">
+          <Card className="bg-[#111] border border-white/10 rounded-none p-5">
+            <div className="flex items-center gap-3 text-amber-500 mb-3">
               <Shield className="w-6 h-6" />
               <h4 className="font-bold text-sm text-slate-200">Governance Shield Active</h4>
             </div>
@@ -220,25 +226,25 @@ export default function ForensicAuditTimeline() {
         {/* Right Col: Timeline Stream */}
         <div className="lg:col-span-9">
           
-          <Card className="bg-white/[0.02] border border-purple-900/30 rounded-none shadow-xl min-h-[500px]">
-            <CardHeader className="border-b border-purple-950/40 pb-4 flex flex-row items-center justify-between">
+          <Card className="bg-[#111] border border-white/10 rounded-none shadow-xl min-h-[500px]">
+            <CardHeader className="border-b border-white/5 pb-4 flex flex-row items-center justify-between">
               <div>
                 <CardTitle className="text-xl font-serif text-white flex items-center gap-2">
-                  <Activity className="w-5 h-5 text-purple-400 animate-pulse" /> Live Audit Stream
+                  <Activity className="w-5 h-5 text-amber-500" /> Live Audit Stream
                 </CardTitle>
                 <CardDescription className="text-slate-400 text-xs">A linear cryptographic timeline displaying database mutations.</CardDescription>
               </div>
-              <Badge className="bg-purple-500/10 text-purple-400 border border-purple-500/20">{filteredLogs.length} Records Found</Badge>
+              <Badge className="bg-amber-500/10 text-amber-500 border border-amber-500/20">{filteredLogs.length} Records Found</Badge>
             </CardHeader>
             <CardContent className="pt-6">
               
               {filteredLogs.length === 0 ? (
                 <div className="text-center py-20 text-slate-500 text-sm flex flex-col items-center gap-3">
-                  <AlertCircle className="w-10 h-10 text-slate-600 animate-bounce" />
+                  <AlertCircle className="w-10 h-10 text-slate-600" />
                   <span>No forensic records matching query found in audit trail indexes.</span>
                 </div>
               ) : (
-                <div className="relative border-l border-purple-900/40 ml-4 pl-8 space-y-6 pb-4">
+                <div className="relative border-l border-white/10 ml-4 pl-8 space-y-6 pb-4">
                   {filteredLogs.map((log) => {
                     const isExpanded = expandedLogId === log.id
                     const isRollingBack = rollbackLoadingId === log.id
@@ -247,14 +253,14 @@ export default function ForensicAuditTimeline() {
                       <div key={log.id} className="relative group">
                         
                         {/* Timeline node node */}
-                        <span className="absolute -left-[41px] top-1.5 flex items-center justify-center w-6 h-6 rounded-full bg-[#090514] border border-purple-500/50 group-hover:border-purple-400 transition-colors">
-                          <Clock className="w-3.5 h-3.5 text-purple-400" />
+                        <span className="absolute -left-[41px] top-1.5 flex items-center justify-center w-6 h-6 rounded-full bg-[#111] border border-white/20 group-hover:border-amber-500/50 transition-colors">
+                          <Clock className="w-3.5 h-3.5 text-slate-400 group-hover:text-amber-500 transition-colors" />
                         </span>
 
-                        <div className="p-4 bg-white/[0.01] border border-slate-800/80 hover:border-purple-900/30 transition-all flex flex-col gap-3">
+                        <div className="p-4 bg-white/[0.02] border border-white/5 hover:border-white/20 transition-all flex flex-col gap-3">
                           
                           {/* Header section */}
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-900/40 pb-2.5">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/5 pb-2.5">
                             <div className="flex items-center gap-2.5">
                               <Badge className={`text-[10px] tracking-wider uppercase font-bold px-2 py-0.5 border ${getActionBadgeColor(log.action)}`}>
                                 {log.action.replace('_', ' ')}
@@ -271,7 +277,7 @@ export default function ForensicAuditTimeline() {
                           {/* Body snippet */}
                           <div className="flex items-start justify-between gap-4">
                             <p className="text-xs text-slate-300 leading-relaxed flex-1">
-                              System registered action state <strong className="text-white">[{log.action}]</strong> executed by host address <code className="text-slate-400 bg-slate-950 px-1 py-0.5 font-mono">{log.ip || '127.0.0.1'}</code>.
+                              System registered action state <strong className="text-white">[{log.action}]</strong> executed by host address <code className="text-slate-400 bg-[#1a1a1a] px-1 py-0.5 font-mono">{log.details?.ip || '127.0.0.1'}</code>.
                             </p>
                             
                             <button
@@ -285,20 +291,20 @@ export default function ForensicAuditTimeline() {
 
                           {/* Expanded JSON viewer inspector */}
                           {isExpanded && (
-                            <div className="mt-2 bg-slate-950/80 p-3.5 border border-purple-950 font-mono text-[11px] text-purple-300/90 whitespace-pre-wrap overflow-x-auto rounded-xs max-h-[300px] shadow-inner">
+                            <div className="mt-2 bg-[#1a1a1a] p-3.5 border border-white/5 font-mono text-[11px] text-slate-300 whitespace-pre-wrap overflow-x-auto rounded-xs max-h-[300px] shadow-inner">
                               {formatDetails(log.details)}
                             </div>
                           )}
 
                           {/* Rollback Trigger buttons */}
-                          <div className="flex items-center justify-between border-t border-slate-900/40 pt-3 mt-1.5">
+                          <div className="flex items-center justify-between border-t border-white/5 pt-3 mt-1.5">
                             <span className="text-[10px] text-slate-500 font-mono">ID: {log.id}</span>
                             {log.action !== 'STATE_ROLLBACK' && (
                               <Button
                                 onClick={() => triggerRollback(log.id, log.action)}
                                 disabled={isRollingBack}
                                 size="sm"
-                                className="bg-purple-900/40 hover:bg-purple-600 border border-purple-500/30 text-purple-200 hover:text-white h-7 text-[10px] rounded-none px-3 font-bold uppercase tracking-wider"
+                                className="bg-white/5 hover:bg-amber-600 border border-white/10 text-slate-300 hover:text-white h-7 text-[10px] rounded-none px-3 font-bold uppercase tracking-wider"
                               >
                                 {isRollingBack ? (
                                   <>
@@ -319,6 +325,28 @@ export default function ForensicAuditTimeline() {
                     )
                   })}
                 </div>
+              )}
+
+              {/* Pagination: Load More */}
+              {hasMore && (
+                <div className="flex justify-center pt-6 pb-2">
+                  <Button
+                    onClick={() => loadAuditLogs(nextCursor ?? undefined)}
+                    disabled={loadingMore}
+                    variant="outline"
+                    className="bg-white/5 border-white/10 text-slate-300 hover:bg-amber-600 hover:text-white hover:border-amber-600 transition-all px-8"
+                  >
+                    {loadingMore ? (
+                      <><RefreshCw className="w-4 h-4 mr-2 animate-spin" /> Loading more records...</>
+                    ) : (
+                      <>Load More Records ({filteredLogs.length} loaded)</>  
+                    )}
+                  </Button>
+                </div>
+              )}
+
+              {!hasMore && logs.length > 0 && (
+                <p className="text-center text-[11px] text-slate-600 pt-4 pb-2 tracking-wider">— End of audit trail —</p>
               )}
 
             </CardContent>
