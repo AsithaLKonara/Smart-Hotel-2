@@ -32,13 +32,22 @@ export async function GET(req: Request) {
       } : {})
     };
 
-    const [guests, totalCount] = await Promise.all([
+    const [rawGuests, totalCount] = await Promise.all([
       prisma.user.findMany({
         where: whereClause,
         include: {
           guestPreferences: true,
           guestHistory: true,
           corporateAccount: true,
+          guestBookings: {
+            where: {
+              status: { notIn: ['CANCELLED', 'NO_SHOW'] }
+            },
+            select: {
+              id: true,
+              totalAmount: true
+            }
+          }
         },
         take: limit,
         skip,
@@ -46,6 +55,23 @@ export async function GET(req: Request) {
       }),
       prisma.user.count({ where: whereClause })
     ]);
+
+    const guests = rawGuests.map((guest: any) => {
+      const validBookings = guest.guestBookings || [];
+      const calculatedStays = validBookings.length;
+      const calculatedSpend = validBookings.reduce((sum: number, b: any) => sum + Number(b.totalAmount || 0), 0);
+      
+      const { guestBookings, ...guestData } = guest;
+
+      return {
+        ...guestData,
+        guestHistory: {
+          ...(guestData.guestHistory || {}),
+          totalStays: calculatedStays,
+          totalSpend: calculatedSpend
+        }
+      };
+    });
 
     return NextResponse.json({ 
       guests, 
