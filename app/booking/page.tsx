@@ -82,7 +82,7 @@ function BookingPageContent() {
   useEffect(() => {
     fetch('/api/properties')
       .then(res => res.json())
-      .then(data => setProperties(data))
+      .then(data => setProperties(Array.isArray(data) ? data : []))
       .catch(err => console.error('Failed to load properties', err))
   }, [])
 

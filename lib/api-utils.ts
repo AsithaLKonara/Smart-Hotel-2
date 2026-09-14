@@ -25,5 +25,8 @@ export function toPublicRoomDTO(room: any) {
     ownerId, 
     ...publicFields 
   } = room;
-  return publicFields;
+  return {
+    ...publicFields,
+    isAvailable: status === 'AVAILABLE'
+  };
 }
