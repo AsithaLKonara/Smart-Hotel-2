@@ -12,6 +12,7 @@ import { Breadcrumbs } from '@/components/ui/breadcrumbs'
 import toast from 'react-hot-toast'
 import { PremiumSpinner } from '@/components/ui/premium-spinner'
 import { formatPrice } from '@/lib/utils'
+import { useProperty } from '@/contexts/property-context'
 
 interface RoomType {
   id: string
@@ -31,6 +32,7 @@ interface RoomType {
 export default function AdminRoomTypesPage() {
   const { status } = useSession()
   const router = useRouter()
+  const { activePropertyId } = useProperty()
   
   const [roomTypes, setRoomTypes] = useState<RoomType[]>([])
   const [loading, setLoading] = useState(true)
@@ -53,11 +55,13 @@ export default function AdminRoomTypesPage() {
   useEffect(() => {
     if (status === 'loading') return
     fetchRoomTypes()
-  }, [status])
+  }, [status, activePropertyId])
 
   const fetchRoomTypes = async () => {
     try {
-      const response = await fetch('/api/room-types')
+      const response = await fetch('/api/room-types', {
+        headers: { 'x-property-id': activePropertyId || 'all' }
+      })
       if (!response.ok) throw new Error('Failed to fetch room types')
       const data = await response.json()
       setRoomTypes(data || [])
@@ -89,7 +93,10 @@ export default function AdminRoomTypesPage() {
 
       const response = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-property-id': activePropertyId || 'all'
+        },
         body: JSON.stringify(payload)
       })
 
@@ -113,7 +120,8 @@ export default function AdminRoomTypesPage() {
 
     try {
       const response = await fetch(`/api/room-types/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: { 'x-property-id': activePropertyId || 'all' }
       })
 
       if (!response.ok) {

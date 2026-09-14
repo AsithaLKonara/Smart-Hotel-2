@@ -142,8 +142,8 @@ export default function AdminRoomsPage() {
         number: formData.number,
         roomTypeId: formData.roomTypeId,
         status: formData.status,
-        floor: formData.floor ? parseInt(formData.floor) : undefined,
-        size: formData.size ? parseInt(formData.size) : undefined,
+        floor: formData.floor !== '' ? parseInt(formData.floor) : undefined,
+        size: formData.size !== '' ? parseInt(formData.size) : undefined,
         images: finalImages
       }
 
@@ -189,8 +189,8 @@ export default function AdminRoomsPage() {
       number: room.number,
       roomTypeId: room.roomTypeId || '',
       price: room.roomType?.baseRate ? room.roomType.baseRate.toString() : '',
-      floor: room.floor?.toString() || '',
-      size: room.size?.toString() || '',
+      floor: room.floor !== null && room.floor !== undefined ? room.floor.toString() : '',
+      size: room.size !== null && room.size !== undefined ? room.size.toString() : '',
       status: room.status,
       images: room.roomImages ? room.roomImages.map((img: any) => img.imageUrl) : []
     })
@@ -292,10 +292,13 @@ export default function AdminRoomsPage() {
         return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
       case 'OCCUPIED':
         return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+      case 'DIRTY':
+      case 'CLEANING':
+        return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
       case 'MAINTENANCE':
+        return 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200'
+      case 'OUT_OF_ORDER':
         return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-      case 'RESERVED':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
       default:
         return 'bg-gray-100 text-gray-800'
     }
@@ -353,8 +356,9 @@ export default function AdminRoomsPage() {
             <option value="all">All Status</option>
             <option value="AVAILABLE">Available</option>
             <option value="OCCUPIED">Occupied</option>
+            <option value="DIRTY">Dirty</option>
             <option value="MAINTENANCE">Maintenance</option>
-            <option value="RESERVED">Reserved</option>
+            <option value="OUT_OF_ORDER">Out of Order</option>
           </select>
 
           <select
@@ -606,7 +610,7 @@ export default function AdminRoomsPage() {
               </label>
               <input
                 type="number"
-                value={formData.floor || ''}
+                value={formData.floor}
                 onChange={(e) => setFormData({ ...formData, floor: e.target.value })}
                 className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-primary/50 text-sm"
                 placeholder="0"
@@ -620,7 +624,7 @@ export default function AdminRoomsPage() {
               </label>
               <input
                 type="number"
-                value={formData.size || ''}
+                value={formData.size}
                 onChange={(e) => setFormData({ ...formData, size: e.target.value })}
                 className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-primary/50 text-sm"
                 placeholder="25"
@@ -685,8 +689,9 @@ export default function AdminRoomsPage() {
             >
               <option value="AVAILABLE">Available</option>
               <option value="OCCUPIED">Occupied</option>
+              <option value="DIRTY">Dirty</option>
               <option value="MAINTENANCE">Maintenance</option>
-              <option value="RESERVED">Reserved</option>
+              <option value="OUT_OF_ORDER">Out of Order</option>
             </select>
           </div>
 

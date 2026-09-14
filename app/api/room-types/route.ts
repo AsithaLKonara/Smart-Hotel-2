@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db'
 import { isDatabaseConfigured, getDatabaseErrorMessage } from '@/lib/db-helpers'
 import { z } from 'zod'
 import { handleZodError } from '@/lib/api-utils'
+import { getEffectivePropertyId } from '@/lib/server-rbac'
 
 const roomTypeSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -22,7 +23,9 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    const propertyId = await getEffectivePropertyId(request)
     const roomTypes = await prisma.roomType.findMany({
+      where: propertyId ? { propertyId } : {},
       orderBy: { name: 'asc' },
       include: {
         _count: {
@@ -54,9 +57,14 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json()
     const validatedData = roomTypeSchema.parse(body)
+    const propertyId = await getEffectivePropertyId(request)
+
+    if (!propertyId) {
+      return NextResponse.json({ error: 'Property Context Required' }, { status: 400 })
+    }
 
     const existing = await prisma.roomType.findUnique({
-      where: { name: validatedData.name }
+      where: { propertyId_name: { propertyId, name: validatedData.name } }
     })
 
     if (existing) {
@@ -64,7 +72,10 @@ export async function POST(request: NextRequest) {
     }
 
     const roomType = await prisma.roomType.create({
-      data: validatedData
+      data: {
+        ...validatedData,
+        propertyId
+      }
     })
 
     return NextResponse.json(roomType, { status: 201 })

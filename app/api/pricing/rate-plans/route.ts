@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/db'
 import { z } from 'zod'
 import { handleZodError } from '@/lib/api-utils'
+import { getEffectivePropertyId } from '@/lib/server-rbac'
 
 const ratePlanSchema = z.object({
   name: z.string(),
@@ -15,7 +16,9 @@ const ratePlanSchema = z.object({
 
 export async function GET(request: NextRequest) {
   try {
+    const propertyId = await getEffectivePropertyId(request)
     const ratePlans = await prisma.ratePlan.findMany({
+      where: propertyId ? { propertyId } : {},
       include: {
         roomType: true,
         seasonalRates: true
@@ -33,11 +36,16 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const data = ratePlanSchema.parse(body)
+    const propertyId = await getEffectivePropertyId(request)
+
+    if (!propertyId) {
+      return NextResponse.json({ error: 'Property Context Required' }, { status: 400 })
+    }
 
     if (data.isDefault) {
       // Unset other defaults for this room type
       await prisma.ratePlan.updateMany({
-        where: { roomTypeId: data.roomTypeId, isDefault: true },
+        where: { roomTypeId: data.roomTypeId, propertyId, isDefault: true },
         data: { isDefault: false }
       })
     }
@@ -51,6 +59,7 @@ export async function POST(request: NextRequest) {
         isDefault: data.isDefault,
         cancelPolicy: data.cancelPolicy,
         nonRefundable: data.nonRefundable,
+        propertyId,
       }
     })
 

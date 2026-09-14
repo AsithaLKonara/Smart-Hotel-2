@@ -23,26 +23,52 @@ interface Room {
   roomImages?: Array<{ imageUrl: string; isMain?: boolean }>
   images?: string[]
   reviews?: Array<{ rating: number }>
+  property?: { id: string; name: string; city: string; code: string }
+}
+
+interface Property {
+  id: string
+  name: string
+  code: string
+  city: string
 }
 
 export default function RoomsPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedType, setSelectedType] = useState('all')
+  const [selectedProperty, setSelectedProperty] = useState('all')
   const [rooms, setRooms] = useState<Room[]>([])
+  const [properties, setProperties] = useState<Property[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // On mount, check if property query param exists to pre-filter
   useEffect(() => {
-    async function fetchRooms() {
+    const searchParams = new URLSearchParams(window.location.search)
+    const propertyParam = searchParams.get('property')
+    if (propertyParam) {
+      setSelectedProperty(propertyParam)
+    }
+  }, [])
+
+  useEffect(() => {
+    async function fetchData() {
       try {
         setIsLoading(true)
-        const response = await fetch('/api/rooms?available=true', { cache: 'no-store' })
-        const data = await response.json()
+        const [roomsRes, propsRes] = await Promise.all([
+          fetch('/api/rooms?available=true', { cache: 'no-store' }),
+          fetch('/api/properties')
+        ])
+        
+        const data = await roomsRes.json()
+        const propsData = await propsRes.json()
+
+        setProperties(propsData)
+
         let fetchedRooms = []
         if (Array.isArray(data)) fetchedRooms = data
         else if (data?.rooms) fetchedRooms = data.rooms
         
-        // Map nested Prisma fields to the flat UI interface
         const mappedRooms = fetchedRooms.map((r: any) => ({
           ...r,
           type: r.roomType?.name || 'Standard',
@@ -50,6 +76,8 @@ export default function RoomsPage() {
           capacity: r.roomType?.capacity || 2,
           description: r.roomType?.description || r.description,
           amenities: r.roomType?.amenities || r.amenities || [],
+          images: r.roomType?.images || [],
+          property: r.roomType?.property || r.property || null
         }))
         setRooms(mappedRooms)
       } catch (err) {
@@ -58,15 +86,20 @@ export default function RoomsPage() {
         setIsLoading(false)
       }
     }
-    fetchRooms()
+    fetchData()
   }, [])
 
   const filteredRooms = rooms.filter(room => {
     const matchesSearch = (room.type || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
                           (room.description || '').toLowerCase().includes(searchTerm.toLowerCase())
     const matchesType = selectedType === 'all' || room.type.toLowerCase() === selectedType.toLowerCase()
-    return matchesSearch && matchesType
+    const matchesProperty = selectedProperty === 'all' || 
+                            room.property?.id === selectedProperty || 
+                            room.property?.code === selectedProperty
+    return matchesSearch && matchesType && matchesProperty
   })
+
+  const uniqueRoomTypes = Array.from(new Set(rooms.map(r => r.type))).filter(Boolean) as string[];
 
   return (
     <div className="bg-transparent text-white">
@@ -112,18 +145,31 @@ export default function RoomsPage() {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <div className="flex items-center gap-4 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
-              {['all', 'Standard', 'Deluxe', 'Suite', 'Presidential'].map((type) => (
-                <button
-                  key={type}
-                  onClick={() => setSelectedType(type)}
-                  className={`px-6 py-2 text-[10px] uppercase tracking-widest font-bold whitespace-nowrap transition-all border rounded-lg ${
-                    selectedType === type ? 'bg-primary/20 text-primary border-primary/30' : 'border-white/10 text-white/40 hover:border-primary/30 hover:text-primary'
-                  }`}
-                >
-                  {type}
-                </button>
-              ))}
+            <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
+              <select
+                className="w-full md:w-auto px-4 py-3 bg-white/5 border border-white/10 text-white focus:ring-1 focus:ring-primary transition-all text-[10px] uppercase tracking-widest font-bold rounded-xl appearance-none cursor-pointer"
+                value={selectedProperty}
+                onChange={(e) => setSelectedProperty(e.target.value)}
+              >
+                <option value="all" className="bg-[#0a0a0a]">All Locations</option>
+                {properties.map(p => (
+                  <option key={p.id} value={p.id} className="bg-[#0a0a0a]">{p.city} - {p.name}</option>
+                ))}
+              </select>
+
+              <div className="flex gap-2">
+                {['all', ...uniqueRoomTypes].map((type) => (
+                  <button
+                    key={type}
+                    onClick={() => setSelectedType(type)}
+                    className={`px-6 py-3 text-[10px] uppercase tracking-widest font-bold whitespace-nowrap transition-all border rounded-xl ${
+                      selectedType === type ? 'bg-primary/20 text-primary border-primary/30' : 'border-white/10 text-white/40 hover:border-primary/30 hover:text-primary'
+                    }`}
+                  >
+                    {type}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -151,9 +197,9 @@ export default function RoomsPage() {
               {filteredRooms.map((room) => (
                 <div key={room.id} className="group relative" data-testid="room-card">
                   {/* Image container */}
-                  <div className="relative aspect-[3/4] overflow-hidden rounded-2xl shadow-2xl">
+                  <div className="relative aspect-[3/4] overflow-hidden rounded-2xl shadow-2xl bg-black/20">
                     <Image 
-                      src={room.roomImages?.[0]?.imageUrl || room.images?.[0] || 'https://images.unsplash.com/photo-1590490359683-658d3d23f972?auto=format&fit=crop&q=80&w=800'} 
+                      src={room.roomImages?.[0]?.imageUrl || room.images?.[0] || '/images/hotel/hotel-hero-2.jpg'} 
                       alt={room.type} 
                       fill 
                       className="object-cover group-hover:scale-110 transition-transform duration-1000" 
@@ -214,6 +260,9 @@ export default function RoomsPage() {
                       <Wifi className="w-3.5 h-3.5 text-white/20" />
                       <Coffee className="w-3.5 h-3.5 text-white/20" />
                       <MapPin className="w-3.5 h-3.5 text-white/20" />
+                      {room.property && (
+                        <span className="text-[9px] uppercase tracking-widest text-primary ml-auto">{room.property.city}</span>
+                      )}
                     </div>
                   </div>
                 </div>

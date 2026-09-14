@@ -17,6 +17,7 @@ export async function GET(request: NextRequest) {
   const checkOut = searchParams.get('checkOut') ?? searchParams.get('checkout')
   const guests = parseInt(searchParams.get('guests') || '1')
   const typeName = searchParams.get('type')
+  const propertyId = searchParams.get('propertyId')
 
   if (!isDatabaseConfigured()) {
     return NextResponse.json({ error: 'Database not configured', availableRooms: [] }, { status: 503 })
@@ -40,6 +41,10 @@ export async function GET(request: NextRequest) {
       roomType: {
         capacity: { gte: guests }
       }
+    }
+
+    if (propertyId && propertyId !== 'all') {
+      whereClause.propertyId = propertyId
     }
 
     if (typeName && typeName !== 'all') {

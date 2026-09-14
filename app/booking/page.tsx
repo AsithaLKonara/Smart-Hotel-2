@@ -29,7 +29,12 @@ function BookingPageContent() {
 
    const [step, setStep] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
-  const [searchData, setSearchData] = useState({ checkIn: '', checkOut: '', guests: 2, roomType: searchParams.get('roomType') || 'all' })
+  const [searchData, setSearchData] = useState({ 
+    checkIn: '', checkOut: '', guests: 2, 
+    roomType: searchParams.get('roomType') || 'all',
+    propertyId: searchParams.get('property') || 'all'
+  })
+  const [properties, setProperties] = useState<any[]>([])
   const [availableRooms, setAvailableRooms] = useState<any[]>([])
   const [selectedRoom, setSelectedRoom] = useState<any>(null)
   const [detailsModalRoom, setDetailsModalRoom] = useState<any>(null)
@@ -75,6 +80,13 @@ function BookingPageContent() {
   }, [searchData.checkIn, searchData.checkOut])
 
   useEffect(() => {
+    fetch('/api/properties')
+      .then(res => res.json())
+      .then(data => setProperties(data))
+      .catch(err => console.error('Failed to load properties', err))
+  }, [])
+
+  useEffect(() => {
     if (selectedRoom && nights > 0) {
       let extrasTotal = 0
       if (bookingData.extras.breakfast) extrasTotal += 25 * nights
@@ -94,7 +106,13 @@ function BookingPageContent() {
     if (!searchData.checkIn || !searchData.checkOut) { toast.error('Please select dates'); return }
     setIsSearching(true)
     try {
-      const params = new URLSearchParams({ checkin: searchData.checkIn, checkout: searchData.checkOut, guests: searchData.guests.toString(), type: searchData.roomType })
+      const params = new URLSearchParams({ 
+        checkin: searchData.checkIn, 
+        checkout: searchData.checkOut, 
+        guests: searchData.guests.toString(), 
+        type: searchData.roomType,
+        propertyId: searchData.propertyId
+      })
       const res = await fetch(`/api/rooms/availability?${params}`)
       const data = await res.json()
       if (res.ok) { setAvailableRooms(data.availableRooms); setStep(2); setCarouselIdx(0) }
@@ -245,11 +263,22 @@ function BookingPageContent() {
                       <input type="date" className={inputClass} value={searchData.checkOut} onChange={e => setSearchData({...searchData, checkOut: e.target.value})} />
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <label className={labelClass}>Guests</label>
-                    <select className={inputClass} value={searchData.guests} onChange={e => setSearchData({...searchData, guests: parseInt(e.target.value)})}>
-                      {[1,2,3,4,5,6].map(n => <option key={n} value={n} className="bg-midnight">{n} {n === 1 ? 'Guest' : 'Guests'}</option>)}
-                    </select>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className={labelClass}>Guests</label>
+                      <select className={inputClass} value={searchData.guests} onChange={e => setSearchData({...searchData, guests: parseInt(e.target.value)})}>
+                        {[1,2,3,4,5,6].map(n => <option key={n} value={n} className="bg-[#0a0a0a]">{n} {n === 1 ? 'Guest' : 'Guests'}</option>)}
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className={labelClass}>Location</label>
+                      <select className={inputClass} value={searchData.propertyId} onChange={e => setSearchData({...searchData, propertyId: e.target.value})}>
+                        <option value="all" className="bg-[#0a0a0a]">All Locations</option>
+                        {properties.map((p: any) => (
+                          <option key={p.id} value={p.id} className="bg-[#0a0a0a]">{p.city} - {p.name}</option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
                 </div>
                 <Button onClick={searchRooms} disabled={isSearching || !searchData.checkIn || !searchData.checkOut} className="w-full bg-gold-gradient text-white h-14 rounded-xl uppercase tracking-[0.2em] text-xs font-bold border-none shadow-luxury hover:opacity-90">

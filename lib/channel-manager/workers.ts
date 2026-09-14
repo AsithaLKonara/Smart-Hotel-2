@@ -82,6 +82,7 @@ export const inboundWorker = new Worker('inbound-ota', async (job: Job) => {
       // 3. Availability Check (Overbooking Protection)
       const hasAvailability = await AvailabilityEngine.hasAvailability(
         roomMapping.localRoomTypeId,
+        connection.propertyId,
         new Date(res.checkin),
         new Date(res.checkout),
         1

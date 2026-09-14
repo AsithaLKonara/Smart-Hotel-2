@@ -3,6 +3,7 @@ import { getRequestSession } from '@/lib/session'
 import { prisma } from '@/lib/db'
 import { z } from 'zod'
 import { handleZodError } from '@/lib/api-utils'
+import { getEffectivePropertyId } from '@/lib/server-rbac'
 
 const roomTypeSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -31,11 +32,14 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const validatedData = roomTypeSchema.partial().parse(body)
 
     // Check name conflict
+    // Check name conflict
     const { id } = await params
+    const propertyId = await getEffectivePropertyId(request)
     if (validatedData.name) {
       const existing = await prisma.roomType.findFirst({
         where: { 
           name: validatedData.name,
+          propertyId: propertyId || undefined,
           id: { not: id }
         }
       })

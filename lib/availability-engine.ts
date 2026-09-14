@@ -10,6 +10,7 @@ export class AvailabilityEngine {
   static async getInventoryTimeline(startDate: Date, endDate: Date, propertyId?: string) {
     // 1. Get all room types and their physical rooms
     const roomTypes = await prisma.roomType.findMany({
+      where: propertyId ? { propertyId } : {},
       include: {
         rooms: {
           where: {
@@ -24,6 +25,7 @@ export class AvailabilityEngine {
     const conflictingBookings = await prisma.booking.findMany({
       where: {
         status: { in: ['CONFIRMED', 'CHECKED_IN'] },
+        ...(propertyId ? { propertyId } : {}),
         OR: [
           { checkIn: { gte: startDate, lt: endDate } },
           { checkOut: { gt: startDate, lte: endDate } },
@@ -90,8 +92,8 @@ export class AvailabilityEngine {
    * Boolean check for idempotency worker to verify if a specific room type has capacity 
    * for a given date range before accepting an OTA reservation.
    */
-  static async hasAvailability(roomTypeId: string, checkIn: Date, checkOut: Date, quantity: number = 1): Promise<boolean> {
-    const timeline = await this.getInventoryTimeline(checkIn, checkOut);
+  static async hasAvailability(roomTypeId: string, propertyId: string, checkIn: Date, checkOut: Date, quantity: number = 1): Promise<boolean> {
+    const timeline = await this.getInventoryTimeline(checkIn, checkOut, propertyId);
     const roomTimeline = timeline[roomTypeId];
     
     if (!roomTimeline) return false;

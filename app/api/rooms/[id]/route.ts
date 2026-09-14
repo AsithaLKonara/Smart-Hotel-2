@@ -3,7 +3,9 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import prisma from '@/lib/db'
 import { z } from 'zod'
+import { revalidatePath } from 'next/cache'
 import { handleZodError, toPublicRoomDTO } from '@/lib/api-utils'
+import { getEffectivePropertyId } from '@/lib/server-rbac'
 
 const roomUpdateSchema = z.object({
   number: z.string().min(1, 'Room number is required').optional(),
@@ -12,7 +14,7 @@ const roomUpdateSchema = z.object({
   floor: z.number().optional(),
   size: z.number().optional(),
   status: z.string().optional(),
-  images: z.array(z.string().url()).optional(),
+  images: z.array(z.string()).optional(),
 })
 
 export async function PATCH(
@@ -37,9 +39,9 @@ export async function PATCH(
     const body = await request.json()
     const validatedData = roomUpdateSchema.parse(body)
 
-    // Restrict updates for operational staff to only status/availability
+    // Restrict updates for operational staff to only status
     if (!['SUPER_ADMIN', 'MANAGER'].includes(userRole)) {
-      const allowedKeys = ['status', 'isAvailable'];
+      const allowedKeys = ['status'];
       const providedKeys = Object.keys(validatedData);
       const invalidKeys = providedKeys.filter(k => !allowedKeys.includes(k));
       if (invalidKeys.length > 0) {
@@ -50,6 +52,11 @@ export async function PATCH(
     const existingRoom = await prisma.room.findUnique({ where: { id } })
     if (!existingRoom) {
       return NextResponse.json({ error: 'Room not found' }, { status: 404 })
+    }
+
+    const propertyId = await getEffectivePropertyId(request)
+    if (propertyId && existingRoom.propertyId !== propertyId) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     const room = await prisma.$transaction(async (tx: any) => {
@@ -90,6 +97,8 @@ export async function PATCH(
       return updatedRoom
     })
 
+    revalidatePath('/', 'layout')
+
     return NextResponse.json(room)
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -118,6 +127,11 @@ export async function GET(
         { error: 'Room not found' },
         { status: 404 }
       )
+    }
+
+    const propertyId = await getEffectivePropertyId(request)
+    if (propertyId && room.propertyId !== propertyId) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     const session = await getServerSession(authOptions)
@@ -164,11 +178,22 @@ export async function PUT(
     const body = await request.json()
     const validatedData = roomUpdateSchema.parse(body)
 
+    const currentRoom = await prisma.room.findUnique({ where: { id } })
+    if (!currentRoom) {
+      return NextResponse.json({ error: 'Room not found' }, { status: 404 })
+    }
+
+    const propertyId = await getEffectivePropertyId(request)
+    if (propertyId && currentRoom.propertyId !== propertyId) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
     // Check if room number already exists (if being updated)
     if (validatedData.number) {
       const existingRoom = await prisma.room.findFirst({
         where: {
           number: validatedData.number,
+          propertyId: currentRoom.propertyId,
           id: { not: id }
         }
       })
@@ -207,6 +232,8 @@ export async function PUT(
       } as any
     })
 
+    revalidatePath('/', 'layout')
+
     return NextResponse.json(room)
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -243,6 +270,16 @@ export async function DELETE(
       )
     }
 
+    const currentRoom = await prisma.room.findUnique({ where: { id } })
+    if (!currentRoom) {
+      return NextResponse.json({ error: 'Room not found' }, { status: 404 })
+    }
+
+    const propertyId = await getEffectivePropertyId(request)
+    if (propertyId && currentRoom.propertyId !== propertyId) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
     // Check if room has active bookings
     const activeBookings = await prisma.booking.findFirst({
       where: {
@@ -268,6 +305,8 @@ export async function DELETE(
       where: { id: id },
       data: { deletedAt: new Date() }
     })
+
+    revalidatePath('/', 'layout')
 
     return NextResponse.json({ message: 'Room deleted successfully' })
   } catch (error) {

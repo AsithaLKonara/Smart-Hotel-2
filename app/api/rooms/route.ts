@@ -5,7 +5,7 @@ import { prisma } from '@/lib/db'
 import { isDatabaseConfigured, getDatabaseErrorMessage } from '@/lib/db-helpers'
 import { getEffectivePropertyId } from '@/lib/server-rbac'
 import { z } from 'zod'
-import { unstable_cache } from 'next/cache'
+import { unstable_cache, revalidatePath } from 'next/cache'
 import { handleZodError, toPublicRoomDTO } from '@/lib/api-utils'
 
 const roomSchema = z.object({
@@ -14,7 +14,7 @@ const roomSchema = z.object({
   floor: z.number().int().min(0).optional().default(0),
   size: z.number().int().min(0).optional().default(25),
   status: z.enum(['AVAILABLE', 'OCCUPIED', 'DIRTY', 'CLEANING', 'INSPECTION_PENDING', 'MAINTENANCE', 'OUT_OF_ORDER']).default('AVAILABLE'),
-  images: z.array(z.string().url()).optional()
+  images: z.array(z.string()).optional()
 })
 
 export async function GET(request: NextRequest) {
@@ -27,30 +27,35 @@ export async function GET(request: NextRequest) {
     const typeId = searchParams.get('roomTypeId')
     const status = searchParams.get('status')
     const availableOnly = searchParams.get('available') === 'true'
-    const propertyId = await getEffectivePropertyId(request)
+    const reqPropertyId = searchParams.get('propertyId')
+    const effectivePropertyId = await getEffectivePropertyId(request)
+    const propertyId = reqPropertyId || effectivePropertyId
 
-    const getCachedRooms = unstable_cache(
-      async (tId: string | null, stat: string | null, availOnly: boolean, pId: string | null) => {
-        const whereClause: any = {
-          deletedAt: null
-        }
-        if (tId) whereClause.roomTypeId = tId
-        if (stat) whereClause.status = stat
-        if (availOnly) whereClause.status = 'AVAILABLE'
-        if (pId) whereClause.propertyId = pId
+    const getCachedRooms = async (tId: string | null, stat: string | null, availOnly: boolean, pId: string | null) => {
+      const fetchRooms = unstable_cache(
+        async () => {
+          const whereClause: any = {
+            deletedAt: null
+          }
+          if (tId) whereClause.roomTypeId = tId
+          if (stat) whereClause.status = stat
+          if (availOnly) whereClause.status = 'AVAILABLE'
+          if (pId) whereClause.propertyId = pId
 
-        return prisma.room.findMany({
-          where: whereClause,
-          include: {
-            roomType: true,
-            roomImages: true
-          } as any,
-          orderBy: { number: 'asc' }
-        })
-      },
-      ['public-rooms-list'],
-      { revalidate: 60, tags: ['rooms'] }
-    )
+          return prisma.room.findMany({
+            where: whereClause,
+            include: {
+              roomType: true,
+              roomImages: true
+            } as any,
+            orderBy: { number: 'asc' }
+          })
+        },
+        ['public-rooms-list', tId || 'all', stat || 'all', availOnly ? 'avail' : 'all', pId || 'all'],
+        { revalidate: 60, tags: ['rooms'] }
+      )
+      return fetchRooms()
+    }
 
     const rooms = await getCachedRooms(typeId, status, availableOnly, propertyId)
 
@@ -121,6 +126,8 @@ export async function POST(request: NextRequest) {
         roomImages: true
       } as any
     })
+
+    revalidatePath('/', 'layout')
 
     return NextResponse.json(room, { status: 201 })
   } catch (error: any) {

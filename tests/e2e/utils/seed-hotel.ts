@@ -37,7 +37,13 @@ export async function seedTestHotel() {
 
     // 3. Seed Room Types & Rooms (100 total across 4 floors)
     const stdType = await prisma.roomType.create({
-      data: { name: 'Standard King', baseRate: 150.00, capacity: 2, description: 'Standard King' }
+      data: {
+        name: 'Standard King',
+        baseRate: 150.00,
+        capacity: 2,
+        description: 'Standard King',
+        propertyId: property.id
+      }
     });
 
     const roomsToInsert = [];

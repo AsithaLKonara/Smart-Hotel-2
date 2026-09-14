@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import prisma from '@/lib/db'
 import { formatPrice } from '@/lib/utils'
 import { isDatabaseConfigured } from '@/lib/db-helpers'
+import { getHotelContactInfo } from '@/lib/settings'
 
 export const dynamic = 'force-dynamic'
 
@@ -76,7 +77,8 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
       where: { id: id.trim() },
       include: { 
         roomType: true,
-        roomImages: { orderBy: { isMain: 'desc' } }
+        roomImages: { orderBy: { isMain: 'desc' } },
+        property: true
       }
     })
   } catch {
@@ -100,48 +102,14 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
     roomImagesUrls: room.roomImages?.map((img: any) => img.imageUrl) || [],
   }
 
-  // Build a 5-image gallery using available images + curated fallbacks
-  const roomTypeImages: Record<string, string[]> = {
-    standard: [
-      'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&q=80&w=1200',
-      'https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&q=80&w=800',
-      'https://images.unsplash.com/photo-1540518614846-7eded433c457?auto=format&fit=crop&q=80&w=800',
-      'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&q=80&w=800',
-      'https://images.unsplash.com/photo-1507652313519-d4e9174996dd?auto=format&fit=crop&q=80&w=800',
-    ],
-    deluxe: [
-      'https://images.unsplash.com/photo-1590490359683-658d3d23f972?auto=format&fit=crop&q=80&w=1200',
-      'https://images.unsplash.com/photo-1571508601891-ca5e7a713859?auto=format&fit=crop&q=80&w=800',
-      'https://images.unsplash.com/photo-1560185893-a55cbc8c57e8?auto=format&fit=crop&q=80&w=800',
-      'https://images.unsplash.com/photo-1566195992011-5f6b21e539aa?auto=format&fit=crop&q=80&w=800',
-      'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?auto=format&fit=crop&q=80&w=800',
-    ],
-    suite: [
-      'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?auto=format&fit=crop&q=80&w=1200',
-      'https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&q=80&w=800',
-      'https://images.unsplash.com/photo-1574643156929-51fa098b0394?auto=format&fit=crop&q=80&w=800',
-      'https://images.unsplash.com/photo-1615460549969-36fa19521a4f?auto=format&fit=crop&q=80&w=800',
-      'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&q=80&w=800',
-    ],
-    presidential: [
-      'https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?auto=format&fit=crop&q=80&w=1200',
-      'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&q=80&w=800',
-      'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&q=80&w=800',
-      'https://images.unsplash.com/photo-1549294413-26f195200c16?auto=format&fit=crop&q=80&w=800',
-      'https://images.unsplash.com/photo-1564501049412-61c2a3083791?auto=format&fit=crop&q=80&w=800',
-    ],
-  }
-
-  const typeLower = serializedRoom.type.toLowerCase()
-  const fallbackKey = Object.keys(roomTypeImages).find(k => typeLower.includes(k)) || 'deluxe'
-  const fallbackImages = roomTypeImages[fallbackKey]
+  const contactInfo = await getHotelContactInfo()
 
   const dbImages = serializedRoom.roomImagesUrls.length > 0 
     ? serializedRoom.roomImagesUrls 
     : (Array.isArray(serializedRoom.images) && serializedRoom.images.length > 0 ? serializedRoom.images as string[] : [])
 
-  // If we have DB images, use them. Otherwise use fallbacks.
-  const gallery: string[] = dbImages.length > 0 ? dbImages : fallbackImages
+  // If we have DB images, use them. Otherwise use fallback.
+  const gallery: string[] = dbImages.length > 0 ? dbImages : ['/images/hotel/hotel-hero-2.jpg']
 
   const amenities = Array.isArray(serializedRoom.amenities) ? serializedRoom.amenities as string[] : []
 
@@ -152,8 +120,8 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
   }
 
   const policies = [
-    { icon: Clock, label: 'Check-in', value: 'From 15:00' },
-    { icon: Clock, label: 'Check-out', value: 'Until 11:00' },
+    { icon: Clock, label: 'Check-in', value: `From ${contactInfo.checkIn}` },
+    { icon: Clock, label: 'Check-out', value: `Until ${contactInfo.checkOut}` },
     { icon: CheckCircle, label: 'Cancellation', value: 'Free up to 48 hours' },
     { icon: Users, label: 'Max Guests', value: `${serializedRoom.capacity} guests` },
   ]
@@ -179,7 +147,18 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
           </Link>
           <div className="flex items-end justify-between gap-4">
             <div className="space-y-2">
-              <span className="text-primary uppercase tracking-[0.3em] text-xs font-bold">{serializedRoom.type}</span>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-primary uppercase tracking-[0.3em] text-xs font-bold">{serializedRoom.type}</span>
+                {room.property && (
+                  <>
+                    <span className="text-white/20">•</span>
+                    <span className="text-white/60 uppercase tracking-widest text-[10px] font-bold">
+                      <MapPin className="inline w-3 h-3 mr-1" />
+                      {room.property.name}, {room.property.city}
+                    </span>
+                  </>
+                )}
+              </div>
               <h1 className="text-4xl md:text-5xl font-serif font-bold text-white">{serializedRoom.type} Suite</h1>
             </div>
             <div className="text-right hidden sm:block">
@@ -198,10 +177,10 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
             {/* Left: Gallery + Details */}
             <div className="lg:col-span-2 space-y-10">
 
-              {/* 5-Image Gallery */}
+              {/* Dynamic Image Gallery */}
               <div className="space-y-3">
                 {/* Main hero image */}
-                <div className="relative aspect-video overflow-hidden rounded-2xl">
+                <div className="relative aspect-video overflow-hidden rounded-2xl bg-black/20">
                   <Image
                     src={gallery[0]}
                     alt={`${serializedRoom.type} main view`}
@@ -220,7 +199,11 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
                 </div>
                 {/* thumbnails */}
                 {gallery.length > 1 && (
-                  <div className="grid grid-cols-4 gap-3">
+                  <div className={`grid gap-3 ${
+                    gallery.length === 2 ? 'grid-cols-1' :
+                    gallery.length === 3 ? 'grid-cols-2' :
+                    gallery.length === 4 ? 'grid-cols-3' : 'grid-cols-4'
+                  }`}>
                     {gallery.slice(1, 5).map((img, idx) => (
                       <div key={idx} className="relative aspect-video overflow-hidden rounded-xl bg-black/20">
                         <Image
@@ -329,7 +312,7 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
                   ))}
                 </div>
 
-                <Link href={`/booking?room=${serializedRoom.id}`} className="block">
+                <Link href={`/booking?room=${serializedRoom.id}&property=${room.propertyId}`} className="block">
                   <Button className="w-full bg-gold-gradient text-white h-14 rounded-xl uppercase tracking-[0.2em] text-xs font-bold border-none shadow-luxury hover:opacity-90 transition-opacity">
                     Reserve This Suite
                   </Button>

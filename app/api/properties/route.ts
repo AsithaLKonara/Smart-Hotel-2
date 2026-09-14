@@ -4,7 +4,8 @@ import prisma from '@/lib/db'
 export async function GET() {
   try {
     const properties = await prisma.property.findMany({
-      select: { id: true, name: true }
+      where: { status: 'ACTIVE' },
+      orderBy: { createdAt: 'asc' }
     })
     return NextResponse.json(properties)
   } catch (error) {

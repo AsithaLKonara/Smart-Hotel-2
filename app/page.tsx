@@ -49,6 +49,7 @@ const defaultContact = {
 export default async function HomePage() {
   let contact = defaultContact
   let featuredRooms: any[] = []
+  let properties: any[] = []
   let aboutContent: any = { story: '', founded: '', milestones: [], staff: [] }
 
   try {
@@ -59,10 +60,15 @@ export default async function HomePage() {
         take: 3,
         include: {
           roomType: true,
-          roomImages: { where: { isMain: true }, take: 1 },
+          roomImages: { orderBy: { isMain: 'desc' }, take: 1 },
           feedback: true
         },
         orderBy: { roomType: { baseRate: 'desc' } },
+      })
+      properties = await prisma.property.findMany({
+        where: { status: 'ACTIVE' },
+        take: 3,
+        orderBy: { createdAt: 'asc' }
       })
       aboutContent = await getHotelAboutContent()
     }
@@ -128,6 +134,48 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* Destinations Section */}
+      {properties.length > 0 && (
+        <section className="py-24 lg:py-32 bg-transparent border-y border-white/5 text-white">
+          <div className="container mx-auto px-4">
+            <div className="flex flex-col lg:flex-row justify-between items-end mb-20 gap-8">
+              <div className="space-y-4">
+                <h4 className="text-primary uppercase tracking-[0.3em] text-xs font-bold">Global Presence</h4>
+                <h2 className="text-5xl lg:text-6xl font-serif font-bold leading-tight">
+                  Our <span className="text-primary italic">Destinations</span>
+                </h2>
+              </div>
+              <Link href="/properties" className="group flex items-center space-x-3 text-primary uppercase tracking-widest text-xs font-bold">
+                <span>View All Properties</span>
+                <div className="w-10 h-px bg-primary group-hover:w-16 transition-all" />
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+              {properties.map((property) => (
+                <Link key={property.id} href={`/properties/${property.code}`} className="group relative aspect-[3/4] overflow-hidden rounded-2xl block border border-white/10 hover:border-primary/40 transition-all duration-500 hover:shadow-luxury">
+                  <Image 
+                    src={property.mainImage || 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&q=80&w=1000'}
+                    alt={property.name} 
+                    fill 
+                    className="object-cover group-hover:scale-110 transition-transform duration-1000"
+                    unoptimized={!!property.mainImage}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+                  <div className="absolute bottom-6 left-6 right-6 flex flex-col justify-end space-y-2">
+                    <div className="flex items-center gap-2 text-primary text-[10px] uppercase tracking-widest font-bold">
+                      <MapPin className="w-3 h-3" />
+                      {property.city}, {property.country}
+                    </div>
+                    <h3 className="text-2xl font-serif font-bold text-white group-hover:text-primary transition-colors">{property.name}</h3>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Featured Suites */}
       <section className="py-24 lg:py-32 bg-transparent border-y border-white/5 text-white">
         <div className="container mx-auto px-4">
@@ -148,10 +196,10 @@ export default async function HomePage() {
             {featuredRooms.length > 0 ? (
               featuredRooms.map((room, i) => (
                 <div key={room.id || i} className="group cursor-pointer bg-black/40 border border-white/10 p-5 rounded-2xl transition-all duration-500 hover:-translate-y-2 hover:border-primary/40 hover:shadow-luxury">
-                  <div className="relative aspect-[3/4] overflow-hidden rounded-xl mb-6">
+                  <div className="relative aspect-[3/4] overflow-hidden rounded-xl mb-6 bg-black/20">
                     <Image 
-                      src={room.roomImages?.[0]?.imageUrl || `https://images.unsplash.com/photo-1590490359683-658d3d23f972?auto=format&fit=crop&q=80&w=800&sig=${i}`}
-                      alt={room.type || "Luxury Room"} 
+                      src={room.roomImages?.[0]?.imageUrl || room.roomType?.images?.[0] || '/images/hotel/hotel-hero-2.jpg'}
+                      alt={room.roomType?.name || "Luxury Room"} 
                       fill 
                       className="object-cover group-hover:scale-110 transition-transform duration-1000"
                     />

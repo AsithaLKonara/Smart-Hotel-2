@@ -11,7 +11,7 @@ datasource db {
 
 model RoomType {
   id                 String               @id @default(uuid())
-  name               String               @unique
+  name               String
   description        String
   baseRate           Decimal
   capacity           Int                  @default(2)
@@ -24,6 +24,7 @@ model RoomType {
   closeToArrival     Boolean              @default(false)
   closeToDeparture   Boolean              @default(false)
   nonRefundable      Boolean              @default(false)
+  propertyId         String
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
   groupBlocks        GroupBlock[]
@@ -31,6 +32,9 @@ model RoomType {
   rooms              Room[]
   eventPackages      EventPackage[]
   ChannelRoomMapping ChannelRoomMapping[]
+  property           Property             @relation(fields: [propertyId], references: [id])
+
+  @@unique([propertyId, name])
 }
 
 model Room {
@@ -102,9 +106,11 @@ model RatePlan {
   active         Boolean        @default(true)
   cancelPolicy   String         @default("FLEXIBLE")
   nonRefundable  Boolean        @default(false)
+  propertyId     String
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
   roomType       RoomType       @relation(fields: [roomTypeId], references: [id], onDelete: Cascade)
+  property       Property       @relation(fields: [propertyId], references: [id])
   seasonalRates  SeasonalRate[]
 
   @@unique([name, roomTypeId])
@@ -426,8 +432,10 @@ model YieldRule {
   adjustmentType  String
   adjustmentValue Decimal
   isActive        Boolean  @default(true)
+  propertyId      String
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+  property        Property @relation(fields: [propertyId], references: [id])
 }
 
 model POSOutlet {
@@ -1438,6 +1446,10 @@ model Property {
   address               String
   city                  String
   country               String
+  phone                 String?
+  email                 String?
+  description           String?
+  mainImage             String?
   timezone              String                 @default("UTC")
   businessDate          DateTime               @default(now()) @db.Date
   totalRooms            Int                    @default(0)
@@ -1464,6 +1476,9 @@ model Property {
   InventoryStock        InventoryStock[]
   InventoryMovement     InventoryMovement[]
   ChannelConnection     ChannelConnection[]
+  roomTypes             RoomType[]
+  ratePlans             RatePlan[]
+  yieldRules            YieldRule[]
 }
 
 model GuestConversation {
