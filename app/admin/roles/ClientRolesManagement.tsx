@@ -4,8 +4,14 @@ import React, { useState } from 'react';
 import { Shield, Plus, Edit2, Trash2, CheckSquare, Square, ChevronDown, ChevronUp, Users, Search, RefreshCw } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
+import { useProperty } from '@/contexts/property-context';
+import { useSession } from 'next-auth/react';
 
 export default function ClientRolesManagement({ initialRoles, groupedPermissions, initialStaff }: { initialRoles: any[], groupedPermissions: any, initialStaff: any[] }) {
+  const { data: session } = useSession();
+  const { properties } = useProperty();
+  const isSuperAdmin = (session?.user as any)?.roleName === 'SUPER_ADMIN';
+
   const [activeTab, setActiveTab] = useState<'ROLES' | 'USERS'>('ROLES');
   
   // Roles State
@@ -17,7 +23,8 @@ export default function ClientRolesManagement({ initialRoles, groupedPermissions
     name: '',
     description: '',
     status: 'ACTIVE',
-    permissionIds: [] as string[]
+    permissionIds: [] as string[],
+    propertyId: ''
   });
   const [expandedModules, setExpandedModules] = useState<Record<string, boolean>>({});
   
@@ -34,7 +41,7 @@ export default function ClientRolesManagement({ initialRoles, groupedPermissions
 
   const openCreateModal = () => {
     setEditingRole(null);
-    setFormData({ name: '', description: '', status: 'ACTIVE', permissionIds: [] });
+    setFormData({ name: '', description: '', status: 'ACTIVE', permissionIds: [], propertyId: '' });
     setExpandedModules({});
     setIsModalOpen(true);
   };
@@ -45,7 +52,8 @@ export default function ClientRolesManagement({ initialRoles, groupedPermissions
       name: role.name,
       description: role.description || '',
       status: role.status,
-      permissionIds: role.permissions.map((p: any) => p.permissionId)
+      permissionIds: role.permissions.map((p: any) => p.permissionId),
+      propertyId: role.propertyId || ''
     });
     setExpandedModules({});
     setIsModalOpen(true);
@@ -78,10 +86,15 @@ export default function ClientRolesManagement({ initialRoles, groupedPermissions
       const url = editingRole ? `/api/admin/rbac/roles/${editingRole.id}` : '/api/admin/rbac/roles';
       const method = editingRole ? 'PATCH' : 'POST';
 
+      const payload = {
+        ...formData,
+        propertyId: formData.propertyId === '' ? null : formData.propertyId
+      };
+
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(payload)
       });
 
       if (res.ok) {
@@ -245,9 +258,16 @@ export default function ClientRolesManagement({ initialRoles, groupedPermissions
                   {roles.map(role => (
                     <tr key={role.id} className="hover:bg-white/[0.02] transition-colors">
                       <td className="p-4">
-                        <div className="font-medium text-white flex items-center gap-2">
-                          {role.name}
-                          {!role.isCustom && <span className="bg-white/5 text-[#8E8C94] text-[10px] px-1.5 py-0.5 rounded font-bold border border-white/10">SYSTEM</span>}
+                        <div className="font-medium text-white flex flex-col gap-1">
+                          <div className="flex items-center gap-2">
+                            {role.name}
+                            {!role.isCustom && <span className="bg-white/5 text-[#8E8C94] text-[10px] px-1.5 py-0.5 rounded font-bold border border-white/10">SYSTEM</span>}
+                          </div>
+                          {isSuperAdmin && (
+                            <span className="text-[10px] text-[#8E8C94] uppercase font-mono">
+                              {role.propertyId ? properties.find(p => p.id === role.propertyId)?.name || 'Unknown Property' : 'GLOBAL SCOPE'}
+                            </span>
+                          )}
                         </div>
                       </td>
                       <td className="p-4 text-xs text-[#8E8C94] max-w-md truncate">
@@ -396,7 +416,23 @@ export default function ClientRolesManagement({ initialRoles, groupedPermissions
                     <option value="INACTIVE">Inactive</option>
                   </select>
                 </div>
-                <div className="space-y-2 md:col-span-2">
+                {isSuperAdmin && (
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-[#8E8C94] uppercase tracking-wider">Property Scope</label>
+                    <select 
+                      value={formData.propertyId} 
+                      onChange={e => setFormData({...formData, propertyId: e.target.value})}
+                      className="w-full bg-black/50 border border-white/10 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-[#D4AF37] transition-colors"
+                      disabled={editingRole && !editingRole.isCustom}
+                    >
+                      <option value="">Global (All Properties)</option>
+                      {properties.map(p => (
+                        <option key={p.id} value={p.id}>{p.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+                <div className={`space-y-2 ${isSuperAdmin ? 'md:col-span-1' : 'md:col-span-2'}`}>
                   <label className="text-xs font-bold text-[#8E8C94] uppercase tracking-wider">Description</label>
                   <textarea 
                     value={formData.description}
