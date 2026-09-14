@@ -10,6 +10,9 @@ export default function IntegrationsPage() {
   const [integrations, setIntegrations] = useState<any[]>([])
   const [webhooks, setWebhooks] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  
+  const [selectedApp, setSelectedApp] = useState<any>(null)
+  const [apiKey, setApiKey] = useState('')
 
   const [newWebhook, setNewWebhook] = useState({ url: '', event: 'GUEST_CHECKIN' })
 
@@ -29,29 +32,6 @@ export default function IntegrationsPage() {
       
       setIntegrations(intData)
       setWebhooks(webData)
-      
-      // If none exist, prepopulate the UI with some mock "available" integrations
-      if (intData.length === 0) {
-          await fetch('/api/admin/settings/integrations', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ appName: 'QuickBooks Online', provider: 'QUICKBOOKS', status: 'INACTIVE' })
-          })
-          await fetch('/api/admin/settings/integrations', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ appName: 'Stripe Payments', provider: 'STRIPE', status: 'INACTIVE' })
-          })
-          await fetch('/api/admin/settings/integrations', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ appName: 'Assa Abloy Keycards', provider: 'ASSA_ABLOY', status: 'INACTIVE' })
-          })
-          
-          // Re-fetch
-          const newIntRes = await fetch('/api/admin/settings/integrations')
-          setIntegrations(await newIntRes.json())
-      }
 
     } catch (e) {
       console.error(e)
@@ -60,13 +40,30 @@ export default function IntegrationsPage() {
     }
   }
 
-  const toggleIntegration = async (int: any) => {
+  const handleConnectClick = (app: any) => {
+      if (app.status === 'ACTIVE') {
+          // Disconnect immediately
+          updateIntegrationStatus(app, 'INACTIVE', null);
+      } else {
+          // Open Modal to configure
+          setSelectedApp(app);
+          setApiKey('');
+      }
+  }
+
+  const handleModalSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!selectedApp) return;
+      await updateIntegrationStatus(selectedApp, 'ACTIVE', apiKey);
+      setSelectedApp(null);
+  }
+
+  const updateIntegrationStatus = async (int: any, newStatus: string, key: string | null) => {
       try {
-          const newStatus = int.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'
           const res = await fetch('/api/admin/settings/integrations', {
               method: 'PATCH',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ id: int.id, status: newStatus })
+              body: JSON.stringify({ id: int.id, status: newStatus, apiKey: key })
           })
           if (res.ok) {
               toast.success(`${int.appName} is now ${newStatus}`)
@@ -132,7 +129,7 @@ export default function IntegrationsPage() {
                                   {app.status === 'ACTIVE' && <span className="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded-full font-bold">ACTIVE</span>}
                                   <Button 
                                     variant="outline" 
-                                    onClick={() => toggleIntegration(app)}
+                                    onClick={() => handleConnectClick(app)}
                                     className={app.status === 'ACTIVE' ? 'border-red-500/50 text-red-400 hover:bg-red-500/10' : 'border-emerald-500/50 text-emerald-400 hover:bg-emerald-500/10'}
                                   >
                                       {app.status === 'ACTIVE' ? 'Disconnect' : 'Connect'}
@@ -201,6 +198,49 @@ export default function IntegrationsPage() {
           </div>
 
       </div>
+
+      {/* CONFIGURATION MODAL */}
+      {selectedApp && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+              <div className="bg-[#121118] border border-white/10 rounded-2xl w-full max-w-md overflow-hidden">
+                  <div className="p-6 border-b border-white/10">
+                      <h3 className="text-xl font-bold font-serif text-[#D4AF37]">Connect {selectedApp.appName}</h3>
+                      <p className="text-sm text-slate-400 mt-1">Please provide the required configuration details.</p>
+                  </div>
+                  <form onSubmit={handleModalSubmit}>
+                      <div className="p-6 space-y-4">
+                          <div className="space-y-2">
+                              <label className="text-sm font-medium text-slate-300">API Key / Secret Token</label>
+                              <input 
+                                  type="password"
+                                  required
+                                  value={apiKey}
+                                  onChange={e => setApiKey(e.target.value)}
+                                  placeholder="sk_test_..."
+                                  className="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]"
+                              />
+                          </div>
+                      </div>
+                      <div className="p-6 border-t border-white/10 flex justify-end gap-3 bg-black/20">
+                          <Button 
+                              type="button" 
+                              variant="ghost" 
+                              onClick={() => setSelectedApp(null)}
+                              className="text-slate-400 hover:text-white"
+                          >
+                              Cancel
+                          </Button>
+                          <Button 
+                              type="submit" 
+                              className="bg-[#D4AF37] text-black hover:bg-[#F3E5AB] font-semibold"
+                          >
+                              Activate Connection
+                          </Button>
+                      </div>
+                  </form>
+              </div>
+          </div>
+      )}
 
     </div>
   )

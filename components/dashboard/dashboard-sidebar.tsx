@@ -12,7 +12,7 @@ import {
   Grid, Globe, ShieldCheck, Activity, History, Box, Gift, Building2, FileText, 
   Moon, Brush, Wrench, TrendingUp, CalendarDays, Plane, Truck, FileCheck,
   Briefcase, CalendarRange, Clock, CircleDollarSign, CalendarClock, ClipboardCheck, 
-  Award, MessageCircle, PieChart, Link as LinkIcon, Palmtree, Layers
+  Award, MessageCircle, PieChart, Link as LinkIcon, Palmtree, Layers, Network
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useSidebar } from '@/lib/sidebar-context'
@@ -142,6 +142,8 @@ export default function DashboardSidebar() {
       // ⚙️ PLATFORM SETTINGS
       { name: 'System Settings', href: '/admin/settings', icon: SettingsIcon, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Platform Settings' },
       { name: 'App Integrations', href: '/admin/settings/integrations', icon: LinkIcon, roles: ['SUPER_ADMIN'], group: 'Platform Settings' },
+      { name: 'App Marketplace', href: '/admin/app-marketplace', icon: Layers, roles: ['SUPER_ADMIN'], group: 'Platform Settings' },
+      { name: 'Channel Manager', href: '/admin/integrations/channel-manager', icon: Network, roles: ['SUPER_ADMIN', 'MANAGER'], group: 'Platform Settings' },
       { name: 'Security (RBAC)', href: '/admin/roles', icon: ShieldCheck, roles: ['SUPER_ADMIN'], group: 'Platform Settings' },
       { name: 'Audit Stream', href: '/admin/audit-logs', icon: History, roles: ['SUPER_ADMIN'], group: 'Platform Settings' }
     ]

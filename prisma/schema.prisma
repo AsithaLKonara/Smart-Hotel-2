@@ -10,26 +10,27 @@ datasource db {
 }
 
 model RoomType {
-  id               String         @id @default(uuid())
-  name             String         @unique
-  description      String
-  baseRate         Decimal
-  capacity         Int            @default(2)
-  amenities        String[]
-  images           String[]
-  totalRooms       Int            @default(0)
-  otaMappingId     String?
-  minLengthOfStay  Int            @default(1)
-  maxLengthOfStay  Int            @default(30)
-  closeToArrival   Boolean        @default(false)
-  closeToDeparture Boolean        @default(false)
-  nonRefundable    Boolean        @default(false)
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
-  groupBlocks      GroupBlock[]
-  ratePlans        RatePlan[]
-  rooms            Room[]
-  eventPackages    EventPackage[]
+  id                 String               @id @default(uuid())
+  name               String               @unique
+  description        String
+  baseRate           Decimal
+  capacity           Int                  @default(2)
+  amenities          String[]
+  images             String[]
+  totalRooms         Int                  @default(0)
+  otaMappingId       String?
+  minLengthOfStay    Int                  @default(1)
+  maxLengthOfStay    Int                  @default(30)
+  closeToArrival     Boolean              @default(false)
+  closeToDeparture   Boolean              @default(false)
+  nonRefundable      Boolean              @default(false)
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  groupBlocks        GroupBlock[]
+  ratePlans          RatePlan[]
+  rooms              Room[]
+  eventPackages      EventPackage[]
+  ChannelRoomMapping ChannelRoomMapping[]
 }
 
 model Room {
@@ -827,26 +828,112 @@ model AuditLog {
   user       User?    @relation(fields: [userId], references: [id])
 }
 
-model ChannelConfig {
-  id           String        @id @default(uuid())
-  provider     String
-  apiKey       String
-  propertyId   String
-  isEnabled    Boolean       @default(true)
-  roomMappings RoomMapping[]
+// -------------------------------------------------------------
+// CHANNEL MANAGER CORE
+// -------------------------------------------------------------
+
+model ChannelProvider {
+  id          String              @id @default(uuid())
+  code        String              @unique // 'BOOKING_COM', 'AIRBNB', 'EXPEDIA'
+  name        String
+  connections ChannelConnection[]
 }
 
-model RoomMapping {
-  id                    String        @id @default(uuid())
-  localRoomTypeId       String
-  otaRoomTypeId         String
-  otaRatePlanId         String?
-  priceMarkupPercentage Decimal       @default(15.0)
-  syncEnabled           Boolean       @default(true)
-  channelConfigId       String
-  channelConfig         ChannelConfig @relation(fields: [channelConfigId], references: [id], onDelete: Cascade)
+model ChannelConnection {
+  id         String @id @default(uuid())
+  providerId String
+  propertyId String
 
-  @@unique([channelConfigId, otaRoomTypeId])
+  // Modern Auth (Encrypted in DB)
+  clientId              String?
+  clientSecretEncrypted String?
+  machineAccountId      String?
+  accessTokenEncrypted  String?
+  accessTokenExpiresAt  DateTime?
+
+  environment String @default("PRODUCTION") // 'TEST', 'PRODUCTION'
+  status      String @default("DISCONNECTED") // 'HEALTHY', 'WARNING', 'ERROR'
+
+  lastSyncAt    DateTime?
+  lastSuccessAt DateTime?
+  lastErrorAt   DateTime?
+
+  provider ChannelProvider @relation(fields: [providerId], references: [id])
+  property Property        @relation(fields: [propertyId], references: [id])
+
+  roomMappings ChannelRoomMapping[]
+  rateMappings ChannelRateMapping[]
+  reservations ChannelReservation[]
+  syncEvents   ChannelSyncEvent[]
+}
+
+model ChannelRoomMapping {
+  id               String  @id @default(uuid())
+  connectionId     String
+  localRoomTypeId  String
+  externalRoomId   String // e.g., Booking.com Room ID
+  syncAvailability Boolean @default(true)
+
+  connection ChannelConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  roomType   RoomType          @relation(fields: [localRoomTypeId], references: [id])
+
+  @@unique([connectionId, externalRoomId])
+  @@unique([connectionId, localRoomTypeId])
+}
+
+model ChannelRateMapping {
+  id                    String  @id @default(uuid())
+  connectionId          String
+  localRatePlanId       String
+  externalRateId        String // e.g., Booking.com Rate Plan ID
+  priceMarkupPercentage Decimal @default(0.0)
+  syncRates             Boolean @default(true)
+  syncRestrictions      Boolean @default(true)
+
+  connection ChannelConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+}
+
+model ChannelReservation {
+  id                    String  @id @default(uuid())
+  connectionId          String
+  externalReservationId String
+  externalRoomId        String?
+  externalRateId        String?
+
+  bookingId String? @unique // Links to SmartHotel Booking
+
+  status  String // 'NEW', 'PROCESSING', 'CONFIRMED', 'MODIFIED', 'CANCELLED', 'ERROR'
+  payload Json // Original OTA XML/JSON
+
+  receivedAt     DateTime  @default(now())
+  processedAt    DateTime?
+  acknowledgedAt DateTime?
+
+  connection ChannelConnection @relation(fields: [connectionId], references: [id])
+
+  @@unique([connectionId, externalReservationId]) // CRITICAL: Idempotency constraint
+}
+
+model ChannelSyncEvent {
+  id           String  @id @default(uuid())
+  connectionId String
+  eventType    String // 'AVAILABILITY_PUSH', 'RATE_PUSH', 'RESERVATION_PULL'
+  entityType   String // 'ROOM', 'RATE', 'RESERVATION'
+  entityId     String? // Local ID being synced
+  direction    String // 'INBOUND', 'OUTBOUND'
+
+  requestPayload  Json?
+  responsePayload Json?
+
+  status       String // 'PENDING', 'SUCCESS', 'FAILED'
+  errorCode    String?
+  errorMessage String?
+
+  attempt     Int       @default(1)
+  createdAt   DateTime  @default(now())
+  completedAt DateTime?
+
+  connection ChannelConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
 }
 
 model Gallery {
@@ -1369,6 +1456,7 @@ model Property {
   eventPackages         EventPackage[]
   InventoryStock        InventoryStock[]
   InventoryMovement     InventoryMovement[]
+  ChannelConnection     ChannelConnection[]
 }
 
 model GuestConversation {

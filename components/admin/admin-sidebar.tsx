@@ -50,6 +50,7 @@ export default function AdminSidebar() {
       { name: 'Staff', href: '/admin/staff', icon: Users, roles: ['SUPER_ADMIN', 'MANAGER'] },
       { name: 'Tasks', href: '/admin/tasks', icon: Package, roles: ['MAINTENANCE', 'MANAGER', 'SUPER_ADMIN', 'RECEPTIONIST', 'HOUSEKEEPING'] },
       { name: 'Inventory', href: '/admin/inventory', icon: Package, roles: ['SUPER_ADMIN', 'MANAGER'] },
+      { name: 'Channel Manager', href: '/admin/integrations/channel-manager', icon: Share2, roles: ['SUPER_ADMIN', 'MANAGER'] },
       { name: 'Settings', href: '/admin/settings', icon: SettingsIcon, roles: ['SUPER_ADMIN'] },
     ]
 

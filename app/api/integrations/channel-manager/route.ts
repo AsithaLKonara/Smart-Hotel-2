@@ -1,89 +1,70 @@
-import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/db';
+import { inboundOtaQueue } from '@/lib/channel-manager/queues';
 
-const prisma = new PrismaClient()
-
-// Simplistic mock of an HTNG / OTA XML schema receiver for Channel Managers (e.g. Siteminder, Cloudbeds)
-export async function POST(req: Request) {
+/**
+ * Generic webhook receiver for OTAs that support Push (e.g. some Channel Managers, Expedia).
+ * For Booking.com, reservations are typically pulled via a cron job, but we leave this here
+ * to support the "Push" pattern for other providers.
+ */
+export async function POST(req: NextRequest) {
   try {
-    // In production, HTNG uses XML. We are parsing raw text and mocking a JSON parser for simplicity in this demo.
-    const rawXml = await req.text()
+    const rawPayload = await req.text();
     
     // Validate authentication (usually basic auth or API key over mutual TLS)
-    const authHeader = req.headers.get('authorization')
+    const authHeader = req.headers.get('authorization');
     if (!authHeader) {
-      return NextResponse.json({ error: 'Unauthorized OTA Request' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized OTA Request' }, { status: 401 });
     }
 
     const apiKey = authHeader.replace(/^Bearer\s+/i, '').trim();
     
-    const channelConfig = await prisma.channelConfig.findFirst({
-      where: { apiKey: apiKey, isEnabled: true }
+    // In the new architecture, we might look this up by machineAccountId or a hashed token.
+    // For this route, we assume it's a legacy or push-based provider.
+    const connection = await prisma.channelConnection.findFirst({
+      where: { 
+        accessTokenEncrypted: apiKey,
+        status: { in: ['HEALTHY', 'WARNING'] }
+      },
+      include: { provider: true }
     });
 
-    if (!channelConfig) {
-      return NextResponse.json({ error: 'Unauthorized OTA Request' }, { status: 401 })
+    if (!connection) {
+      return NextResponse.json({ error: 'Unauthorized OTA Request' }, { status: 401 });
     }
 
-    // Check if it's an OTA_HotelResNotifRQ (Reservation Notification)
-    if (rawXml.includes('OTA_HotelResNotifRQ')) {
-      // Mock parsing out of the XML
-      const mockBookingId = `OTA-${Math.random().toString(36).substring(2, 10).toUpperCase()}`
-      
-      await prisma.auditLog.create({
-        data: {
-          action: 'OTA_RESERVATION_RECEIVED',
-          resource: 'SYSTEM',
-          actor: 'CHANNEL_MANAGER',
-          details: {
-            xmlLength: rawXml.length,
-            otaBookingId: mockBookingId,
-            provider: channelConfig.provider
-          }
-        }
-      })
+    // Push the raw message to the inbound queue immediately to free up the HTTP thread
+    await inboundOtaQueue.add('process-webhook', {
+      operation: 'WEBHOOK_PUSH',
+      connectionId: connection.id,
+      providerCode: connection.provider.code,
+      payload: rawPayload
+    });
 
-      // Send standard OTA_HotelResNotifRS success response
-      const successXml = `<?xml version="1.0" encoding="UTF-8"?>
-<OTA_HotelResNotifRS xmlns="http://www.opentravel.org/OTA/2003/05" Version="1.0">
-    <Success/>
-    <HotelReservations>
-        <HotelReservation>
-            <ResGlobalInfo>
-                <HotelReservationIDs>
-                    <HotelReservationID ResID_Type="14" ResID_Value="${mockBookingId}"/>
-                </HotelReservationIDs>
-            </ResGlobalInfo>
-        </HotelReservation>
-    </HotelReservations>
-</OTA_HotelResNotifRS>`
-
-      return new NextResponse(successXml, {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/xml'
-        }
-      })
-    }
-
-    // Check if it's an OTA_HotelAvailNotifRQ (Availability Update)
-    if (rawXml.includes('OTA_HotelAvailNotifRQ')) {
-      return new NextResponse(
-        `<?xml version="1.0" encoding="UTF-8"?><OTA_HotelAvailNotifRS Version="1.0"><Success/></OTA_HotelAvailNotifRS>`,
-        { status: 200, headers: { 'Content-Type': 'application/xml' } }
-      )
-    }
-
-    return new NextResponse(
-      `<?xml version="1.0" encoding="UTF-8"?><Errors><Error>Unknown Message Type</Error></Errors>`,
-      { status: 400, headers: { 'Content-Type': 'application/xml' } }
-    )
+    return NextResponse.json({ success: true, message: 'Webhook queued' }, { status: 202 });
 
   } catch (error) {
-    console.error('Channel Manager integration error:', error)
-    return new NextResponse(
-      `<?xml version="1.0" encoding="UTF-8"?><Errors><Error>Internal Server Error</Error></Errors>`,
-      { status: 500, headers: { 'Content-Type': 'application/xml' } }
-    )
+    console.error('Channel Manager Webhook Error:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
+}
+
+/**
+ * GET endpoint to manually trigger a Pull for polling-based OTAs (like Booking.com)
+ */
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const connectionId = searchParams.get('connectionId');
+
+  if (!connectionId) {
+    return NextResponse.json({ error: 'Missing connectionId' }, { status: 400 });
+  }
+
+  // Enqueue a RESERVATION_PULL job
+  await inboundOtaQueue.add('manual-pull', {
+    operation: 'RESERVATION_PULL',
+    connectionId: connectionId
+  });
+
+  return NextResponse.json({ success: true, message: 'Reservation pull triggered' });
 }

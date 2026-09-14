@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
+import { ArrowRight, Settings, CheckCircle2, ChevronRight, Puzzle } from 'lucide-react';
 
 export interface MarketplaceApp {
   id: string;
@@ -10,6 +12,7 @@ export interface MarketplaceApp {
   rating: number;
   installed: boolean;
   cost: string;
+  setupUrl?: string;
 }
 
 export interface PartnerVendor {
@@ -31,80 +34,93 @@ export default function ClientMarketplace({ initialApps, initialVendors }: { ini
   };
 
   return (
-    <div className="min-h-screen bg-[#09050D] text-[#FBFAF7] p-8 font-sans">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen bg-transparent text-[#FBFAF7] p-8 font-sans">
+      <div className="max-w-6xl mx-auto space-y-8">
         
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-white/[0.04]">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-white/10">
           <div className="space-y-2">
-            <span className="text-xs uppercase tracking-[0.25em] text-[#D4AF37] font-medium">SmartHotel Ecosystem</span>
-            <h1 className="text-4xl font-serif font-light tracking-wide text-white">App & Partner Marketplace</h1>
-            <p className="text-[#8E8C94] text-sm">
-              Extend your hospitality operations with verified extensions, plug-and-play AI modules, and integrated regional service sub-contractors.
+            <h1 className="text-3xl font-medium tracking-tight text-white">App Marketplace</h1>
+            <p className="text-[#8E8C94] text-sm max-w-xl">
+              Extend your property management capabilities with verified integrations, modules, and regional service partners.
             </p>
           </div>
 
-          {/* Tab Selector Buttons */}
-          <div className="flex bg-black/40 p-1.5 rounded-xl border border-white/[0.03] self-start md:self-center">
+          <div className="flex bg-black/40 p-1 rounded-lg self-start md:self-end border border-white/5">
             <button
               onClick={() => setActiveTab('extensions')}
-              className={`px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all ${
-                activeTab === 'extensions' ? 'bg-[#D4AF37] text-[#09050D] font-bold' : 'text-[#8E8C94] hover:text-white'
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                activeTab === 'extensions' ? 'bg-white/10 text-white shadow-sm' : 'text-[#8E8C94] hover:text-white'
               }`}
             >
               Extensions
             </button>
             <button
               onClick={() => setActiveTab('vendors')}
-              className={`px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all ${
-                activeTab === 'vendors' ? 'bg-[#D4AF37] text-[#09050D] font-bold' : 'text-[#8E8C94] hover:text-white'
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                activeTab === 'vendors' ? 'bg-white/10 text-white shadow-sm' : 'text-[#8E8C94] hover:text-white'
               }`}
             >
-              Partner Vendors
+              Service Partners
             </button>
           </div>
         </div>
 
         {/* Extensions and Apps Grid Rendering */}
         {activeTab === 'extensions' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {apps.map((app) => (
               <div
                 key={app.id}
-                className={`p-6 rounded-2xl border transition-all duration-300 bg-[#121118]/85 flex flex-col justify-between min-h-[220px] ${
-                  app.installed 
-                    ? 'border-[#D4AF37]/30 shadow-[0_4px_25px_rgba(212,175,55,0.04)]' 
-                    : 'border-white/[0.03] hover:border-white/[0.08]'
-                }`}
+                className="bg-[#121118]/80 p-6 rounded-xl border border-white/5 shadow-sm hover:border-[#D4AF37]/30 hover:shadow-[#D4AF37]/5 transition-all flex flex-col justify-between min-h-[220px]"
               >
                 <div className="space-y-3">
                   <div className="flex justify-between items-start">
-                    <div>
-                      <span className="text-[9px] uppercase font-mono font-bold px-2 py-0.5 rounded bg-white/[0.03] text-[#D4AF37] border border-white/[0.04]">
-                        {app.category}
-                      </span>
-                      <h3 className="text-base font-serif font-medium text-white mt-2">{app.title}</h3>
-                    </div>
-                    <div className="flex items-center space-x-1 text-xs font-semibold text-amber-400">
-                      <span>★</span>
-                      <span className="font-mono">{app.rating}</span>
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-lg bg-black/40 flex items-center justify-center border border-white/10">
+                        <Puzzle className="w-5 h-5 text-[#D4AF37]" />
+                      </div>
+                      <div>
+                        <h3 className="text-base font-medium text-white">{app.title}</h3>
+                        <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded bg-[#D4AF37]/10 text-[#D4AF37]">
+                          {app.category}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                  <p className="text-xs text-[#8E8C94] leading-relaxed">{app.description}</p>
+                  <p className="text-sm text-[#8E8C94] leading-relaxed mt-4">{app.description}</p>
                 </div>
 
-                <div className="flex justify-between items-center border-t border-white/[0.03] pt-4 mt-4">
-                  <span className="text-[11px] font-mono text-[#8E8C94]">{app.cost}</span>
-                  <button
-                    onClick={() => handleToggleInstall(app.id)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
-                      app.installed 
-                        ? 'bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20' 
-                        : 'bg-white/[0.03] text-white border border-white/[0.05] hover:bg-white/[0.08]'
-                    }`}
-                  >
-                    {app.installed ? 'UNINSTALL' : 'INSTALL APP'}
-                  </button>
+                <div className="flex justify-between items-center pt-5 mt-4 border-t border-white/5">
+                  <span className="text-xs font-medium text-[#8E8C94] bg-black/40 px-2.5 py-1 rounded-md border border-white/5">{app.cost}</span>
+                  
+                  <div className="flex items-center gap-2">
+                    {app.installed && app.id === 'app-ota' && (
+                      <Link href="/admin/integrations/channel-manager">
+                        <button className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-white hover:bg-white/10 border border-white/10 rounded-lg transition-colors">
+                          <Settings className="w-4 h-4" />
+                          Configure
+                        </button>
+                      </Link>
+                    )}
+                    
+                    <button
+                      onClick={() => handleToggleInstall(app.id)}
+                      className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
+                        app.installed 
+                          ? 'bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/20 hover:bg-[#D4AF37]/20' 
+                          : 'bg-[#D4AF37] text-black hover:bg-[#C3A030]'
+                      }`}
+                    >
+                      {app.installed ? (
+                        <>
+                          <CheckCircle2 className="w-4 h-4" /> Installed
+                        </>
+                      ) : (
+                        'Install'
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -113,40 +129,46 @@ export default function ClientMarketplace({ initialApps, initialVendors }: { ini
 
         {/* Local Sub-contractor Vendors Table Rendering */}
         {activeTab === 'vendors' && (
-          <div className="bg-[#121118]/85 border border-white/[0.04] rounded-2xl p-6 space-y-4">
-            <h2 className="text-lg font-serif font-light text-white tracking-wider">External Service Providers</h2>
+          <div className="bg-[#121118]/80 border border-white/5 rounded-xl overflow-hidden shadow-sm">
+            <div className="p-6 border-b border-white/5">
+              <h2 className="text-lg font-medium text-white">External Service Providers</h2>
+              <p className="text-sm text-[#8E8C94] mt-1">Manage local service contracts and track SLA performance.</p>
+            </div>
             
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm border-collapse">
                 <thead>
-                  <tr className="border-b border-white/[0.04] text-[#8E8C94] text-xs uppercase tracking-wider">
-                    <th className="pb-3 font-semibold">Vendor Company</th>
-                    <th className="pb-3 font-semibold">Service Domain</th>
-                    <th className="pb-3 font-semibold">SLA Achievement</th>
-                    <th className="pb-3 font-semibold">Status</th>
-                    <th className="pb-3 text-right font-semibold">Payout (This Month)</th>
+                  <tr className="bg-black/20 text-[#8E8C94] border-b border-white/5">
+                    <th className="py-3 px-6 font-medium">Vendor Company</th>
+                    <th className="py-3 px-6 font-medium">Service Domain</th>
+                    <th className="py-3 px-6 font-medium">SLA Achievement</th>
+                    <th className="py-3 px-6 font-medium">Status</th>
+                    <th className="py-3 px-6 text-right font-medium">Payout (This Month)</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/[0.02]">
+                <tbody className="divide-y divide-white/5">
                   {vendors.map((vend) => (
-                    <tr key={vend.id} className="text-xs">
-                      <td className="py-4 font-semibold text-white">{vend.companyName}</td>
-                      <td className="py-4 text-[#8E8C94]">{vend.serviceType}</td>
-                      <td className="py-4">
-                        <span className="font-mono text-white font-semibold">{vend.slaMetric}%</span>
-                        <div className="w-24 bg-white/[0.04] h-1 rounded-full mt-1.5 overflow-hidden">
-                          <div className="bg-[#D4AF37] h-full" style={{ width: `${vend.slaMetric}%` }} />
+                    <tr key={vend.id} className="text-sm hover:bg-white/[0.02] transition-colors">
+                      <td className="py-4 px-6 font-medium text-white">{vend.companyName}</td>
+                      <td className="py-4 px-6 text-[#8E8C94]">{vend.serviceType}</td>
+                      <td className="py-4 px-6">
+                        <div className="flex items-center gap-3">
+                          <span className="font-medium text-[#FBFAF7] w-12">{vend.slaMetric}%</span>
+                          <div className="w-24 bg-white/10 h-1.5 rounded-full overflow-hidden">
+                            <div className="bg-[#D4AF37] h-full" style={{ width: `${vend.slaMetric}%` }} />
+                          </div>
                         </div>
                       </td>
-                      <td className="py-4">
-                        <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${
-                          vend.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
-                          'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                      <td className="py-4 px-6">
+                        <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${
+                          vend.status === 'ACTIVE' 
+                            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
+                            : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
                         }`}>
                           {vend.status}
                         </span>
                       </td>
-                      <td className="py-4 text-right font-mono text-[#D4AF37] font-semibold">${vend.lastPayout.toLocaleString()}</td>
+                      <td className="py-4 px-6 text-right font-mono text-[#D4AF37]">${vend.lastPayout.toLocaleString()}</td>
                     </tr>
                   ))}
                 </tbody>
