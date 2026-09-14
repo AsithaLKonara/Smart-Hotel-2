@@ -24,7 +24,8 @@ import {
   MapPin,
   Link as LinkIcon,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Shield
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useSidebar } from '@/lib/sidebar-context'
@@ -37,24 +38,31 @@ export default function AdminSidebar() {
 
   const getNavigation = () => {
     const role = session?.user?.roleName
+    const permissions = (session?.user as any)?.permissions || []
+
     const items = [
-      { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard, roles: ['SUPER_ADMIN', 'MANAGER'] },
-      { name: 'Executive intelligence', href: '/admin/executive', icon: BarChart3, roles: ['SUPER_ADMIN', 'MANAGER'] },
-      { name: 'Receptionist', href: '/admin/receptionist', icon: UserCheck, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'] },
-      { name: 'Housekeeping', href: '/admin/housekeeping', icon: ClipboardList, roles: ['HOUSEKEEPING', 'MANAGER', 'SUPER_ADMIN'] },
-      { name: 'Kitchen', href: '/kitchen/dashboard', icon: UtensilsCrossed, roles: ['KITCHEN', 'MANAGER', 'SUPER_ADMIN'] },
-      { name: 'Kitchen Menu', href: '/admin/menu', icon: UtensilsCrossed, roles: ['KITCHEN', 'MANAGER', 'SUPER_ADMIN'] },
-      { name: 'Kitchen Orders', href: '/admin/orders', icon: ShoppingCart, roles: ['KITCHEN', 'MANAGER', 'SUPER_ADMIN', 'RECEPTIONIST'] },
-      { name: 'Rooms', href: '/admin/rooms', icon: Bed, roles: ['SUPER_ADMIN', 'MANAGER'] },
-      { name: 'Bookings', href: '/admin/bookings', icon: Calendar, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'] },
-      { name: 'Staff', href: '/admin/staff', icon: Users, roles: ['SUPER_ADMIN', 'MANAGER'] },
-      { name: 'Tasks', href: '/admin/tasks', icon: Package, roles: ['MAINTENANCE', 'MANAGER', 'SUPER_ADMIN', 'RECEPTIONIST', 'HOUSEKEEPING'] },
-      { name: 'Inventory', href: '/admin/inventory', icon: Package, roles: ['SUPER_ADMIN', 'MANAGER'] },
-      { name: 'Channel Manager', href: '/admin/integrations/channel-manager', icon: Share2, roles: ['SUPER_ADMIN', 'MANAGER'] },
-      { name: 'Settings', href: '/admin/settings', icon: SettingsIcon, roles: ['SUPER_ADMIN'] },
+      { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard, roles: ['SUPER_ADMIN', 'MANAGER'], permissions: ['VIEW_DASHBOARD'] },
+      { name: 'Executive intelligence', href: '/admin/executive', icon: BarChart3, roles: ['SUPER_ADMIN', 'MANAGER'], permissions: ['VIEW_REPORTS'] },
+      { name: 'Receptionist', href: '/admin/receptionist', icon: UserCheck, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'], permissions: ['VIEW_DASHBOARD'] },
+      { name: 'Housekeeping', href: '/admin/housekeeping', icon: ClipboardList, roles: ['HOUSEKEEPING', 'MANAGER', 'SUPER_ADMIN'], permissions: ['VIEW_DASHBOARD'] },
+      { name: 'Kitchen', href: '/kitchen/dashboard', icon: UtensilsCrossed, roles: ['KITCHEN', 'MANAGER', 'SUPER_ADMIN'], permissions: ['VIEW_KITCHEN_DASHBOARD'] },
+      { name: 'Kitchen Menu', href: '/admin/menu', icon: UtensilsCrossed, roles: ['KITCHEN', 'MANAGER', 'SUPER_ADMIN'], permissions: ['MANAGE_KITCHEN_MENU'] },
+      { name: 'Kitchen Orders', href: '/admin/orders', icon: ShoppingCart, roles: ['KITCHEN', 'MANAGER', 'SUPER_ADMIN', 'RECEPTIONIST'], permissions: ['MANAGE_KITCHEN_ORDERS'] },
+      { name: 'Rooms', href: '/admin/rooms', icon: Bed, roles: ['SUPER_ADMIN', 'MANAGER'], permissions: ['MANAGE_ROOMS'] },
+      { name: 'Bookings', href: '/admin/bookings', icon: Calendar, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'], permissions: ['VIEW_BOOKINGS'] },
+      { name: 'Staff', href: '/admin/staff', icon: Users, roles: ['SUPER_ADMIN', 'MANAGER'], permissions: ['VIEW_USERS'] },
+      { name: 'Tasks', href: '/admin/tasks', icon: Package, roles: ['MAINTENANCE', 'MANAGER', 'SUPER_ADMIN', 'RECEPTIONIST', 'HOUSEKEEPING'], permissions: ['VIEW_DASHBOARD'] },
+      { name: 'Inventory', href: '/admin/inventory', icon: Package, roles: ['SUPER_ADMIN', 'MANAGER'], permissions: ['VIEW_INVENTORY'] },
+      { name: 'Channel Manager', href: '/admin/integrations/channel-manager', icon: Share2, roles: ['SUPER_ADMIN', 'MANAGER'], permissions: ['MANAGE_ROLES'] },
+      { name: 'Authority & RBAC', href: '/admin/roles', icon: Shield, roles: ['SUPER_ADMIN'], permissions: ['MANAGE_ROLES'] },
+      { name: 'Settings', href: '/admin/settings', icon: SettingsIcon, roles: ['SUPER_ADMIN'], permissions: ['MANAGE_ROLES'] },
     ]
 
-    return items.filter(item => item.roles.includes(role || ''))
+    return items.filter(item => {
+      const hasRole = item.roles.includes(role || '')
+      const hasPermission = item.permissions ? item.permissions.some(p => permissions.includes(p)) : false
+      return role === 'SUPER_ADMIN' || hasPermission || hasRole
+    })
   }
 
   const navigation = getNavigation()

@@ -3,9 +3,10 @@ import { getToken } from 'next-auth/jwt'
 import { getBroadRole, getDefaultDashboardUrl } from '@/lib/rbac-utils'
 
 // Centralized Route Protection Matrix
-const PROTECTED_ROUTES = [
+type RouteRule = { prefix: string; roles: string[]; permissions?: string[] };
+const PROTECTED_ROUTES: RouteRule[] = [
   // 👑 SUPER ADMIN ONLY (SRE, Platform, Global)
-  { prefix: '/admin/roles', roles: ['SUPER_ADMIN'] },
+  { prefix: '/admin/roles', roles: ['SUPER_ADMIN'], permissions: ['MANAGE_ROLES'] },
   { prefix: '/admin/audit-logs', roles: ['SUPER_ADMIN'] },
   { prefix: '/admin/corporate', roles: ['SUPER_ADMIN'] }, // Global properties, Loyalty
   { prefix: '/admin/settings/integrations', roles: ['SUPER_ADMIN'] },
@@ -97,7 +98,7 @@ const PROTECTED_ROUTES = [
   { prefix: '/admin', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'HOUSEKEEPING', 'MAINTENANCE'] },
 ].sort((a, b) => b.prefix.length - a.prefix.length)
 
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   // 0. Reject WebSocket upgrades to mitigate SSRF (CVE-2026-44578)
   const upgradeHeader = request.headers.get('upgrade')
   const connectionHeader = request.headers.get('connection')
@@ -224,7 +225,15 @@ export async function proxy(request: NextRequest) {
     }
 
     // Enforce Authorization
-    if (!rule.roles.includes(userRole)) {
+    const hasRole = rule.roles.includes(userRole);
+    const userPermissions = (token.permissions as string[]) || [];
+    const hasPermission = rule.permissions ? rule.permissions.some(p => userPermissions.includes(p)) : false;
+
+    // A user is authorized if they have the broad role (fallback) OR the specific permission.
+    // SUPER_ADMIN implicitly has access to everything in the dashboard.
+    const isAuthorized = userRole === 'SUPER_ADMIN' || (rule.permissions ? hasPermission : hasRole);
+
+    if (!isAuthorized) {
       const isApi = path.startsWith('/api')
       if (isApi) {
         return NextResponse.json({

@@ -121,7 +121,7 @@ export const authOptions: NextAuthOptions = {
             { email: credentials.email, roleName: user.role?.name }
           ).catch(err => console.error('Failed to log action:', err))
 
-          const permissions = user.role?.name?.permissions?.map((p: any) => p.permission.action) || [];
+          const permissions = user.role?.permissions?.map((p: any) => p.permission.action) || [];
 
           return {
             id: user.id,
