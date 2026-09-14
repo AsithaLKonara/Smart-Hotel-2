@@ -6,7 +6,9 @@ import { authOptions } from '@/lib/auth';
 export async function PATCH(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || !['SUPER_ADMIN'].includes((session.user as any).roleName as string)) {
+    const userRole = (session?.user as any)?.roleName as string;
+    const userPropId = (session?.user as any)?.propertyId as string;
+    if (!session || !['SUPER_ADMIN', 'MANAGER'].includes(userRole)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -17,6 +19,10 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
     const role = await prisma.role.findUnique({ where: { id: roleId } });
     if (!role) {
       return NextResponse.json({ error: 'Role not found' }, { status: 404 });
+    }
+
+    if (userRole !== 'SUPER_ADMIN' && role.propertyId !== userPropId) {
+      return NextResponse.json({ error: 'Forbidden: Cannot edit roles from other properties' }, { status: 403 });
     }
 
     const result = await prisma.$transaction(async (tx: any) => {
@@ -59,7 +65,9 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
 export async function DELETE(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || !['SUPER_ADMIN'].includes((session.user as any).roleName as string)) {
+    const userRole = (session?.user as any)?.roleName as string;
+    const userPropId = (session?.user as any)?.propertyId as string;
+    if (!session || !['SUPER_ADMIN', 'MANAGER'].includes(userRole)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -77,6 +85,10 @@ export async function DELETE(req: Request, context: { params: Promise<{ id: stri
 
     if (!role) {
       return NextResponse.json({ error: 'Role not found' }, { status: 404 });
+    }
+
+    if (userRole !== 'SUPER_ADMIN' && role.propertyId !== userPropId) {
+      return NextResponse.json({ error: 'Forbidden: Cannot delete roles from other properties' }, { status: 403 });
     }
 
     if (!role.isCustom) {

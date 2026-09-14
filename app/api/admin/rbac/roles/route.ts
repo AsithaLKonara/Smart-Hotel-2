@@ -10,7 +10,15 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const userPropId = (session.user as any).propertyId;
+    
     const roles = await prisma.role.findMany({
+      where: {
+        OR: [
+          { propertyId: null },
+          ...(userPropId ? [{ propertyId: userPropId }] : [])
+        ]
+      },
       include: {
         _count: {
           select: { users: true, permissions: true }
@@ -32,14 +40,23 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || !['SUPER_ADMIN'].includes((session.user as any).roleName as string)) {
+    const userRole = (session?.user as any)?.roleName as string;
+    
+    if (!session || !['SUPER_ADMIN', 'MANAGER'].includes(userRole)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { name, description, status, permissionIds } = await req.json();
+    const { name, description, status, permissionIds, propertyId } = await req.json();
 
     if (!name) {
       return NextResponse.json({ error: 'Role name is required' }, { status: 400 });
+    }
+
+    let resolvedPropertyId = null;
+    if (userRole === 'SUPER_ADMIN') {
+      resolvedPropertyId = propertyId || null;
+    } else {
+      resolvedPropertyId = (session.user as any).propertyId;
     }
 
     const result = await prisma.$transaction(async (tx: any) => {
@@ -48,6 +65,7 @@ export async function POST(req: Request) {
           name,
           description,
           status,
+          propertyId: resolvedPropertyId,
           isCustom: true
         }
       });
