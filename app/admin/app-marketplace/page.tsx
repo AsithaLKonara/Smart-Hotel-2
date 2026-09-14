@@ -13,7 +13,7 @@ export default async function MarketplacePage() {
   });
 
   // Map DB state to UI props
-  const mappedApps: MarketplaceApp[] = dbIntegrations.map(intg => {
+  const mappedApps: MarketplaceApp[] = dbIntegrations.map((intg: any) => {
     const config = intg.config as any || {};
     return {
       id: intg.appName, // We use appName as the ID for the UI
@@ -26,7 +26,7 @@ export default async function MarketplacePage() {
     };
   });
 
-  const mappedVendors: PartnerVendor[] = dbVendors.map(vend => {
+  const mappedVendors: PartnerVendor[] = dbVendors.map((vend: any) => {
     return {
       id: vend.id,
       companyName: vend.name,
