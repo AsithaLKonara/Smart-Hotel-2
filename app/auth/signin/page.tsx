@@ -31,6 +31,7 @@ export default function SignInPage() {
     { role: 'Housekeeping (GOR)', email: 'housekeeping.gor@smarthotel.com', password: 'SmartHotel@2025!', color: 'from-amber-400/20 to-yellow-500/20 border-amber-400/30 text-amber-200' },
     { role: 'Maintenance (GOR)', email: 'maintenance.gor@smarthotel.com', password: 'SmartHotel@2025!', color: 'from-orange-500/20 to-amber-500/20 border-orange-500/30 text-orange-200' },
     { role: 'Kitchen (GOR)', email: 'kitchen.gor@smarthotel.com', password: 'SmartHotel@2025!', color: 'from-rose-500/20 to-pink-500/20 border-rose-500/30 text-rose-200' },
+    { role: 'Guest (Demo)', email: 'guest@example.com', password: 'SmartHotel@2025!Guest', color: 'from-emerald-500/20 to-teal-500/20 border-emerald-500/30 text-emerald-200' },
   ] : []
 
   const handleDemoLogin = (email: string, pass: string) => {

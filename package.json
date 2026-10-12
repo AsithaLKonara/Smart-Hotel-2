@@ -41,7 +41,7 @@
     "deploy:vercel:setup": "./scripts/deploy-vercel.sh",
     "setup:demo": "node scripts/setup-demo-env.js",
     "setup:demo:credentials": "node scripts/setup-demo-credentials.js",
-    "validate:env": "tsx -e \"import('./lib/env').then(m => m.validateEnv())\"",
+    "validate:env": "tsx --env-file=.env -e \"import('./lib/env.ts').then(m => (m.validateEnv || m.default?.validateEnv)())\"",
     "validate:env:production": "NODE_ENV=production tsx -e \"import('./lib/env').then(m => m.validateEnv())\"",
     "db:seed:production": "tsx prisma/seed-production.ts",
     "db:test": "node scripts/quick-db-test.js",

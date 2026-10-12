@@ -96,7 +96,8 @@ async function main() {
         name: `Standard - ${property.code}`,
         description: `Standard Room at ${property.name}`,
         baseRate: 150.0,
-        capacity: 2
+        capacity: 2,
+        propertyId: property.id
       }
     })
 
@@ -105,7 +106,8 @@ async function main() {
         name: `Luxury - ${property.code}`,
         description: `Luxury Suite at ${property.name}`,
         baseRate: 350.0,
-        capacity: 4
+        capacity: 4,
+        propertyId: property.id
       }
     })
 

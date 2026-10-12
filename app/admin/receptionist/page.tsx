@@ -19,12 +19,15 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import toast from 'react-hot-toast'
 import { PremiumSpinner } from '@/components/ui/premium-spinner'
-import { RoomStatusGrid } from '@/components/dashboard/room-status-grid'
 import { RoomActionDesk } from '@/components/dashboard/room-action-desk'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { AdminPageShell } from '@/components/dashboard/admin/admin-page-shell'
 import { ExpressCheckInModal } from '@/components/dashboard/express-checkin-modal'
+import { ReceptionCalendarDesk } from '@/components/dashboard/reception-calendar-desk'
+import { ReceptionRoomMatrixDesk } from '@/components/dashboard/reception-room-matrix-desk'
+import { ReceptionSplitContainer } from '@/components/dashboard/reception-split-container'
+import { format, addDays } from 'date-fns'
 
 export default function ReceptionistOperationsCenter() {
   const { data: session, status: authStatus } = useSession()
@@ -35,11 +38,33 @@ export default function ReceptionistOperationsCenter() {
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("ALL")
   const [selectedRoom, setSelectedRoom] = useState<any | null>(null)
+  const [highlightedRoomId, setHighlightedRoomId] = useState<string | null>(null)
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date())
   const [isExpressModalOpen, setIsExpressModalOpen] = useState(false)
   
   // Availability UI State
-  const [availabilityDates, setAvailabilityDates] = useState({ checkIn: '', checkOut: '' })
+  const [availabilityDates, setAvailabilityDates] = useState({
+    checkIn: format(new Date(), 'yyyy-MM-dd'),
+    checkOut: format(addDays(new Date(), 1), 'yyyy-MM-dd')
+  })
   const [availableRoomsCount, setAvailableRoomsCount] = useState<number | null>(null)
+
+  const handleSelectDate = (date: Date) => {
+    setSelectedDate(date)
+    setAvailabilityDates({
+      checkIn: format(date, 'yyyy-MM-dd'),
+      checkOut: format(addDays(date, 1), 'yyyy-MM-dd')
+    })
+  }
+
+  const handleSelectRoom = (room: any) => {
+    setSelectedRoom(room)
+    setHighlightedRoomId(room.id)
+  }
+
+  const handleClearRoomHighlight = () => {
+    setHighlightedRoomId(null)
+  }
 
   const checkAvailability = async () => {
     if (!availabilityDates.checkIn || !availabilityDates.checkOut) return toast.error('Select check-in and check-out dates')
@@ -279,22 +304,45 @@ export default function ReceptionistOperationsCenter() {
             </Button>
           </div>
 
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-xl font-serif font-bold flex items-center gap-3">
-              <Bed className="w-6 h-6 text-primary" /> Room Matrix
-            </h2>
-            <Badge variant="outline" className="text-[10px] border-white/10 text-white/40 uppercase tracking-widest px-4 py-1">
-              {rooms.length} Units Online
-            </Badge>
-          </div>
-          <RoomStatusGrid 
-            rooms={rooms}
-            selectedRoomNumber={selectedRoom?.number}
-            onSelectRoom={setSelectedRoom}
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            statusFilter={statusFilter}
-            onStatusFilterChange={setStatusFilter}
+          {/* Dual-Column Split Screen: Full Calendar (Left) & Room Matrix (Right) */}
+          <ReceptionSplitContainer
+            calendarBookingsCount={allBookings.length}
+            totalRoomsCount={rooms.length}
+            calendarNode={
+              <ReceptionCalendarDesk
+                bookings={allBookings}
+                rooms={rooms}
+                selectedDate={selectedDate}
+                onSelectDate={handleSelectDate}
+                highlightedRoomId={highlightedRoomId}
+                onClearRoomHighlight={handleClearRoomHighlight}
+                onSelectBooking={(b) => {
+                  const assignedRoom = rooms.find((r: any) => isRoomAssigned(b, r.id))
+                  if (assignedRoom) {
+                    setSelectedRoom(assignedRoom)
+                    setHighlightedRoomId(assignedRoom.id)
+                  }
+                }}
+                onQuickCheckIn={(bookingId) => {
+                  updateBookingMutation.mutate({ id: bookingId, status: 'CHECKED_IN' })
+                  toast.success('Guest check-in initiated.')
+                }}
+              />
+            }
+            matrixNode={
+              <ReceptionRoomMatrixDesk
+                rooms={rooms}
+                bookings={allBookings}
+                selectedDate={selectedDate}
+                onResetDateToToday={() => handleSelectDate(new Date())}
+                selectedRoomId={selectedRoom?.id}
+                onSelectRoom={handleSelectRoom}
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                statusFilter={statusFilter}
+                onStatusFilterChange={setStatusFilter}
+              />
+            }
           />
         </section>
       </div>
