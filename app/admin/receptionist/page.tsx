@@ -387,39 +387,76 @@ function ReceptionistOperationsContent() {
 
         {/* View 1: Dual-Column Command Desk (Split Screen) */}
         {activeView === 'COMMAND_DESK' && (
-          <div className="space-y-6">
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col md:flex-row md:items-end justify-between gap-4 backdrop-blur-md">
-              <div className="flex items-end gap-3 flex-wrap">
-                <div>
-                  <label className="text-[10px] uppercase font-bold text-white/50 mb-1 block">Check-in</label>
-                  <input
-                    type="date"
-                    className="bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-primary"
-                    value={availabilityDates.checkIn}
-                    onChange={e => setAvailabilityDates({...availabilityDates, checkIn: e.target.value})}
-                  />
+          <div className="space-y-4">
+            {/* Unified Controls & Filters Bar */}
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-3.5 backdrop-blur-md shadow-sm space-y-3">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                {/* Search & Status Filters */}
+                <div className="flex flex-wrap items-center gap-2.5 flex-1">
+                  <div className="relative w-full sm:w-64">
+                    <Search className="w-3.5 h-3.5 text-white/40 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      placeholder="Search room, guest, booking..."
+                      value={searchQuery}
+                      onChange={e => setSearchQuery(e.target.value)}
+                      className="w-full bg-black/40 border border-white/10 text-xs text-white pl-8 pr-3 py-2 rounded-xl placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-primary"
+                    />
+                  </div>
+
+                  {/* Status Pills */}
+                  <div className="flex items-center gap-1 overflow-x-auto pb-1 sm:pb-0 custom-scrollbar">
+                    {["ALL", "AVAILABLE", "OCCUPIED", "DIRTY", "MAINTENANCE"].map(st => (
+                      <button
+                        key={st}
+                        onClick={() => setStatusFilter(st)}
+                        className={cn(
+                          "text-[10px] uppercase tracking-wider font-bold px-3 py-1.5 rounded-lg transition-all whitespace-nowrap",
+                          statusFilter === st
+                            ? "bg-primary text-black shadow-md font-black"
+                            : "text-white/40 hover:text-white hover:bg-white/5"
+                        )}
+                      >
+                        {st === "ALL" ? "All" : st.replace('_', ' ')}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <div>
-                  <label className="text-[10px] uppercase font-bold text-white/50 mb-1 block">Check-out</label>
-                  <input
-                    type="date"
-                    className="bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-primary"
-                    value={availabilityDates.checkOut}
-                    onChange={e => setAvailabilityDates({...availabilityDates, checkOut: e.target.value})}
-                  />
+
+                {/* Right: Quick Availability Checker */}
+                <div className="flex items-center gap-2 flex-wrap pt-2 lg:pt-0 border-t lg:border-t-0 border-white/5">
+                  <div className="flex items-center gap-1.5 bg-black/40 border border-white/10 rounded-xl px-2.5 py-1">
+                    <span className="text-[10px] font-bold text-white/40 uppercase">In:</span>
+                    <input
+                      type="date"
+                      className="bg-transparent text-xs text-white focus:outline-none cursor-pointer"
+                      value={availabilityDates.checkIn}
+                      onChange={e => setAvailabilityDates({...availabilityDates, checkIn: e.target.value})}
+                    />
+                  </div>
+                  <div className="flex items-center gap-1.5 bg-black/40 border border-white/10 rounded-xl px-2.5 py-1">
+                    <span className="text-[10px] font-bold text-white/40 uppercase">Out:</span>
+                    <input
+                      type="date"
+                      className="bg-transparent text-xs text-white focus:outline-none cursor-pointer"
+                      value={availabilityDates.checkOut}
+                      onChange={e => setAvailabilityDates({...availabilityDates, checkOut: e.target.value})}
+                    />
+                  </div>
+                  <Button onClick={checkAvailability} size="sm" className="bg-primary text-black font-bold text-xs h-8 px-3 rounded-xl hover:bg-primary/90">
+                    <Search className="w-3 h-3 mr-1" />
+                    Check
+                  </Button>
+                  {availableRoomsCount !== null && (
+                    <Badge variant="outline" className="border-emerald-500/30 text-emerald-400 bg-emerald-500/10 py-1 px-2.5 text-xs font-bold h-8 rounded-xl">
+                      {availableRoomsCount} Available
+                    </Badge>
+                  )}
                 </div>
-                <Button onClick={checkAvailability} className="bg-primary text-black font-bold text-xs h-9 rounded-xl hover:bg-primary/90">
-                  <Search className="w-3.5 h-3.5 mr-1.5" />
-                  Check Availability
-                </Button>
-                {availableRoomsCount !== null && (
-                  <Badge variant="outline" className="border-emerald-500/30 text-emerald-400 bg-emerald-500/10 py-1.5 px-3 text-xs font-bold h-9 rounded-xl">
-                    {availableRoomsCount} Rooms Available
-                  </Badge>
-                )}
               </div>
             </div>
 
+            {/* 2-Column Split: Calendar (Col 1) | Room Matrix (Col 2) */}
             <ReceptionSplitContainer
               calendarBookingsCount={allBookings.length}
               totalRoomsCount={rooms.length}
@@ -431,6 +468,8 @@ function ReceptionistOperationsContent() {
                   onSelectDate={handleSelectDate}
                   highlightedRoomId={highlightedRoomId}
                   onClearRoomHighlight={handleClearRoomHighlight}
+                  searchQuery={searchQuery}
+                  statusFilter={statusFilter}
                   onSelectBooking={(b) => {
                     const assignedRoom = rooms.find((r: any) => isRoomAssigned(b, r.id))
                     if (assignedRoom) {

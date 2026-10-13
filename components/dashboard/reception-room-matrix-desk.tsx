@@ -248,38 +248,6 @@ export function ReceptionRoomMatrixDesk({
             )}
           </div>
         </div>
-
-        {/* Search & Filters */}
-        <div className="mt-3.5 pt-3.5 border-t border-white/5 flex flex-col md:flex-row items-center gap-2.5">
-          <div className="relative w-full md:w-60">
-            <Search className="w-3.5 h-3.5 text-white/30 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="Search room, type, guest..."
-              value={searchQuery}
-              onChange={e => onSearchChange(e.target.value)}
-              className="w-full bg-black/40 border border-white/10 text-xs text-white pl-8 pr-3 py-1.5 rounded-xl placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-primary"
-            />
-          </div>
-
-          {/* Filter Pills */}
-          <div className="flex items-center gap-1 overflow-x-auto w-full pb-1 md:pb-0 custom-scrollbar">
-            {["ALL", "AVAILABLE", "OCCUPIED", "DIRTY", "MAINTENANCE"].map(st => (
-              <button
-                key={st}
-                onClick={() => onStatusFilterChange(st)}
-                className={cn(
-                  "text-[9px] uppercase tracking-wider font-bold px-2.5 py-1.5 rounded-lg transition-all whitespace-nowrap",
-                  statusFilter === st
-                    ? "bg-primary text-black shadow-md font-black"
-                    : "text-white/40 hover:text-white hover:bg-white/5"
-                )}
-              >
-                {st === "ALL" ? "All" : st.replace('_', ' ')}
-              </button>
-            ))}
-          </div>
-        </div>
       </div>
 
       {/* 2. Floors & Rooms Grid Container */}

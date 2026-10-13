@@ -71,6 +71,8 @@ export interface ReceptionCalendarDeskProps {
   onClearRoomHighlight?: () => void
   onSelectBooking?: (booking: CalendarBooking) => void
   onQuickCheckIn?: (bookingId: string) => void
+  searchQuery?: string
+  statusFilter?: string
 }
 
 export function ReceptionCalendarDesk({
@@ -81,12 +83,12 @@ export function ReceptionCalendarDesk({
   highlightedRoomId,
   onClearRoomHighlight,
   onSelectBooking,
-  onQuickCheckIn
+  onQuickCheckIn,
+  searchQuery = '',
+  statusFilter = 'ALL'
 }: ReceptionCalendarDeskProps) {
   const [currentMonth, setCurrentMonth] = useState<Date>(selectedDate || new Date())
   const [calendarView, setCalendarView] = useState<'month' | 'week'>('month')
-  const [statusFilter, setStatusFilter] = useState<string>('ALL')
-  const [searchQuery, setSearchQuery] = useState<string>('')
   const [isDayRosterOpen, setIsDayRosterOpen] = useState<boolean>(false)
 
   // Navigation handlers
@@ -246,29 +248,10 @@ export function ReceptionCalendarDesk({
             </Button>
           </div>
 
-          {/* Quick Filters */}
           <div className="flex items-center gap-2">
-            <div className="relative flex-1 sm:w-44">
-              <Search className="w-3.5 h-3.5 text-white/40 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                placeholder="Search guest or room..."
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                className="w-full bg-black/40 border border-white/10 text-xs text-white pl-8 pr-3 py-1.5 rounded-xl placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-primary"
-              />
-            </div>
-
-            <select
-              value={statusFilter}
-              onChange={e => setStatusFilter(e.target.value)}
-              className="bg-black/40 border border-white/10 text-xs text-white/80 px-2.5 py-1.5 rounded-xl focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
-            >
-              <option value="ALL">All Status</option>
-              <option value="CONFIRMED">Confirmed</option>
-              <option value="CHECKED_IN">Checked In</option>
-              <option value="CHECKED_OUT">Checked Out</option>
-            </select>
+            <Badge variant="outline" className="border-white/10 text-white/60 bg-white/5 text-[11px] px-2.5 py-1">
+              📅 Calendar Stays
+            </Badge>
           </div>
         </div>
 
