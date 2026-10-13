@@ -440,33 +440,34 @@ function ReceptionistOperationsContent() {
         {/* View 1: Dual-Column Command Desk (Split Screen) */}
         {activeView === 'COMMAND_DESK' && (
           <div className="space-y-4">
-            {/* 1 PERFECTLY ALIGNED COMMAND CARD (Zero Duplication) */}
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-4 backdrop-blur-md shadow-sm space-y-3.5">
-              {/* Row 1: Search & Filter Chips (Instant Query Bar) */}
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-                <div className="flex flex-wrap items-center gap-2.5 flex-1">
-                  <div className="relative w-full sm:w-72">
-                    <Search className="w-3.5 h-3.5 text-white/40 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            {/* 1 PERFECTLY STRUCTURED & SIZED COMMAND CARD */}
+            <div className="bg-[#121214]/80 border border-white/10 rounded-2xl p-4 backdrop-blur-md shadow-luxury space-y-3.5">
+              {/* Row 1: Search & Room Status Filters */}
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                {/* Search Bar + Filter Pills */}
+                <div className="flex flex-wrap items-center gap-3 flex-1 min-w-0">
+                  <div className="relative w-full sm:w-80 shrink-0">
+                    <Search className="w-4 h-4 text-white/40 absolute left-3.5 top-1/2 -translate-y-1/2" />
                     <input
                       type="text"
                       placeholder="Search room, guest, booking..."
                       value={searchQuery}
                       onChange={e => setSearchQuery(e.target.value)}
-                      className="w-full bg-black/40 border border-white/10 text-xs text-white pl-9 pr-3 py-2 rounded-xl placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-primary"
+                      className="w-full bg-black/50 border border-white/10 text-xs text-white pl-10 pr-3.5 h-9 rounded-xl placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary/50 transition-all"
                     />
                   </div>
 
-                  {/* Filter Pills with distinct Idle / Active states */}
-                  <div className="flex items-center gap-1 overflow-x-auto pb-1 sm:pb-0 custom-scrollbar">
+                  {/* Filter Pills with distinct visual states */}
+                  <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 custom-scrollbar">
                     {["ALL", "AVAILABLE", "OCCUPIED", "DIRTY", "MAINTENANCE"].map(st => (
                       <button
                         key={st}
                         onClick={() => setStatusFilter(st)}
                         className={cn(
-                          "text-[10px] uppercase tracking-wider font-bold px-3 py-1.5 rounded-lg transition-all whitespace-nowrap",
+                          "text-[10px] uppercase tracking-wider font-bold px-3 h-9 rounded-xl transition-all whitespace-nowrap flex items-center border",
                           statusFilter === st
-                            ? "bg-primary text-black shadow-md font-black"
-                            : "text-white/40 hover:text-white hover:bg-white/5"
+                            ? "bg-primary text-black border-primary shadow-md font-black"
+                            : "bg-white/[0.02] text-white/50 border-white/5 hover:text-white hover:bg-white/5 hover:border-white/10"
                         )}
                       >
                         {st === "ALL" ? "All" : st.replace('_', ' ')}
@@ -475,52 +476,51 @@ function ReceptionistOperationsContent() {
                   </div>
                 </div>
 
-                {/* Live Real-time Status Badge */}
-                <div className="flex items-center gap-2 self-start md:self-auto">
+                {/* Right: Temporal Status Indicator */}
+                <div className="flex items-center gap-2 self-start lg:self-center shrink-0">
                   {isToday(selectedDate) ? (
-                    <Badge variant="outline" className="border-emerald-500/30 text-emerald-400 bg-emerald-500/10 text-[10px] px-2.5 py-1">
-                      ● Live Real-Time
-                    </Badge>
+                    <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-3 h-9 rounded-xl text-xs font-semibold">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                      <span>Live Real-Time</span>
+                    </div>
                   ) : (
-                    <div className="flex items-center gap-1.5">
-                      <Badge variant="outline" className="border-amber-500/30 text-amber-300 bg-amber-500/10 text-[10px] px-2.5 py-1">
-                        📅 Projected: {format(selectedDate, 'MMM dd')}
-                      </Badge>
+                    <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 text-amber-300 px-3 h-9 rounded-xl text-xs">
+                      <span>Projected: {format(selectedDate, 'MMM dd')}</span>
                       <Button
                         size="sm"
                         variant="ghost"
                         onClick={handleToday}
-                        className="h-7 px-2 text-[10px] text-white/50 hover:text-white"
+                        className="h-6 px-2 text-[10px] text-amber-200 hover:text-white hover:bg-amber-500/20 rounded-lg ml-1"
                       >
-                        Reset Today
+                        Today
                       </Button>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Divider between Search/Filters and Operations Strip */}
-              <div className="border-t border-white/5 pt-3 flex flex-col xl:flex-row xl:items-center justify-between gap-3">
-                {/* Left: Month Navigator & Focal Date KPIs */}
-                <div className="flex items-center gap-3 flex-wrap">
-                  {/* Month Navigation */}
-                  <div className="flex items-center space-x-1.5 bg-black/40 border border-white/10 rounded-xl p-1">
+              {/* Row 2: Operational Controls & Temporal Grid Navigation */}
+              <div className="border-t border-white/5 pt-3.5 grid grid-cols-1 xl:grid-cols-12 gap-3 items-center">
+                {/* Left (Col 1-7): Month Navigation & Focal Date Stats */}
+                <div className="xl:col-span-7 flex items-center gap-2.5 flex-wrap">
+                  {/* Month Navigation Control */}
+                  <div className="flex items-center bg-black/50 border border-white/10 rounded-xl p-1 h-9 shrink-0">
                     <Button
                       onClick={handlePrevMonth}
                       variant="ghost"
                       size="icon"
-                      className="text-white/60 hover:text-white hover:bg-white/5 rounded-lg h-7 w-7"
+                      className="text-white/60 hover:text-white hover:bg-white/10 rounded-lg h-7 w-7"
                     >
                       <ChevronLeft className="w-3.5 h-3.5" />
                     </Button>
-                    <div className="text-xs font-serif font-bold text-white min-w-[110px] text-center">
+                    <div className="text-xs font-serif font-bold text-white px-2.5 min-w-[105px] text-center tracking-wide">
                       {format(currentMonth, 'MMMM yyyy')}
                     </div>
                     <Button
                       onClick={handleNextMonth}
                       variant="ghost"
                       size="icon"
-                      className="text-white/60 hover:text-white hover:bg-white/5 rounded-lg h-7 w-7"
+                      className="text-white/60 hover:text-white hover:bg-white/10 rounded-lg h-7 w-7"
                     >
                       <ChevronRight className="w-3.5 h-3.5" />
                     </Button>
@@ -528,96 +528,96 @@ function ReceptionistOperationsContent() {
                       onClick={handleToday}
                       variant="outline"
                       size="sm"
-                      className="bg-primary/10 border-primary/20 text-[10px] font-bold text-primary hover:bg-primary/20 rounded-lg h-7 px-2"
+                      className="bg-primary/10 border-primary/20 text-[10px] font-bold text-primary hover:bg-primary/20 rounded-lg h-7 px-2 ml-1"
                     >
                       Today
                     </Button>
                   </div>
 
-                  {/* Focal Date & Live Stats */}
-                  <div className="flex items-center gap-1.5 bg-black/40 border border-white/10 rounded-xl px-2.5 py-1 text-xs">
+                  {/* Focal Date Chip */}
+                  <div className="flex items-center gap-1.5 bg-black/50 border border-white/10 rounded-xl px-2.5 h-9 text-xs shrink-0">
                     <span className="font-bold text-white">{format(selectedDate, 'MMM dd')}</span>
                     {isToday(selectedDate) ? (
-                      <span className="text-[9px] text-emerald-400 font-bold bg-emerald-500/10 px-1 rounded">TODAY</span>
+                      <span className="text-[9px] text-emerald-400 font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded">TODAY</span>
                     ) : (
-                      <span className="text-[9px] text-amber-300 font-bold bg-amber-500/10 px-1 rounded">FOCAL</span>
+                      <span className="text-[9px] text-amber-300 font-bold bg-amber-500/10 px-1.5 py-0.5 rounded">FOCAL</span>
                     )}
                   </div>
 
-                  <div className="flex items-center gap-1 bg-black/40 border border-white/10 rounded-xl px-2.5 py-1 text-[11px]">
+                  {/* Operational KPI Group */}
+                  <div className="flex items-center gap-1.5 bg-black/50 border border-white/10 rounded-xl px-2.5 h-9 text-[11px] shrink-0">
                     <span className="text-white/40">Occ:</span>
-                    <span className="font-bold text-amber-400">{selectedDayStats.occupancyRate}%</span>
-                  </div>
-
-                  <div className="flex items-center gap-1 bg-black/40 border border-white/10 rounded-xl px-2.5 py-1 text-[11px]">
-                    <span className="text-emerald-400/70">Arr:</span>
-                    <span className="font-bold text-emerald-400">{selectedDayStats.arrivals}</span>
-                  </div>
-
-                  <div className="flex items-center gap-1 bg-black/40 border border-white/10 rounded-xl px-2.5 py-1 text-[11px]">
-                    <span className="text-rose-400/70">Dep:</span>
+                    <span className="font-bold text-amber-400 mr-2">{selectedDayStats.occupancyRate}%</span>
+                    <span className="text-white/20">|</span>
+                    <span className="text-emerald-400/80 ml-1">Arr:</span>
+                    <span className="font-bold text-emerald-400 mr-2">{selectedDayStats.arrivals}</span>
+                    <span className="text-white/20">|</span>
+                    <span className="text-rose-400/80 ml-1">Dep:</span>
                     <span className="font-bold text-rose-400">{selectedDayStats.departures}</span>
                   </div>
 
+                  {/* Day Roster Toggle */}
                   <Button
                     size="sm"
                     onClick={() => setIsDayRosterOpen(!isDayRosterOpen)}
                     variant="outline"
-                    className="text-xs bg-white/5 border-white/10 text-white hover:bg-white/10 h-7 px-2.5 rounded-xl"
+                    className="text-xs bg-white/[0.03] border-white/10 text-white/80 hover:text-white hover:bg-white/10 h-9 px-3 rounded-xl shrink-0"
                   >
-                    <Users className="w-3 h-3 mr-1 text-primary" />
-                    {isDayRosterOpen ? 'Hide Day List' : 'Day Roster'}
+                    <Users className="w-3.5 h-3.5 mr-1.5 text-primary" />
+                    <span>{isDayRosterOpen ? 'Hide List' : 'Day Roster'}</span>
                   </Button>
                 </div>
 
-                {/* Right: Date Availability Checker + Split Ratio Controls */}
-                <div className="flex items-center gap-2 flex-wrap">
-                  <div className="flex items-center gap-1.5 bg-black/40 border border-white/10 rounded-xl px-2.5 py-1">
-                    <span className="text-[10px] font-bold text-white/40 uppercase">In:</span>
+                {/* Right (Col 8-12): Quick Availability Checker + Split View Mode Switcher */}
+                <div className="xl:col-span-5 flex items-center justify-start xl:justify-end gap-2 flex-wrap">
+                  {/* Availability Date Inputs */}
+                  <div className="flex items-center bg-black/50 border border-white/10 rounded-xl px-2.5 h-9 gap-1.5 text-xs shrink-0">
+                    <span className="text-[10px] font-bold text-white/40 uppercase">In</span>
                     <input
                       type="date"
-                      className="bg-transparent text-xs text-white focus:outline-none cursor-pointer"
+                      className="bg-transparent text-white focus:outline-none cursor-pointer w-[110px]"
                       value={availabilityDates.checkIn}
                       onChange={e => setAvailabilityDates({...availabilityDates, checkIn: e.target.value})}
                     />
-                  </div>
-                  <div className="flex items-center gap-1.5 bg-black/40 border border-white/10 rounded-xl px-2.5 py-1">
-                    <span className="text-[10px] font-bold text-white/40 uppercase">Out:</span>
+                    <span className="text-white/20">→</span>
+                    <span className="text-[10px] font-bold text-white/40 uppercase">Out</span>
                     <input
                       type="date"
-                      className="bg-transparent text-xs text-white focus:outline-none cursor-pointer"
+                      className="bg-transparent text-white focus:outline-none cursor-pointer w-[110px]"
                       value={availabilityDates.checkOut}
                       onChange={e => setAvailabilityDates({...availabilityDates, checkOut: e.target.value})}
                     />
                   </div>
-                  <Button onClick={checkAvailability} size="sm" className="bg-primary text-black font-bold text-xs h-7 px-2.5 rounded-xl hover:bg-primary/90">
-                    <Search className="w-3 h-3 mr-1" />
+
+                  <Button onClick={checkAvailability} size="sm" className="bg-primary text-black font-bold text-xs h-9 px-3 rounded-xl hover:bg-primary/90 shrink-0">
+                    <Search className="w-3.5 h-3.5 mr-1" />
                     Check
                   </Button>
+
                   {availableRoomsCount !== null && (
-                    <Badge variant="outline" className="border-emerald-500/30 text-emerald-400 bg-emerald-500/10 py-0.5 px-2 text-xs font-bold h-7 rounded-xl">
+                    <Badge variant="outline" className="border-emerald-500/30 text-emerald-400 bg-emerald-500/10 px-2.5 h-9 flex items-center text-xs font-bold rounded-xl shrink-0">
                       {availableRoomsCount} Avail
                     </Badge>
                   )}
 
-                  {/* Desktop Split Switcher */}
-                  <div className="hidden xl:flex items-center gap-1 bg-black/40 border border-white/10 p-0.5 rounded-xl ml-1">
+                  {/* Desktop Split Mode Controls */}
+                  <div className="hidden xl:flex items-center gap-1 bg-black/50 border border-white/10 p-1 rounded-xl h-9 shrink-0">
                     <button
                       onClick={() => setSplitMode('calendar-focus')}
                       className={cn(
-                        "text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-lg transition-all",
+                        "text-[9px] font-bold uppercase tracking-wider px-2 h-7 rounded-lg transition-all flex items-center",
                         splitMode === 'calendar-focus'
                           ? "bg-primary text-black font-black shadow-sm"
                           : "text-white/40 hover:text-white"
                       )}
                       title="Wider Calendar (60/40)"
                     >
-                      Calendar Wide
+                      Cal Wide
                     </button>
                     <button
                       onClick={() => setSplitMode('equal')}
                       className={cn(
-                        "text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-lg transition-all",
+                        "text-[9px] font-bold uppercase tracking-wider px-2 h-7 rounded-lg transition-all flex items-center",
                         splitMode === 'equal'
                           ? "bg-primary text-black font-black shadow-sm"
                           : "text-white/40 hover:text-white"
@@ -629,14 +629,14 @@ function ReceptionistOperationsContent() {
                     <button
                       onClick={() => setSplitMode('matrix-focus')}
                       className={cn(
-                        "text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-lg transition-all",
+                        "text-[9px] font-bold uppercase tracking-wider px-2 h-7 rounded-lg transition-all flex items-center",
                         splitMode === 'matrix-focus'
                           ? "bg-primary text-black font-black shadow-sm"
                           : "text-white/40 hover:text-white"
                       )}
                       title="Wider Room Matrix (40/60)"
                     >
-                      Matrix Wide
+                      Mat Wide
                     </button>
                   </div>
                 </div>
