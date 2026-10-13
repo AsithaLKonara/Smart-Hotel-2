@@ -22,6 +22,10 @@ const TestimonialSection = dynamic(
   { ssr: true }
 )
 
+import { InteractiveLocationSection } from '@/components/landing/interactive-location-section'
+import { SignatureExperiencesSection } from '@/components/landing/signature-experiences-section'
+import { CmsService } from '@/lib/services/cms-service'
+
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -50,10 +54,12 @@ export default async function HomePage() {
   let contact = defaultContact
   let featuredRooms: any[] = []
   let properties: any[] = []
+  let experiences: any[] = []
   let aboutContent: any = { story: '', founded: '', milestones: [], staff: [] }
 
   try {
     if (isDatabaseConfigured()) {
+      await CmsService.ensureDefaultCmsContent()
       contact = await getHotelContactInfo()
       featuredRooms = await prisma.room.findMany({
         where: { status: 'AVAILABLE' },
@@ -67,9 +73,9 @@ export default async function HomePage() {
       })
       properties = await prisma.property.findMany({
         where: { status: 'ACTIVE' },
-        take: 3,
         orderBy: { createdAt: 'asc' }
       })
+      experiences = await CmsService.getExperiences({ activeOnly: true })
       aboutContent = await getHotelAboutContent()
     }
   } catch (error: any) {
@@ -235,101 +241,16 @@ export default async function HomePage() {
       </section>
 
       {/* Experiences Section */}
-      <section className="py-24 lg:py-32 bg-black/5 backdrop-blur-sm border-y border-white/5">
-        <div className="container mx-auto px-4">
-          <div className="text-center space-y-4 mb-20">
-            <h4 className="text-primary uppercase tracking-[0.3em] text-xs font-bold">Stay Beyond Ordinary</h4>
-            <h2 className="text-5xl lg:text-6xl font-serif font-bold text-white">
-              Signature <span className="text-primary italic">Experiences</span>
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {[
-              { title: 'Fine Dining', icon: '🍷', desc: 'Michelin-starred culinary excellence', img: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&q=80&w=800' },
-              { title: 'Royal Spa', icon: '✨', desc: 'Holistic wellness and rejuvenation', img: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&q=80&w=800' },
-              { title: 'Sky Lounge', icon: '🌃', desc: 'Rooftop cocktails with city views', img: 'https://images.unsplash.com/photo-1574096079513-d8259312b785?auto=format&fit=crop&q=80&w=800' },
-              { title: 'Concierge', icon: '🔑', desc: 'Bespoke 24/7 personal assistance', img: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=800' },
-            ].map((exp, i) => (
-              <div key={i} className="relative group aspect-square overflow-hidden cursor-pointer rounded-2xl border border-white/10 shadow-2xl">
-                <Image src={exp.img} alt={exp.title} fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
-                <div className="absolute inset-0 bg-black/45 group-hover:bg-black/75 transition-all duration-500" />
-                <div className="absolute inset-0 p-8 flex flex-col justify-end text-white">
-                  <span className="text-4xl mb-4">{exp.icon}</span>
-                  <h3 className="text-2xl font-serif font-bold mb-2">{exp.title}</h3>
-                  <p className="text-sm text-white/70 opacity-0 group-hover:opacity-100 transition-opacity duration-500">{exp.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <SignatureExperiencesSection experiences={experiences} />
 
       {/* Testimonial Section */}
       <TestimonialSection />
 
       {/* Location Section */}
-      <section className="py-24 lg:py-32 bg-black/30 border-y border-white/5">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
-            <div className="space-y-8">
-              <div className="space-y-4">
-                <h4 className="text-primary uppercase tracking-[0.3em] text-xs font-bold">Perfect Location</h4>
-                <h2 className="text-5xl lg:text-6xl font-serif font-bold text-white leading-tight">
-                  In the Heart of <span className="text-primary italic">Everything</span>
-                </h2>
-              </div>
-              <p className="text-lg text-white/70 leading-relaxed font-light">
-                Situated in the prestigious Downtown District, our hotel offers seamless access to the city's finest galleries, boutiques, and business centers.
-              </p>
-              
-              <div className="space-y-6 pt-4">
-                <div className="flex items-start gap-4">
-                  <MapPin className="w-6 h-6 text-primary mt-1" />
-                  <div>
-                    <h4 className="font-bold text-white">Address</h4>
-                    <p className="text-white/60 text-sm">{contact.address}</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-4">
-                  <Phone className="w-6 h-6 text-primary mt-1" />
-                  <div>
-                    <h4 className="font-bold text-white">Reservation Line</h4>
-                    <p className="text-white/60 text-sm">{contact.phone}</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-4">
-                  <Mail className="w-6 h-6 text-primary mt-1" />
-                  <div>
-                    <h4 className="font-bold text-white">Email Inquiries</h4>
-                    <p className="text-white/60 text-sm">{contact.email}</p>
-                  </div>
-                </div>
-              </div>
-
-              <Button className="bg-primary hover:bg-primary/95 text-primary-foreground rounded-xl px-10 h-14 uppercase tracking-widest text-xs font-bold transition-all">
-                Get Directions
-              </Button>
-            </div>
-
-            <div className="relative aspect-video lg:aspect-square bg-gray-900 rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
-              <Image 
-                src="https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&q=80&w=1000" 
-                alt="City Map View" 
-                fill 
-                className="object-cover opacity-60"
-              />
-              <div className="absolute inset-0 bg-black/40" />
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                <div className="relative">
-                  <div className="absolute inset-0 bg-primary rounded-full animate-ping opacity-75" />
-                  <div className="relative w-8 h-8 bg-primary rounded-full border-4 border-white shadow-2xl" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <InteractiveLocationSection 
+        properties={properties} 
+        defaultContact={{ phone: contact.phone, email: contact.email }} 
+      />
 
       {/* CTA Footer Section */}
       <section className="relative py-24 bg-black/60 backdrop-blur-xl border-t border-white/10 overflow-hidden">

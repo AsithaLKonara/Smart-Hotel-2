@@ -25,6 +25,7 @@ import {
   Link as LinkIcon,
   ChevronLeft,
   ChevronRight,
+  Globe,
   Shield
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -54,6 +55,7 @@ export default function AdminSidebar() {
       { name: 'Tasks', href: '/admin/tasks', icon: Package, roles: ['MAINTENANCE', 'MANAGER', 'SUPER_ADMIN', 'RECEPTIONIST', 'HOUSEKEEPING'], permissions: ['VIEW_DASHBOARD'] },
       { name: 'Inventory', href: '/admin/inventory', icon: Package, roles: ['SUPER_ADMIN', 'MANAGER'], permissions: ['VIEW_INVENTORY'] },
       { name: 'Channel Manager', href: '/admin/integrations/channel-manager', icon: Share2, roles: ['SUPER_ADMIN', 'MANAGER'], permissions: ['MANAGE_ROLES'] },
+      { name: 'Website CMS', href: '/admin/cms', icon: Globe, roles: ['SUPER_ADMIN', 'MANAGER'], permissions: ['VIEW_DASHBOARD'] },
       { name: 'Authority & RBAC', href: '/admin/roles', icon: Shield, roles: ['SUPER_ADMIN'], permissions: ['MANAGE_ROLES'] },
       { name: 'Settings', href: '/admin/settings', icon: SettingsIcon, roles: ['SUPER_ADMIN'], permissions: ['MANAGE_ROLES'] },
     ]

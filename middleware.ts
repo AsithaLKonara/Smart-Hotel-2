@@ -18,6 +18,8 @@ const PROTECTED_ROUTES: RouteRule[] = [
   { prefix: '/api/admin/settings/integrations', roles: ['SUPER_ADMIN'] },
   { prefix: '/api/admin/corporate/loyalty', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'] },
   { prefix: '/api/admin/corporate', roles: ['SUPER_ADMIN', 'MANAGER'] },
+  { prefix: '/admin/cms', roles: ['SUPER_ADMIN', 'MANAGER'] },
+  { prefix: '/api/admin/cms', roles: ['SUPER_ADMIN', 'MANAGER'] },
 
   // 🔴 MANAGER & SUPER ADMIN (Business Operations, HR, Finance)
   { prefix: '/admin/dashboard', roles: ['SUPER_ADMIN', 'MANAGER'] },
@@ -282,4 +284,5 @@ const PUBLIC_API_PREFIXES = [
   '/api/chat/messages',
   '/api/performance/metrics',
   '/api/navigation',
+  '/api/cms',
 ]

@@ -959,10 +959,13 @@ model Gallery {
   title      String
   imageUrl   String
   category   String
+  caption    String?
+  order      Int      @default(0)
+  featured   Boolean  @default(false)
   propertyId String
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
-  property   Property @relation(fields: [propertyId], references: [id])
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
   @@index([category])
   @@index([propertyId])
@@ -1453,6 +1456,9 @@ model Property {
   email                 String?
   description           String?
   mainImage             String?
+  latitude              Float?
+  longitude             Float?
+  googleMapsUrl         String?
   timezone              String                 @default("UTC")
   businessDate          DateTime               @default(now()) @db.Date
   totalRooms            Int                    @default(0)
@@ -1469,6 +1475,7 @@ model Property {
   eventSpaces           EventSpace[]
   banquetingEvents      BanquetingEvent[]
   galleries             Gallery[]
+  experiences           Experience[]
   inventory             Inventory[]
   resortFacilities      ResortFacility[]
   assets                Asset[]
@@ -1552,15 +1559,43 @@ model ResortFacility {
   id             String          @id @default(uuid())
   name           String
   type           String
+  subtitle       String?
+  description    String?
+  imageUrl       String?
+  features       String?
   operatingHours String          @default("09:00-18:00")
   status         String          @default("ACTIVE")
+  featured       Boolean         @default(false)
+  order          Int             @default(0)
   propertyId     String
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
-  property       Property        @relation(fields: [propertyId], references: [id])
+  property       Property        @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   bookings       ResortBooking[]
 
   @@index([propertyId])
+}
+
+model Experience {
+  id          String   @id @default(uuid())
+  title       String
+  subtitle    String?
+  description String
+  imageUrl    String
+  icon        String?  @default("✨")
+  category    String   @default("LUXURY")
+  duration    String?
+  price       Float?
+  order       Int      @default(0)
+  active      Boolean  @default(true)
+  propertyId  String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId])
+  @@index([category])
 }
 
 model ResortBooking {

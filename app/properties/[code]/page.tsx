@@ -1,11 +1,12 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { MapPin, Phone, Mail, ChevronRight, Star, Users, Wind, ArrowRight } from 'lucide-react'
+import { MapPin, Phone, Mail, ChevronRight, Star, Users, Wind, ArrowRight, Navigation, ExternalLink, Sparkles, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import prisma from '@/lib/db'
 import { formatPrice } from '@/lib/utils'
 import { isDatabaseConfigured } from '@/lib/db-helpers'
 import { notFound } from 'next/navigation'
+import { CmsService } from '@/lib/services/cms-service'
 
 export const dynamic = 'force-dynamic'
 
@@ -26,17 +27,23 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
 
   if (!property) return notFound()
 
-  // Fetch featured rooms for THIS property
-  const featuredRooms = await prisma.room.findMany({
-    where: { status: 'AVAILABLE', propertyId: property.id },
-    take: 3,
-    include: {
-      roomType: true,
-      roomImages: { orderBy: { isMain: 'desc' }, take: 1 },
-      feedback: true
-    },
-    orderBy: { roomType: { baseRate: 'desc' } }
-  })
+  // Fetch featured rooms, experiences, and facilities for THIS property
+  const [featuredRooms, experiences, facilities] = await Promise.all([
+    prisma.room.findMany({
+      where: { status: 'AVAILABLE', propertyId: property.id },
+      take: 3,
+      include: {
+        roomType: true,
+        roomImages: { orderBy: { isMain: 'desc' }, take: 1 },
+        feedback: true
+      },
+      orderBy: { roomType: { baseRate: 'desc' } }
+    }),
+    CmsService.getExperiences({ propertyId: property.id, activeOnly: true }),
+    CmsService.getFacilities({ propertyId: property.id, status: 'ACTIVE' })
+  ])
+
+  const mapsUrl = property.googleMapsUrl || (property.latitude && property.longitude ? `https://www.google.com/maps/search/?api=1&query=${property.latitude},${property.longitude}` : null)
 
   return (
     <div className="bg-transparent text-white min-h-screen">
@@ -98,6 +105,14 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
                       <p>{property.city}, {property.country}</p>
                     </div>
                   </div>
+                  {property.latitude && property.longitude && (
+                    <div className="flex items-center gap-4 text-white/60">
+                      <Navigation className="w-5 h-5 text-primary shrink-0" />
+                      <p className="text-primary font-mono text-xs">
+                        {property.latitude.toFixed(4)}° N, {Math.abs(property.longitude).toFixed(4)}° {property.longitude >= 0 ? 'E' : 'W'}
+                      </p>
+                    </div>
+                  )}
                   {property.phone && (
                     <div className="flex items-center gap-4 text-white/60">
                       <Phone className="w-5 h-5 text-primary shrink-0" />
@@ -111,6 +126,18 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
                     </div>
                   )}
                 </div>
+
+                {mapsUrl && (
+                  <div className="pt-2">
+                    <a href={mapsUrl} target="_blank" rel="noopener noreferrer">
+                      <Button variant="outline" className="w-full border-primary/30 text-primary hover:bg-primary/20 h-11 rounded-xl text-xs uppercase tracking-wider font-bold">
+                        <Navigation className="w-3.5 h-3.5 mr-2" />
+                        <span>Get Directions</span>
+                        <ExternalLink className="w-3 h-3 ml-1.5" />
+                      </Button>
+                    </a>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -196,6 +223,98 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
                 View All Suites
               </Button>
             </Link>
+          </div>
+        </section>
+      )}
+
+      {/* Signature Experiences for this property */}
+      {experiences.length > 0 && (
+        <section className="py-24 border-t border-white/5 bg-black/10">
+          <div className="container mx-auto px-4">
+            <div className="space-y-3 mb-12">
+              <div className="flex items-center gap-2 text-primary uppercase tracking-widest text-[10px] font-bold">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Curated Resort Journeys</span>
+              </div>
+              <h2 className="text-4xl font-serif font-bold text-white">Signature Experiences</h2>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {experiences.map((exp: any) => (
+                <div key={exp.id} className="bg-[#121118] border border-white/10 rounded-2xl overflow-hidden shadow-2xl flex flex-col justify-between group hover:border-primary/40 transition-all">
+                  <div>
+                    <div className="relative aspect-[16/10] overflow-hidden bg-black/40">
+                      <Image src={exp.imageUrl} alt={exp.title} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
+                      <div className="absolute top-3 left-3 flex items-center gap-2">
+                        <span className="w-7 h-7 rounded-lg bg-black/70 border border-primary/30 flex items-center justify-center text-sm shadow-luxury">
+                          {exp.icon || '✨'}
+                        </span>
+                        <span className="bg-black/70 text-primary text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border border-primary/20">
+                          {exp.category}
+                        </span>
+                      </div>
+                      {exp.price && (
+                        <div className="absolute top-3 right-3 bg-black/80 border border-primary/30 px-2.5 py-1 rounded-lg text-primary font-serif italic text-xs">
+                          ${exp.price}
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-6 space-y-2">
+                      <h3 className="text-xl font-serif font-bold text-white group-hover:text-primary transition-colors">{exp.title}</h3>
+                      <p className="text-xs text-white/60 font-light line-clamp-3 leading-relaxed">{exp.description}</p>
+                    </div>
+                  </div>
+                  <div className="p-6 pt-0">
+                    <Link href={`/booking?property=${property.id}&experience=${encodeURIComponent(exp.title)}`}>
+                      <Button variant="outline" className="w-full border-white/10 hover:border-primary/40 text-white rounded-xl h-10 text-xs font-bold uppercase tracking-wider">
+                        Reserve Experience
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Facilities for this property */}
+      {facilities.length > 0 && (
+        <section className="py-24 border-t border-white/5 bg-black/30">
+          <div className="container mx-auto px-4">
+            <div className="space-y-3 mb-12">
+              <span className="text-primary uppercase tracking-widest text-[10px] font-bold block">
+                World-Class Amenities
+              </span>
+              <h2 className="text-4xl font-serif font-bold text-white">Resort Facilities</h2>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {facilities.map((fac: any) => (
+                <div key={fac.id} className="bg-[#121118] border border-white/10 rounded-2xl overflow-hidden shadow-2xl flex flex-col justify-between group hover:border-primary/40 transition-all">
+                  <div>
+                    <div className="relative aspect-[16/10] overflow-hidden bg-black/40">
+                      <Image src={fac.imageUrl || 'https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?auto=format&fit=crop&q=80&w=800'} alt={fac.name} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
+                      <div className="absolute top-3 left-3">
+                        <span className="bg-black/70 text-primary text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border border-primary/20">
+                          {fac.type}
+                        </span>
+                      </div>
+                      <div className="absolute bottom-3 left-3 flex items-center gap-1.5 text-xs text-white bg-black/70 px-2.5 py-1 rounded-lg border border-white/10">
+                        <Clock className="w-3 h-3 text-primary" />
+                        <span className="text-[10px] font-mono">{fac.operatingHours}</span>
+                      </div>
+                    </div>
+                    <div className="p-6 space-y-2">
+                      <h3 className="text-xl font-serif font-bold text-white group-hover:text-primary transition-colors">{fac.name}</h3>
+                      <p className="text-xs text-white/60 font-light line-clamp-3 leading-relaxed">{fac.description}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
       )}

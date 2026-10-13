@@ -119,6 +119,7 @@ export default function DashboardSidebar() {
 
       // 5. 📊 HOTEL MANAGEMENT
       { name: 'Manager Cockpit', href: '/admin/dashboard', icon: LayoutDashboard, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Management' },
+      { name: 'Website CMS', href: '/admin/cms', icon: Globe, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Management' },
       { name: 'Team & Staff', href: '/admin/staff', icon: ShieldCheck, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Management' },
       { name: 'System Settings', href: '/admin/settings', icon: SettingsIcon, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Management' },
       { name: 'Audit Stream', href: '/admin/audit-logs', icon: History, roles: ['SUPER_ADMIN'], group: 'Management' }
