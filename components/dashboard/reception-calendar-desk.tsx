@@ -214,112 +214,93 @@ export function ReceptionCalendarDesk({
 
   return (
     <div className="flex flex-col h-full space-y-4">
-      {/* 1. Header Toolbar */}
-      <div className="bg-white/5 border border-white/10 rounded-2xl p-4 backdrop-blur-md">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* 1. Unified Calendar Control & Focal Date Toolbar */}
+      <div className="bg-white/5 border border-white/10 rounded-2xl p-3.5 backdrop-blur-md space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           {/* Navigation Controls */}
           <div className="flex items-center space-x-2">
             <Button
               onClick={handlePrevMonth}
               variant="outline"
               size="icon"
-              className="bg-white/5 border-white/10 text-white hover:bg-white/10 rounded-xl h-9 w-9"
+              className="bg-white/5 border-white/10 text-white hover:bg-white/10 rounded-xl h-8 w-8"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-3.5 h-3.5" />
             </Button>
-            <div className="text-base font-serif font-bold text-white min-w-[130px] text-center">
+            <div className="text-sm font-serif font-bold text-white min-w-[120px] text-center">
               {format(currentMonth, 'MMMM yyyy')}
             </div>
             <Button
               onClick={handleNextMonth}
               variant="outline"
               size="icon"
-              className="bg-white/5 border-white/10 text-white hover:bg-white/10 rounded-xl h-9 w-9"
+              className="bg-white/5 border-white/10 text-white hover:bg-white/10 rounded-xl h-8 w-8"
             >
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-3.5 h-3.5" />
             </Button>
             <Button
               onClick={handleToday}
               variant="outline"
               size="sm"
-              className="bg-primary/10 border-primary/20 text-xs font-semibold text-primary hover:bg-primary/20 rounded-xl h-9"
+              className="bg-primary/10 border-primary/20 text-xs font-semibold text-primary hover:bg-primary/20 rounded-xl h-8 px-2.5"
             >
               Today
             </Button>
           </div>
 
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="border-white/10 text-white/60 bg-white/5 text-[11px] px-2.5 py-1">
-              📅 Calendar Stays
-            </Badge>
+          {/* Focal Date & KPIs */}
+          <div className="flex items-center gap-2 flex-wrap sm:justify-end">
+            <div className="flex items-center gap-1.5 bg-black/40 border border-white/10 rounded-xl px-2.5 py-1 text-xs">
+              <span className="font-bold text-white">{format(selectedDate, 'MMM dd')}</span>
+              {isToday(selectedDate) ? (
+                <span className="text-[9px] text-emerald-400 font-bold bg-emerald-500/10 px-1 rounded">TODAY</span>
+              ) : (
+                <span className="text-[9px] text-amber-300 font-bold bg-amber-500/10 px-1 rounded">FOCAL</span>
+              )}
+            </div>
+
+            <div className="flex items-center gap-1 bg-black/40 border border-white/10 rounded-xl px-2 py-1 text-[11px]">
+              <span className="text-white/40">Occ:</span>
+              <span className="font-bold text-amber-400">{selectedOccupancyRate}%</span>
+            </div>
+
+            <div className="flex items-center gap-1 bg-black/40 border border-white/10 rounded-xl px-2 py-1 text-[11px]">
+              <span className="text-emerald-400/70">Arr:</span>
+              <span className="font-bold text-emerald-400">{selectedDayData.arrivals.length}</span>
+            </div>
+
+            <div className="flex items-center gap-1 bg-black/40 border border-white/10 rounded-xl px-2 py-1 text-[11px]">
+              <span className="text-rose-400/70">Dep:</span>
+              <span className="font-bold text-rose-400">{selectedDayData.departures.length}</span>
+            </div>
+
+            <Button
+              size="sm"
+              onClick={() => setIsDayRosterOpen(!isDayRosterOpen)}
+              variant="outline"
+              className="text-xs bg-white/5 border-white/10 text-white hover:bg-white/10 h-7 px-2 rounded-xl"
+            >
+              <Users className="w-3 h-3 mr-1 text-primary" />
+              {isDayRosterOpen ? 'Hide' : 'Roster'}
+            </Button>
           </div>
         </div>
 
         {/* Room Highlighting Alert Banner (if a room was clicked in the Room Matrix) */}
         {highlightedRoomNumber && (
-          <div className="mt-3 pt-3 border-t border-white/5 flex items-center justify-between animate-in fade-in slide-in-from-top-1 duration-200">
+          <div className="pt-2 border-t border-white/5 flex items-center justify-between animate-in fade-in slide-in-from-top-1 duration-200">
             <div className="flex items-center gap-2 text-xs text-amber-400">
-              <span className="flex h-2 w-2 rounded-full bg-amber-400 animate-ping" />
+              <span className="flex h-1.5 w-1.5 rounded-full bg-amber-400 animate-ping" />
               <span>Filtering calendar stays for <strong>Room #{highlightedRoomNumber}</strong></span>
             </div>
             <button
               onClick={onClearRoomHighlight}
               className="text-[11px] text-white/50 hover:text-white flex items-center gap-1 underline"
             >
-              <X className="w-3 h-3" /> Show All Rooms
+              <X className="w-3 h-3" /> Show All
             </button>
           </div>
         )}
-      </div>
-
-      {/* 2. Selected Focal Date Overview Bar */}
-      <div className="bg-gradient-to-r from-primary/10 via-white/[0.04] to-transparent border border-primary/20 rounded-2xl p-3.5 flex flex-wrap items-center justify-between gap-3 shadow-inner">
-        <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center text-primary font-bold text-sm">
-            {format(selectedDate, 'dd')}
-          </div>
-          <div>
-            <div className="text-xs font-bold text-white flex items-center gap-1.5">
-              <span>{format(selectedDate, 'EEEE, MMMM do, yyyy')}</span>
-              {isToday(selectedDate) && (
-                <Badge variant="outline" className="text-[9px] border-emerald-500/40 text-emerald-400 bg-emerald-500/10 py-0 px-1.5">
-                  TODAY
-                </Badge>
-              )}
-            </div>
-            <div className="text-[11px] text-white/50 mt-0.5">
-              Room Matrix is projected for this date
-            </div>
-          </div>
-        </div>
-
-        {/* Daily KPI Badges */}
-        <div className="flex items-center gap-2">
-          <div className="bg-black/40 border border-white/10 rounded-xl px-2.5 py-1 text-center">
-            <span className="text-[10px] text-white/40 block leading-tight">Occupancy</span>
-            <span className="text-xs font-bold text-amber-400">{selectedOccupancyRate}%</span>
-          </div>
-
-          <div className="bg-black/40 border border-white/10 rounded-xl px-2.5 py-1 text-center">
-            <span className="text-[10px] text-emerald-400/70 block leading-tight">Arrivals</span>
-            <span className="text-xs font-bold text-emerald-400">{selectedDayData.arrivals.length}</span>
-          </div>
-
-          <div className="bg-black/40 border border-white/10 rounded-xl px-2.5 py-1 text-center">
-            <span className="text-[10px] text-rose-400/70 block leading-tight">Departures</span>
-            <span className="text-xs font-bold text-rose-400">{selectedDayData.departures.length}</span>
-          </div>
-
-          <Button
-            size="sm"
-            onClick={() => setIsDayRosterOpen(!isDayRosterOpen)}
-            variant="outline"
-            className="text-xs bg-white/5 border-white/10 text-white hover:bg-white/10 h-8 px-2.5 rounded-xl ml-1"
-          >
-            <Users className="w-3.5 h-3.5 mr-1 text-primary" />
-            {isDayRosterOpen ? 'Hide Day List' : 'Day Roster'}
-          </Button>
-        </div>
       </div>
 
       {/* 3. Optional Day Roster Drawer (Quick list of arrivals/departures for focal date) */}

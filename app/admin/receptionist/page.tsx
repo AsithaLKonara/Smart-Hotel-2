@@ -65,6 +65,7 @@ function ReceptionistOperationsContent() {
   
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("ALL")
+  const [splitMode, setSplitMode] = useState<'equal' | 'calendar-focus' | 'matrix-focus'>('equal')
   const [selectedRoom, setSelectedRoom] = useState<any | null>(null)
   const [highlightedRoomId, setHighlightedRoomId] = useState<string | null>(null)
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
@@ -423,8 +424,9 @@ function ReceptionistOperationsContent() {
                   </div>
                 </div>
 
-                {/* Right: Quick Availability Checker */}
+                {/* Right: Quick Availability Checker + Split View Mode Switcher */}
                 <div className="flex items-center gap-2 flex-wrap pt-2 lg:pt-0 border-t lg:border-t-0 border-white/5">
+                  {/* Availability Checker */}
                   <div className="flex items-center gap-1.5 bg-black/40 border border-white/10 rounded-xl px-2.5 py-1">
                     <span className="text-[10px] font-bold text-white/40 uppercase">In:</span>
                     <input
@@ -452,6 +454,46 @@ function ReceptionistOperationsContent() {
                       {availableRoomsCount} Available
                     </Badge>
                   )}
+
+                  {/* Desktop Split Switcher in the same bar */}
+                  <div className="hidden xl:flex items-center gap-1 bg-black/40 border border-white/10 p-1 rounded-xl ml-1">
+                    <button
+                      onClick={() => setSplitMode('calendar-focus')}
+                      className={cn(
+                        "text-[9px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg transition-all",
+                        splitMode === 'calendar-focus'
+                          ? "bg-primary text-black font-black shadow-sm"
+                          : "text-white/40 hover:text-white"
+                      )}
+                      title="Wider Calendar (60/40)"
+                    >
+                      Calendar Wide
+                    </button>
+                    <button
+                      onClick={() => setSplitMode('equal')}
+                      className={cn(
+                        "text-[9px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg transition-all",
+                        splitMode === 'equal'
+                          ? "bg-primary text-black font-black shadow-sm"
+                          : "text-white/40 hover:text-white"
+                      )}
+                      title="Equal Split (50/50)"
+                    >
+                      50 / 50
+                    </button>
+                    <button
+                      onClick={() => setSplitMode('matrix-focus')}
+                      className={cn(
+                        "text-[9px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg transition-all",
+                        splitMode === 'matrix-focus'
+                          ? "bg-primary text-black font-black shadow-sm"
+                          : "text-white/40 hover:text-white"
+                      )}
+                      title="Wider Room Matrix (40/60)"
+                    >
+                      Matrix Wide
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -460,6 +502,9 @@ function ReceptionistOperationsContent() {
             <ReceptionSplitContainer
               calendarBookingsCount={allBookings.length}
               totalRoomsCount={rooms.length}
+              splitMode={splitMode}
+              onSplitModeChange={setSplitMode}
+              hideToolbar={true}
               calendarNode={
                 <ReceptionCalendarDesk
                   bookings={allBookings}
