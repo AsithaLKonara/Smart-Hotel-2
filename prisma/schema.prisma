@@ -178,6 +178,7 @@ model Booking {
   stay                Stay?
   stayEvents          StayEvent[]
   tasks               Task[]
+  channelReservation ChannelReservation?
 
   @@unique([source, otaReference])
   @@index([checkIn, checkOut])
@@ -860,6 +861,7 @@ model ChannelConnection {
   propertyId String
 
   // Modern Auth (Encrypted in DB)
+  affiliateId           String?
   clientId              String?
   clientSecretEncrypted String?
   machineAccountId      String?
@@ -915,9 +917,10 @@ model ChannelReservation {
   externalRoomId        String?
   externalRateId        String?
 
-  bookingId String? @unique // Links to SmartHotel Booking
+  bookingId String?  @unique // Links to SmartHotel Booking
+  booking   Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
 
-  status  String // 'NEW', 'PROCESSING', 'CONFIRMED', 'MODIFIED', 'CANCELLED', 'ERROR'
+  status  String // 'NEW', 'PROCESSING', 'CONFIRMED', 'MODIFIED', 'CANCELLED', 'ERROR', 'QUARANTINED'
   payload Json // Original OTA XML/JSON
 
   receivedAt     DateTime  @default(now())

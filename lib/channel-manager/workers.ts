@@ -3,6 +3,10 @@ import IORedis from 'ioredis';
 import { prisma } from '@/lib/db';
 import { AvailabilityEngine } from '../availability-engine';
 import { BookingComAdapter } from './adapters/booking-com';
+import { OTAReconciliationEngine } from '../ota-reconciliation';
+import { BookingSource, BookingStatus, PaymentStatus } from '@prisma/client';
+import { log } from '@/lib/logger';
+import crypto from 'crypto';
 
 let redisUrl = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
 if (redisUrl.includes('${{')) {
@@ -16,144 +20,343 @@ const adapters: Record<string, any> = {
 };
 
 /**
- * INBOUND WORKER
- * Processes jobs like RESERVATION_PULL.
+ * Ingests a single normalized external reservation into the PMS
  */
-export const inboundWorker = new Worker('inbound-ota', async (job: Job) => {
-  const { operation, connectionId } = job.data;
+async function ingestReservation(connection: any, adapter: any, res: any) {
+  const connectionId = connection.id;
+  const externalResId = String(res.reservation_id || res.id || res.order_id);
 
-  if (operation === 'RESERVATION_PULL') {
-    const connection = await prisma.channelConnection.findUnique({
-      where: { id: connectionId },
-      include: { provider: true }
+  // 1. Idempotency Check
+  const existing = await prisma.channelReservation.findUnique({
+    where: {
+      connectionId_externalReservationId: {
+        connectionId,
+        externalReservationId: externalResId
+      }
+    }
+  });
+
+  if (existing && ['CONFIRMED', 'ACKNOWLEDGED'].includes(existing.status) && existing.bookingId) {
+    // Already ingested, acknowledge OTA in case they missed receipt
+    await adapter.acknowledgeReservation(connectionId, externalResId);
+    return { status: 'ALREADY_EXISTS', reservationId: externalResId };
+  }
+
+  // 2. Map Room Type
+  const targetRoomId = res.room_id || 'EXT_ROOM_1';
+  let roomMapping = await prisma.channelRoomMapping.findUnique({
+    where: {
+      connectionId_externalRoomId: {
+        connectionId,
+        externalRoomId: targetRoomId
+      }
+    }
+  });
+
+  // Fallback: if not mapped by exact externalRoomId, check first roomMapping for connection
+  if (!roomMapping) {
+    roomMapping = await prisma.channelRoomMapping.findFirst({
+      where: { connectionId }
+    });
+  }
+
+  // Final fallback: fallback to any active room type in property
+  let localRoomTypeId = roomMapping?.localRoomTypeId;
+  if (!localRoomTypeId) {
+    const defaultRoomType = await prisma.roomType.findFirst({
+      where: { propertyId: connection.propertyId }
+    });
+    if (!defaultRoomType) {
+      log.error(`[OTA_INGEST] No room types found for property: ${connection.propertyId}`);
+      await prisma.channelSyncEvent.create({
+        data: {
+          connectionId,
+          eventType: 'RESERVATION_PULL',
+          entityType: 'RESERVATION',
+          entityId: externalResId,
+          direction: 'INBOUND',
+          status: 'FAILED',
+          errorMessage: `No room types configured for property ${connection.propertyId}`
+        }
+      });
+      return { status: 'UNMAPPED_ROOM', reservationId: externalResId };
+    }
+    localRoomTypeId = defaultRoomType.id;
+  }
+
+  const checkInDate = new Date(res.checkin);
+  const checkOutDate = new Date(res.checkout);
+
+  // 3. Availability & Overbooking Protection
+  const hasAvailability = await AvailabilityEngine.hasAvailability(
+    localRoomTypeId,
+    connection.propertyId,
+    checkInDate,
+    checkOutDate,
+    1
+  );
+
+  if (!hasAvailability) {
+    log.warn(`[OTA_OVERBOOKING] No availability for reservation ${externalResId} (${res.room_id})`);
+    
+    // Route to OTAReconciliationEngine
+    OTAReconciliationEngine.processIncomingReservation(
+      {
+        id: externalResId,
+        guestName: `${res.booker?.first_name || ''} ${res.booker?.last_name || ''}`.trim() || 'Booking.com Guest',
+        roomType: res.room_id,
+        checkIn: res.checkin,
+        checkOut: res.checkout,
+        totalPrice: Number(res.total_price) || 0,
+        currency: res.currency || 'USD'
+      },
+      {
+        isRoomTypeAvailable: () => false,
+        getExpectedPrice: () => Number(res.total_price) || 0,
+        hasExistingBooking: () => !!existing
+      }
+    );
+
+    // Persist as QUARANTINED in database
+    await prisma.channelReservation.upsert({
+      where: {
+        connectionId_externalReservationId: {
+          connectionId,
+          externalReservationId: externalResId
+        }
+      },
+      create: {
+        connectionId,
+        externalReservationId: externalResId,
+        externalRoomId: res.room_id,
+        externalRateId: res.rate_id,
+        status: 'QUARANTINED',
+        payload: res as any,
+        processedAt: new Date()
+      },
+      update: {
+        status: 'QUARANTINED',
+        payload: res as any,
+        processedAt: new Date()
+      }
     });
 
-    if (!connection) throw new Error('Connection not found');
-
-    const adapter = adapters[connection.provider.code];
-    if (!adapter) throw new Error(`No adapter for provider: ${connection.provider.code}`);
-
-    // 1. Pull reservations from OTA
-    const externalReservations = await adapter.pullReservations(connectionId);
-
-    for (const res of externalReservations) {
-      // 2. Idempotency Check
-      const existing = await prisma.channelReservation.findUnique({
-        where: {
-          connectionId_externalReservationId: {
-            connectionId,
-            externalReservationId: res.id
-          }
-        }
-      });
-
-      if (existing && ['CONFIRMED', 'ACKNOWLEDGED'].includes(existing.status)) {
-        // Already processed successfully, just acknowledge again in case OTA missed it
-        await adapter.acknowledgeReservation(connectionId, res.id);
-        continue;
+    await prisma.channelSyncEvent.create({
+      data: {
+        connectionId,
+        eventType: 'RESERVATION_PULL',
+        entityType: 'RESERVATION',
+        entityId: externalResId,
+        direction: 'INBOUND',
+        status: 'QUARANTINED',
+        errorMessage: 'Overbooking detected: reservation quarantined for manager review'
       }
+    });
 
-      // Map room type
-      const roomMapping = await prisma.channelRoomMapping.findUnique({
-        where: {
-          connectionId_externalRoomId: {
-            connectionId,
-            externalRoomId: res.room_id
-          }
-        }
-      });
+    return { status: 'QUARANTINED', reservationId: externalResId };
+  }
 
-      if (!roomMapping) {
-        // Unmapped room, log error
-        await prisma.channelSyncEvent.create({
-          data: {
-            connectionId,
-            eventType: 'RESERVATION_PULL',
-            entityType: 'RESERVATION',
-            entityId: res.id,
-            direction: 'INBOUND',
-            status: 'FAILED',
-            errorMessage: `Unmapped external room ID: ${res.room_id}`
-          }
-        });
-        continue;
-      }
+  // 4. PMS Atomic Ingestion Transaction
+  const booking = await prisma.$transaction(async (tx: any) => {
+    // A. Resolve or create primary Guest (User)
+    const guestEmail = res.booker?.email || `guest.${externalResId.replace(/[^a-zA-Z0-9]/g, '')}@booking-guest.com`;
+    let guestUser = await tx.user.findFirst({
+      where: { email: guestEmail }
+    });
 
-      // 3. Availability Check (Overbooking Protection)
-      const hasAvailability = await AvailabilityEngine.hasAvailability(
-        roomMapping.localRoomTypeId,
-        connection.propertyId,
-        new Date(res.checkin),
-        new Date(res.checkout),
-        1
-      );
-
-      if (!hasAvailability) {
-        await prisma.channelReservation.create({
-          data: {
-            connectionId,
-            externalReservationId: res.id,
-            externalRoomId: res.room_id,
-            externalRateId: res.rate_id,
-            status: 'ERROR',
-            payload: res as any,
-          }
-        });
-        // Alert admin in real system
-        continue;
-      }
-
-      // 4. PMS Execution
-      // Here we would create the actual Booking in SmartHotel
-      // For brevity, we simulate the booking ID
-      const mockInternalBookingId = `BKG-INTERNAL-${Math.floor(Math.random() * 10000)}`;
-
-      await prisma.channelReservation.upsert({
-        where: {
-          connectionId_externalReservationId: {
-            connectionId,
-            externalReservationId: res.id
-          }
-        },
-        create: {
-          connectionId,
-          externalReservationId: res.id,
-          externalRoomId: res.room_id,
-          externalRateId: res.rate_id,
-          status: 'CONFIRMED',
-          payload: res as any,
-          bookingId: mockInternalBookingId,
-          processedAt: new Date()
-        },
-        update: {
-          status: 'CONFIRMED',
-          bookingId: mockInternalBookingId,
-          processedAt: new Date()
-        }
-      });
-
-      // 5. Acknowledge OTA
-      await adapter.acknowledgeReservation(connectionId, res.id);
-
-      await prisma.channelReservation.update({
-        where: {
-          connectionId_externalReservationId: {
-            connectionId,
-            externalReservationId: res.id
-          }
-        },
+    if (!guestUser) {
+      guestUser = await tx.user.create({
         data: {
-          status: 'ACKNOWLEDGED',
-          acknowledgedAt: new Date()
+          email: guestEmail,
+          name: `${res.booker?.first_name || 'Booking.com'} ${res.booker?.last_name || 'Guest'}`.trim(),
+          password: crypto.randomUUID(),
+          phone: res.booker?.telephone || null,
+          address: res.booker?.address_line || null,
+          city: res.booker?.city || null,
+          country: res.booker?.country || null,
+          propertyId: connection.propertyId,
         }
       });
-      
-      // 6. Push Inventory update queue job since inventory just decreased
-      // In a real system, you'd push to the outbound queue
     }
 
-    return { success: true, processed: externalReservations.length };
+    // B. Find available physical Room
+    const availableRoom = await tx.room.findFirst({
+      where: {
+        roomTypeId: localRoomTypeId,
+        propertyId: connection.propertyId,
+        status: 'AVAILABLE',
+        roomAssignments: {
+          none: {
+            status: 'ACTIVE',
+            startDate: { lte: checkOutDate },
+            endDate: { gte: checkInDate }
+          }
+        }
+      }
+    });
+
+    const confirmationCode = `BKG-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+
+    // C. Create Booking
+    const newBooking = await tx.booking.create({
+      data: {
+        confirmationCode,
+        otaReference: externalResId,
+        source: BookingSource.BOOKING_COM,
+        status: BookingStatus.CONFIRMED,
+        checkIn: checkInDate,
+        checkOut: checkOutDate,
+        primaryGuestId: guestUser.id,
+        propertyId: connection.propertyId,
+        totalAmount: Number(res.total_price) || 0,
+        paymentStatus: PaymentStatus.completed,
+        paymentMethod: 'OTA_COLLECT',
+        guests: res.products?.[0]?.guests?.length || 1,
+        ...(availableRoom ? {
+          roomAssignments: {
+            create: {
+              roomId: availableRoom.id,
+              startDate: checkInDate,
+              endDate: checkOutDate,
+              status: 'ACTIVE'
+            }
+          }
+        } : {})
+      }
+    });
+
+    // D. Create Stay Event
+    await tx.stayEvent.create({
+      data: {
+        bookingId: newBooking.id,
+        type: 'BOOKED',
+        notes: `Reservation ingested from Booking.com Demand API (${externalResId})`
+      }
+    });
+
+    // E. Initialize Guest Billing Folio
+    const nights = Math.max(1, Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)));
+    const folio = await tx.folio.create({
+      data: {
+        bookingId: newBooking.id,
+        type: 'GUEST',
+        status: 'OPEN'
+      }
+    });
+
+    await tx.folioLineItem.create({
+      data: {
+        folioId: folio.id,
+        description: `Booking.com Accommodation Charge (${nights} nights)`,
+        amount: Number(res.total_price) || 0,
+        type: 'ROOM_CHARGE'
+      }
+    });
+
+    // F. Persist ChannelReservation record linked to Booking
+    await tx.channelReservation.upsert({
+      where: {
+        connectionId_externalReservationId: {
+          connectionId,
+          externalReservationId: externalResId
+        }
+      },
+      create: {
+        connectionId,
+        externalReservationId: externalResId,
+        externalRoomId: res.room_id,
+        externalRateId: res.rate_id,
+        status: 'CONFIRMED',
+        payload: res as any,
+        bookingId: newBooking.id,
+        processedAt: new Date()
+      },
+      update: {
+        status: 'CONFIRMED',
+        payload: res as any,
+        bookingId: newBooking.id,
+        processedAt: new Date()
+      }
+    });
+
+    return newBooking;
+  });
+
+  // 5. Acknowledge OTA
+  await adapter.acknowledgeReservation(connectionId, externalResId);
+
+  await prisma.channelReservation.update({
+    where: {
+      connectionId_externalReservationId: {
+        connectionId,
+        externalReservationId: externalResId
+      }
+    },
+    data: {
+      status: 'ACKNOWLEDGED',
+      acknowledgedAt: new Date()
+    }
+  });
+
+  return { status: 'CONFIRMED', reservationId: externalResId, bookingId: booking.id };
+}
+
+/**
+ * INBOUND WORKER
+ * Processes RESERVATION_PULL and WEBHOOK_PUSH jobs.
+ */
+export const inboundWorker = new Worker('inbound-ota', async (job: Job) => {
+  const { operation, connectionId, payload } = job.data;
+
+  const connection = await prisma.channelConnection.findUnique({
+    where: { id: connectionId },
+    include: { provider: true }
+  });
+
+  if (!connection) throw new Error(`Channel connection not found: ${connectionId}`);
+
+  const adapter = adapters[connection.provider.code];
+  if (!adapter) throw new Error(`No adapter registered for provider code: ${connection.provider.code}`);
+
+  if (operation === 'RESERVATION_PULL') {
+    // 1. Pull reservations from OTA
+    const externalReservations = await adapter.pullReservations(connectionId);
+    log.info(`[INBOUND_WORKER] Pulled ${externalReservations.length} reservations for connection ${connectionId}`);
+
+    const results = [];
+    for (const res of externalReservations) {
+      const outcome = await ingestReservation(connection, adapter, res);
+      results.push(outcome);
+    }
+
+    return { success: true, processed: results };
   }
+
+  if (operation === 'WEBHOOK_PUSH') {
+    log.info(`[INBOUND_WORKER] Processing WEBHOOK_PUSH for connection ${connectionId}`);
+    try {
+      const parsed = typeof payload === 'string' ? JSON.parse(payload) : payload;
+      
+      // If webhook contains an order or reservation payload directly
+      if (parsed.reservation_id || parsed.order_id || parsed.id) {
+        const outcome = await ingestReservation(connection, adapter, parsed);
+        return { success: true, outcome };
+      }
+
+      // If webhook is a notification that orders were updated, trigger a pull
+      const outcome = await adapter.pullReservations(connectionId);
+      for (const res of outcome) {
+        await ingestReservation(connection, adapter, res);
+      }
+
+      return { success: true, pulled: outcome.length };
+    } catch (err: any) {
+      log.error('[INBOUND_WORKER] Webhook processing failed', { error: err.message });
+      throw err;
+    }
+  }
+
+  throw new Error(`Unsupported job operation: ${operation}`);
 }, { connection: redisConnection });
 
 /**

@@ -31,7 +31,7 @@ export default function ClientChannelManager({
   properties: any[] 
 }) {
   const [providers, setProviders] = useState(initialProviders);
-  const [activeTab, setActiveTab] = useState<'CHANNELS' | 'MAPPING'>('CHANNELS');
+  const [activeTab, setActiveTab] = useState<'CHANNELS' | 'MAPPING' | 'LOGS'>('CHANNELS');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -39,8 +39,14 @@ export default function ClientChannelManager({
     providerCode: 'BOOKING_COM', 
     propertyId: properties[0]?.id || '', 
     clientId: '', 
-    clientSecret: '' 
+    affiliateId: '',
+    clientSecret: '',
+    environment: 'PRODUCTION'
   });
+  
+  // Sync Logs audit state
+  const [logs, setLogs] = useState<any[]>([]);
+  const [loadingLogs, setLoadingLogs] = useState(false);
   
   // Room Mapping state
   const [mappings, setMappings] = useState<any[]>([]);
@@ -55,7 +61,25 @@ export default function ClientChannelManager({
     if (activeTab === 'MAPPING' && mappings.length === 0) {
       fetchMappings();
     }
+    if (activeTab === 'LOGS') {
+      fetchLogs();
+    }
   }, [activeTab]);
+
+  const fetchLogs = async () => {
+    try {
+      setLoadingLogs(true);
+      const res = await fetch('/api/admin/ota/logs');
+      if (res.ok) {
+        const data = await res.json();
+        setLogs(data.logs || []);
+      }
+    } catch (e) {
+      toast.error('Failed to load sync audit logs');
+    } finally {
+      setLoadingLogs(false);
+    }
+  };
 
   const fetchMappings = async () => {
     try {
@@ -206,6 +230,17 @@ export default function ClientChannelManager({
           >
             <LinkIcon className="w-4 h-4" />
             Room Type Mappings
+          </button>
+          <button
+            onClick={() => setActiveTab('LOGS')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
+              activeTab === 'LOGS'
+                ? 'bg-[#D4AF37] text-black shadow-md'
+                : 'bg-white/5 text-white/60 hover:text-white hover:bg-white/10 border border-white/5'
+            }`}
+          >
+            <Activity className="w-4 h-4" />
+            Sync Events {logs.length > 0 && `(${logs.length})`}
           </button>
         </div>
 
@@ -412,6 +447,73 @@ export default function ClientChannelManager({
           </div>
         )}
 
+        {/* Tab 3: Sync Events */}
+        {activeTab === 'LOGS' && (
+          <div className="bg-[#121118]/80 rounded-xl border border-white/5 overflow-hidden shadow-sm">
+            <div className="p-6 border-b border-white/5 flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-white">Channel Synchronization Logs</h2>
+                <p className="text-[#8E8C94] text-xs mt-1">Audit trail of inbound reservation pulls and outbound availability broadcasts.</p>
+              </div>
+              <button 
+                onClick={fetchLogs}
+                disabled={loadingLogs}
+                className="flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white px-3 py-1.5 rounded-lg text-xs font-semibold border border-white/10 transition-colors"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${loadingLogs ? 'animate-spin' : ''}`} /> Refresh
+              </button>
+            </div>
+            {loadingLogs ? (
+              <div className="p-12 text-center text-[#8E8C94]">Loading audit events...</div>
+            ) : logs.length === 0 ? (
+              <div className="p-12 text-center text-[#8E8C94]">No sync events recorded yet. Click &quot;Force Sync All&quot; above to initiate a sync.</div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm text-white">
+                  <thead className="bg-white/5 text-white/50 text-xs uppercase border-b border-white/10">
+                    <tr>
+                      <th className="p-4">Time</th>
+                      <th className="p-4">Channel</th>
+                      <th className="p-4">Event</th>
+                      <th className="p-4">Direction</th>
+                      <th className="p-4">Status</th>
+                      <th className="p-4">Notes / Error</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {logs.map((log: any) => (
+                      <tr key={log.id} className="hover:bg-white/[0.02]">
+                        <td className="p-4 text-xs font-mono text-white/70">
+                          {new Date(log.createdAt).toLocaleTimeString()} ({formatDistanceToNow(new Date(log.createdAt), { addSuffix: true })})
+                        </td>
+                        <td className="p-4 font-semibold text-xs">{log.provider}</td>
+                        <td className="p-4 font-mono text-xs text-[#D4AF37]">{log.eventType}</td>
+                        <td className="p-4 text-xs">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${log.direction === 'INBOUND' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'bg-purple-500/10 text-purple-400 border border-purple-500/20'}`}>
+                            {log.direction}
+                          </span>
+                        </td>
+                        <td className="p-4 text-xs">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                            log.status === 'SUCCESS' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            log.status === 'QUARANTINED' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+                            'bg-red-500/10 text-red-400 border border-red-500/20'
+                          }`}>
+                            {log.status}
+                          </span>
+                        </td>
+                        <td className="p-4 text-xs text-white/60 font-mono max-w-xs truncate">
+                          {log.errorMessage || 'Completed successfully'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
       </div>
 
       {/* New Connection Modal */}
@@ -461,7 +563,29 @@ export default function ClientChannelManager({
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-300">API Secret Token</label>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-300">Environment</label>
+                  <select 
+                    value={formData.environment} 
+                    onChange={e => setFormData({...formData, environment: e.target.value})}
+                    className="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-white text-sm focus:outline-none focus:border-[#D4AF37]"
+                  >
+                    <option value="PRODUCTION">Production (Live Inventory & Bookings)</option>
+                    <option value="TEST">Sandbox / Test (Demand API Sandbox)</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-300">Affiliate / Partner ID (X-Affiliate-Id)</label>
+                  <input 
+                    type="text"
+                    value={formData.affiliateId}
+                    onChange={e => setFormData({...formData, affiliateId: e.target.value})}
+                    placeholder="e.g. 3849201"
+                    className="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-white text-sm focus:outline-none focus:border-[#D4AF37]"
+                  />
+                  <p className="text-[11px] text-slate-500">Required by Booking.com Demand API v3.2 header</p>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-300">API Bearer Token / Secret</label>
                   <input 
                     type="password"
                     required

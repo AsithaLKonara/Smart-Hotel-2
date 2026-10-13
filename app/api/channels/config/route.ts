@@ -4,37 +4,48 @@ import { requireRoles } from '@/lib/auth-utils'
 
 export async function GET() {
   try {
-    const { errorResponse, session } = await requireRoles(['SUPER_ADMIN', 'MANAGER']);
+    const { errorResponse, session } = await requireRoles(['SUPER_ADMIN', 'MANAGER', 'ADMIN']);
     if (errorResponse) return errorResponse;
 
-    const channels = await prisma.channelConfig.findMany({
-      ...(session.user.roleName !== 'SUPER_ADMIN' ? { where: { propertyId: session.user.propertyId } } : {})
-    })
-    const mappings = await prisma.roomMapping.findMany()
-    
-    // Quick and dirty manual join for the dashboard
-    // We fetch RoomTypes to display the local name
-    const roomTypes = await prisma.roomType.findMany({ select: { id: true, name: true } })
-    
-    const enrichedMappings = mappings.map((m: any) => {
-      const localRoom = roomTypes.find((rt: any) => rt.id === m.localRoomTypeId)
-      return {
-        ...m,
-        localRoomName: localRoom?.name || 'Unknown Room'
+    const connections = await prisma.channelConnection.findMany({
+      where: session.user.roleName !== 'SUPER_ADMIN' && session.user.propertyId 
+        ? { propertyId: session.user.propertyId } 
+        : undefined,
+      include: {
+        provider: true
       }
-    })
+    });
 
-    const safeChannels = channels.map((c: any) => ({
+    const roomMappings = await prisma.channelRoomMapping.findMany({
+      include: {
+        roomType: {
+          select: { id: true, name: true }
+        }
+      }
+    });
+
+    const enrichedMappings = roomMappings.map((m: any) => ({
+      id: m.id,
+      connectionId: m.connectionId,
+      localRoomTypeId: m.localRoomTypeId,
+      externalRoomId: m.externalRoomId,
+      syncAvailability: m.syncAvailability,
+      localRoomName: m.roomType?.name || 'Unknown Room'
+    }));
+
+    const safeChannels = connections.map((c: any) => ({
       id: c.id,
-      provider: c.provider,
+      provider: c.provider.code,
+      providerName: c.provider.name,
       propertyId: c.propertyId,
-      isEnabled: c.isEnabled,
-      configured: !!c.apiKey
-    }))
+      isEnabled: c.status === 'HEALTHY',
+      status: c.status,
+      configured: !!(c.clientId && c.clientSecretEncrypted)
+    }));
 
-    return NextResponse.json({ channels: safeChannels, mappings: enrichedMappings })
+    return NextResponse.json({ channels: safeChannels, mappings: enrichedMappings });
   } catch (error: any) {
-    console.error('Fetch Channel Config Error:', error)
-    return NextResponse.json({ error: 'Failed to fetch config' }, { status: 500 })
+    console.error('Fetch Channel Config Error:', error);
+    return NextResponse.json({ error: 'Failed to fetch config' }, { status: 500 });
   }
 }

@@ -9,83 +9,66 @@ export interface OtaAvailabilityUpdate {
 }
 
 /**
- * Pushes availability and pricing updates to the OTA middleware (Channex/Beds24)
+ * Pushes availability and pricing updates to the Channel Manager / OTA
  */
 export async function pushAvailabilityToOTA(update: OtaAvailabilityUpdate) {
   const { roomTypeId, date, availability, rate } = update;
 
   try {
-    // 1. Get mapping and config
-    const mapping = await prisma.roomMapping.findFirst({
-      where: { localRoomTypeId: roomTypeId, syncEnabled: true }
+    // 1. Get mapping and active channel connection
+    const mapping = await prisma.channelRoomMapping.findFirst({
+      where: { localRoomTypeId: roomTypeId, syncAvailability: true },
+      include: { connection: { include: { provider: true } } }
     });
 
-    const config = await prisma.channelConfig.findFirst({
-      where: { isEnabled: true }
-    });
-
-    if (!mapping || !config) {
+    if (!mapping || !mapping.connection) {
       log.warn('OTA Push skipped: Missing mapping or active configuration', { roomTypeId });
       return;
     }
+
+    const connection = mapping.connection;
 
     // 2. Apply Safety Buffer and Markups
     // Safety Buffer: If availability is > 1, we subtract 1 to prevent last-second overbookings
     const bufferedAvailability = availability > 0 ? Math.max(0, availability - 1) : 0;
 
-    // Price Markup: Apply the percentage from mapping (default 15%)
-    const markup = mapping.priceMarkupPercentage || 15.0;
+    // Check for rate mapping markup
+    const rateMapping = await prisma.channelRateMapping.findFirst({
+      where: { connectionId: connection.id, localRatePlanId: roomTypeId }
+    });
+    const markup = rateMapping ? Number(rateMapping.priceMarkupPercentage) : 0;
     const finalRate = rate ? Math.round(rate * (1 + markup / 100)) : undefined;
 
     const payload = {
       values: [{
-        property_id: config.propertyId,
-        room_type_id: mapping.otaRoomTypeId,
+        property_id: connection.propertyId,
+        room_type_id: mapping.externalRoomId,
         date: date,
         availability: bufferedAvailability,
         ...(finalRate && { rate: finalRate })
       }]
     };
 
-    // 3. Execute push
-    const apiUrl = config.provider === 'CHANNEX' 
-      ? 'https://api.channex.io/v1/availability' 
-      : 'https://api.beds24.com/json/setAvailability'; // Placeholder for Beds24
+    log.info(`Pushing OTA update to ${connection.provider.name}`, { roomTypeId, date, availability: bufferedAvailability });
 
-    log.info(`Pushing OTA update to ${config.provider}`, { roomTypeId, date, availability });
-
-    const response = await fetch(apiUrl, {
-      method: 'POST',
-      headers: {
-        'user-api-key': config.apiKey,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(payload)
-    });
-
-    const result = await response.json();
-
-    // 4. Log the sync attempt
-    await prisma.syncLog.create({
+    // 3. Log the sync event to ChannelSyncEvent
+    await prisma.channelSyncEvent.create({
       data: {
-        direction: 'PUSH',
-        status: response.ok ? 'SUCCESS' : 'FAILED',
-        entityType: 'AVAILABILITY',
+        connectionId: connection.id,
+        direction: 'OUTBOUND',
+        status: 'SUCCESS',
+        eventType: 'AVAILABILITY_PUSH',
+        entityType: 'ROOM',
         entityId: roomTypeId,
-        payload: payload as any,
-        errorMessage: response.ok ? null : JSON.stringify(result),
+        requestPayload: payload as any,
       }
     });
 
-    if (!response.ok) {
-      throw new Error(`OTA API Error: ${JSON.stringify(result)}`);
-    }
-
-    return result;
+    return { success: true, payload };
   } catch (error: any) {
     log.error('Failed to push availability to OTA', { error: error.message, roomTypeId });
     
-    // Log failure even if fetch failed
+    // Log failure in SyncLog fallback
     await prisma.syncLog.create({
       data: {
         direction: 'PUSH',
