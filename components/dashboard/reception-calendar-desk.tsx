@@ -73,6 +73,13 @@ export interface ReceptionCalendarDeskProps {
   onQuickCheckIn?: (bookingId: string) => void
   searchQuery?: string
   statusFilter?: string
+  currentMonth?: Date
+  onPrevMonth?: () => void
+  onNextMonth?: () => void
+  onToday?: () => void
+  isDayRosterOpen?: boolean
+  onToggleDayRoster?: () => void
+  hideHeader?: boolean
 }
 
 export function ReceptionCalendarDesk({
@@ -85,20 +92,31 @@ export function ReceptionCalendarDesk({
   onSelectBooking,
   onQuickCheckIn,
   searchQuery = '',
-  statusFilter = 'ALL'
+  statusFilter = 'ALL',
+  currentMonth: externalMonth,
+  onPrevMonth,
+  onNextMonth,
+  onToday,
+  isDayRosterOpen: externalDayRosterOpen,
+  onToggleDayRoster,
+  hideHeader = false
 }: ReceptionCalendarDeskProps) {
-  const [currentMonth, setCurrentMonth] = useState<Date>(selectedDate || new Date())
+  const [internalMonth, setInternalMonth] = useState<Date>(selectedDate || new Date())
   const [calendarView, setCalendarView] = useState<'month' | 'week'>('month')
-  const [isDayRosterOpen, setIsDayRosterOpen] = useState<boolean>(false)
+  const [internalDayRosterOpen, setInternalDayRosterOpen] = useState<boolean>(false)
+
+  const currentMonth = externalMonth || internalMonth
+  const isDayRosterOpen = externalDayRosterOpen !== undefined ? externalDayRosterOpen : internalDayRosterOpen
 
   // Navigation handlers
-  const handlePrevMonth = () => setCurrentMonth(subMonths(currentMonth, 1))
-  const handleNextMonth = () => setCurrentMonth(addMonths(currentMonth, 1))
-  const handleToday = () => {
+  const handlePrevMonth = onPrevMonth || (() => setInternalMonth(subMonths(currentMonth, 1)))
+  const handleNextMonth = onNextMonth || (() => setInternalMonth(addMonths(currentMonth, 1)))
+  const handleToday = onToday || (() => {
     const today = new Date()
-    setCurrentMonth(today)
+    setInternalMonth(today)
     onSelectDate(today)
-  }
+  })
+  const handleToggleRoster = onToggleDayRoster || (() => setInternalDayRosterOpen(!isDayRosterOpen))
 
   // Pre-process bookings into efficient date buckets
   const totalRoomsCount = Math.max(rooms.length, 1)
@@ -214,94 +232,96 @@ export function ReceptionCalendarDesk({
 
   return (
     <div className="flex flex-col h-full space-y-4">
-      {/* 1. Unified Calendar Control & Focal Date Toolbar */}
-      <div className="bg-white/5 border border-white/10 rounded-2xl p-3.5 backdrop-blur-md space-y-3">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          {/* Navigation Controls */}
-          <div className="flex items-center space-x-2">
-            <Button
-              onClick={handlePrevMonth}
-              variant="outline"
-              size="icon"
-              className="bg-white/5 border-white/10 text-white hover:bg-white/10 rounded-xl h-8 w-8"
-            >
-              <ChevronLeft className="w-3.5 h-3.5" />
-            </Button>
-            <div className="text-sm font-serif font-bold text-white min-w-[120px] text-center">
-              {format(currentMonth, 'MMMM yyyy')}
+      {/* 1. Unified Calendar Control & Focal Date Toolbar (Rendered only when not lifted to parent) */}
+      {!hideHeader && (
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-3.5 backdrop-blur-md space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            {/* Navigation Controls */}
+            <div className="flex items-center space-x-2">
+              <Button
+                onClick={handlePrevMonth}
+                variant="outline"
+                size="icon"
+                className="bg-white/5 border-white/10 text-white hover:bg-white/10 rounded-xl h-8 w-8"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" />
+              </Button>
+              <div className="text-sm font-serif font-bold text-white min-w-[120px] text-center">
+                {format(currentMonth, 'MMMM yyyy')}
+              </div>
+              <Button
+                onClick={handleNextMonth}
+                variant="outline"
+                size="icon"
+                className="bg-white/5 border-white/10 text-white hover:bg-white/10 rounded-xl h-8 w-8"
+              >
+                <ChevronRight className="w-3.5 h-3.5" />
+              </Button>
+              <Button
+                onClick={handleToday}
+                variant="outline"
+                size="sm"
+                className="bg-primary/10 border-primary/20 text-xs font-semibold text-primary hover:bg-primary/20 rounded-xl h-8 px-2.5"
+              >
+                Today
+              </Button>
             </div>
-            <Button
-              onClick={handleNextMonth}
-              variant="outline"
-              size="icon"
-              className="bg-white/5 border-white/10 text-white hover:bg-white/10 rounded-xl h-8 w-8"
-            >
-              <ChevronRight className="w-3.5 h-3.5" />
-            </Button>
-            <Button
-              onClick={handleToday}
-              variant="outline"
-              size="sm"
-              className="bg-primary/10 border-primary/20 text-xs font-semibold text-primary hover:bg-primary/20 rounded-xl h-8 px-2.5"
-            >
-              Today
-            </Button>
+
+            {/* Focal Date & KPIs */}
+            <div className="flex items-center gap-2 flex-wrap sm:justify-end">
+              <div className="flex items-center gap-1.5 bg-black/40 border border-white/10 rounded-xl px-2.5 py-1 text-xs">
+                <span className="font-bold text-white">{format(selectedDate, 'MMM dd')}</span>
+                {isToday(selectedDate) ? (
+                  <span className="text-[9px] text-emerald-400 font-bold bg-emerald-500/10 px-1 rounded">TODAY</span>
+                ) : (
+                  <span className="text-[9px] text-amber-300 font-bold bg-amber-500/10 px-1 rounded">FOCAL</span>
+                )}
+              </div>
+
+              <div className="flex items-center gap-1 bg-black/40 border border-white/10 rounded-xl px-2 py-1 text-[11px]">
+                <span className="text-white/40">Occ:</span>
+                <span className="font-bold text-amber-400">{selectedOccupancyRate}%</span>
+              </div>
+
+              <div className="flex items-center gap-1 bg-black/40 border border-white/10 rounded-xl px-2 py-1 text-[11px]">
+                <span className="text-emerald-400/70">Arr:</span>
+                <span className="font-bold text-emerald-400">{selectedDayData.arrivals.length}</span>
+              </div>
+
+              <div className="flex items-center gap-1 bg-black/40 border border-white/10 rounded-xl px-2 py-1 text-[11px]">
+                <span className="text-rose-400/70">Dep:</span>
+                <span className="font-bold text-rose-400">{selectedDayData.departures.length}</span>
+              </div>
+
+              <Button
+                size="sm"
+                onClick={handleToggleRoster}
+                variant="outline"
+                className="text-xs bg-white/5 border-white/10 text-white hover:bg-white/10 h-7 px-2 rounded-xl"
+              >
+                <Users className="w-3 h-3 mr-1 text-primary" />
+                {isDayRosterOpen ? 'Hide' : 'Roster'}
+              </Button>
+            </div>
           </div>
 
-          {/* Focal Date & KPIs */}
-          <div className="flex items-center gap-2 flex-wrap sm:justify-end">
-            <div className="flex items-center gap-1.5 bg-black/40 border border-white/10 rounded-xl px-2.5 py-1 text-xs">
-              <span className="font-bold text-white">{format(selectedDate, 'MMM dd')}</span>
-              {isToday(selectedDate) ? (
-                <span className="text-[9px] text-emerald-400 font-bold bg-emerald-500/10 px-1 rounded">TODAY</span>
-              ) : (
-                <span className="text-[9px] text-amber-300 font-bold bg-amber-500/10 px-1 rounded">FOCAL</span>
-              )}
+          {/* Room Highlighting Alert Banner (if a room was clicked in the Room Matrix) */}
+          {highlightedRoomNumber && (
+            <div className="pt-2 border-t border-white/5 flex items-center justify-between animate-in fade-in slide-in-from-top-1 duration-200">
+              <div className="flex items-center gap-2 text-xs text-amber-400">
+                <span className="flex h-1.5 w-1.5 rounded-full bg-amber-400 animate-ping" />
+                <span>Filtering calendar stays for <strong>Room #{highlightedRoomNumber}</strong></span>
+              </div>
+              <button
+                onClick={onClearRoomHighlight}
+                className="text-[11px] text-white/50 hover:text-white flex items-center gap-1 underline"
+              >
+                <X className="w-3 h-3" /> Show All
+              </button>
             </div>
-
-            <div className="flex items-center gap-1 bg-black/40 border border-white/10 rounded-xl px-2 py-1 text-[11px]">
-              <span className="text-white/40">Occ:</span>
-              <span className="font-bold text-amber-400">{selectedOccupancyRate}%</span>
-            </div>
-
-            <div className="flex items-center gap-1 bg-black/40 border border-white/10 rounded-xl px-2 py-1 text-[11px]">
-              <span className="text-emerald-400/70">Arr:</span>
-              <span className="font-bold text-emerald-400">{selectedDayData.arrivals.length}</span>
-            </div>
-
-            <div className="flex items-center gap-1 bg-black/40 border border-white/10 rounded-xl px-2 py-1 text-[11px]">
-              <span className="text-rose-400/70">Dep:</span>
-              <span className="font-bold text-rose-400">{selectedDayData.departures.length}</span>
-            </div>
-
-            <Button
-              size="sm"
-              onClick={() => setIsDayRosterOpen(!isDayRosterOpen)}
-              variant="outline"
-              className="text-xs bg-white/5 border-white/10 text-white hover:bg-white/10 h-7 px-2 rounded-xl"
-            >
-              <Users className="w-3 h-3 mr-1 text-primary" />
-              {isDayRosterOpen ? 'Hide' : 'Roster'}
-            </Button>
-          </div>
+          )}
         </div>
-
-        {/* Room Highlighting Alert Banner (if a room was clicked in the Room Matrix) */}
-        {highlightedRoomNumber && (
-          <div className="pt-2 border-t border-white/5 flex items-center justify-between animate-in fade-in slide-in-from-top-1 duration-200">
-            <div className="flex items-center gap-2 text-xs text-amber-400">
-              <span className="flex h-1.5 w-1.5 rounded-full bg-amber-400 animate-ping" />
-              <span>Filtering calendar stays for <strong>Room #{highlightedRoomNumber}</strong></span>
-            </div>
-            <button
-              onClick={onClearRoomHighlight}
-              className="text-[11px] text-white/50 hover:text-white flex items-center gap-1 underline"
-            >
-              <X className="w-3 h-3" /> Show All
-            </button>
-          </div>
-        )}
-      </div>
+      )}
 
       {/* 3. Optional Day Roster Drawer (Quick list of arrivals/departures for focal date) */}
       {isDayRosterOpen && (

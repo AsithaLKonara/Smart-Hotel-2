@@ -18,8 +18,10 @@ import {
   CheckCircle2,
   User,
   CreditCard,
+  ChevronLeft,
   ChevronRight,
-  ExternalLink
+  ExternalLink,
+  Users
 } from 'lucide-react'
 import { useProperty } from '@/contexts/property-context'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
@@ -36,7 +38,7 @@ import { ReceptionCalendarDesk } from '@/components/dashboard/reception-calendar
 import { ReceptionRoomMatrixDesk } from '@/components/dashboard/reception-room-matrix-desk'
 import { ReceptionSplitContainer } from '@/components/dashboard/reception-split-container'
 import TapeChart from '@/components/dashboard/tape-chart'
-import { format, addDays } from 'date-fns'
+import { format, addDays, subMonths, addMonths, isToday, isSameDay } from 'date-fns'
 import { cn } from '@/lib/utils'
 
 export default function ReceptionistOperationsCenter() {
@@ -69,6 +71,8 @@ function ReceptionistOperationsContent() {
   const [selectedRoom, setSelectedRoom] = useState<any | null>(null)
   const [highlightedRoomId, setHighlightedRoomId] = useState<string | null>(null)
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
+  const [currentMonth, setCurrentMonth] = useState<Date>(new Date())
+  const [isDayRosterOpen, setIsDayRosterOpen] = useState(false)
   const [isExpressModalOpen, setIsExpressModalOpen] = useState(false)
   
   // Reservations Table Sub-Filters
@@ -88,6 +92,14 @@ function ReceptionistOperationsContent() {
       checkIn: format(date, 'yyyy-MM-dd'),
       checkOut: format(addDays(date, 1), 'yyyy-MM-dd')
     })
+  }
+
+  const handlePrevMonth = () => setCurrentMonth(subMonths(currentMonth, 1))
+  const handleNextMonth = () => setCurrentMonth(addMonths(currentMonth, 1))
+  const handleToday = () => {
+    const today = new Date()
+    setCurrentMonth(today)
+    handleSelectDate(today)
   }
 
   const handleSelectRoom = (room: any) => {
@@ -165,6 +177,45 @@ function ReceptionistOperationsContent() {
     }
     return booking.roomId === targetRoomId; // Legacy fallback
   }
+
+  // Selected Day Key Metrics for the unified header
+  const selectedDayStats = useMemo(() => {
+    const targetMidnight = new Date(selectedDate).setHours(12, 0, 0, 0)
+    let inHouseCount = 0
+    let arrivalsCount = 0
+    let departuresCount = 0
+
+    allBookings.forEach((b: any) => {
+      if (!b.checkIn || !b.checkOut) return
+      if (['CANCELLED', 'CHECKED_OUT'].includes(b.status)) return
+
+      const inDate = new Date(b.checkIn)
+      const outDate = new Date(b.checkOut)
+
+      if (isSameDay(inDate, selectedDate)) {
+        arrivalsCount++
+      }
+      if (isSameDay(outDate, selectedDate)) {
+        departuresCount++
+      }
+
+      const inTime = new Date(b.checkIn).setHours(0, 0, 0, 0)
+      const outTime = new Date(b.checkOut).setHours(23, 59, 59, 999)
+      if (targetMidnight >= inTime && targetMidnight <= outTime) {
+        inHouseCount++
+      }
+    })
+
+    const totalRooms = Math.max(rooms.length, 1)
+    const occupancyRate = Math.min(100, Math.round(((inHouseCount + arrivalsCount) / totalRooms) * 100))
+
+    return {
+      occupancyRate,
+      arrivals: arrivalsCount,
+      departures: departuresCount,
+      inHouse: inHouseCount
+    }
+  }, [allBookings, selectedDate, rooms.length])
 
   // Simple mutations for status updates
   const updateBookingMutation = useMutation({
@@ -389,23 +440,23 @@ function ReceptionistOperationsContent() {
         {/* View 1: Dual-Column Command Desk (Split Screen) */}
         {activeView === 'COMMAND_DESK' && (
           <div className="space-y-4">
-            {/* Unified Controls & Filters Bar */}
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-3.5 backdrop-blur-md shadow-sm space-y-3">
-              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-                {/* Search & Status Filters */}
+            {/* 1 PERFECTLY ALIGNED COMMAND CARD (Zero Duplication) */}
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-4 backdrop-blur-md shadow-sm space-y-3.5">
+              {/* Row 1: Search & Filter Chips (Instant Query Bar) */}
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div className="flex flex-wrap items-center gap-2.5 flex-1">
-                  <div className="relative w-full sm:w-64">
-                    <Search className="w-3.5 h-3.5 text-white/40 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <div className="relative w-full sm:w-72">
+                    <Search className="w-3.5 h-3.5 text-white/40 absolute left-3.5 top-1/2 -translate-y-1/2" />
                     <input
                       type="text"
                       placeholder="Search room, guest, booking..."
                       value={searchQuery}
                       onChange={e => setSearchQuery(e.target.value)}
-                      className="w-full bg-black/40 border border-white/10 text-xs text-white pl-8 pr-3 py-2 rounded-xl placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-primary"
+                      className="w-full bg-black/40 border border-white/10 text-xs text-white pl-9 pr-3 py-2 rounded-xl placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-primary"
                     />
                   </div>
 
-                  {/* Status Pills */}
+                  {/* Filter Pills with distinct Idle / Active states */}
                   <div className="flex items-center gap-1 overflow-x-auto pb-1 sm:pb-0 custom-scrollbar">
                     {["ALL", "AVAILABLE", "OCCUPIED", "DIRTY", "MAINTENANCE"].map(st => (
                       <button
@@ -424,9 +475,103 @@ function ReceptionistOperationsContent() {
                   </div>
                 </div>
 
-                {/* Right: Quick Availability Checker + Split View Mode Switcher */}
-                <div className="flex items-center gap-2 flex-wrap pt-2 lg:pt-0 border-t lg:border-t-0 border-white/5">
-                  {/* Availability Checker */}
+                {/* Live Real-time Status Badge */}
+                <div className="flex items-center gap-2 self-start md:self-auto">
+                  {isToday(selectedDate) ? (
+                    <Badge variant="outline" className="border-emerald-500/30 text-emerald-400 bg-emerald-500/10 text-[10px] px-2.5 py-1">
+                      ● Live Real-Time
+                    </Badge>
+                  ) : (
+                    <div className="flex items-center gap-1.5">
+                      <Badge variant="outline" className="border-amber-500/30 text-amber-300 bg-amber-500/10 text-[10px] px-2.5 py-1">
+                        📅 Projected: {format(selectedDate, 'MMM dd')}
+                      </Badge>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={handleToday}
+                        className="h-7 px-2 text-[10px] text-white/50 hover:text-white"
+                      >
+                        Reset Today
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Divider between Search/Filters and Operations Strip */}
+              <div className="border-t border-white/5 pt-3 flex flex-col xl:flex-row xl:items-center justify-between gap-3">
+                {/* Left: Month Navigator & Focal Date KPIs */}
+                <div className="flex items-center gap-3 flex-wrap">
+                  {/* Month Navigation */}
+                  <div className="flex items-center space-x-1.5 bg-black/40 border border-white/10 rounded-xl p-1">
+                    <Button
+                      onClick={handlePrevMonth}
+                      variant="ghost"
+                      size="icon"
+                      className="text-white/60 hover:text-white hover:bg-white/5 rounded-lg h-7 w-7"
+                    >
+                      <ChevronLeft className="w-3.5 h-3.5" />
+                    </Button>
+                    <div className="text-xs font-serif font-bold text-white min-w-[110px] text-center">
+                      {format(currentMonth, 'MMMM yyyy')}
+                    </div>
+                    <Button
+                      onClick={handleNextMonth}
+                      variant="ghost"
+                      size="icon"
+                      className="text-white/60 hover:text-white hover:bg-white/5 rounded-lg h-7 w-7"
+                    >
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </Button>
+                    <Button
+                      onClick={handleToday}
+                      variant="outline"
+                      size="sm"
+                      className="bg-primary/10 border-primary/20 text-[10px] font-bold text-primary hover:bg-primary/20 rounded-lg h-7 px-2"
+                    >
+                      Today
+                    </Button>
+                  </div>
+
+                  {/* Focal Date & Live Stats */}
+                  <div className="flex items-center gap-1.5 bg-black/40 border border-white/10 rounded-xl px-2.5 py-1 text-xs">
+                    <span className="font-bold text-white">{format(selectedDate, 'MMM dd')}</span>
+                    {isToday(selectedDate) ? (
+                      <span className="text-[9px] text-emerald-400 font-bold bg-emerald-500/10 px-1 rounded">TODAY</span>
+                    ) : (
+                      <span className="text-[9px] text-amber-300 font-bold bg-amber-500/10 px-1 rounded">FOCAL</span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-1 bg-black/40 border border-white/10 rounded-xl px-2.5 py-1 text-[11px]">
+                    <span className="text-white/40">Occ:</span>
+                    <span className="font-bold text-amber-400">{selectedDayStats.occupancyRate}%</span>
+                  </div>
+
+                  <div className="flex items-center gap-1 bg-black/40 border border-white/10 rounded-xl px-2.5 py-1 text-[11px]">
+                    <span className="text-emerald-400/70">Arr:</span>
+                    <span className="font-bold text-emerald-400">{selectedDayStats.arrivals}</span>
+                  </div>
+
+                  <div className="flex items-center gap-1 bg-black/40 border border-white/10 rounded-xl px-2.5 py-1 text-[11px]">
+                    <span className="text-rose-400/70">Dep:</span>
+                    <span className="font-bold text-rose-400">{selectedDayStats.departures}</span>
+                  </div>
+
+                  <Button
+                    size="sm"
+                    onClick={() => setIsDayRosterOpen(!isDayRosterOpen)}
+                    variant="outline"
+                    className="text-xs bg-white/5 border-white/10 text-white hover:bg-white/10 h-7 px-2.5 rounded-xl"
+                  >
+                    <Users className="w-3 h-3 mr-1 text-primary" />
+                    {isDayRosterOpen ? 'Hide Day List' : 'Day Roster'}
+                  </Button>
+                </div>
+
+                {/* Right: Date Availability Checker + Split Ratio Controls */}
+                <div className="flex items-center gap-2 flex-wrap">
                   <div className="flex items-center gap-1.5 bg-black/40 border border-white/10 rounded-xl px-2.5 py-1">
                     <span className="text-[10px] font-bold text-white/40 uppercase">In:</span>
                     <input
@@ -445,22 +590,22 @@ function ReceptionistOperationsContent() {
                       onChange={e => setAvailabilityDates({...availabilityDates, checkOut: e.target.value})}
                     />
                   </div>
-                  <Button onClick={checkAvailability} size="sm" className="bg-primary text-black font-bold text-xs h-8 px-3 rounded-xl hover:bg-primary/90">
+                  <Button onClick={checkAvailability} size="sm" className="bg-primary text-black font-bold text-xs h-7 px-2.5 rounded-xl hover:bg-primary/90">
                     <Search className="w-3 h-3 mr-1" />
                     Check
                   </Button>
                   {availableRoomsCount !== null && (
-                    <Badge variant="outline" className="border-emerald-500/30 text-emerald-400 bg-emerald-500/10 py-1 px-2.5 text-xs font-bold h-8 rounded-xl">
-                      {availableRoomsCount} Available
+                    <Badge variant="outline" className="border-emerald-500/30 text-emerald-400 bg-emerald-500/10 py-0.5 px-2 text-xs font-bold h-7 rounded-xl">
+                      {availableRoomsCount} Avail
                     </Badge>
                   )}
 
-                  {/* Desktop Split Switcher in the same bar */}
-                  <div className="hidden xl:flex items-center gap-1 bg-black/40 border border-white/10 p-1 rounded-xl ml-1">
+                  {/* Desktop Split Switcher */}
+                  <div className="hidden xl:flex items-center gap-1 bg-black/40 border border-white/10 p-0.5 rounded-xl ml-1">
                     <button
                       onClick={() => setSplitMode('calendar-focus')}
                       className={cn(
-                        "text-[9px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg transition-all",
+                        "text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-lg transition-all",
                         splitMode === 'calendar-focus'
                           ? "bg-primary text-black font-black shadow-sm"
                           : "text-white/40 hover:text-white"
@@ -472,7 +617,7 @@ function ReceptionistOperationsContent() {
                     <button
                       onClick={() => setSplitMode('equal')}
                       className={cn(
-                        "text-[9px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg transition-all",
+                        "text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-lg transition-all",
                         splitMode === 'equal'
                           ? "bg-primary text-black font-black shadow-sm"
                           : "text-white/40 hover:text-white"
@@ -484,7 +629,7 @@ function ReceptionistOperationsContent() {
                     <button
                       onClick={() => setSplitMode('matrix-focus')}
                       className={cn(
-                        "text-[9px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg transition-all",
+                        "text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-lg transition-all",
                         splitMode === 'matrix-focus'
                           ? "bg-primary text-black font-black shadow-sm"
                           : "text-white/40 hover:text-white"
@@ -515,6 +660,13 @@ function ReceptionistOperationsContent() {
                   onClearRoomHighlight={handleClearRoomHighlight}
                   searchQuery={searchQuery}
                   statusFilter={statusFilter}
+                  currentMonth={currentMonth}
+                  onPrevMonth={handlePrevMonth}
+                  onNextMonth={handleNextMonth}
+                  onToday={handleToday}
+                  isDayRosterOpen={isDayRosterOpen}
+                  onToggleDayRoster={() => setIsDayRosterOpen(!isDayRosterOpen)}
+                  hideHeader={true}
                   onSelectBooking={(b) => {
                     const assignedRoom = rooms.find((r: any) => isRoomAssigned(b, r.id))
                     if (assignedRoom) {
@@ -540,6 +692,7 @@ function ReceptionistOperationsContent() {
                   onSearchChange={setSearchQuery}
                   statusFilter={statusFilter}
                   onStatusFilterChange={setStatusFilter}
+                  hideHeader={true}
                 />
               }
             />

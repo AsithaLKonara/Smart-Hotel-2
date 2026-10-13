@@ -51,6 +51,7 @@ export interface ReceptionRoomMatrixDeskProps {
   onStatusFilterChange: (status: string) => void
   onQuickInspect?: (room: Room) => void
   onQuickClean?: (room: Room) => void
+  hideHeader?: boolean
 }
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; badge: string; icon: any }> = {
@@ -104,7 +105,8 @@ export function ReceptionRoomMatrixDesk({
   statusFilter,
   onStatusFilterChange,
   onQuickInspect,
-  onQuickClean
+  onQuickClean,
+  hideHeader = false
 }: ReceptionRoomMatrixDeskProps) {
   const isDateToday = isToday(selectedDate)
 
@@ -203,52 +205,54 @@ export function ReceptionRoomMatrixDesk({
 
   return (
     <div className="flex flex-col h-full space-y-4">
-      {/* 1. Header & Temporal Context Bar */}
-      <div className="bg-white/5 border border-white/10 rounded-2xl p-4 backdrop-blur-md">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-primary/10 border border-primary/20 text-primary">
-              <SlidersHorizontal className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="text-base font-serif font-bold text-white flex items-center gap-2">
-                <span>Room Matrix</span>
-                <Badge variant="outline" className="text-[10px] border-white/10 text-white/50 px-2 py-0.5">
-                  {rooms.length} Units
-                </Badge>
+      {/* 1. Header & Temporal Context Bar (Rendered only when not lifted to parent) */}
+      {!hideHeader && (
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-4 backdrop-blur-md">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-primary/10 border border-primary/20 text-primary">
+                <SlidersHorizontal className="w-5 h-5" />
               </div>
-              <div className="text-[11px] text-white/40 mt-0.5">
-                Physical floor layout & live occupancy
+              <div>
+                <div className="text-base font-serif font-bold text-white flex items-center gap-2">
+                  <span>Room Matrix</span>
+                  <Badge variant="outline" className="text-[10px] border-white/10 text-white/50 px-2 py-0.5">
+                    {rooms.length} Units
+                  </Badge>
+                </div>
+                <div className="text-[11px] text-white/40 mt-0.5">
+                  Physical floor layout & live occupancy
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Temporal Status Badge */}
-          <div className="flex items-center gap-2">
-            {isDateToday ? (
-              <Badge variant="outline" className="border-emerald-500/30 text-emerald-400 bg-emerald-500/10 text-[10px] px-2.5 py-1">
-                ● Live Real-Time
-              </Badge>
-            ) : (
-              <div className="flex items-center gap-1.5">
-                <Badge variant="outline" className="border-amber-500/30 text-amber-300 bg-amber-500/10 text-[10px] px-2.5 py-1">
-                  📅 Projected: {format(selectedDate, 'MMM dd')}
+            {/* Temporal Status Badge */}
+            <div className="flex items-center gap-2">
+              {isDateToday ? (
+                <Badge variant="outline" className="border-emerald-500/30 text-emerald-400 bg-emerald-500/10 text-[10px] px-2.5 py-1">
+                  ● Live Real-Time
                 </Badge>
-                {onResetDateToToday && (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={onResetDateToToday}
-                    className="h-7 px-2 text-[10px] text-white/50 hover:text-white"
-                  >
-                    <RotateCcw className="w-3 h-3 mr-1" /> Today
-                  </Button>
-                )}
-              </div>
-            )}
+              ) : (
+                <div className="flex items-center gap-1.5">
+                  <Badge variant="outline" className="border-amber-500/30 text-amber-300 bg-amber-500/10 text-[10px] px-2.5 py-1">
+                    📅 Projected: {format(selectedDate, 'MMM dd')}
+                  </Badge>
+                  {onResetDateToToday && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={onResetDateToToday}
+                      className="h-7 px-2 text-[10px] text-white/50 hover:text-white"
+                    >
+                      <RotateCcw className="w-3 h-3 mr-1" /> Today
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* 2. Floors & Rooms Grid Container */}
       <div className="flex-1 overflow-y-auto space-y-6 pr-1 custom-scrollbar">
