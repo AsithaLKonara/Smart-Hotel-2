@@ -16,7 +16,8 @@ import {
   Save,
   Check,
   ShieldCheck,
-  Layers
+  Layers,
+  X
 } from 'lucide-react';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
@@ -518,14 +519,24 @@ export default function ClientChannelManager({
 
       {/* New Connection Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="bg-[#121118] border border-white/10 rounded-2xl w-full max-w-md overflow-hidden">
-            <div className="p-6 border-b border-white/10">
-              <h3 className="text-xl font-bold font-serif text-[#D4AF37]">Connect New OTA Channel</h3>
-              <p className="text-sm text-slate-400 mt-1">Configure credentials for automated 2-way distribution.</p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 sm:p-6 overflow-y-auto">
+          <div className="bg-[#121118] border border-white/10 rounded-2xl w-full max-w-md max-h-[85vh] sm:max-h-[88vh] flex flex-col shadow-2xl overflow-hidden my-auto">
+            <div className="p-5 sm:p-6 border-b border-white/10 flex items-start justify-between flex-shrink-0">
+              <div>
+                <h3 className="text-xl font-bold font-serif text-[#D4AF37]">Connect New OTA Channel</h3>
+                <p className="text-sm text-slate-400 mt-1">Configure credentials for automated 2-way distribution.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors ml-2"
+                aria-label="Close modal"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
-            <form onSubmit={handleAddConnection}>
-              <div className="p-6 space-y-4">
+            <form onSubmit={handleAddConnection} className="flex flex-col flex-1 overflow-hidden min-h-0">
+              <div className="p-5 sm:p-6 space-y-4 overflow-y-auto flex-1 min-h-0 [scrollbar-width:thin] [scrollbar-color:#333_transparent]">
                 <div className="space-y-2">
                   <label className="text-xs font-bold uppercase tracking-wider text-slate-300">OTA Provider</label>
                   <select 
@@ -607,7 +618,7 @@ export default function ClientChannelManager({
                   />
                 </div>
               </div>
-              <div className="p-6 border-t border-white/10 flex justify-end gap-3 bg-black/20">
+              <div className="p-4 sm:p-5 border-t border-white/10 flex justify-end gap-3 bg-black/40 flex-shrink-0">
                 <button 
                   type="button" 
                   onClick={() => setIsModalOpen(false)}
@@ -618,7 +629,7 @@ export default function ClientChannelManager({
                 <button 
                   type="submit" 
                   disabled={isSubmitting}
-                  className="px-6 py-2 text-xs font-bold bg-[#D4AF37] text-black hover:bg-[#C3A030] rounded-lg disabled:opacity-50"
+                  className="px-6 py-2 text-xs font-bold bg-[#D4AF37] text-black hover:bg-[#C3A030] rounded-lg disabled:opacity-50 transition-colors shadow-lg shadow-[#D4AF37]/10"
                 >
                   {isSubmitting ? 'Connecting...' : 'Connect OTA'}
                 </button>
