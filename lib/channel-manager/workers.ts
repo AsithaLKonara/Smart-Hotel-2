@@ -3,6 +3,7 @@ import IORedis from 'ioredis';
 import { prisma } from '@/lib/db';
 import { AvailabilityEngine } from '../availability-engine';
 import { BookingComAdapter } from './adapters/booking-com';
+import { AgodaAdapter } from './adapters/agoda';
 import { OTAReconciliationEngine } from '../ota-reconciliation';
 import { BookingSource, BookingStatus, PaymentStatus } from '@prisma/client';
 import { log } from '@/lib/logger';
@@ -16,7 +17,8 @@ if (redisUrl.includes('${{')) {
 const redisConnection = new IORedis(redisUrl, { maxRetriesPerRequest: null });
 
 const adapters: Record<string, any> = {
-  BOOKING_COM: new BookingComAdapter()
+  BOOKING_COM: new BookingComAdapter(),
+  AGODA: new AgodaAdapter()
 };
 
 /**

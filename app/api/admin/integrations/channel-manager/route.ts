@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { BookingComAdapter } from '@/lib/channel-manager/adapters/booking-com';
+import { AgodaAdapter } from '@/lib/channel-manager/adapters/agoda';
 
 export async function POST(req: Request) {
   try {
@@ -54,6 +55,9 @@ export async function POST(req: Request) {
     // 3. Perform immediate connectivity test
     if (providerCode === 'BOOKING_COM') {
       const adapter = new BookingComAdapter();
+      await adapter.connect(connection.id);
+    } else if (providerCode === 'AGODA') {
+      const adapter = new AgodaAdapter();
       await adapter.connect(connection.id);
     }
 

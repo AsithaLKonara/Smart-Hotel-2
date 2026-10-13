@@ -51,12 +51,20 @@ export async function pushAvailabilityToOTA(update: OtaAvailabilityUpdate) {
 
     log.info(`Pushing OTA update to ${connection.provider.name}`, { roomTypeId, date, availability: bufferedAvailability });
 
-    // 3. Log the sync event to ChannelSyncEvent
+    // 3. Dispatch to Provider Adapter if available
+    let adapterSuccess = true;
+    if (connection.provider.code === 'AGODA') {
+      const { AgodaAdapter } = await import('@/lib/channel-manager/adapters/agoda');
+      const agoda = new AgodaAdapter();
+      adapterSuccess = await agoda.pushAvailability(connection.id, mapping.externalRoomId, { [date]: bufferedAvailability });
+    }
+
+    // 4. Log the sync event to ChannelSyncEvent
     await prisma.channelSyncEvent.create({
       data: {
         connectionId: connection.id,
         direction: 'OUTBOUND',
-        status: 'SUCCESS',
+        status: adapterSuccess ? 'SUCCESS' : 'FAILED',
         eventType: 'AVAILABILITY_PUSH',
         entityType: 'ROOM',
         entityId: roomTypeId,

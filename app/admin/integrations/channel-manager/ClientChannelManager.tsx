@@ -552,13 +552,15 @@ export default function ClientChannelManager({
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-300">Client / Property ID</label>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-300">
+                    {formData.providerCode === 'AGODA' ? 'Agoda Client ID' : 'Client / Machine Account ID'}
+                  </label>
                   <input 
                     type="text"
                     required
                     value={formData.clientId}
                     onChange={e => setFormData({...formData, clientId: e.target.value})}
-                    placeholder="e.g. bcom_hotel_74829"
+                    placeholder={formData.providerCode === 'AGODA' ? 'e.g. agoda_client_id' : 'e.g. bcom_hotel_74829'}
                     className="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-white text-sm focus:outline-none focus:border-[#D4AF37]"
                   />
                 </div>
@@ -574,18 +576,27 @@ export default function ClientChannelManager({
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-300">Affiliate / Partner ID (X-Affiliate-Id)</label>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-300">
+                    {formData.providerCode === 'AGODA' ? 'Agoda Hotel Code (Property ID)' : 'Affiliate / Partner ID (X-Affiliate-Id)'}
+                  </label>
                   <input 
                     type="text"
+                    required={formData.providerCode === 'AGODA'}
                     value={formData.affiliateId}
                     onChange={e => setFormData({...formData, affiliateId: e.target.value})}
-                    placeholder="e.g. 3849201"
+                    placeholder={formData.providerCode === 'AGODA' ? 'e.g. 61027' : 'e.g. 3849201'}
                     className="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-white text-sm focus:outline-none focus:border-[#D4AF37]"
                   />
-                  <p className="text-[11px] text-slate-500">Required by Booking.com Demand API v3.2 header</p>
+                  <p className="text-[11px] text-slate-500">
+                    {formData.providerCode === 'AGODA' 
+                      ? 'Agoda Property ID registered in YCS portal' 
+                      : 'Required by Booking.com Demand API v3.2 header'}
+                  </p>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-300">API Bearer Token / Secret</label>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-300">
+                    {formData.providerCode === 'AGODA' ? 'Agoda Client Secret (OAuth 2.0)' : 'API Bearer Token / Secret'}
+                  </label>
                   <input 
                     type="password"
                     required

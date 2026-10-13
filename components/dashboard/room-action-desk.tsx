@@ -31,6 +31,7 @@ import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 import { WebcamCapture } from '@/components/dashboard/webcam-capture'
+import { AgodaVccViewer } from '@/components/dashboard/agoda-vcc-viewer'
 
 interface Room {
   id: string
@@ -394,6 +395,11 @@ export function RoomActionDesk({
                     </div>
                   </button>
                 </div>
+                {currentBooking && (
+                  <div className="mb-3">
+                    <AgodaVccViewer bookingId={currentBooking.id} />
+                  </div>
+                )}
                 {currentBooking && (
                   <div className="grid grid-cols-3 gap-3">
                     <button
