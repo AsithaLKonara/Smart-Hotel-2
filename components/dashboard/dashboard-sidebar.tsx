@@ -32,11 +32,11 @@ export default function DashboardSidebar() {
   const { data: session } = useSession()
   const { isCollapsed, isMobileOpen, toggleSidebar, toggleMobileMenu, closeMobileMenu } = useSidebar()
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
-    'Front Desk & Bookings': true,
-    'Financials & Revenue': true,
-    'Operations & Inventory': true,
-    'Management & CRM': true,
-    'Platform Settings': false
+    'Front Desk': true,
+    'Room Operations': true,
+    'Billing & POS': true,
+    'OTA & Rates': false,
+    'Management': false
   })
 
   const rawRole = session?.user?.roleName || (session?.user as any)?.role?.name || (session?.user as any)?.role;
@@ -49,7 +49,7 @@ export default function DashboardSidebar() {
   // Auto-scroll active item into view and ensure its group is open
   useEffect(() => {
     const activeItem = getNavigation().find(i => 
-      pathname === i.href || (i.name === 'Procurement' && pathname.startsWith('/admin/procurement'))
+      pathname === i.href || (i.href !== '/admin/dashboard' && i.href !== '/dashboard' && pathname.startsWith(i.href))
     );
     
     if (activeItem && activeItem.group && !openGroups[activeItem.group]) {
@@ -78,12 +78,9 @@ export default function DashboardSidebar() {
 
   const getNavigation = () => {
     const items: NavItem[] = [
-      // 🌐 UNIFIED DASHBOARD LINKS (NO GROUP)
+      // 🌐 UNIFIED DASHBOARD LINKS FOR NON-ADMIN ROLES
       { name: 'Dashboard', href: '/dashboard', icon: Home, roles: ['GUEST'] },
-      { name: 'Dashboard', href: '/kitchen/dashboard', icon: UtensilsCrossed, roles: ['KITCHEN'] },
-      { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard, roles: ['MANAGER', 'SUPER_ADMIN'] },
-      { name: 'Dashboard', href: '/admin/receptionist', icon: LayoutDashboard, roles: ['RECEPTIONIST'] },
-      { name: 'Dashboard', href: '/admin/tasks', icon: LayoutDashboard, roles: ['HOUSEKEEPING', 'MAINTENANCE'] },
+      { name: 'Kitchen KDS', href: '/kitchen/dashboard', icon: UtensilsCrossed, roles: ['KITCHEN'] },
 
       // 🟢 GUEST SUITE (NO GROUP)
       { name: 'Dining Hub', href: '/dashboard/dining', icon: UtensilsCrossed, roles: ['GUEST'] },
@@ -95,57 +92,37 @@ export default function DashboardSidebar() {
       { name: 'Profile Settings', href: '/profile', icon: User, roles: ['GUEST'] },
 
       // 🟠 KITCHEN COMMAND (NO GROUP)
-      { name: 'Point of Sale', href: '/kitchen/pos', icon: ShoppingCart, roles: ['KITCHEN'] },
+      { name: 'Kitchen POS', href: '/kitchen/pos', icon: ShoppingCart, roles: ['KITCHEN'] },
+      { name: 'Menu Editor', href: '/admin/menu', icon: Layers, roles: ['KITCHEN'] },
       
       // ==========================================
-      // GROUPED ADMIN SECTIONS
+      // 5 LEAN OPERATIONAL PILLARS (MID-LEVEL PMS)
       // ==========================================
 
-      // 🔵 FRONT DESK & BOOKINGS
-      { name: 'Front Desk', href: '/admin/receptionist', icon: UserCheck, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'], group: 'Front Desk & Bookings' },
-      { name: 'Point of Sale', href: '/admin/pos', icon: ShoppingCart, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'], group: 'Front Desk & Bookings' },
-      { name: 'Reservations', href: '/admin/bookings', icon: CalendarDays, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'], group: 'Front Desk & Bookings' },
-      { name: 'Resort & Spa', href: '/admin/resort', icon: Palmtree, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'], group: 'Front Desk & Bookings' },
+      // 1. 🛎️ FRONT DESK
+      { name: 'Front Desk', href: '/admin/receptionist', icon: UserCheck, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'], group: 'Front Desk' },
+      { name: 'Reservations', href: '/admin/receptionist?view=bookings', icon: CalendarDays, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'], group: 'Front Desk' },
+      { name: 'Guest CRM', href: '/admin/crm/guests', icon: Users, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'], group: 'Front Desk' },
 
-      // 🟢 FINANCIALS & REVENUE
-      { name: 'Yield Engine', href: '/admin/yield', icon: TrendingUp, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Financials & Revenue' },
-      { name: 'Folios & Billing', href: '/admin/accounting/folios', icon: CreditCard, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Financials & Revenue' },
-      { name: 'Night Audit', href: '/admin/accounting/night-audit', icon: Moon, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Financials & Revenue' },
+      // 2. 🧹 ROOM OPERATIONS
+      { name: 'Housekeeping & Maint', href: '/admin/housekeeping', icon: Brush, roles: ['HOUSEKEEPING', 'MAINTENANCE', 'RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'], group: 'Room Operations' },
+      { name: 'Room Directory', href: '/admin/rooms', icon: Bed, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Room Operations' },
+      { name: 'Master Inventory', href: '/admin/inventory', icon: Box, roles: ['MANAGER', 'SUPER_ADMIN', 'HOUSEKEEPING', 'MAINTENANCE'], group: 'Room Operations' },
 
-      // 🧹 OPERATIONS & INVENTORY
-      { name: 'Room Directory', href: '/admin/rooms', icon: Bed, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Operations & Inventory' },
-      { name: 'Room Types', href: '/admin/room-types', icon: ImageIcon, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Operations & Inventory' },
-      { name: 'Housekeeping', href: '/admin/housekeeping', icon: Brush, roles: ['HOUSEKEEPING', 'MANAGER', 'SUPER_ADMIN'], group: 'Operations & Inventory' },
-      { name: 'Service Tickets', href: '/admin/maintenance/tickets', icon: Wrench, roles: ['MAINTENANCE', 'MANAGER', 'SUPER_ADMIN', 'RECEPTIONIST'], group: 'Operations & Inventory' },
-      { name: 'Asset Register', href: '/admin/maintenance/assets', icon: Layers, roles: ['MAINTENANCE', 'MANAGER', 'SUPER_ADMIN'], group: 'Operations & Inventory' },
-      { name: 'Preventative Schedules', href: '/admin/maintenance/schedules', icon: CalendarClock, roles: ['MAINTENANCE', 'MANAGER', 'SUPER_ADMIN'], group: 'Operations & Inventory' },
-      { name: 'Inspection Logs', href: '/admin/maintenance/inspections', icon: ClipboardCheck, roles: ['MAINTENANCE', 'MANAGER', 'SUPER_ADMIN'], group: 'Operations & Inventory' },
-      { name: 'Event Command', href: '/admin/events/dashboard', icon: CalendarDays, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Operations & Inventory' },
-      { name: 'Halls & Venues', href: '/admin/halls', icon: Building2, roles: ['MANAGER', 'SUPER_ADMIN', 'RECEPTIONIST'], group: 'Operations & Inventory' },
-      { name: 'Master Inventory', href: '/admin/inventory', icon: Box, roles: ['MANAGER', 'SUPER_ADMIN', 'RECEPTIONIST', 'HOUSEKEEPING', 'MAINTENANCE'], group: 'Operations & Inventory' },
-      { name: 'Procurement', href: '/admin/procurement/orders', icon: FileCheck, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Operations & Inventory' },
-      { name: 'Kitchen Menu', href: '/admin/menu', icon: UtensilsCrossed, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Operations & Inventory' },
-      
-      // 👥 HUMAN RESOURCES
-      { name: 'Employee Directory', href: '/admin/hr/employees', icon: Briefcase, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Human Resources' },
-      { name: 'Shift Roster', href: '/admin/hr/shifts', icon: Clock, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Human Resources' },
-      { name: 'Payroll Center', href: '/admin/hr/payroll', icon: CircleDollarSign, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Human Resources' },
+      // 3. 💳 BILLING & POS
+      { name: 'Point of Sale', href: '/admin/pos', icon: ShoppingCart, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'], group: 'Billing & POS' },
+      { name: 'Folios & Billing', href: '/admin/accounting/folios', icon: CreditCard, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'], group: 'Billing & POS' },
+      { name: 'Night Audit', href: '/admin/accounting/night-audit', icon: Moon, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Billing & POS' },
 
-      // 🔴 MANAGEMENT & CRM
-      { name: 'Enterprise BI', href: '/admin/analytics/bi', icon: PieChart, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Management & CRM' },
-      { name: 'Operations Map', href: '/admin/manager', icon: BarChart3, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Management & CRM' },
-      { name: 'Guest CRM', href: '/admin/crm/guests', icon: UserCheck, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'], group: 'Management & CRM' },
-      { name: 'Travel Agents', href: '/admin/crm/travel-agents', icon: Plane, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Management & CRM' },
-      { name: 'Corporate B2B', href: '/admin/crm/corporate', icon: Building2, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Management & CRM' },
-      { name: 'Global Properties', href: '/admin/corporate/properties', icon: Globe, roles: ['SUPER_ADMIN'], group: 'Management & CRM' },
-      
-      // ⚙️ PLATFORM SETTINGS
-      { name: 'System Settings', href: '/admin/settings', icon: SettingsIcon, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Platform Settings' },
-      { name: 'App Integrations', href: '/admin/settings/integrations', icon: LinkIcon, roles: ['SUPER_ADMIN'], group: 'Platform Settings' },
-      { name: 'App Marketplace', href: '/admin/app-marketplace', icon: Layers, roles: ['SUPER_ADMIN'], group: 'Platform Settings' },
-      { name: 'Channel Manager', href: '/admin/integrations/channel-manager', icon: Network, roles: ['SUPER_ADMIN', 'MANAGER'], group: 'Platform Settings' },
-      { name: 'Security (RBAC)', href: '/admin/roles', icon: ShieldCheck, roles: ['SUPER_ADMIN'], group: 'Platform Settings' },
-      { name: 'Audit Stream', href: '/admin/audit-logs', icon: History, roles: ['SUPER_ADMIN'], group: 'Platform Settings' }
+      // 4. 🌐 OTA & RATES
+      { name: 'Channel Manager', href: '/admin/integrations/channel-manager', icon: Network, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'OTA & Rates' },
+      { name: 'Rates & Pricing', href: '/admin/pricing', icon: TrendingUp, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'OTA & Rates' },
+
+      // 5. 📊 HOTEL MANAGEMENT
+      { name: 'Manager Cockpit', href: '/admin/dashboard', icon: LayoutDashboard, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Management' },
+      { name: 'Team & Staff', href: '/admin/staff', icon: ShieldCheck, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Management' },
+      { name: 'System Settings', href: '/admin/settings', icon: SettingsIcon, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Management' },
+      { name: 'Audit Stream', href: '/admin/audit-logs', icon: History, roles: ['SUPER_ADMIN'], group: 'Management' }
     ]
 
     if (role === 'KITCHEN') {
@@ -247,7 +224,7 @@ export default function DashboardSidebar() {
                 <div className="space-y-1 pl-2 border-l border-white/5 ml-4">
                   {items.map((item) => {
                     const Icon = item.icon
-                    const isActive = pathname === item.href || (item.name === 'Procurement' && pathname.startsWith('/admin/procurement'))
+                    const isActive = pathname === item.href || (item.href !== '/admin/dashboard' && item.href !== '/dashboard' && pathname.startsWith(item.href))
                     return (
                       <Link
                         key={item.name}
@@ -276,7 +253,7 @@ export default function DashboardSidebar() {
           <div key={groupName} className="space-y-1 pt-2 border-t border-white/5">
             {groupedItems[groupName].map((item) => {
               const Icon = item.icon
-              const isActive = pathname === item.href || (item.name === 'Procurement' && pathname.startsWith('/admin/procurement'))
+              const isActive = pathname === item.href || (item.href !== '/admin/dashboard' && item.href !== '/dashboard' && pathname.startsWith(item.href))
               return (
                 <Link
                   key={item.name}

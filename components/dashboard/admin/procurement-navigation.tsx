@@ -8,7 +8,7 @@ export function ProcurementNavigation() {
   const pathname = usePathname()
 
   const tabs = [
-    { name: 'Purchase Orders', href: '/admin/procurement/orders' },
+    { name: 'Inventory & Orders', href: '/admin/inventory?tab=orders' },
     { name: 'Vendors', href: '/admin/procurement/vendors' },
     { name: 'Catalog Items', href: '/admin/procurement/items' }
   ]

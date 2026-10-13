@@ -115,7 +115,7 @@ export function SearchBar({
               type: 'booking',
               title: `Booking ${booking.confirmationCode || booking.id}`,
               description: booking.guestName || booking.room?.name,
-              url: `/admin/bookings`,
+              url: `/admin/receptionist?view=bookings`,
               metadata: { status: booking.status, checkIn: booking.checkIn },
             })
           })

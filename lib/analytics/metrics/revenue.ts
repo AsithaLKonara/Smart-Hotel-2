@@ -41,10 +41,28 @@ export async function getRevenueMetrics(params: {
     const val = item._sum.amount ? item._sum.amount.toNumber() : 0
     if (item.category === 'ROOM_CHARGE') breakdown.ROOMS += val
     else if (item.category === 'FOOD_AND_BEVERAGE' || item.category === 'MINIBAR') breakdown.FNB += val
-    else breakdown.OTHER += val // Add SPA/EVENTS mapping when folios support it
+    else if (item.category === 'EVENTS' || item.category === 'BANQUET') breakdown.EVENTS += val
+    else if (item.category === 'SPA') breakdown.SPA += val
+    else breakdown.OTHER += val
   })
 
-  // 2. Fetch POS explicitly (if not all POS is routed to folios yet)
+  // 2. Fetch standalone Event Bookings (hall & banquet bookings)
+  const eventBookings = await prisma.eventBooking.aggregate({
+    _sum: { totalAmount: true },
+    where: {
+      status: { in: ['CONFIRMED', 'COMPLETED'] },
+      ...(propertyId && { space: { propertyId } }),
+      ...(startDate && endDate && { startTime: { gte: startDate, lte: endDate } })
+    }
+  })
+
+  // Add event booking revenue (ensuring no double count from folio)
+  const eventTotal = eventBookings._sum.totalAmount ? eventBookings._sum.totalAmount.toNumber() : 0
+  if (breakdown.EVENTS === 0 && eventTotal > 0) {
+    breakdown.EVENTS += eventTotal
+  }
+
+  // 3. Fetch POS explicitly (if not all POS is routed to folios yet)
   const posOrders = await prisma.internalOrder.aggregate({
     _sum: { totalAmount: true },
     where: {

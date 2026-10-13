@@ -33,11 +33,11 @@ export function useHotkeys() {
             break
           case 'b': // Alt+B -> Bookings
             e.preventDefault()
-            router.push('/admin/bookings')
+            router.push('/admin/receptionist?view=bookings')
             break
           case 'n': // Alt+N -> New Reservation
             e.preventDefault()
-            router.push('/admin/bookings?action=new')
+            router.push('/admin/receptionist')
             break
         }
       }

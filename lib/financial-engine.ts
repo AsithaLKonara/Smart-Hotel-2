@@ -10,7 +10,7 @@ export interface FolioTransaction {
   description: string
   amount: number
   taxAmount: number
-  category: 'ROOM_CHARGE' | 'F_AND_B' | 'SPA' | 'TAX' | 'PAYMENT'
+  category: 'ROOM_CHARGE' | 'F_AND_B' | 'SPA' | 'TAX' | 'PAYMENT' | 'EVENTS' | 'BANQUET'
   timestamp: string
   isReversed: boolean
   reversedBy?: string

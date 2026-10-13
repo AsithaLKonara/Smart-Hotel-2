@@ -1,303 +1,661 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useMemo, Suspense } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useSearchParams } from 'next/navigation'
 import { 
   Brush, 
+  Wrench, 
   ShieldAlert, 
   RefreshCw, 
-  ThumbsDown,
-  CheckCircle2,
-  User,
-  Clock,
-  CheckCheck
+  CheckCircle2, 
+  Clock, 
+  CheckCheck,
+  AlertTriangle,
+  Plus,
+  Bed,
+  Layers,
+  Sparkles,
+  Search,
+  Filter,
+  Check
 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import { Modal } from '@/components/ui/modal'
 import toast from 'react-hot-toast'
 import { PremiumSpinner } from '@/components/ui/premium-spinner'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useProperty } from '@/contexts/property-context'
+import { cn } from '@/lib/utils'
 
-export default function HousekeepingOperations() {
+export default function RoomOperationsHub() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <PremiumSpinner size="lg" text="Loading Room Operations & Housekeeping..." />
+      </div>
+    }>
+      <RoomOperationsContent />
+    </Suspense>
+  )
+}
+
+function RoomOperationsContent() {
   const queryClient = useQueryClient()
   const { activePropertyId } = useProperty()
-  const [activeTab, setActiveTab] = useState("ALL")
+  const searchParams = useSearchParams()
+  const initialTabParam = searchParams.get('tab')
 
-  // Fetch Tasks
-  const { data: tasksData, isLoading: tasksLoading } = useQuery({
-    queryKey: ['housekeeping-tasks', activePropertyId],
-    queryFn: async () => {
-      const res = await fetch('/api/tasks?type=HOUSEKEEPING')
-      const data = await res.json()
-      return data.tasks || []
-    }
+  const [activeTab, setActiveTab] = useState<'HOUSEKEEPING' | 'MAINTENANCE'>(
+    initialTabParam === 'maintenance' ? 'MAINTENANCE' : 'HOUSEKEEPING'
+  )
+
+  // Sub-filters
+  const [roomFloorFilter, setRoomFloorFilter] = useState<number | 'ALL'>('ALL')
+  const [roomStatusFilter, setRoomStatusFilter] = useState<string>('ALL')
+  const [ticketStatusFilter, setTicketStatusFilter] = useState<string>('ALL')
+
+  // Quick Work Order Modal State
+  const [isTicketModalOpen, setIsTicketModalOpen] = useState(false)
+  const [submittingTicket, setSubmittingTicket] = useState(false)
+  const [ticketForm, setTicketForm] = useState({
+    roomId: '',
+    issue: '',
+    priority: 'medium'
   })
 
-  // Fetch Staff for assignment
-  const { data: staffData } = useQuery({
-    queryKey: ['staff', activePropertyId],
+  // 1. Fetch Rooms Data
+  const { data: rooms = [], isLoading: roomsLoading } = useQuery({
+    queryKey: ['rooms', activePropertyId],
     queryFn: async () => {
-      const res = await fetch('/api/staff')
-      const data = await res.json()
-      return data.staff || []
-    }
-  })
-
-  const { data: roomsData, isLoading: roomsLoading } = useQuery({
-    queryKey: ['housekeeping-rooms', activePropertyId],
-    queryFn: async () => {
-      const res = await fetch('/api/admin/housekeeping/rooms')
-      const data = await res.json()
-      return data.data || []
-    }
-  })
-
-  const updateTaskStatus = useMutation({
-    mutationFn: async ({ id, status, assignedTo }: { id: string, status?: string, assignedTo?: string }) => {
-      const body: any = {}
-      if (status) body.status = status
-      if (assignedTo !== undefined) body.assignedTo = assignedTo
-
-      const res = await fetch(`/api/tasks/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
+      const res = await fetch('/api/rooms', {
+        headers: { 'x-property-id': activePropertyId || 'all' }
       })
-      if (!res.ok) throw new Error('Failed to update task')
+      const data = await res.json()
+      return data.rooms || []
+    }
+  })
+
+  // 2. Fetch Maintenance Tickets
+  const { data: tickets = [], isLoading: ticketsLoading } = useQuery({
+    queryKey: ['maintenance-tickets', activePropertyId],
+    queryFn: async () => {
+      const res = await fetch('/api/admin/maintenance/tickets')
+      const data = await res.json()
+      return data.tickets || []
+    }
+  })
+
+  // 3. Room Status Transition Mutation
+  const updateRoomStatus = useMutation({
+    mutationFn: async ({ roomId, status }: { roomId: string; status: string }) => {
+      const res = await fetch(`/api/rooms/${roomId}`, {
+        method: 'PATCH',
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-property-id': activePropertyId || 'all'
+        },
+        body: JSON.stringify({ status })
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || 'Failed to update room status')
+      }
+      return res.json()
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['rooms', activePropertyId] })
+      toast.success(`Room updated to ${variables.status.replace('_', ' ')}`)
+    },
+    onError: (err: any) => {
+      toast.error(err.message || 'Status transition failed')
+    }
+  })
+
+  // 4. Ticket Status Transition Mutation
+  const updateTicketStatus = useMutation({
+    mutationFn: async ({ id, status, roomId }: { id: string; status: string; roomId?: string }) => {
+      const res = await fetch('/api/admin/maintenance/tickets', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, status })
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || 'Failed to update ticket')
+      }
+
+      // If resolved and roomId provided, restore room to DIRTY for inspection turnaround
+      if (status === 'RESOLVED' && roomId) {
+        await fetch(`/api/rooms/${roomId}`, {
+          method: 'PATCH',
+          headers: { 
+            'Content-Type': 'application/json',
+            'x-property-id': activePropertyId || 'all'
+          },
+          body: JSON.stringify({ status: 'DIRTY' })
+        }).catch(() => {})
+      }
+
       return res.json()
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['housekeeping-tasks'] })
-      queryClient.invalidateQueries({ queryKey: ['rooms'] })
-      toast.success('Task updated successfully.')
+      queryClient.invalidateQueries({ queryKey: ['maintenance-tickets', activePropertyId] })
+      queryClient.invalidateQueries({ queryKey: ['rooms', activePropertyId] })
+      toast.success('Work order status updated.')
     },
-    onError: () => {
-      toast.error('Failed to update task')
+    onError: (err: any) => {
+      toast.error(err.message || 'Failed to update ticket')
     }
   })
 
-  if (tasksLoading) {
+  // 5. Handle New Ticket Creation
+  const handleCreateTicket = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!ticketForm.issue.trim()) return toast.error('Please enter the issue description')
+
+    setSubmittingTicket(true)
+    try {
+      const res = await fetch('/api/admin/maintenance/tickets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(ticketForm)
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to create work order')
+
+      // Flag the room as MAINTENANCE immediately if a room was assigned
+      if (ticketForm.roomId) {
+        await fetch(`/api/rooms/${ticketForm.roomId}`, {
+          method: 'PATCH',
+          headers: { 
+            'Content-Type': 'application/json',
+            'x-property-id': activePropertyId || 'all'
+          },
+          body: JSON.stringify({ status: 'MAINTENANCE' })
+        }).catch(() => {})
+      }
+
+      queryClient.invalidateQueries({ queryKey: ['maintenance-tickets', activePropertyId] })
+      queryClient.invalidateQueries({ queryKey: ['rooms', activePropertyId] })
+      toast.success('Work order dispatched! Room flagged for maintenance.')
+      setIsTicketModalOpen(false)
+      setTicketForm({ roomId: '', issue: '', priority: 'medium' })
+    } catch (err: any) {
+      toast.error(err.message || 'Error creating ticket')
+    } finally {
+      setSubmittingTicket(false)
+    }
+  }
+
+  // Floors & Groupings
+  const roomsByFloor = useMemo(() => {
+    const acc: Record<number, any[]> = {}
+    rooms.forEach((r: any) => {
+      const floor = r.floor || 1
+      if (!acc[floor]) acc[floor] = []
+      acc[floor].push(r)
+    })
+    return acc
+  }, [rooms])
+
+  const sortedFloors = useMemo(() => {
+    return Object.keys(roomsByFloor).map(Number).sort((a, b) => b - a)
+  }, [roomsByFloor])
+
+  // Summary Metrics
+  const metrics = useMemo(() => {
+    const total = rooms.length
+    const clean = rooms.filter((r: any) => r.status === 'AVAILABLE' || r.status === 'INSPECTED').length
+    const dirty = rooms.filter((r: any) => r.status === 'DIRTY').length
+    const inProgress = rooms.filter((r: any) => r.status === 'CLEANING').length
+    const maintenance = rooms.filter((r: any) => r.status === 'MAINTENANCE').length
+    const openTickets = tickets.filter((t: any) => t.status === 'OPEN' || t.status === 'PENDING').length
+    return { total, clean, dirty, inProgress, maintenance, openTickets }
+  }, [rooms, tickets])
+
+  const filteredTickets = useMemo(() => {
+    if (ticketStatusFilter === 'ALL') return tickets
+    return tickets.filter((t: any) => t.status === ticketStatusFilter)
+  }, [tickets, ticketStatusFilter])
+
+  if (roomsLoading || ticketsLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-transparent">
-        <PremiumSpinner size="lg" text="Loading Housekeeping Board..." />
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <PremiumSpinner size="lg" text="Loading Room Operations & Housekeeping..." />
       </div>
     )
   }
 
-
-
-  // Filter tasks that are not verified/cancelled
-  const activeTasks = tasksData?.filter((t: any) => !['VERIFIED', 'CANCELLED'].includes(t.status)) || []
-  
-  // Filter for tabs
-  const filteredTasks = activeTasks.filter((t: any) => {
-    if (activeTab === 'ROOMS') return false
-    if (activeTab === 'ALL') return t.status !== 'COMPLETED' // hide completed from main board
-    return t.status === activeTab
-  })
-
-  // Tasks awaiting inspection
-  const inspectionTasks = tasksData?.filter((t: any) => t.status === 'COMPLETED') || []
-
   return (
-    <div className="p-6 text-white min-h-screen bg-[#050309]">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between border-b border-white/5 pb-6 mb-8">
+    <div className="p-6 md:p-8 space-y-8 max-w-7xl mx-auto text-white">
+      {/* 1. Header & Unified Operational Tabs */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-6">
         <div>
-          <h1 className="text-3xl font-serif font-bold">Housekeeping Command Center</h1>
-          <p className="text-slate-400 text-sm mt-1">Dispatch cleaning tasks and inspect rooms.</p>
+          <h1 className="text-3xl font-serif font-bold text-white tracking-tight flex items-center gap-3">
+            <Brush className="w-8 h-8 text-primary" /> Room Operations & Housekeeping
+          </h1>
+          <p className="text-white/50 text-sm mt-1">
+            Real-time floor turnaround board, cleaning inspections, and maintenance work orders.
+          </p>
         </div>
-        <Button variant="outline" onClick={() => {
-          queryClient.invalidateQueries({ queryKey: ['housekeeping-tasks'] })
-          queryClient.invalidateQueries({ queryKey: ['housekeeping-rooms'] })
-        }} className="bg-white/5 border-white/10 mt-4 md:mt-0 text-white">
-          <RefreshCw className="w-4 h-4 mr-2" /> Sync Board
-        </Button>
+
+        {/* View Switcher Pill */}
+        <div className="flex items-center gap-1.5 p-1 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-md">
+          <button
+            onClick={() => setActiveTab('HOUSEKEEPING')}
+            className={cn(
+              "px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all",
+              activeTab === 'HOUSEKEEPING'
+                ? "bg-primary text-black font-black shadow-lg"
+                : "text-white/60 hover:text-white hover:bg-white/5"
+            )}
+          >
+            <Brush className="w-4 h-4" />
+            <span>Turnaround Board ({metrics.dirty} Dirty)</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('MAINTENANCE')}
+            className={cn(
+              "px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all",
+              activeTab === 'MAINTENANCE'
+                ? "bg-primary text-black font-black shadow-lg"
+                : "text-white/60 hover:text-white hover:bg-white/5"
+            )}
+          >
+            <Wrench className="w-4 h-4" />
+            <span>Work Orders ({metrics.openTickets} Open)</span>
+          </button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-        
-        {/* Cleaning Queue / Rooms */}
-        <div className="xl:col-span-2 space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold flex items-center"><Brush className="w-5 h-5 mr-2 text-primary" /> {activeTab === 'ROOMS' ? 'Live Room Status' : 'Task Dispatch Board'}</h2>
-            <div className="flex gap-2 bg-white/5 p-1 rounded-lg">
-              {["ALL", "PENDING", "IN_PROGRESS", "ROOMS"].map(tab => (
-                <button 
-                  key={tab} 
-                  onClick={() => setActiveTab(tab)}
-                  className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all ${activeTab === tab ? 'bg-primary text-white shadow-md' : 'text-slate-400 hover:text-white'}`}
+      {/* 2. Top Summary KPI Row */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
+        <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-between">
+          <div>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-white/40">Total Rooms</span>
+            <div className="text-2xl font-mono font-black text-white mt-0.5">{metrics.total}</div>
+          </div>
+          <Bed className="w-5 h-5 text-white/30" />
+        </div>
+
+        <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between">
+          <div>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Clean / Ready</span>
+            <div className="text-2xl font-mono font-black text-emerald-300 mt-0.5">{metrics.clean}</div>
+          </div>
+          <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+        </div>
+
+        <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-between">
+          <div>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400">Needs Cleaning</span>
+            <div className="text-2xl font-mono font-black text-amber-300 mt-0.5">{metrics.dirty}</div>
+          </div>
+          <Clock className="w-5 h-5 text-amber-400" />
+        </div>
+
+        <div className="p-4 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-between">
+          <div>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400">Cleaning Now</span>
+            <div className="text-2xl font-mono font-black text-blue-300 mt-0.5">{metrics.inProgress}</div>
+          </div>
+          <Brush className="w-5 h-5 text-blue-400" />
+        </div>
+
+        <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-between col-span-2 sm:col-span-1">
+          <div>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-rose-400">Maintenance</span>
+            <div className="text-2xl font-mono font-black text-rose-300 mt-0.5">{metrics.maintenance}</div>
+          </div>
+          <AlertTriangle className="w-5 h-5 text-rose-400" />
+        </div>
+      </div>
+
+      {/* 3. TAB 1: Housekeeping Floor Turnaround Board */}
+      {activeTab === 'HOUSEKEEPING' && (
+        <div className="space-y-6">
+          {/* Quick Filters */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white/[0.02] border border-white/5 p-3 rounded-2xl">
+            <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar">
+              {['ALL', 'DIRTY', 'CLEANING', 'AVAILABLE', 'MAINTENANCE'].map(st => (
+                <button
+                  key={st}
+                  onClick={() => setRoomStatusFilter(st)}
+                  className={cn(
+                    "text-[10px] uppercase font-bold px-3 py-1.5 rounded-xl transition-all whitespace-nowrap",
+                    roomStatusFilter === st
+                      ? "bg-primary text-black font-black shadow-md"
+                      : "text-white/40 hover:text-white hover:bg-white/5"
+                  )}
                 >
-                  {tab.replace('_', ' ')}
+                  {st === 'ALL' ? 'All Rooms' : st.replace('_', ' ')}
                 </button>
               ))}
             </div>
+
+            <Button
+              size="sm"
+              onClick={() => {
+                setTicketForm({ roomId: '', issue: '', priority: 'medium' })
+                setIsTicketModalOpen(true)
+              }}
+              className="bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 text-xs font-bold rounded-xl h-8"
+            >
+              <Plus className="w-3.5 h-3.5 mr-1" /> New Work Order
+            </Button>
           </div>
 
-          {activeTab === 'ROOMS' ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {roomsData?.map((room: any) => (
-                <div key={room.id} className="p-4 bg-white/[0.03] border border-white/10 rounded-2xl flex flex-col items-center justify-center text-center">
-                  <h4 className="text-2xl font-bold text-white mb-1">{room.number}</h4>
-                  <Badge className={
-                    room.status === 'AVAILABLE' ? 'bg-emerald-500/20 text-emerald-400' :
-                    room.status === 'DIRTY' ? 'bg-orange-500/20 text-orange-400' :
-                    room.status === 'CLEANING' ? 'bg-blue-500/20 text-blue-400' :
-                    'bg-slate-500/20 text-slate-400'
-                  }>
-                    {room.status.replace('_', ' ')}
-                  </Badge>
-                </div>
-              ))}
-              {roomsData?.length === 0 && <p className="col-span-full text-center text-white/40 p-8">No rooms found.</p>}
-            </div>
-          ) : filteredTasks.length === 0 ? (
-             <div className="text-center py-20 bg-white/[0.02] border border-white/5 rounded-3xl">
-               <CheckCheck className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-               <p className="text-slate-400 font-medium">No active tasks in this view.</p>
-             </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <AnimatePresence mode="popLayout">
-                {filteredTasks.map((task: any) => (
-                  <motion.div 
-                    key={task.id} 
-                    layout 
-                    initial={{ opacity: 0, scale: 0.95 }} 
-                    animate={{ opacity: 1, scale: 1 }} 
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    className="p-5 bg-white/[0.03] border border-white/10 rounded-2xl hover:border-white/20 transition-all shadow-xl"
-                  >
-                    <div className="flex justify-between items-start mb-3">
-                      <div>
-                        <h4 className="text-xl font-bold text-white">Room {task.room?.number || 'Unknown'}</h4>
-                        <p className="text-xs text-slate-400 mt-0.5">{task.title}</p>
-                      </div>
-                      <Badge className={task.status === 'IN_PROGRESS' ? 'bg-blue-500/20 text-blue-400' : 'bg-slate-500/20 text-slate-400'}>
-                        {task.status.replace('_', ' ')}
-                      </Badge>
-                    </div>
+          {/* Floor-by-Floor Cards */}
+          <div className="space-y-8">
+            {sortedFloors.map(floor => {
+              const floorRooms = roomsByFloor[floor].filter((r: any) => {
+                if (roomStatusFilter === 'ALL') return true
+                return r.status === roomStatusFilter
+              })
 
-                    <div className="mb-4">
-                       <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider mb-1 block">Assigned Attendant</label>
-                       <select 
-                         className="w-full bg-[#0a0a0f] border border-white/10 rounded-lg p-2 text-sm text-white focus:ring-1 focus:ring-primary outline-none"
-                         value={task.assignedTo || ''}
-                         onChange={(e) => updateTaskStatus.mutate({ id: task.id, assignedTo: e.target.value })}
-                       >
-                         <option value="">-- Unassigned --</option>
-                         {staffData?.map((staff: any) => (
-                           <option key={staff.id} value={staff.id}>{staff.name} ({staff.position})</option>
-                         ))}
-                       </select>
-                    </div>
+              if (floorRooms.length === 0) return null
 
-                    <div className="pt-4 border-t border-white/5 flex gap-2">
-                      {task.status === 'PENDING' && (
-                        <Button 
-                          onClick={() => updateTaskStatus.mutate({ id: task.id, status: 'IN_PROGRESS' })} 
-                          className="w-full bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold"
+              return (
+                <div key={floor} className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs font-black uppercase tracking-[0.25em] text-white/40">
+                      Floor {floor}
+                    </span>
+                    <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent" />
+                    <span className="text-[10px] text-white/30 font-mono">{floorRooms.length} Rooms</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {floorRooms.map((room: any) => {
+                      const isDirty = room.status === 'DIRTY'
+                      const isCleaning = room.status === 'CLEANING'
+                      const isClean = room.status === 'AVAILABLE' || room.status === 'INSPECTED'
+                      const isMaintenance = room.status === 'MAINTENANCE'
+
+                      return (
+                        <div
+                          key={room.id}
+                          className={cn(
+                            "p-4 rounded-2xl border transition-all flex flex-col justify-between space-y-4 shadow-lg",
+                            isDirty && "bg-amber-950/20 border-amber-500/30",
+                            isCleaning && "bg-blue-950/20 border-blue-500/30",
+                            isClean && "bg-emerald-950/20 border-emerald-500/30",
+                            isMaintenance && "bg-rose-950/20 border-rose-500/30",
+                            !isDirty && !isCleaning && !isClean && !isMaintenance && "bg-white/[0.03] border-white/10"
+                          )}
                         >
-                          Mark In Progress
-                        </Button>
-                      )}
-                      {task.status === 'IN_PROGRESS' && (
-                        <Button 
-                          onClick={() => updateTaskStatus.mutate({ id: task.id, status: 'COMPLETED' })} 
-                          className="w-full bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold"
-                        >
-                          Mark Cleaned (Ready for Inspection)
-                        </Button>
-                      )}
-                    </div>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </div>
-          )}
-        </div>
+                          <div>
+                            <div className="flex items-start justify-between">
+                              <span className="text-2xl font-black font-mono text-white">
+                                {room.number}
+                              </span>
+                              <Badge
+                                variant="outline"
+                                className={cn(
+                                  "text-[10px] px-2 py-0.5 font-bold uppercase",
+                                  isClean && "border-emerald-500/40 text-emerald-400 bg-emerald-500/10",
+                                  isDirty && "border-amber-500/40 text-amber-400 bg-amber-500/10",
+                                  isCleaning && "border-blue-500/40 text-blue-400 bg-blue-500/10",
+                                  isMaintenance && "border-rose-500/40 text-rose-400 bg-rose-500/10"
+                                )}
+                              >
+                                {room.status.replace('_', ' ')}
+                              </Badge>
+                            </div>
+                            <div className="text-[11px] text-white/50 mt-1 uppercase font-semibold tracking-wider">
+                              {room.roomType?.name || room.type || 'Standard'}
+                            </div>
+                          </div>
 
-        {/* Inspection Gate */}
-        <div className="space-y-6">
-          <h2 className="text-xl font-bold flex items-center"><ShieldAlert className="w-5 h-5 mr-2 text-amber-500" /> Inspection Gate</h2>
-          <Card className="bg-[#0a0a0f] border-white/10 shadow-2xl">
-            <CardContent className="p-0">
-              {inspectionTasks.length === 0 ? (
-                <div className="text-center py-16 px-4">
-                  <CheckCircle2 className="w-12 h-12 text-emerald-500/20 mx-auto mb-3" />
-                  <p className="text-emerald-500/50 text-xs uppercase font-bold tracking-widest">All Rooms Inspected</p>
-                </div>
-              ) : (
-                <div className="divide-y divide-white/5">
-                  {inspectionTasks.map((task: any) => (
-                    <div key={task.id} className="p-5 hover:bg-white/[0.02] transition-colors">
-                      <div className="flex justify-between items-start mb-3">
-                        <div>
-                          <h4 className="font-bold text-lg text-white">Room {task.room?.number}</h4>
-                          <p className="text-xs text-slate-400 flex items-center mt-1">
-                            <User className="w-3 h-3 mr-1" /> {task.staff?.name || 'Unassigned'}
-                          </p>
+                          {/* 1-Tap Action Buttons */}
+                          <div className="pt-3 border-t border-white/5 flex items-center gap-1.5 flex-wrap">
+                            {isDirty && (
+                              <Button
+                                size="sm"
+                                onClick={() => updateRoomStatus.mutate({ roomId: room.id, status: 'CLEANING' })}
+                                className="bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-bold h-7 px-2.5 rounded-lg flex-1"
+                              >
+                                <Brush className="w-3 h-3 mr-1" /> Start Cleaning
+                              </Button>
+                            )}
+
+                            {isCleaning && (
+                              <Button
+                                size="sm"
+                                onClick={() => updateRoomStatus.mutate({ roomId: room.id, status: 'AVAILABLE' })}
+                                className="bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold h-7 px-2.5 rounded-lg flex-1"
+                              >
+                                <Check className="w-3 h-3 mr-1" /> Mark Clean
+                              </Button>
+                            )}
+
+                            {isClean && (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => updateRoomStatus.mutate({ roomId: room.id, status: 'DIRTY' })}
+                                className="text-white/40 hover:text-amber-400 text-[10px] h-7 px-2"
+                              >
+                                Mark Dirty
+                              </Button>
+                            )}
+
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => {
+                                setTicketForm({ roomId: room.id, issue: '', priority: 'medium' })
+                                setIsTicketModalOpen(true)
+                              }}
+                              className="text-white/40 hover:text-rose-400 text-[10px] h-7 px-2"
+                            >
+                              <Wrench className="w-3 h-3 mr-1" /> Report Issue
+                            </Button>
+                          </div>
                         </div>
-                        <Badge className="bg-amber-500/10 text-amber-500 border-amber-500/20">Pending</Badge>
-                      </div>
-                      <div className="flex gap-2 mt-4">
-                        <Button 
-                          onClick={async () => {
-                            if (!task.room?.id) return toast.error('No Room ID')
-                            try {
-                              const res = await fetch('/api/housekeeping/inspection', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ roomId: task.room.id, supervisorId: '00000000-0000-0000-0000-000000000000', passed: true })
-                              })
-                              if (res.ok) {
-                                await updateTaskStatus.mutateAsync({ id: task.id, status: 'VERIFIED' })
-                              } else {
-                                toast.error((await res.json()).error || 'Inspection failed')
-                              }
-                            } catch (e) {
-                              toast.error('Failed to submit inspection')
-                            }
-                          }}
-                          className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold"
-                        >
-                          Verify & Release
-                        </Button>
-                        <Button 
-                          onClick={async () => {
-                            if (!task.room?.id) return toast.error('No Room ID')
-                            const reason = prompt('Reason for failing inspection?')
-                            try {
-                              const res = await fetch('/api/housekeeping/inspection', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ roomId: task.room.id, supervisorId: '00000000-0000-0000-0000-000000000000', passed: false, notes: reason || '' })
-                              })
-                              if (res.ok) {
-                                await updateTaskStatus.mutateAsync({ id: task.id, status: 'IN_PROGRESS' })
-                              } else {
-                                toast.error((await res.json()).error || 'Inspection failed')
-                              }
-                            } catch (e) {
-                              toast.error('Failed to submit inspection')
-                            }
-                          }}
-                          variant="outline" 
-                          className="w-12 border-rose-500/30 hover:bg-rose-500/10 text-rose-500"
-                          title="Reject (Send back to cleaning)"
-                        >
-                          <ThumbsDown className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+                      )
+                    })}
+                  </div>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+              )
+            })}
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* 4. TAB 2: Maintenance Work Orders */}
+      {activeTab === 'MAINTENANCE' && (
+        <div className="space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/[0.02] border border-white/5 p-4 rounded-2xl">
+            <div className="flex items-center gap-2">
+              {['ALL', 'OPEN', 'IN_PROGRESS', 'RESOLVED'].map(st => (
+                <button
+                  key={st}
+                  onClick={() => setTicketStatusFilter(st)}
+                  className={cn(
+                    "text-[10px] uppercase font-bold px-3 py-1.5 rounded-xl transition-all",
+                    ticketStatusFilter === st
+                      ? "bg-primary text-black font-black"
+                      : "text-white/40 hover:text-white hover:bg-white/5"
+                  )}
+                >
+                  {st === 'ALL' ? 'All Tickets' : st.replace('_', ' ')}
+                </button>
+              ))}
+            </div>
+
+            <Button
+              onClick={() => {
+                setTicketForm({ roomId: '', issue: '', priority: 'medium' })
+                setIsTicketModalOpen(true)
+              }}
+              className="bg-primary text-black font-bold text-xs h-9 rounded-xl hover:bg-primary/90"
+            >
+              <Plus className="w-3.5 h-3.5 mr-1" /> New Work Order
+            </Button>
+          </div>
+
+          <div className="border border-white/10 rounded-2xl overflow-hidden overflow-x-auto bg-white/[0.02]">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-white/[0.04] text-white/40 uppercase text-[10px] font-bold border-b border-white/5">
+                <tr>
+                  <th className="py-3 px-4">Work Order / Issue</th>
+                  <th className="py-3 px-4">Room</th>
+                  <th className="py-3 px-4">Priority</th>
+                  <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-4">Reported</th>
+                  <th className="py-3 px-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5 text-white/80">
+                {filteredTickets.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-12 text-center text-white/40">
+                      No maintenance work orders found. All assets operational!
+                    </td>
+                  </tr>
+                ) : (
+                  filteredTickets.map((ticket: any) => {
+                    const isResolved = ticket.status === 'RESOLVED'
+                    const isOpen = ticket.status === 'OPEN' || ticket.status === 'PENDING'
+
+                    return (
+                      <tr key={ticket.id} className="hover:bg-white/[0.02] transition-colors">
+                        <td className="py-3.5 px-4">
+                          <div className="font-bold text-white text-sm">{ticket.issue || ticket.description || 'Facility Issue'}</div>
+                          {ticket.assignedStaff && (
+                            <div className="text-[10px] text-white/40 mt-0.5">Assigned to: {ticket.assignedStaff}</div>
+                          )}
+                        </td>
+                        <td className="py-3.5 px-4">
+                          {ticket.room?.number ? (
+                            <Badge variant="outline" className="border-white/10 text-white font-mono">
+                              Room {ticket.room.number}
+                            </Badge>
+                          ) : (
+                            <span className="text-white/30 italic">General Facility</span>
+                          )}
+                        </td>
+                        <td className="py-3.5 px-4">
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              "text-[10px] px-2 py-0.5 font-bold uppercase",
+                              ticket.priority?.toLowerCase() === 'urgent' && "border-rose-500/40 text-rose-400 bg-rose-500/10",
+                              ticket.priority?.toLowerCase() === 'high' && "border-amber-500/40 text-amber-400 bg-amber-500/10",
+                              ticket.priority?.toLowerCase() === 'medium' && "border-blue-500/40 text-blue-400 bg-blue-500/10",
+                              ticket.priority?.toLowerCase() === 'low' && "border-slate-500/40 text-slate-400 bg-slate-500/10"
+                            )}
+                          >
+                            {ticket.priority || 'Medium'}
+                          </Badge>
+                        </td>
+                        <td className="py-3.5 px-4">
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              "text-[10px] px-2 py-0.5 font-bold uppercase",
+                              isResolved && "border-emerald-500/40 text-emerald-400 bg-emerald-500/10",
+                              !isResolved && isOpen && "border-rose-500/40 text-rose-400 bg-rose-500/10",
+                              !isResolved && !isOpen && "border-blue-500/40 text-blue-400 bg-blue-500/10"
+                            )}
+                          >
+                            {ticket.status.replace('_', ' ')}
+                          </Badge>
+                        </td>
+                        <td className="py-3.5 px-4 text-white/40 text-[11px]">
+                          {ticket.createdAt ? new Date(ticket.createdAt).toLocaleDateString() : 'Today'}
+                        </td>
+                        <td className="py-3.5 px-4 text-right space-x-1.5">
+                          {isOpen && (
+                            <Button
+                              size="sm"
+                              onClick={() => updateTicketStatus.mutate({ id: ticket.id, status: 'IN_PROGRESS' })}
+                              className="h-7 px-2.5 text-[10px] bg-blue-500/20 text-blue-300 border border-blue-500/30 hover:bg-blue-500/30 rounded-lg"
+                            >
+                              Start Repair
+                            </Button>
+                          )}
+                          {!isResolved && (
+                            <Button
+                              size="sm"
+                              onClick={() => updateTicketStatus.mutate({ id: ticket.id, status: 'RESOLVED', roomId: ticket.roomId || ticket.room?.id })}
+                              className="h-7 px-2.5 text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/30 rounded-lg"
+                            >
+                              Mark Resolved
+                            </Button>
+                          )}
+                        </td>
+                      </tr>
+                    )
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* 5. Fast New Work Order Modal */}
+      {isTicketModalOpen && (
+        <Modal open={isTicketModalOpen} onClose={() => setIsTicketModalOpen(false)} title="Dispatch Maintenance Work Order">
+          <form onSubmit={handleCreateTicket} className="space-y-4">
+            <div>
+              <label className="text-xs font-bold text-white/60 mb-1 block">Associated Room</label>
+              <select
+                className="w-full bg-black/60 border border-white/10 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-primary"
+                value={ticketForm.roomId}
+                onChange={e => setTicketForm({ ...ticketForm, roomId: e.target.value })}
+              >
+                <option value="">General Facility / No Room</option>
+                {rooms.map((r: any) => (
+                  <option key={r.id} value={r.id}>
+                    Room {r.number} ({r.roomType?.name || r.type || 'Standard'})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-white/60 mb-1 block">Issue Description</label>
+              <Input
+                placeholder="e.g. AC leaking water, bulb blown in bathroom..."
+                value={ticketForm.issue}
+                onChange={e => setTicketForm({ ...ticketForm, issue: e.target.value })}
+                className="bg-black/60 border-white/10 text-xs rounded-xl"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-white/60 mb-1 block">Urgency / Priority</label>
+              <select
+                className="w-full bg-black/60 border border-white/10 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-primary"
+                value={ticketForm.priority}
+                onChange={e => setTicketForm({ ...ticketForm, priority: e.target.value })}
+              >
+                <option value="low">Low (Cosmetic, touch-up)</option>
+                <option value="medium">Medium (Standard repair)</option>
+                <option value="high">High (Affecting guest comfort)</option>
+                <option value="urgent">Urgent (Room out of service)</option>
+              </select>
+            </div>
+
+            <div className="pt-4 border-t border-white/10 flex justify-end gap-2">
+              <Button type="button" variant="ghost" onClick={() => setIsTicketModalOpen(false)} className="text-xs">
+                Cancel
+              </Button>
+              <Button type="submit" disabled={submittingTicket} className="bg-primary text-black font-bold text-xs">
+                {submittingTicket ? 'Dispatching...' : 'Dispatch Work Order'}
+              </Button>
+            </div>
+          </form>
+        </Modal>
+      )}
     </div>
   )
 }

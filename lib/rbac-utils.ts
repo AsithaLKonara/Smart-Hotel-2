@@ -36,7 +36,7 @@ export function getDefaultDashboardUrl(granularRole: string): string {
     case 'MANAGER':
       return '/admin/dashboard'
     case 'RECEPTIONIST':
-      return '/admin/bookings'
+      return '/admin/receptionist'
     case 'KITCHEN':
       return '/kitchen'
     case 'HOUSEKEEPING':

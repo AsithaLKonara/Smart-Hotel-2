@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { AdminPageShell } from '@/components/dashboard/admin/admin-page-shell'
 import { PremiumSpinner } from '@/components/ui/premium-spinner'
 import { Card, CardContent } from '@/components/ui/card'
@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { FileText, MoreVertical, Check, CreditCard, ChevronDown, SplitSquareVertical, Receipt, Sparkles, X, ShoppingCart } from 'lucide-react'
+import { FileText, MoreVertical, Check, CreditCard, ChevronDown, SplitSquareVertical, Receipt, Sparkles, X, ShoppingCart, Search, Printer, ArrowRight } from 'lucide-react'
 import toast from 'react-hot-toast'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 
@@ -16,6 +16,8 @@ export default function FoliosManagementPage() {
   const [folios, setFolios] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [expandedFolio, setExpandedFolio] = useState<string | null>(null)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState<'ALL' | 'OPEN' | 'PAID'>('ALL')
 
   // Action Modals State
   const [activeModal, setActiveModal] = useState<'SPLIT' | 'CONVERT' | 'FISCAL' | null>(null)
@@ -118,6 +120,18 @@ export default function FoliosManagementPage() {
     }
   }
 
+  const filteredFolios = useMemo(() => {
+    return folios.filter(folio => {
+      if (statusFilter !== 'ALL' && folio.status !== statusFilter) return false
+      if (!searchTerm) return true
+      const term = searchTerm.toLowerCase()
+      const guestName = folio.booking?.guest?.name?.toLowerCase() || ''
+      const roomNum = folio.booking?.roomAssignments?.[0]?.room?.number?.toLowerCase() || ''
+      const folioId = folio.id?.toLowerCase() || ''
+      return guestName.includes(term) || roomNum.includes(term) || folioId.includes(term)
+    })
+  }, [folios, searchTerm, statusFilter])
+
   const selectedFolioForDrawer = folios.find(f => f.id === expandedFolio)
 
   return (
@@ -176,6 +190,54 @@ export default function FoliosManagementPage() {
              </Card>
           </div>
 
+          {/* Search & Filter Bar */}
+          <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
+            <div className="relative w-full sm:w-80">
+              <Search className="w-4 h-4 text-white/40 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <Input
+                placeholder="Search guest, room #, or folio ID..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 bg-white/5 border-white/10 text-white text-xs h-10 placeholder:text-white/30 focus-visible:border-primary/50"
+              />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2 self-start sm:self-auto">
+              <Button
+                variant={statusFilter === 'ALL' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setStatusFilter('ALL')}
+                className={`text-xs h-8 ${statusFilter === 'ALL' ? 'bg-primary text-black font-semibold' : 'border-white/10 text-white/70 hover:bg-white/5'}`}
+              >
+                All ({folios.length})
+              </Button>
+              <Button
+                variant={statusFilter === 'OPEN' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setStatusFilter('OPEN')}
+                className={`text-xs h-8 ${statusFilter === 'OPEN' ? 'bg-amber-500 text-black font-semibold' : 'border-white/10 text-white/70 hover:bg-white/5'}`}
+              >
+                Open ({folios.filter(f => f.status === 'OPEN').length})
+              </Button>
+              <Button
+                variant={statusFilter === 'PAID' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setStatusFilter('PAID')}
+                className={`text-xs h-8 ${statusFilter === 'PAID' ? 'bg-emerald-500 text-black font-semibold' : 'border-white/10 text-white/70 hover:bg-white/5'}`}
+              >
+                Settled ({folios.filter(f => f.status === 'PAID').length})
+              </Button>
+            </div>
+          </div>
+
           <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
             <table className="w-full text-left text-sm text-white">
               <thead className="bg-white/5 text-white/50 text-xs uppercase">
@@ -190,7 +252,7 @@ export default function FoliosManagementPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/10">
-                {folios.map(folio => {
+                {filteredFolios.map(folio => {
                   const total = (folio.lineItems || [])
                     .filter((b: any) => b.category !== 'PAYMENT')
                     .reduce((a: number, b: any) => a + Number(b.amount || 0), 0);
@@ -382,41 +444,63 @@ export default function FoliosManagementPage() {
             </div>
 
             {/* Quick Actions Footer */}
-            <div className="p-4 border-t border-white/10 bg-black/40 grid grid-cols-3 gap-2">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setSelectedFolio(selectedFolioForDrawer)
-                  setSplitPercentage('50')
-                  setActiveModal('SPLIT')
-                }}
-                className="bg-purple-500/10 border-purple-500/30 text-purple-300 hover:bg-purple-500/20 text-xs font-bold"
-              >
-                <SplitSquareVertical className="w-3.5 h-3.5 mr-1" /> Split
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setSelectedFolio(selectedFolioForDrawer)
-                  setTargetCurrency('EUR')
-                  setConversionResult(null)
-                  setActiveModal('CONVERT')
-                }}
-                className="bg-blue-500/10 border-blue-500/30 text-blue-300 hover:bg-blue-500/20 text-xs font-bold"
-              >
-                <Receipt className="w-3.5 h-3.5 mr-1" /> Convert
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setSelectedFolio(selectedFolioForDrawer)
-                  setFiscalResult(null)
-                  setActiveModal('FISCAL')
-                }}
-                className="bg-amber-500/10 border-amber-500/30 text-amber-300 hover:bg-amber-500/20 text-xs font-bold"
-              >
-                <Check className="w-3.5 h-3.5 mr-1" /> Fiscal
-              </Button>
+            <div className="p-4 border-t border-white/10 bg-black/40 space-y-2">
+              <div className="grid grid-cols-2 gap-2">
+                {selectedFolioForDrawer.booking?.id && (
+                  <Link href={`/admin/pos?bookingId=${selectedFolioForDrawer.booking.id}&mode=checkout`} className="w-full">
+                    <Button className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs gap-1.5 shadow-lg">
+                      <CreditCard className="w-3.5 h-3.5" /> Settle in POS
+                    </Button>
+                  </Link>
+                )}
+                <Button
+                  variant="outline"
+                  onClick={() => window.print()}
+                  className="w-full border-white/20 bg-white/5 hover:bg-white/10 text-white font-semibold text-xs gap-1.5"
+                >
+                  <Printer className="w-3.5 h-3.5" /> Print Statement
+                </Button>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 pt-1 border-t border-white/10">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setSelectedFolio(selectedFolioForDrawer)
+                    setSplitPercentage('50')
+                    setActiveModal('SPLIT')
+                  }}
+                  className="bg-purple-500/10 border-purple-500/30 text-purple-300 hover:bg-purple-500/20 text-[11px] font-bold"
+                >
+                  <SplitSquareVertical className="w-3 h-3 mr-1" /> Split
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setSelectedFolio(selectedFolioForDrawer)
+                    setTargetCurrency('EUR')
+                    setConversionResult(null)
+                    setActiveModal('CONVERT')
+                  }}
+                  className="bg-blue-500/10 border-blue-500/30 text-blue-300 hover:bg-blue-500/20 text-[11px] font-bold"
+                >
+                  <Receipt className="w-3 h-3 mr-1" /> Convert
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setSelectedFolio(selectedFolioForDrawer)
+                    setFiscalResult(null)
+                    setActiveModal('FISCAL')
+                  }}
+                  className="bg-amber-500/10 border-amber-500/30 text-amber-300 hover:bg-amber-500/20 text-[11px] font-bold"
+                >
+                  <Check className="w-3 h-3 mr-1" /> Fiscal
+                </Button>
+              </div>
             </div>
           </div>
         </div>

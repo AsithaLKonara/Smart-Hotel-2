@@ -280,7 +280,7 @@ export default function UnifiedPOS({ role }: { role: string }) {
             })
             if (checkoutRes.ok) {
               toast.success("Room Checked Out Successfully!", { id: 'checkout-toast' })
-              window.location.href = '/admin/bookings'
+              window.location.href = '/admin/receptionist?view=bookings'
               return
             } else {
               toast.error("Checkout failed. Please finalize in Reservations.", { id: 'checkout-toast' })

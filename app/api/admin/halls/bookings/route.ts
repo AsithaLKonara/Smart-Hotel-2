@@ -65,6 +65,7 @@ const createBookingSchema = z.object({
   totalAmount: z.number().min(0).default(0),
   paymentStatus: z.enum(['UNPAID', 'PARTIAL', 'PAID']).default('UNPAID'),
   eventId: z.string().uuid().optional().nullable(),
+  bookingId: z.string().uuid().optional().nullable(),
 });
 
 export async function POST(req: NextRequest) {
@@ -79,7 +80,7 @@ export async function POST(req: NextRequest) {
     if (!result.success) return handleZodError(result.error);
 
     const { spaceId, startTime, endTime, contactName, contactEmail, contactPhone,
-            purpose, guestCount, notes, totalAmount, paymentStatus, eventId } = result.data;
+            purpose, guestCount, notes, totalAmount, paymentStatus, eventId, bookingId } = result.data;
 
     const start = new Date(startTime);
     const end = new Date(endTime);
@@ -115,6 +116,23 @@ export async function POST(req: NextRequest) {
       }, { status: 409 });
     }
 
+    // If linked to an in-house room booking, post charge directly to the customer folio
+    let finalPaymentStatus = paymentStatus;
+    if (bookingId && totalAmount > 0) {
+      try {
+        const { postCharge } = await import('@/lib/accounting');
+        await postCharge({
+          bookingId,
+          amount: totalAmount,
+          category: 'EVENTS',
+          description: `Event Venue: ${space.name} (${purpose || 'Hall Booking'})`
+        });
+        finalPaymentStatus = 'PAID'; // Folio has assumed the debit charge
+      } catch (postErr) {
+        console.error('Failed to post event charge to folio:', postErr);
+      }
+    }
+
     const booking = await prisma.eventBooking.create({
       data: {
         spaceId,
@@ -128,7 +146,7 @@ export async function POST(req: NextRequest) {
         purpose: purpose || null,
         guestCount,
         totalAmount,
-        paymentStatus,
+        paymentStatus: finalPaymentStatus,
         notes: notes || null,
       },
       include: {

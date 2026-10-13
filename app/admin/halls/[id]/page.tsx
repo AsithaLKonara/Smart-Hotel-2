@@ -12,7 +12,7 @@ import * as Dialog from '@radix-ui/react-dialog'
 import {
   Building2, Users, DollarSign, Calendar, Clock, Phone, Mail,
   CheckCircle, XCircle, AlertCircle, Plus, Edit, Trash2, X,
-  ChevronLeft, ChevronRight, MapPin, Tag, CalendarDays
+  ChevronLeft, ChevronRight, MapPin, Tag, CalendarDays, Receipt
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useProperty } from '@/contexts/property-context'
@@ -237,24 +237,28 @@ export default function HallDetailPage({ params }: { params: Promise<{ id: strin
   const router = useRouter()
   const [hall, setHall] = useState<Hall | null>(null)
   const [bookings, setBookings] = useState<Booking[]>([])
+  const [inHouseBookings, setInHouseBookings] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'overview' | 'bookings' | 'availability'>('overview')
   const [showBookingModal, setShowBookingModal] = useState(false)
   const [editingBooking, setEditingBooking] = useState<Booking | null>(null)
-  const [bookingForm, setBookingForm] = useState({ ...emptyBookingForm })
+  const [bookingForm, setBookingForm] = useState({ ...emptyBookingForm, linkedBookingId: '' })
   const [saving, setSaving] = useState(false)
 
   const fetchHall = useCallback(async () => {
     setLoading(true)
     try {
-      const [hallRes, bookingsRes] = await Promise.all([
+      const [hallRes, bookingsRes, inHouseRes] = await Promise.all([
         fetch(`/api/admin/halls/${id}`, { headers: { 'x-property-id': activePropertyId || '' } }),
-        fetch(`/api/admin/halls/bookings?spaceId=${id}`, { headers: { 'x-property-id': activePropertyId || '' } })
+        fetch(`/api/admin/halls/bookings?spaceId=${id}`, { headers: { 'x-property-id': activePropertyId || '' } }),
+        fetch('/api/bookings?status=CHECKED_IN', { headers: { 'x-property-id': activePropertyId || '' } })
       ])
       const hallData = await hallRes.json()
       const bookingsData = await bookingsRes.json()
+      const inHouseData = await inHouseRes.json()
       setHall(hallData.data)
       setBookings(bookingsData.data || [])
+      setInHouseBookings(Array.isArray(inHouseData.bookings) ? inHouseData.bookings : [])
     } catch { toast.error('Failed to load hall') }
     finally { setLoading(false) }
   }, [id, activePropertyId])
@@ -263,7 +267,7 @@ export default function HallDetailPage({ params }: { params: Promise<{ id: strin
 
   const openCreateBooking = () => {
     setEditingBooking(null)
-    setBookingForm({ ...emptyBookingForm })
+    setBookingForm({ ...emptyBookingForm, linkedBookingId: '' })
     setShowBookingModal(true)
   }
 
@@ -281,6 +285,7 @@ export default function HallDetailPage({ params }: { params: Promise<{ id: strin
       startTime: new Date(booking.startTime).toISOString().slice(0, 16),
       endTime: new Date(booking.endTime).toISOString().slice(0, 16),
       status: booking.status as any,
+      linkedBookingId: '',
     })
     setShowBookingModal(true)
   }
@@ -296,6 +301,7 @@ export default function HallDetailPage({ params }: { params: Promise<{ id: strin
         totalAmount: parseFloat(bookingForm.totalAmount || '0'),
         startTime: new Date(bookingForm.startTime).toISOString(),
         endTime: new Date(bookingForm.endTime).toISOString(),
+        bookingId: bookingForm.linkedBookingId || undefined,
       }
 
       const url = editingBooking
@@ -343,6 +349,34 @@ export default function HallDetailPage({ params }: { params: Promise<{ id: strin
       if (res.ok) { toast.success('Marked as paid'); fetchHall() }
       else toast.error('Failed to update payment')
     } catch { toast.error('Error updating payment') }
+  }
+
+  const [folioModalBooking, setFolioModalBooking] = useState<Booking | null>(null)
+  const [selectedFolioBookingId, setSelectedFolioBookingId] = useState<string>('')
+  const [postingFolio, setPostingFolio] = useState(false)
+
+  const handleChargeToFolio = async () => {
+    if (!folioModalBooking || !selectedFolioBookingId) return toast.error('Please select an in-house room booking')
+    setPostingFolio(true)
+    try {
+      const res = await fetch(`/api/admin/halls/bookings/${folioModalBooking.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bookingId: selectedFolioBookingId })
+      })
+      if (res.ok) {
+        toast.success(`Charged $${Number(folioModalBooking.totalAmount).toFixed(2)} to guest folio!`)
+        setFolioModalBooking(null)
+        fetchHall()
+      } else {
+        const err = await res.json()
+        toast.error(err.error || 'Failed to post charge to folio')
+      }
+    } catch {
+      toast.error('Network error posting charge to folio')
+    } finally {
+      setPostingFolio(false)
+    }
   }
 
   if (loading) {
@@ -565,16 +599,29 @@ export default function HallDetailPage({ params }: { params: Promise<{ id: strin
                       <p className={`text-xs font-bold ${PAYMENT_COLORS[booking.paymentStatus]}`}>
                         {booking.paymentStatus}
                       </p>
-                      <div className="flex gap-2 mt-1">
+                      <div className="flex flex-wrap gap-2 mt-1 justify-end">
                         {booking.status !== 'CANCELLED' && booking.paymentStatus !== 'PAID' && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-emerald-400 border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-xs"
-                            onClick={() => handleMarkPaid(booking.id)}
-                          >
-                            Mark Paid
-                          </Button>
+                          <>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-amber-400 border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-xs"
+                              onClick={() => {
+                                setFolioModalBooking(booking)
+                                setSelectedFolioBookingId(inHouseBookings[0]?.id || '')
+                              }}
+                            >
+                              <Receipt className="w-3 h-3 mr-1" /> Charge to Folio
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-emerald-400 border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-xs"
+                              onClick={() => handleMarkPaid(booking.id)}
+                            >
+                              Mark Paid
+                            </Button>
+                          </>
                         )}
                         <Button
                           size="sm"
@@ -718,6 +765,39 @@ export default function HallDetailPage({ params }: { params: Promise<{ id: strin
             </FormField>
           </div>
 
+          <FormField label="Charge to Guest Room Folio (Optional)">
+            <select
+              value={bookingForm.linkedBookingId}
+              onChange={e => {
+                const bId = e.target.value
+                const selected = inHouseBookings.find(b => b.id === bId)
+                setBookingForm({
+                  ...bookingForm,
+                  linkedBookingId: bId,
+                  contactName: selected ? (selected.guest?.name || bookingForm.contactName) : bookingForm.contactName,
+                  contactEmail: selected ? (selected.guest?.email || bookingForm.contactEmail) : bookingForm.contactEmail,
+                  paymentStatus: bId ? 'PAID' : bookingForm.paymentStatus
+                })
+              }}
+              className="w-full bg-[#1a1a24] border border-white/10 rounded-lg p-2.5 text-sm text-white"
+            >
+              <option value="">None (Standalone / Pay at Counter)</option>
+              {inHouseBookings.map((b: any) => {
+                const roomNum = b.roomAssignments?.[0]?.room?.number || 'TBD'
+                return (
+                  <option key={b.id} value={b.id}>
+                    Room #{roomNum} — {b.guest?.name || 'Guest'} (Code: {b.confirmationCode})
+                  </option>
+                )
+              })}
+            </select>
+            {bookingForm.linkedBookingId && (
+              <p className="text-[11px] text-emerald-400 mt-1">
+                ✓ Total amount will post directly as an &quot;EVENTS&quot; charge to the guest&apos;s open room folio.
+              </p>
+            )}
+          </FormField>
+
           {editingBooking && (
             <FormField label="Booking Status">
               <select
@@ -775,6 +855,70 @@ export default function HallDetailPage({ params }: { params: Promise<{ id: strin
             </Button>
           </div>
         </form>
+      </ModalShell>
+
+      {/* Charge to Folio Modal */}
+      <ModalShell
+        open={!!folioModalBooking}
+        onClose={() => setFolioModalBooking(null)}
+        title="Post Charge to Guest Room Folio"
+      >
+        {folioModalBooking && (
+          <div className="space-y-4">
+            <div className="bg-white/5 border border-white/10 rounded-xl p-3.5 space-y-1.5 text-xs">
+              <div className="flex justify-between">
+                <span className="text-white/40">Hall Booking Code:</span>
+                <span className="font-mono text-primary font-bold">{folioModalBooking.confirmationCode}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-white/40">Amount to Charge:</span>
+                <span className="font-bold text-white">${Number(folioModalBooking.totalAmount).toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-white/40">Purpose / Contact:</span>
+                <span className="text-white">{folioModalBooking.purpose || folioModalBooking.contactName || 'Venue Reservation'}</span>
+              </div>
+            </div>
+
+            <FormField label="Select Active In-House Guest / Room">
+              <select
+                value={selectedFolioBookingId}
+                onChange={e => setSelectedFolioBookingId(e.target.value)}
+                className="w-full bg-[#1a1a24] border border-white/10 rounded-lg p-2.5 text-sm text-white"
+              >
+                {inHouseBookings.length === 0 ? (
+                  <option value="">No currently checked-in guests found</option>
+                ) : (
+                  inHouseBookings.map((b: any) => {
+                    const roomNum = b.roomAssignments?.[0]?.room?.number || 'TBD'
+                    return (
+                      <option key={b.id} value={b.id}>
+                        Room #{roomNum} — {b.guest?.name || 'Guest'} (Code: {b.confirmationCode})
+                      </option>
+                    )
+                  })
+                )}
+              </select>
+            </FormField>
+
+            <p className="text-[11px] text-white/50 leading-relaxed">
+              Posting this charge will create an <strong className="text-white">EVENTS</strong> line item on the customer&apos;s open room folio and record a double-entry debit against the Guest Ledger.
+            </p>
+
+            <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+              <Button type="button" variant="ghost" onClick={() => setFolioModalBooking(null)} disabled={postingFolio}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleChargeToFolio}
+                disabled={postingFolio || inHouseBookings.length === 0 || !selectedFolioBookingId}
+                className="bg-amber-500 hover:bg-amber-600 text-black font-bold"
+              >
+                {postingFolio ? 'Posting to Folio...' : `Charge $${Number(folioModalBooking.totalAmount).toFixed(2)} to Room`}
+              </Button>
+            </div>
+          </div>
+        )}
       </ModalShell>
     </AdminPageShell>
   )

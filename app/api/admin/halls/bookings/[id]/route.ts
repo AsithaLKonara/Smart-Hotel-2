@@ -17,6 +17,7 @@ const updateBookingSchema = z.object({
   notes: z.string().optional().nullable(),
   startTime: z.string().datetime().optional(),
   endTime: z.string().datetime().optional(),
+  bookingId: z.string().uuid().optional().nullable(),
 });
 
 export async function GET(
@@ -90,6 +91,23 @@ export async function PUT(
         return NextResponse.json({
           error: `Time conflict with another booking (${overlapping.confirmationCode})`
         }, { status: 409 });
+      }
+    }
+
+    // If posting to customer room folio
+    if (result.data.bookingId && existing.totalAmount.toNumber() > 0) {
+      try {
+        const { postCharge } = await import('@/lib/accounting');
+        const spaceName = (existing as any).space?.name || 'Hall';
+        await postCharge({
+          bookingId: result.data.bookingId,
+          amount: existing.totalAmount.toNumber(),
+          category: 'EVENTS',
+          description: `Event Venue: ${spaceName} (${existing.purpose || 'Hall Booking'})`
+        });
+        (rest as any).paymentStatus = 'PAID';
+      } catch (postErr) {
+        console.error('Failed to post event charge to folio:', postErr);
       }
     }
 

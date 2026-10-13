@@ -49,7 +49,7 @@ export default function AdminSidebar() {
       { name: 'Kitchen Menu', href: '/admin/menu', icon: UtensilsCrossed, roles: ['KITCHEN', 'MANAGER', 'SUPER_ADMIN'], permissions: ['MANAGE_KITCHEN_MENU'] },
       { name: 'Kitchen Orders', href: '/admin/orders', icon: ShoppingCart, roles: ['KITCHEN', 'MANAGER', 'SUPER_ADMIN', 'RECEPTIONIST'], permissions: ['MANAGE_KITCHEN_ORDERS'] },
       { name: 'Rooms', href: '/admin/rooms', icon: Bed, roles: ['SUPER_ADMIN', 'MANAGER'], permissions: ['MANAGE_ROOMS'] },
-      { name: 'Bookings', href: '/admin/bookings', icon: Calendar, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'], permissions: ['VIEW_BOOKINGS'] },
+      { name: 'Bookings', href: '/admin/receptionist?view=bookings', icon: Calendar, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'], permissions: ['VIEW_BOOKINGS'] },
       { name: 'Staff', href: '/admin/staff', icon: Users, roles: ['SUPER_ADMIN', 'MANAGER'], permissions: ['VIEW_USERS'] },
       { name: 'Tasks', href: '/admin/tasks', icon: Package, roles: ['MAINTENANCE', 'MANAGER', 'SUPER_ADMIN', 'RECEPTIONIST', 'HOUSEKEEPING'], permissions: ['VIEW_DASHBOARD'] },
       { name: 'Inventory', href: '/admin/inventory', icon: Package, roles: ['SUPER_ADMIN', 'MANAGER'], permissions: ['VIEW_INVENTORY'] },
