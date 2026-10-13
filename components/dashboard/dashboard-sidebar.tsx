@@ -101,7 +101,6 @@ export default function DashboardSidebar() {
 
       // 1. 🛎️ FRONT DESK
       { name: 'Front Desk', href: '/admin/receptionist', icon: UserCheck, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'], group: 'Front Desk' },
-      { name: 'Reservations', href: '/admin/receptionist?view=bookings', icon: CalendarDays, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'], group: 'Front Desk' },
       { name: 'Guest CRM', href: '/admin/crm/guests', icon: Users, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'], group: 'Front Desk' },
 
       // 2. 🧹 ROOM OPERATIONS
