@@ -88,7 +88,7 @@ export default async function HomePage() {
     <div className="bg-transparent text-foreground font-sans">
       {/* Visually-hidden H1 for SEO and accessibility — present in initial server-rendered HTML */}
       <h1 className="sr-only">{contact.name} — {contact.tagline}</h1>
-      <EnhancedHeroSection slides={heroSlides} />
+      <EnhancedHeroSection />
 
 
       {/* Our Story Section */}
