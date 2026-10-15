@@ -215,7 +215,13 @@ export default function HotelFooter() {
               © {new Date().getFullYear()} {contact.name}. All rights reserved.
             </p>
             <div className="flex items-center space-x-6">
-              {footerLinks.filter(link => link.category === 'Legal').map((link, index) => (
+              {(footerLinks.filter(link => link.category === 'Legal').length > 0
+                ? footerLinks.filter(link => link.category === 'Legal')
+                : [
+                    { label: 'Privacy Policy', url: '/privacy' },
+                    { label: 'Terms & Conditions', url: '/terms' }
+                  ]
+              ).map((link, index) => (
                 <Link key={index} href={link.url} className="text-white/20 hover:text-primary text-xs font-light transition-colors tracking-wider">
                   {link.label}
                 </Link>

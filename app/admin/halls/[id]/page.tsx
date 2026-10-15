@@ -17,6 +17,7 @@ import {
 import toast from 'react-hot-toast'
 import { useProperty } from '@/contexts/property-context'
 import { useRouter } from 'next/navigation'
+import { useLuxuryConfirm } from '@/components/ui/luxury-confirm-dialog'
 
 const STATUS_COLORS: Record<string, string> = {
   PENDING: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
@@ -235,6 +236,7 @@ export default function HallDetailPage({ params }: { params: Promise<{ id: strin
   const { id } = use(params)
   const { activePropertyId } = useProperty()
   const router = useRouter()
+  const confirm = useLuxuryConfirm()
   const [hall, setHall] = useState<Hall | null>(null)
   const [bookings, setBookings] = useState<Booking[]>([])
   const [inHouseBookings, setInHouseBookings] = useState<any[]>([])
@@ -327,7 +329,13 @@ export default function HallDetailPage({ params }: { params: Promise<{ id: strin
   }
 
   const handleCancelBooking = async (bookingId: string) => {
-    if (!confirm('Cancel this booking?')) return
+    const approved = await confirm({
+      title: 'Cancel Hall Booking',
+      message: 'Are you sure you want to cancel this event hall reservation?',
+      confirmText: 'Cancel Booking',
+      isDestructive: true
+    })
+    if (!approved) return
     try {
       const res = await fetch(`/api/admin/halls/bookings/${bookingId}`, {
         method: 'PUT',

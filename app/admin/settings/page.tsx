@@ -30,6 +30,7 @@ export default function AdminSettingsPage() {
     hotel_address: '',
     hotel_latitude: '',
     hotel_longitude: '',
+    hotel_map_url: '',
     hotel_story: '',
     hotel_founded: '',
     hotel_milestones: '',
@@ -233,6 +234,17 @@ export default function AdminSettingsPage() {
                       className="bg-[#1a1a24] border-white/10 rounded-md h-10 text-white focus:border-primary focus:ring-1 focus:ring-primary"
                     />
                   </div>
+                </div>
+
+                <div className="space-y-1.5 pt-2">
+                  <label className="text-sm font-medium text-slate-300">Custom Google Maps Embed / Pinpoint URL (Optional)</label>
+                  <Input 
+                    value={formData.hotel_map_url || ''} 
+                    onChange={(e) => handleChange('hotel_map_url', e.target.value)}
+                    placeholder="https://maps.google.com/maps?q=... or custom embed URL"
+                    className="bg-[#1a1a24] border-white/10 rounded-md h-10 text-white focus:border-primary focus:ring-1 focus:ring-primary"
+                  />
+                  <p className="text-[11px] text-slate-400">Leave blank to automatically generate an interactive pinpoint map from coordinates and address.</p>
                 </div>
               </CardContent>
             </Card>

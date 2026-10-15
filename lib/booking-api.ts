@@ -18,12 +18,7 @@ export interface BookingRequest {
   checkOut: Date
   guests: number
   totalAmount: number
-  extras: {
-    breakfast: boolean
-    lateCheckout: boolean
-    airportShuttle: boolean
-    spaAccess: boolean
-  }
+  extras?: Record<string, boolean> | any
   guestInfo: {
     firstName: string
     lastName: string
@@ -31,6 +26,7 @@ export interface BookingRequest {
     phone: string
   }
   specialRequests?: string
+  paymentMethod?: 'pay_now' | 'pay_later'
 }
 
 export interface BookingResponse {

@@ -8,6 +8,7 @@ import { Plus, Edit, Trash2, Search, Share2, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import toast from 'react-hot-toast'
+import { useLuxuryConfirm } from '@/components/ui/luxury-confirm-dialog'
 
 interface SocialLink {
   id: string
@@ -21,6 +22,7 @@ interface SocialLink {
 export default function AdminSocialLinksPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const confirm = useLuxuryConfirm()
   const [items, setItems] = useState<SocialLink[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -98,7 +100,13 @@ export default function AdminSocialLinksPage() {
   }
 
   const handleDelete = async (itemId: string) => {
-    if (!confirm('Are you sure you want to delete this social link?')) return
+    const approved = await confirm({
+      title: 'Delete Social Link',
+      message: 'Are you sure you want to delete this social link?',
+      confirmText: 'Delete Link',
+      isDestructive: true
+    })
+    if (!approved) return
 
     try {
       const response = await fetch(`/api/social-links/${itemId}`, {

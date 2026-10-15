@@ -8,6 +8,7 @@ import { Plus, Edit, Trash2, Search, HelpCircle, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import toast from 'react-hot-toast'
+import { useLuxuryConfirm } from '@/components/ui/luxury-confirm-dialog'
 
 interface FAQItem {
   id: string
@@ -21,6 +22,7 @@ interface FAQItem {
 export default function AdminFAQPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const confirm = useLuxuryConfirm()
   const [items, setItems] = useState<FAQItem[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -99,7 +101,13 @@ export default function AdminFAQPage() {
   }
 
   const handleDelete = async (itemId: string) => {
-    if (!confirm('Are you sure you want to delete this FAQ?')) return
+    const approved = await confirm({
+      title: 'Delete FAQ Item',
+      message: 'Are you sure you want to delete this FAQ question and answer?',
+      confirmText: 'Delete FAQ',
+      isDestructive: true
+    })
+    if (!approved) return
 
     try {
       const response = await fetch(`/api/faq/${itemId}`, {

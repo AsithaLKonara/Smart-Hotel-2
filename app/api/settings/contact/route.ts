@@ -36,6 +36,7 @@ export async function GET() {
       checkIn: contact?.checkIn || defaultContactInfo.checkIn,
       checkOut: contact?.checkOut || defaultContactInfo.checkOut,
       coordinates: contact?.coordinates || defaultContactInfo.coordinates,
+      mapUrl: (contact as any)?.mapUrl || null,
     }
     return NextResponse.json(contactData, { status: 200 })
   } catch (error) {

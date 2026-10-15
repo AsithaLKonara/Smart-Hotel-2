@@ -21,8 +21,10 @@ import {
   ChevronLeft,
   ChevronRight,
   ExternalLink,
-  Users
+  Users,
+  Eye
 } from 'lucide-react'
+import { BookingDetailsModal } from '@/components/admin/booking-details-modal'
 import { useProperty } from '@/contexts/property-context'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -78,6 +80,7 @@ function ReceptionistOperationsContent() {
   // Reservations Table Sub-Filters
   const [rosterSearch, setRosterSearch] = useState("")
   const [rosterStatusFilter, setRosterStatusFilter] = useState("ALL")
+  const [viewingBookingId, setViewingBookingId] = useState<string | null>(null)
   
   // Availability UI State
   const [availabilityDates, setAvailabilityDates] = useState({
@@ -811,6 +814,14 @@ function ReceptionistOperationsContent() {
                             </Badge>
                           </td>
                           <td className="py-3 px-4 text-right space-x-1.5">
+                            <Button
+                              size="sm"
+                              onClick={() => setViewingBookingId(b.id)}
+                              className="h-7 px-2.5 text-[10px] bg-primary/20 text-primary border border-primary/30 hover:bg-primary/30 rounded-lg font-bold"
+                            >
+                              <Eye className="w-3 h-3 mr-1" />
+                              View
+                            </Button>
                             {b.status === 'CONFIRMED' && (
                               <Button
                                 size="sm"
@@ -885,6 +896,12 @@ function ReceptionistOperationsContent() {
           />
         )}
       </AnimatePresence>
+
+      <BookingDetailsModal
+        bookingId={viewingBookingId}
+        onClose={() => setViewingBookingId(null)}
+        onStatusUpdated={() => queryClient.invalidateQueries({ queryKey: ['admin-reception-data'] })}
+      />
     </AdminPageShell>
   )
 }

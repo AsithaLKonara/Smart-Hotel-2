@@ -7,6 +7,9 @@ export type Property = {
   id: string
   name: string
   code: string
+  city?: string
+  address?: string
+  country?: string
 }
 
 type PropertyContextType = {

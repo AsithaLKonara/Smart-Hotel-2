@@ -7,9 +7,11 @@ import { Button } from '@/components/ui/button'
 import { MessageSquare, Star, Trash2, ArrowLeft } from 'lucide-react'
 import { PremiumSpinner } from '@/components/ui/premium-spinner'
 import { useRouter } from 'next/navigation'
+import { useLuxuryConfirm } from '@/components/ui/luxury-confirm-dialog'
 
 export default function FeedbackDashboard() {
   const router = useRouter()
+  const confirm = useLuxuryConfirm()
 
   const { data: feedbacks, isLoading, refetch } = useQuery({
     queryKey: ['guest-feedback'],
@@ -68,7 +70,13 @@ export default function FeedbackDashboard() {
                   size="sm" 
                   className="text-rose-500 hover:text-rose-600 hover:bg-rose-50 px-2 h-8"
                   onClick={async () => {
-                    if (confirm('Delete this feedback?')) {
+                    const approved = await confirm({
+                      title: 'Delete Feedback',
+                      message: 'Are you sure you want to permanently delete this guest review/feedback?',
+                      confirmText: 'Delete Feedback',
+                      isDestructive: true
+                    })
+                    if (approved) {
                       await fetch(`/api/feedback/${fb.id}`, { method: 'DELETE' })
                       refetch()
                     }

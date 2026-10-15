@@ -13,6 +13,7 @@ import { checkIdempotency, saveIdempotency, clearIdempotency } from '@/lib/idemp
 import { generateConfirmationCode } from '@/lib/utils'
 import { logger } from '@/lib/logger'
 import { chaosState } from '@/lib/chaos'
+import { BookingService } from '@/lib/services/BookingService'
 
 const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' }) : null
 
@@ -26,16 +27,11 @@ const bookingSchema = z.object({
   guestName: z.string().optional(),
   guestEmail: z.string().email().optional(),
   guestPhone: z.string().optional(),
-  // Extras selected by the guest on the frontend.
-  // The backend recomputes the total authoritatively — never trusting the
-  // client-submitted totalAmount — but must receive the extras selection
-  // to correctly reflect charges in the DB and the folio.
-  extras: z.object({
-    breakfast: z.boolean().default(false),
-    lateCheckout: z.boolean().default(false),
-    airportShuttle: z.boolean().default(false),
-    spaAccess: z.boolean().default(false),
-  }).optional().default({}),
+  // Extras can be legacy boolean flags or an array of service codes/objects
+  extras: z.union([
+    z.record(z.any()),
+    z.array(z.any())
+  ]).optional().default({}),
 })
 
 export async function POST(request: NextRequest) {
@@ -58,143 +54,21 @@ export async function POST(request: NextRequest) {
     const checkOut = new Date(validated.checkOut)
 
     try {
-      // 1. ATOMIC DB TRANSACTION WITH PESSIMISTIC LOCKING
-      const txResult = await prisma.$transaction(async (tx: any) => {
-        // Acquire Row-Level Lock immediately
-        await tx.$executeRaw`SELECT id FROM "Room" WHERE id = ${validated.roomId} FOR UPDATE`;
-        
-        const room = await tx.room.findUnique({ 
-          where: { id: validated.roomId },
-          include: { roomType: true }
-        })
-        if (!room || room.status === 'MAINTENANCE' || room.status === 'OUT_OF_ORDER') throw new Error('ROOM_UNAVAILABLE')
-
-        // Double check conflicts
-        const conflict = await tx.booking.findFirst({
-          where: {
-            roomAssignments: { some: { roomId: validated.roomId } },
-            status: { in: ['CONFIRMED', 'CHECKED_IN'] },
-            NOT: { status: 'CANCELLED' },
-            OR: [
-              { checkIn: { lt: checkOut }, checkOut: { gt: checkIn } }
-            ]
-          }
-        })
-        if (conflict) throw new Error('DOUBLE_BOOKING')
-
-        let guestId = undefined;
-        
-        if (validated.guestEmail) {
-          const existing = await tx.user.findFirst({ where: { email: validated.guestEmail, propertyId: room.propertyId, deletedAt: null } })
-          if (existing) { 
-            guestId = existing.id 
-          } else {
-            const guestRole = await tx.role.findUnique({ where: { name: 'GUEST' } })
-            const newUser = await tx.user.create({
-              data: {
-                email: validated.guestEmail,
-                name: validated.guestName || 'Guest',
-                password: '', // Passwordless guest
-                roleId: guestRole?.id,
-                propertyId: room.propertyId,
-                createdAt: new Date(),
-                updatedAt: new Date()
-              }
-            })
-            guestId = newUser.id
-          }
-        } else {
-          guestId = session?.user?.id
-        }
-        
-        if (!guestId) throw new Error('GUEST_DATA_REQUIRED')
-
-        const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24))
-
-        // SERVER-AUTHORITATIVE PRICING (Fix: Ghost Revenue)
-        // Mirrors calculateBookingTotal() in lib/booking-api.ts.
-        // Never trusts the client-submitted totalAmount.
-        const extras = validated.extras ?? {}
-        let subtotal = room.roomType.baseRate * nights
-        if (extras.breakfast)      subtotal += 25 * nights
-        if (extras.lateCheckout)   subtotal += 50
-        if (extras.airportShuttle) subtotal += 75
-        if (extras.spaAccess)      subtotal += 100
-        const totalAmount = Math.round(subtotal * 1.15 * 100) / 100  // +15% tax
-
-        const confirmationCode = generateConfirmationCode()
-
-        const booking = await tx.booking.create({
-          data: {
-            primaryGuestId: guestId,
-            checkIn,
-            checkOut,
-            guests: validated.guests,
-            totalAmount,
-            status: 'CONFIRMED', 
-            paymentStatus: validated.paymentMethod === 'pay_now' ? 'pending' : 'unpaid',
-            paymentMethod: validated.paymentMethod === 'pay_now' ? 'card' : 'cash',
-            paymentProvider: validated.paymentMethod === 'pay_now' ? 'STRIPE' : 'OFFLINE',
-            confirmationCode,
-            propertyId: room.propertyId, // Inherit from the assigned room
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            source: 'WEBSITE'
-          },
-          include: { roomAssignments: { include: { room: { include: { roomType: true } } } }, guest: true }
-        })
-
-
-        // ==========================================
-        // PHASE 2 DUAL-WRITE: RESERVATION & FOLIO DDD
-        // ==========================================
-        
-        await tx.roomAssignment.create({
-          data: {
-            bookingId: booking.id,
-            roomId: room.id,
-            startDate: checkIn,
-            endDate: checkOut,
-            status: 'ACTIVE'
-          }
-        });
-
-        await tx.stayEvent.create({
-          data: {
-            bookingId: booking.id,
-            type: 'BOOKED',
-            notes: 'Booking created via web'
-          }
-        });
-
-        const folio = await tx.folio.create({
-          data: {
-            bookingId: booking.id,
-            propertyId: room.propertyId,
-            type: 'GUEST',
-            status: 'OPEN'
-          }
-        });
-
-        // Add a folio line item for each selected extra
-        const extraLineItems = [
-          extras.breakfast      && { description: `Breakfast (${nights} nights)`, amount: 25 * nights,  category: 'FOOD' },
-          extras.lateCheckout   && { description: 'Late Checkout',                amount: 50,           category: 'SERVICE' },
-          extras.airportShuttle && { description: 'Airport Shuttle',              amount: 75,           category: 'TRANSPORT' },
-          extras.spaAccess      && { description: 'Spa Access',                   amount: 100,          category: 'SERVICE' },
-        ].filter(Boolean) as { description: string; amount: number; category: string }[]
-
-        if (extraLineItems.length > 0) {
-          await tx.folioLineItem.createMany({
-            data: extraLineItems.map(item => ({ folioId: folio.id, ...item }))
-          })
-        }
-
-        // Note: Room & Tax are now posted daily by the Night Audit process, not upfront.
-
-        // Lock will automatically be released by PostgreSQL upon transaction commit
-        return { booking, folioId: folio.id }
-      }, { maxWait: 10000, timeout: 30000 })
+      // 1. ATOMIC DB TRANSACTION & DOMAIN LOGIC DELEGATED TO BOOKING SERVICE
+      const txResult = await BookingService.createReservation({
+        roomId: validated.roomId,
+        checkIn,
+        checkOut,
+        guests: validated.guests,
+        specialRequests: validated.specialRequests,
+        paymentMethod: validated.paymentMethod,
+        extras: validated.extras as any,
+        guestEmail: validated.guestEmail,
+        guestName: validated.guestName,
+        guestPhone: validated.guestPhone,
+        userId: session?.user?.id,
+        source: 'WEBSITE'
+      })
 
       const result = txResult.booking
       const folioId = txResult.folioId

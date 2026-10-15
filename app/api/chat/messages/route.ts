@@ -16,6 +16,7 @@ import {
 } from "@/lib/chatbot/hotel-tools";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@/lib/redis-local";
+import { retrieveDatabaseFacts, formatDatabaseFactsForPrompt } from "@/lib/chatbot/db-retriever";
 
 export const dynamic = "force-dynamic";
 
@@ -122,14 +123,16 @@ export async function POST(req: NextRequest) {
 
         if (!userMessage) return NextResponse.json({ error: "Message is required" }, { status: 400 });
 
-        // Parallel processing for intelligence
-        const [history, knowledge, intent] = await Promise.all([
+        // Parallel processing for intelligence & database grounding
+        const [history, knowledge, intent, dbFacts] = await Promise.all([
             getHistory(sessionId, userId),
             searchKnowledge(userMessage),
             detectIntent(userMessage),
+            retrieveDatabaseFacts(userMessage)
         ]);
 
         const toolResult = await runTool(intent, userMessage);
+        const dbGroundingText = formatDatabaseFactsForPrompt(dbFacts);
 
         const historyText = history.map(e => `Guest: ${e.message}\nConcierge: ${e.response}`).join("\n");
         const knowledgeText = knowledge.join("\n");
@@ -137,16 +140,22 @@ export async function POST(req: NextRequest) {
 
         const systemContent = [
             SYSTEM_PROMPT,
+            dbGroundingText ? dbGroundingText : "",
             contextText ? `Current Page Context:\n${contextText}` : "",
             historyText ? `Previous interactions:\n${historyText}` : "",
             knowledgeText ? `Concierge Handbook Snippets:\n${knowledgeText}` : "",
             toolResult ? `Real-time System Data (${intent.intent}):\n${toolResult}` : "",
-            "Compose a luxury response in the persona of the Sanctuary Concierge. Keep it professional and helpful.",
+            "Compose a luxury response in the persona of the Sanctuary Concierge. Ground your facts strictly in the verified database records above.",
         ].filter(Boolean).join("\n\n");
 
         // CFG-004: groq is null when GROQ_API_KEY is absent (no BUILD_PLACEHOLDER fallback).
         if (!groq) {
-            const fallbackMessage = "I apologize, but my connection to the Sanctuary central intelligence is currently offline for routine maintenance. Our human concierge team is available at the front desk to assist you immediately.";
+            let fallbackMessage = "I apologize, but my connection to the Sanctuary central intelligence is currently offline for routine maintenance. Our human concierge team is available at the front desk to assist you immediately.";
+            if (dbFacts.length > 0) {
+                fallbackMessage = `Welcome to the Sanctuary. While our primary neural link undergoes routine optimization, here are the verified details directly from our live sanctuary registry:\n\n` +
+                    dbFacts.slice(0, 3).map(f => `✨ **${f.title}**\n${f.details}`).join("\n\n") +
+                    `\n\nOur human concierge desk is also at your service 24/7 for bespoke accommodations.`;
+            }
             const stream = new ReadableStream({
                 async start(controller) {
                     controller.enqueue(new TextEncoder().encode(fallbackMessage));

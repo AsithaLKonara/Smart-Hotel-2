@@ -75,6 +75,7 @@ export async function getHotelContactInfo() {
       lat: Number(settings.hotel_latitude ?? 40.7589),
       lng: Number(settings.hotel_longitude ?? -73.9851),
     },
+    mapUrl: settings.hotel_map_url || null,
     }
   } catch (error: any) {
     console.warn('Error fetching hotel contact info:', error?.message || String(error))
@@ -92,6 +93,7 @@ export async function getHotelContactInfo() {
         lat: 40.7589,
         lng: -73.9851,
       },
+      mapUrl: null,
     }
   }
 }

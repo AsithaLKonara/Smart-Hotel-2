@@ -13,6 +13,7 @@ import { FileUpload } from '@/components/ui/file-upload'
 import { Breadcrumbs } from '@/components/ui/breadcrumbs'
 import Image from 'next/image'
 import toast from 'react-hot-toast'
+import { useLuxuryConfirm } from '@/components/ui/luxury-confirm-dialog'
 
 interface GalleryItem {
   id: string
@@ -25,6 +26,7 @@ interface GalleryItem {
 export default function AdminGalleryPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const confirm = useLuxuryConfirm()
   const [items, setItems] = useState<GalleryItem[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -90,7 +92,13 @@ export default function AdminGalleryPage() {
   }
 
   const handleDelete = async (itemId: string) => {
-    if (!confirm('Are you sure you want to delete this image?')) return
+    const approved = await confirm({
+      title: 'Delete Gallery Image',
+      message: 'Are you sure you want to delete this image from the gallery showcase?',
+      confirmText: 'Delete Image',
+      isDestructive: true
+    })
+    if (!approved) return
 
     try {
       const response = await fetch(`/api/gallery/${itemId}`, {

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Plane, DollarSign, CheckCircle } from 'lucide-react'
+import toast from 'react-hot-toast'
 
 export default function TravelAgentPortal() {
   const [iata, setIata] = useState('')
@@ -49,7 +50,7 @@ export default function TravelAgentPortal() {
 
   const handleBook = async () => {
     if (!firstName || !lastName || !checkIn || !checkOut) {
-      alert('Please fill in all fields')
+      toast.error('Please fill in all guest and booking date fields')
       return
     }
     setBookingStatus('processing')
@@ -68,13 +69,15 @@ export default function TravelAgentPortal() {
       
       if (!res.ok) {
         setBookingStatus('error')
-        alert('Booking failed')
+        toast.error('B2B Travel Agent Booking failed. Please check rates and room availability.')
         return
       }
       
       setBookingStatus('success')
+      toast.success('Reservation successfully booked with IATA commission!')
     } catch (err) {
       setBookingStatus('error')
+      toast.error('Network error during B2B booking')
     }
   }
 

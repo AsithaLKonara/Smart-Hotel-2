@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Building2, Key, CheckCircle, Search } from 'lucide-react'
+import toast from 'react-hot-toast'
 
 export default function CorporatePortal() {
   const [companyId, setCompanyId] = useState('')
@@ -45,7 +46,7 @@ export default function CorporatePortal() {
 
   const handleBook = async () => {
     if (!employeeName || !checkIn || !checkOut) {
-      alert('Please fill in all fields')
+      toast.error('Please fill in all corporate employee and date fields')
       return
     }
     setBookingStatus('processing')
@@ -66,13 +67,15 @@ export default function CorporatePortal() {
       
       if (!res.ok) {
         setBookingStatus('error')
-        alert('Booking failed')
+        toast.error('Corporate reservation failed. Please check negotiated rate limits.')
         return
       }
       
       setBookingStatus('success')
+      toast.success('Corporate negotiated reservation confirmed!')
     } catch (err) {
       setBookingStatus('error')
+      toast.error('Network error during corporate booking')
     }
   }
 

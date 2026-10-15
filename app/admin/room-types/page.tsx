@@ -13,6 +13,7 @@ import toast from 'react-hot-toast'
 import { PremiumSpinner } from '@/components/ui/premium-spinner'
 import { formatPrice } from '@/lib/utils'
 import { useProperty } from '@/contexts/property-context'
+import { useLuxuryConfirm } from '@/components/ui/luxury-confirm-dialog'
 
 interface RoomType {
   id: string
@@ -33,6 +34,7 @@ export default function AdminRoomTypesPage() {
   const { status } = useSession()
   const router = useRouter()
   const { activePropertyId } = useProperty()
+  const confirm = useLuxuryConfirm()
   
   const [roomTypes, setRoomTypes] = useState<RoomType[]>([])
   const [loading, setLoading] = useState(true)
@@ -116,7 +118,13 @@ export default function AdminRoomTypesPage() {
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this room type?')) return
+    const approved = await confirm({
+      title: 'Delete Room Type',
+      message: 'Are you sure you want to delete this room type? Any associated room listings may be affected.',
+      confirmText: 'Delete Room Type',
+      isDestructive: true
+    })
+    if (!approved) return
 
     try {
       const response = await fetch(`/api/room-types/${id}`, {

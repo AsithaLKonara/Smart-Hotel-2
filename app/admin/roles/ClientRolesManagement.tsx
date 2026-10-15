@@ -6,10 +6,12 @@ import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import { useProperty } from '@/contexts/property-context';
 import { useSession } from 'next-auth/react';
+import { useLuxuryConfirm } from '@/components/ui/luxury-confirm-dialog';
 
 export default function ClientRolesManagement({ initialRoles, groupedPermissions, initialStaff }: { initialRoles: any[], groupedPermissions: any, initialStaff: any[] }) {
   const { data: session } = useSession();
   const { properties } = useProperty();
+  const confirm = useLuxuryConfirm();
   const isSuperAdmin = (session?.user as any)?.roleName === 'SUPER_ADMIN';
 
   const [activeTab, setActiveTab] = useState<'ROLES' | 'USERS'>('ROLES');
@@ -114,7 +116,13 @@ export default function ClientRolesManagement({ initialRoles, groupedPermissions
   };
 
   const handleDelete = async (role: any) => {
-    if (!confirm(`Are you sure you want to delete the role "${role.name}"?`)) return;
+    const approved = await confirm({
+      title: 'Delete System Role',
+      message: `Are you certain you wish to delete the role "${role.name}"? Staff members assigned to this role will lose their permission grants.`,
+      confirmText: 'Delete Role',
+      isDestructive: true
+    });
+    if (!approved) return;
     try {
       const res = await fetch(`/api/admin/rbac/roles/${role.id}`, { method: 'DELETE' });
       if (res.ok) {

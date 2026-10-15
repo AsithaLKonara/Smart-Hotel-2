@@ -32,12 +32,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Badge } from '@/components/ui/badge'
 import Image from 'next/image'
 import toast from 'react-hot-toast'
+import { useLuxuryConfirm } from '@/components/ui/luxury-confirm-dialog'
 
 type CmsTab = 'properties' | 'gallery' | 'experiences' | 'facilities'
 
 export default function AdminCmsStudioPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const confirm = useLuxuryConfirm()
   const { activePropertyId, properties: contextProperties } = useProperty()
 
   const [activeTab, setActiveTab] = useState<CmsTab>('properties')
@@ -269,7 +271,13 @@ export default function AdminCmsStudioPage() {
   }
 
   const handleDeleteGallery = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this gallery item?')) return
+    const approved = await confirm({
+      title: 'Remove Gallery Item',
+      message: 'Are you sure you want to delete this photo from the public hotel gallery? This action is immediate.',
+      confirmText: 'Delete Photo',
+      isDestructive: true
+    })
+    if (!approved) return
     try {
       const res = await fetch(`/api/admin/cms/gallery/${id}`, { method: 'DELETE' })
       if (!res.ok) throw new Error('Failed to delete')
@@ -347,7 +355,13 @@ export default function AdminCmsStudioPage() {
   }
 
   const handleDeleteExperience = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this signature experience?')) return
+    const approved = await confirm({
+      title: 'Remove Signature Experience',
+      message: 'Are you sure you want to delete this signature experience from the public catalog?',
+      confirmText: 'Delete Experience',
+      isDestructive: true
+    })
+    if (!approved) return
     try {
       const res = await fetch(`/api/admin/cms/experiences/${id}`, { method: 'DELETE' })
       if (!res.ok) throw new Error('Failed to delete')
@@ -422,7 +436,13 @@ export default function AdminCmsStudioPage() {
   }
 
   const handleDeleteFacility = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this facility?')) return
+    const approved = await confirm({
+      title: 'Remove Resort Facility',
+      message: 'Are you sure you want to delete this facility? It will no longer appear on the public facilities showcase.',
+      confirmText: 'Delete Facility',
+      isDestructive: true
+    })
+    if (!approved) return
     try {
       const res = await fetch(`/api/admin/cms/facilities/${id}`, { method: 'DELETE' })
       if (!res.ok) throw new Error('Failed to delete')

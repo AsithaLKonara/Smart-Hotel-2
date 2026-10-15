@@ -36,6 +36,7 @@ import { AdminPageShell } from '@/components/dashboard/admin/admin-page-shell'
 import * as Dialog from '@radix-ui/react-dialog'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
+import { useLuxuryConfirm } from '@/components/ui/luxury-confirm-dialog'
 
 interface InventoryItem {
   id: string
@@ -91,6 +92,7 @@ export default function UnifiedInventoryPage() {
 function UnifiedInventoryContent() {
   const { data: session, status: authStatus } = useSession()
   const { activePropertyId } = useProperty()
+  const confirm = useLuxuryConfirm()
   const searchParams = useSearchParams()
   const initialTab = searchParams.get('tab') === 'orders' ? 'ORDERS' : 'STOCK'
 
@@ -247,7 +249,13 @@ function UnifiedInventoryContent() {
   }
 
   const handleDeleteItem = async (itemId: string) => {
-    if (!confirm('Are you sure you want to delete this inventory item?')) return
+    const approved = await confirm({
+      title: 'Delete Inventory Item',
+      message: 'Are you sure you want to delete this inventory item? Stock tracking for this item will be removed.',
+      confirmText: 'Delete Item',
+      isDestructive: true
+    })
+    if (!approved) return
 
     try {
       const response = await fetch(`/api/inventory/${itemId}`, {

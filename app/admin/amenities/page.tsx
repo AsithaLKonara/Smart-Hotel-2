@@ -8,6 +8,7 @@ import { Plus, Edit, Trash2, Search, Star, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import toast from 'react-hot-toast'
+import { useLuxuryConfirm } from '@/components/ui/luxury-confirm-dialog'
 
 interface Amenity {
   id: string
@@ -22,6 +23,7 @@ interface Amenity {
 export default function AdminAmenitiesPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const confirm = useLuxuryConfirm()
   const [items, setItems] = useState<Amenity[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -102,7 +104,13 @@ export default function AdminAmenitiesPage() {
   }
 
   const handleDelete = async (itemId: string) => {
-    if (!confirm('Are you sure you want to delete this amenity?')) return
+    const approved = await confirm({
+      title: 'Delete Amenity',
+      message: 'Are you sure you want to delete this amenity feature?',
+      confirmText: 'Delete Amenity',
+      isDestructive: true
+    })
+    if (!approved) return
 
     try {
       const response = await fetch(`/api/amenities/${itemId}`, {

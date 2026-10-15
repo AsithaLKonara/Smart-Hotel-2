@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import toast from 'react-hot-toast'
+import { useLuxuryConfirm } from '@/components/ui/luxury-confirm-dialog'
 
 interface MenuItem {
   id: string
@@ -25,6 +26,7 @@ interface MenuItem {
 export default function AdminMenuPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const confirm = useLuxuryConfirm()
   const [menuItems, setMenuItems] = useState<MenuItem[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -165,7 +167,13 @@ export default function AdminMenuPage() {
   }
 
   const handleDelete = async (itemId: string) => {
-    if (!confirm('Are you sure you want to delete this menu item?')) return
+    const approved = await confirm({
+      title: 'Delete Menu Item',
+      message: 'Are you sure you want to remove this dish from the restaurant menu?',
+      confirmText: 'Delete Dish',
+      isDestructive: true
+    })
+    if (!approved) return
 
     try {
       const response = await fetch(`/api/restaurant/menu/${itemId}`, {

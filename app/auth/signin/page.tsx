@@ -23,7 +23,7 @@ export default function SignInPage() {
   const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true'
 
   const DEMO_CREDENTIALS = isDemoMode ? [
-    { role: 'Super Admin (Global)', email: 'admin@smarthotel.com', password: 'SmartHotel@2025!', color: 'from-purple-500/20 to-indigo-500/20 border-purple-500/30 text-purple-200' },
+    { role: 'Super Admin (Global)', email: 'admin@smarthotel.com', password: 'SmartHotel@2025!Admin', color: 'from-purple-500/20 to-indigo-500/20 border-purple-500/30 text-purple-200' },
     { role: 'Manager (GOR)', email: 'manager.gor@smarthotel.com', password: 'SmartHotel@2025!', color: 'from-blue-500/20 to-cyan-500/20 border-blue-500/30 text-blue-200' },
     { role: 'Manager (MVL)', email: 'manager.mvl@smarthotel.com', password: 'SmartHotel@2025!', color: 'from-blue-500/20 to-cyan-500/20 border-blue-500/30 text-blue-200' },
     { role: 'Manager (CCH)', email: 'manager.cch@smarthotel.com', password: 'SmartHotel@2025!', color: 'from-blue-500/20 to-cyan-500/20 border-blue-500/30 text-blue-200' },

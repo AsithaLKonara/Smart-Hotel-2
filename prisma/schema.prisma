@@ -1489,6 +1489,27 @@ model Property {
   roomTypes             RoomType[]
   ratePlans             RatePlan[]
   yieldRules            YieldRule[]
+  extraServices         ExtraService[]
+}
+
+model ExtraService {
+  id          String    @id @default(uuid())
+  name        String
+  code        String    @unique
+  description String
+  price       Decimal
+  priceType   String    @default("PER_STAY") // "PER_STAY", "PER_NIGHT", "PER_GUEST"
+  imageUrl    String?
+  icon        String?   @default("✨")
+  active      Boolean   @default(true)
+  order       Int       @default(0)
+  propertyId  String?
+  property    Property? @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([propertyId])
+  @@index([active, order])
 }
 
 model GuestConversation {

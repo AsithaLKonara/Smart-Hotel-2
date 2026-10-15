@@ -10,10 +10,13 @@ import {
   CreditCard, Activity, AlertTriangle, CheckCircle2 
 } from 'lucide-react'
 import { PremiumSpinner } from '@/components/ui/premium-spinner'
+import toast from 'react-hot-toast'
+import { useLuxuryConfirm } from '@/components/ui/luxury-confirm-dialog'
 
 export default function GuestProfileDashboard() {
   const params = useParams()
   const router = useRouter()
+  const confirm = useLuxuryConfirm()
   const guestId = params?.id as string
 
   const { data: guest, isLoading } = useQuery({
@@ -53,10 +56,11 @@ export default function GuestProfileDashboard() {
                   body: JSON.stringify({ userId: guest.id, folioId, pointsToRedeem: parseInt(points) })
                 })
                 if (res.ok) {
-                  alert('Points redeemed successfully.')
+                  toast.success('Points redeemed successfully.')
                   window.location.reload()
                 } else {
-                  alert('Redemption failed: ' + (await res.json()).error)
+                  const err = await res.json()
+                  toast.error('Redemption failed: ' + err.error)
                 }
               }
             }}>
@@ -64,15 +68,23 @@ export default function GuestProfileDashboard() {
             </Button>
           )}
           <Button variant="destructive" className="bg-rose-600 hover:bg-rose-700" onClick={async () => {
-            if (confirm('CRITICAL WARNING: This will permanently anonymize this user record under GDPR. This action CANNOT be undone. Proceed?')) {
+            const approved = await confirm({
+              title: 'GDPR Right to Be Forgotten',
+              message: 'CRITICAL WARNING: This will permanently anonymize this user record under GDPR. All personal identifiable information will be erased. This action CANNOT be undone.',
+              confirmText: 'Anonymize Record',
+              isDestructive: true
+            })
+            if (approved) {
               const res = await fetch('/api/compliance/gdpr/forget-me', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userId: guest.id })
               })
               if (res.ok) {
-                alert('User anonymized successfully.')
+                toast.success('User anonymized successfully.')
                 router.replace('/admin/crm')
+              } else {
+                toast.error('Failed to anonymize user')
               }
             }
           }}>

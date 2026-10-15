@@ -55,12 +55,14 @@ export default async function HomePage() {
   let featuredRooms: any[] = []
   let properties: any[] = []
   let experiences: any[] = []
+  let heroSlides: any[] = []
   let aboutContent: any = { story: '', founded: '', milestones: [], staff: [] }
 
   try {
     if (isDatabaseConfigured()) {
       await CmsService.ensureDefaultCmsContent()
       contact = await getHotelContactInfo()
+      heroSlides = await CmsService.getHeroSlides({ activeOnly: true })
       featuredRooms = await prisma.room.findMany({
         where: { status: 'AVAILABLE' },
         take: 3,
@@ -86,7 +88,7 @@ export default async function HomePage() {
     <div className="bg-transparent text-foreground font-sans">
       {/* Visually-hidden H1 for SEO and accessibility — present in initial server-rendered HTML */}
       <h1 className="sr-only">{contact.name} — {contact.tagline}</h1>
-      <EnhancedHeroSection />
+      <EnhancedHeroSection slides={heroSlides} />
 
 
       {/* Our Story Section */}
@@ -97,7 +99,7 @@ export default async function HomePage() {
             <div className="relative">
               <div className="relative aspect-[4/5] overflow-hidden rounded-2xl border border-white/10 shadow-2xl">
                 <Image 
-                  src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&q=80&w=1000" 
+                  src={aboutContent?.storyImage || properties[0]?.mainImage || "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&q=80&w=1000"} 
                   alt="Hotel Interior" 
                   fill 
                   className="object-cover"

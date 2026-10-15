@@ -27,7 +27,7 @@ function BookingPageContent() {
   const { data: session, status } = useSession()
   const carouselRef = useRef<HTMLDivElement>(null)
 
-   const [step, setStep] = useState(1)
+  const [step, setStep] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
   const [searchData, setSearchData] = useState({ 
     checkIn: '', checkOut: '', guests: 2, 
@@ -35,6 +35,9 @@ function BookingPageContent() {
     propertyId: searchParams.get('property') || 'all'
   })
   const [properties, setProperties] = useState<any[]>([])
+  const [extraServices, setExtraServices] = useState<any[]>([])
+  const [selectedExtraIds, setSelectedExtraIds] = useState<string[]>([])
+  const [agreedToTerms, setAgreedToTerms] = useState(false)
   const [availableRooms, setAvailableRooms] = useState<any[]>([])
   const [selectedRoom, setSelectedRoom] = useState<any>(null)
   const [detailsModalRoom, setDetailsModalRoom] = useState<any>(null)
@@ -42,7 +45,7 @@ function BookingPageContent() {
     roomId: '', specialRequests: '',
     paymentMethod: 'pay_later' as 'pay_now' | 'pay_later',
     guestName: '', guestEmail: '', guestPhone: '',
-    extras: { breakfast: false, lateCheckout: false, airportShuttle: false, spaAccess: false }
+    extras: {} as Record<string, boolean>
   })
   const [nights, setNights] = useState(0)
   const [totalAmount, setTotalAmount] = useState(0)
@@ -60,6 +63,7 @@ function BookingPageContent() {
         if (parsed.searchData) setSearchData(parsed.searchData)
         if (parsed.selectedRoom) setSelectedRoom(parsed.selectedRoom)
         if (parsed.bookingData) setBookingData(parsed.bookingData)
+        if (parsed.selectedExtraIds) setSelectedExtraIds(parsed.selectedExtraIds)
         if (parsed.step) setStep(parsed.step)
         // Auto-populate available rooms list if a room was selected
         if (parsed.selectedRoom) {
@@ -86,21 +90,55 @@ function BookingPageContent() {
       .catch(err => console.error('Failed to load properties', err))
   }, [])
 
+  // Fetch dynamic stay extra services based on selected property/room
+  useEffect(() => {
+    const propId = selectedRoom?.propertyId || (searchData.propertyId !== 'all' ? searchData.propertyId : '')
+    const url = propId ? `/api/stay-services?propertyId=${propId}` : '/api/stay-services'
+    fetch(url)
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          setExtraServices(data)
+        }
+      })
+      .catch(err => console.error('Failed to load stay services', err))
+  }, [selectedRoom, searchData.propertyId])
+
   useEffect(() => {
     if (selectedRoom && nights > 0) {
       let extrasTotal = 0
-      if (bookingData.extras.breakfast) extrasTotal += 25 * nights
-      if (bookingData.extras.lateCheckout) extrasTotal += 50
-      if (bookingData.extras.airportShuttle) extrasTotal += 75
-      if (bookingData.extras.spaAccess) extrasTotal += 100
+      extraServices.filter(s => selectedExtraIds.includes(s.id)).forEach(extra => {
+        const price = Number(extra.price) || 0
+        if (extra.priceType === 'PER_NIGHT') {
+          extrasTotal += price * nights
+        } else if (extra.priceType === 'PER_GUEST') {
+          extrasTotal += price * searchData.guests
+        } else {
+          extrasTotal += price
+        }
+      })
       
-      const subtotal = selectedRoom.baseRate * nights + extrasTotal
+      const subtotal = Number(selectedRoom.baseRate) * nights + extrasTotal
       const tax = Math.round(subtotal * 0.15 * 100) / 100
       setTotalAmount(subtotal + tax)
       
-      setBookingData(prev => ({ ...prev, roomId: selectedRoom.id }))
+      // Keep legacy format synchronized
+      const extrasRecord: Record<string, boolean> = {}
+      selectedExtraIds.forEach(id => {
+        const found = extraServices.find(e => e.id === id)
+        if (found) {
+          extrasRecord[found.code.toLowerCase()] = true
+          extrasRecord[id] = true
+        }
+      })
+
+      setBookingData(prev => ({ 
+        ...prev, 
+        roomId: selectedRoom.id,
+        extras: extrasRecord 
+      }))
     }
-  }, [selectedRoom, nights, bookingData.extras])
+  }, [selectedRoom, nights, selectedExtraIds, extraServices, searchData.guests])
 
   const searchRooms = async () => {
     if (!searchData.checkIn || !searchData.checkOut) { toast.error('Please select dates'); return }
@@ -253,6 +291,44 @@ function BookingPageContent() {
                   <p className="text-white/40 font-light text-sm">Select your preferred dates and guest count to view available luxury accommodations.</p>
                 </div>
                 <div className="space-y-6">
+                  {/* Multi-Property Selector Deck */}
+                  <div className="space-y-2">
+                    <label className={labelClass}>Sanctuary Destination</label>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                      <div
+                        onClick={() => setSearchData({ ...searchData, propertyId: 'all' })}
+                        className={`p-3 rounded-xl border cursor-pointer transition-all ${
+                          searchData.propertyId === 'all'
+                            ? 'border-primary/60 bg-primary/15 shadow-luxury ring-1 ring-primary/40'
+                            : 'border-white/10 bg-white/5 hover:border-white/20'
+                        }`}
+                      >
+                        <div className="text-xs font-bold text-white mb-0.5">All Sanctuaries</div>
+                        <div className="text-[10px] text-primary">Global Portfolio</div>
+                      </div>
+                      {properties.map((p: any) => {
+                        const isSelected = searchData.propertyId === p.id
+                        return (
+                          <div
+                            key={p.id}
+                            onClick={() => setSearchData({ ...searchData, propertyId: p.id })}
+                            className={`p-3 rounded-xl border cursor-pointer transition-all ${
+                              isSelected
+                                ? 'border-primary/60 bg-primary/15 shadow-luxury ring-1 ring-primary/40'
+                                : 'border-white/10 bg-white/5 hover:border-white/20'
+                            }`}
+                          >
+                            <div className="text-xs font-bold text-white truncate mb-0.5">{p.name}</div>
+                            <div className="text-[10px] text-primary flex items-center gap-1">
+                              <MapPin className="w-2.5 h-2.5 shrink-0" />
+                              <span className="truncate">{p.city}</span>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className={labelClass}>Check-in</label>
@@ -271,7 +347,7 @@ function BookingPageContent() {
                       </select>
                     </div>
                     <div className="space-y-2">
-                      <label className={labelClass}>Location</label>
+                      <label className={labelClass}>Location Filter</label>
                       <select className={inputClass} value={searchData.propertyId} onChange={e => setSearchData({...searchData, propertyId: e.target.value})}>
                         <option value="all" className="bg-[#0a0a0a]">All Locations</option>
                         {properties.map((p: any) => (
@@ -448,31 +524,57 @@ function BookingPageContent() {
                   />
                 </div>
 
-                {/* Extras */}
+                {/* Dynamic Stay Extra Services */}
                 <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-8 space-y-4">
-                  <h2 className="text-2xl font-serif font-bold text-white">Enhance Your Stay</h2>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {[
-                      { id: 'breakfast', t: 'Gourmet Breakfast', p: 25, unit: '/night' },
-                      { id: 'lateCheckout', t: 'Late Checkout (2 PM)', p: 50, unit: ' flat' },
-                      { id: 'airportShuttle', t: 'Airport Transfer', p: 75, unit: ' flat' },
-                      { id: 'spaAccess', t: 'Premium Spa Access', p: 100, unit: ' flat' }
-                    ].map(extra => (
-                      <div key={extra.id} onClick={() => setBookingData(prev => ({...prev, extras: {...prev.extras, [extra.id]: !(prev.extras as any)[extra.id]}}))}
-                        className={`p-4 border rounded-xl cursor-pointer flex justify-between items-center transition-all ${
-                          (bookingData.extras as any)[extra.id] ? 'border-primary/40 bg-primary/10' : 'border-white/10 hover:border-white/20 bg-white/5'
-                        }`}
-                      >
-                        <div>
-                          <div className="text-sm font-bold text-white">{extra.t}</div>
-                          <div className="text-xs text-primary">${extra.p}{extra.unit}</div>
-                        </div>
-                        <div className={`w-5 h-5 rounded-full flex items-center justify-center border ${(bookingData.extras as any)[extra.id] ? 'bg-primary border-primary text-black' : 'border-white/30 text-transparent'}`}>
-                          <CheckCircle className="w-3 h-3" />
-                        </div>
-                      </div>
-                    ))}
+                  <div className="space-y-1">
+                    <h2 className="text-2xl font-serif font-bold text-white">Enhance Your Stay</h2>
+                    <p className="text-white/40 text-xs font-light">Handcrafted bespoke amenities tailored for your arrival</p>
                   </div>
+                  {extraServices.length === 0 ? (
+                    <p className="text-white/40 text-sm italic">Standard complimentary services included with your suite.</p>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {extraServices.map(extra => {
+                        const isSelected = selectedExtraIds.includes(extra.id)
+                        const priceUnit = extra.priceType === 'PER_NIGHT' ? '/night' : extra.priceType === 'PER_GUEST' ? '/guest' : ' /stay'
+                        return (
+                          <div 
+                            key={extra.id} 
+                            onClick={() => {
+                              setSelectedExtraIds(prev => 
+                                isSelected ? prev.filter(id => id !== extra.id) : [...prev, extra.id]
+                              )
+                            }}
+                            className={`p-4 border rounded-xl cursor-pointer flex justify-between items-center transition-all ${
+                              isSelected ? 'border-primary/50 bg-primary/15 shadow-luxury ring-1 ring-primary/30' : 'border-white/10 hover:border-white/20 bg-white/5'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              {extra.imageUrl ? (
+                                <div className="relative w-12 h-12 rounded-lg overflow-hidden shrink-0 border border-white/10">
+                                  <Image src={extra.imageUrl} alt={extra.name} fill className="object-cover" />
+                                </div>
+                              ) : (
+                                <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary text-base shrink-0">
+                                  {extra.icon || '✨'}
+                                </div>
+                              )}
+                              <div className="pr-2">
+                                <div className="text-sm font-bold text-white">{extra.name}</div>
+                                {extra.description && (
+                                  <p className="text-white/40 text-[11px] line-clamp-1">{extra.description}</p>
+                                )}
+                                <div className="text-xs text-primary font-bold mt-0.5">${Number(extra.price).toFixed(2)}{priceUnit}</div>
+                              </div>
+                            </div>
+                            <div className={`w-5 h-5 rounded-full flex items-center justify-center border shrink-0 ${isSelected ? 'bg-primary border-primary text-black' : 'border-white/30 text-transparent'}`}>
+                              <CheckCircle className="w-3.5 h-3.5" />
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
                 </div>
 
                 {/* Payment */}
@@ -517,7 +619,37 @@ function BookingPageContent() {
                       <span className="text-primary uppercase tracking-widest text-[9px] font-bold">Total Amount</span>
                       <span className="text-3xl font-serif font-bold text-primary">{formatPrice(totalAmount)}</span>
                     </div>
-                    <Button onClick={handleCreateBooking} disabled={isLoading} className="w-full bg-gold-gradient text-white h-14 rounded-xl uppercase tracking-[0.2em] text-xs font-bold border-none shadow-luxury hover:opacity-90">
+
+                    {/* Terms & Privacy Agreement */}
+                    <div className="pt-2">
+                      <label className="flex items-start gap-2.5 cursor-pointer text-left">
+                        <input
+                          type="checkbox"
+                          checked={agreedToTerms}
+                          onChange={e => setAgreedToTerms(e.target.checked)}
+                          className="mt-1 w-4 h-4 rounded border-white/20 bg-black/40 text-primary focus:ring-primary focus:ring-offset-0"
+                        />
+                        <span className="text-white/50 text-xs leading-relaxed">
+                          I agree to the{' '}
+                          <Link href="/terms" target="_blank" className="text-primary hover:underline underline-offset-2">
+                            Terms & Conditions
+                          </Link>{' '}
+                          and{' '}
+                          <Link href="/privacy" target="_blank" className="text-primary hover:underline underline-offset-2">
+                            Privacy Policy
+                          </Link>
+                          , and accept the reservation cancellation guidelines.
+                        </span>
+                      </label>
+                    </div>
+
+                    <Button 
+                      onClick={handleCreateBooking} 
+                      disabled={isLoading || !agreedToTerms} 
+                      className={`w-full bg-gold-gradient text-white h-14 rounded-xl uppercase tracking-[0.2em] text-xs font-bold border-none shadow-luxury transition-all ${
+                        !agreedToTerms ? 'opacity-40 cursor-not-allowed' : 'hover:opacity-90'
+                      }`}
+                    >
                       {isLoading ? 'Processing...' : (!session?.user ? 'Sign In to Confirm' : 'Confirm Reservation')}
                     </Button>
                     <div className="flex items-center gap-2 text-[9px] text-white/20 uppercase tracking-widest justify-center">

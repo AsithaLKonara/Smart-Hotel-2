@@ -75,10 +75,18 @@ export default function RoomsPage() {
   const [selectedLocations, setSelectedLocations] = useState<string[]>([])
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([])
   const [selectedPrices, setSelectedPrices] = useState<string[]>([])
+  const [minPrice, setMinPrice] = useState<number>(0)
+  const [maxPrice, setMaxPrice] = useState<number>(2000)
+  const [minCapacity, setMinCapacity] = useState<number>(0)
+  const [onlyAvailable, setOnlyAvailable] = useState<boolean>(false)
+  const [sortBy, setSortBy] = useState<'featured' | 'price-asc' | 'price-desc' | 'capacity'>('featured')
+  const [dates, setDates] = useState<{ checkIn: string; checkOut: string }>({ checkIn: '', checkOut: '' })
+  const [availableRoomIds, setAvailableRoomIds] = useState<string[] | null>(null)
   
   const [rooms, setRooms] = useState<Room[]>([])
   const [properties, setProperties] = useState<Property[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isCheckingDates, setIsCheckingDates] = useState(false)
   const [error, setError] = useState<string | null>(null)
   
   // Pagination
@@ -115,8 +123,8 @@ export default function RoomsPage() {
         const mappedRooms = fetchedRooms.map((r: any) => ({
           ...r,
           type: r.roomType?.name || 'Standard',
-          price: r.roomType?.baseRate || 0,
-          capacity: r.roomType?.capacity || 2,
+          price: Number(r.roomType?.baseRate || r.price || 0),
+          capacity: Number(r.roomType?.capacity || r.capacity || 2),
           description: r.roomType?.description || r.description,
           amenities: r.roomType?.amenities || r.amenities || [],
           images: r.roomType?.images || [],
@@ -132,6 +140,32 @@ export default function RoomsPage() {
     }
     fetchData()
   }, [])
+
+  // Live availability check when dates change
+  useEffect(() => {
+    if (!dates.checkIn || !dates.checkOut) {
+      setAvailableRoomIds(null)
+      return
+    }
+
+    async function checkAvailability() {
+      try {
+        setIsCheckingDates(true)
+        const res = await fetch(`/api/rooms/availability?checkin=${dates.checkIn}&checkout=${dates.checkOut}`)
+        if (res.ok) {
+          const data = await res.json()
+          const ids = (data.availableRooms || []).map((r: any) => r.id)
+          setAvailableRoomIds(ids)
+        }
+      } catch (e) {
+        console.error('Failed to check live date availability', e)
+      } finally {
+        setIsCheckingDates(false)
+      }
+    }
+
+    checkAvailability()
+  }, [dates.checkIn, dates.checkOut])
 
   const uniqueRoomTypes = useMemo(() => Array.from(new Set(rooms.map(r => r.type))).filter(Boolean) as string[], [rooms])
   
@@ -153,6 +187,7 @@ export default function RoomsPage() {
   }, [rooms])
 
   const checkPrice = (price: number, brackets: string[]) => {
+    if (price < minPrice || price > maxPrice) return false
     if (brackets.length === 0) return true
     return brackets.some(bracket => {
       if (bracket === '0-150') return price < 150
@@ -180,22 +215,37 @@ export default function RoomsPage() {
   }
 
   const filteredRooms = useMemo(() => {
-    return rooms.filter(room => {
+    const list = rooms.filter(room => {
       const matchesSearch = (room.type || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            (room.description || '').toLowerCase().includes(searchTerm.toLowerCase())
+                            (room.description || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            (room.property?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            (room.property?.city || '').toLowerCase().includes(searchTerm.toLowerCase())
+      
       const matchesType = selectedTypes.length === 0 || selectedTypes.includes(room.type)
       const matchesLocation = selectedLocations.length === 0 || (room.property?.id && selectedLocations.includes(room.property.id))
       const matchesPrice = checkPrice(room.price, selectedPrices)
       const matchesAmenities = checkAmenities(room.amenities, selectedAmenities)
+      const matchesCapacity = minCapacity === 0 || room.capacity >= minCapacity
       
-      return matchesSearch && matchesType && matchesLocation && matchesPrice && matchesAmenities
+      const isRoomAvailable = availableRoomIds ? availableRoomIds.includes(room.id) : room.isAvailable
+      const matchesAvailability = !onlyAvailable || isRoomAvailable
+      
+      return matchesSearch && matchesType && matchesLocation && matchesPrice && matchesAmenities && matchesCapacity && matchesAvailability
     })
-  }, [rooms, searchTerm, selectedTypes, selectedLocations, selectedPrices, selectedAmenities])
+
+    // Sort
+    return list.sort((a, b) => {
+      if (sortBy === 'price-asc') return a.price - b.price
+      if (sortBy === 'price-desc') return b.price - a.price
+      if (sortBy === 'capacity') return b.capacity - a.capacity
+      return 0
+    })
+  }, [rooms, searchTerm, selectedTypes, selectedLocations, selectedPrices, selectedAmenities, minPrice, maxPrice, minCapacity, onlyAvailable, availableRoomIds, sortBy])
 
   // Reset pagination when filters change
   useEffect(() => {
     setCurrentPage(1)
-  }, [searchTerm, selectedTypes, selectedLocations, selectedPrices, selectedAmenities])
+  }, [searchTerm, selectedTypes, selectedLocations, selectedPrices, selectedAmenities, minPrice, maxPrice, minCapacity, onlyAvailable, dates, sortBy])
 
   const indexOfLastRoom = currentPage * roomsPerPage
   const indexOfFirstRoom = indexOfLastRoom - roomsPerPage
@@ -205,6 +255,30 @@ export default function RoomsPage() {
   const toggleArrayItem = (setter: React.Dispatch<React.SetStateAction<string[]>>, item: string) => {
     setter(prev => prev.includes(item) ? prev.filter(t => t !== item) : [...prev, item])
   }
+
+  const clearAllFilters = () => {
+    setSearchTerm('')
+    setSelectedTypes([])
+    setSelectedLocations([])
+    setSelectedPrices([])
+    setSelectedAmenities([])
+    setMinPrice(0)
+    setMaxPrice(2000)
+    setMinCapacity(0)
+    setOnlyAvailable(false)
+    setDates({ checkIn: '', checkOut: '' })
+    setSortBy('featured')
+  }
+
+  const activeFiltersCount = (searchTerm ? 1 : 0) +
+    selectedTypes.length +
+    selectedLocations.length +
+    selectedPrices.length +
+    selectedAmenities.length +
+    (minCapacity > 0 ? 1 : 0) +
+    (onlyAvailable ? 1 : 0) +
+    (dates.checkIn && dates.checkOut ? 1 : 0) +
+    (minPrice > 0 || maxPrice < 2000 ? 1 : 0)
 
   return (
     <div className="bg-transparent text-white">
@@ -241,14 +315,36 @@ export default function RoomsPage() {
             
             {/* Flat Sidebar */}
             <div className="lg:col-span-1 space-y-2">
-              <div className="sticky top-24 pr-4 h-[calc(100vh-6rem)] overflow-y-auto scrollbar-none">
+              <div className="sticky top-24 pr-4 h-[calc(100vh-6rem)] overflow-y-auto scrollbar-none space-y-1">
                 
-                <FilterSection title="Search" defaultOpen={true}>
+                {/* Active Filter Header */}
+                <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-2">
+                  <div className="flex items-center gap-2">
+                    <Filter className="w-3.5 h-3.5 text-primary" />
+                    <span className="text-xs uppercase tracking-widest font-bold text-white">Filters</span>
+                    {activeFiltersCount > 0 && (
+                      <span className="px-1.5 py-0.5 rounded-full bg-primary text-black text-[9px] font-bold">
+                        {activeFiltersCount}
+                      </span>
+                    )}
+                  </div>
+                  {activeFiltersCount > 0 && (
+                    <button 
+                      onClick={clearAllFilters}
+                      className="text-[10px] text-primary hover:underline uppercase tracking-wider font-bold"
+                    >
+                      Reset All
+                    </button>
+                  )}
+                </div>
+
+                {/* Keyword Search */}
+                <FilterSection title="Search Keyword" defaultOpen={true}>
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
                     <input 
                       type="text" 
-                      placeholder="Keywords..." 
+                      placeholder="Suite name, amenities, city..." 
                       className="w-full pl-10 pr-4 py-2.5 bg-black/50 border border-white/10 text-white placeholder:text-white/30 focus:ring-1 focus:ring-primary transition-all text-xs rounded-xl"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
@@ -256,9 +352,22 @@ export default function RoomsPage() {
                   </div>
                 </FilterSection>
 
+                {/* Multi-Property Filter */}
                 {properties.length > 0 && (
-                  <FilterSection title="Location" defaultOpen={true}>
-                    <div className="space-y-3">
+                  <FilterSection title="Sanctuary Location" defaultOpen={true}>
+                    <div className="space-y-2.5">
+                      <label className="flex items-center space-x-3 cursor-pointer group">
+                        <input 
+                          type="checkbox" 
+                          className="sr-only" 
+                          checked={selectedLocations.length === 0} 
+                          onChange={() => setSelectedLocations([])} 
+                        />
+                        <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${selectedLocations.length === 0 ? 'bg-primary border-primary' : 'border-white/20 group-hover:border-primary/50'}`}>
+                          {selectedLocations.length === 0 && <CheckCircle2 className="w-2.5 h-2.5 text-black" />}
+                        </div>
+                        <span className="text-xs text-white/70 group-hover:text-white transition-colors">All Locations (Portfolio)</span>
+                      </label>
                       {properties.map(p => (
                         <label key={p.id} className="flex items-center space-x-3 cursor-pointer group">
                           <input type="checkbox" className="sr-only" checked={selectedLocations.includes(p.id)} onChange={() => toggleArrayItem(setSelectedLocations, p.id)} />
@@ -272,8 +381,103 @@ export default function RoomsPage() {
                   </FilterSection>
                 )}
 
+                {/* Stay Dates & Live Availability */}
+                <FilterSection title="Stay Dates & Availability" defaultOpen={true}>
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-[9px] uppercase tracking-wider text-white/40 block mb-1">Check-in</label>
+                        <input
+                          type="date"
+                          value={dates.checkIn}
+                          onChange={(e) => setDates(prev => ({ ...prev, checkIn: e.target.value }))}
+                          className="w-full px-2 py-1.5 bg-black/50 border border-white/10 text-white text-[11px] rounded-lg focus:ring-1 focus:ring-primary"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[9px] uppercase tracking-wider text-white/40 block mb-1">Check-out</label>
+                        <input
+                          type="date"
+                          value={dates.checkOut}
+                          onChange={(e) => setDates(prev => ({ ...prev, checkOut: e.target.value }))}
+                          className="w-full px-2 py-1.5 bg-black/50 border border-white/10 text-white text-[11px] rounded-lg focus:ring-1 focus:ring-primary"
+                        />
+                      </div>
+                    </div>
+                    {isCheckingDates && (
+                      <p className="text-[10px] text-primary italic">Checking live inventory...</p>
+                    )}
+                    <label className="flex items-center space-x-2.5 pt-1 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={onlyAvailable}
+                        onChange={(e) => setOnlyAvailable(e.target.checked)}
+                        className="rounded border-white/20 bg-black/40 text-primary focus:ring-primary"
+                      />
+                      <span className="text-xs text-white/80">Only Available Suites</span>
+                    </label>
+                  </div>
+                </FilterSection>
+
+                {/* Guest Capacity */}
+                <FilterSection title="Guest Capacity" defaultOpen={true}>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[
+                      { val: 0, label: 'Any' },
+                      { val: 1, label: '1+' },
+                      { val: 2, label: '2+' },
+                      { val: 3, label: '3+' },
+                      { val: 4, label: '4+' },
+                      { val: 6, label: '6+' }
+                    ].map(cap => (
+                      <button
+                        key={cap.val}
+                        onClick={() => setMinCapacity(cap.val)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${
+                          minCapacity === cap.val
+                            ? 'bg-primary text-black border-primary'
+                            : 'bg-white/5 text-white/60 border-white/10 hover:border-white/20'
+                        }`}
+                      >
+                        {cap.label}
+                      </button>
+                    ))}
+                  </div>
+                </FilterSection>
+
+                {/* Price Range Slider */}
+                <FilterSection title="Price Range ($ / Night)" defaultOpen={true}>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between text-xs text-primary font-bold">
+                      <span>${minPrice}</span>
+                      <span>${maxPrice}{maxPrice >= 2000 ? '+' : ''}</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="2000"
+                      step="25"
+                      value={maxPrice}
+                      onChange={(e) => setMaxPrice(Number(e.target.value))}
+                      className="w-full accent-primary bg-white/10 h-1.5 rounded-lg cursor-pointer"
+                    />
+                    <div className="space-y-2 pt-1">
+                      {PRICE_BRACKETS.map((bracket) => (
+                        <label key={bracket.id} className="flex items-center space-x-3 cursor-pointer group">
+                          <input type="checkbox" className="sr-only" checked={selectedPrices.includes(bracket.id)} onChange={() => toggleArrayItem(setSelectedPrices, bracket.id)} />
+                          <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${selectedPrices.includes(bracket.id) ? 'bg-primary border-primary' : 'border-white/20 group-hover:border-primary/50'}`}>
+                            {selectedPrices.includes(bracket.id) && <CheckCircle2 className="w-2.5 h-2.5 text-black" />}
+                          </div>
+                          <span className="text-xs text-white/70 group-hover:text-white transition-colors">{bracket.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </FilterSection>
+
+                {/* Suite Types */}
                 {uniqueRoomTypes.length > 0 && (
-                  <FilterSection title="Suite Types" defaultOpen={true}>
+                  <FilterSection title="Suite Types">
                     <div className="space-y-3">
                       {uniqueRoomTypes.map((type) => (
                         <label key={type} className="flex items-center space-x-3 cursor-pointer group">
@@ -287,23 +491,10 @@ export default function RoomsPage() {
                     </div>
                   </FilterSection>
                 )}
-                
-                <FilterSection title="Price Range">
-                  <div className="space-y-3">
-                    {PRICE_BRACKETS.map((bracket) => (
-                      <label key={bracket.id} className="flex items-center space-x-3 cursor-pointer group">
-                        <input type="checkbox" className="sr-only" checked={selectedPrices.includes(bracket.id)} onChange={() => toggleArrayItem(setSelectedPrices, bracket.id)} />
-                        <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${selectedPrices.includes(bracket.id) ? 'bg-primary border-primary' : 'border-white/20 group-hover:border-primary/50'}`}>
-                          {selectedPrices.includes(bracket.id) && <CheckCircle2 className="w-2.5 h-2.5 text-black" />}
-                        </div>
-                        <span className="text-xs text-white/70 group-hover:text-white transition-colors">{bracket.label}</span>
-                      </label>
-                    ))}
-                  </div>
-                </FilterSection>
 
+                {/* Facilities */}
                 {uniqueAmenities.length > 0 && (
-                  <FilterSection title="Facilities">
+                  <FilterSection title="Facilities & Amenities">
                     <div className="space-y-3 max-h-48 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
                       {uniqueAmenities.map((amenity) => (
                         <label key={amenity} className="flex items-center space-x-3 cursor-pointer group">
@@ -323,6 +514,28 @@ export default function RoomsPage() {
 
             {/* Rooms Grid */}
             <div className="lg:col-span-3">
+              {/* Header Sort & Count Bar */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 mb-6 border-b border-white/5 gap-4">
+                <div>
+                  <h2 className="text-xl font-serif font-bold text-white">Curated Accommodations</h2>
+                  <p className="text-white/40 text-xs">
+                    Showing <span className="text-primary font-bold">{filteredRooms.length}</span> suite{filteredRooms.length !== 1 ? 's' : ''} available
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-[10px] uppercase tracking-wider text-white/40 font-bold shrink-0">Sort By</span>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as any)}
+                    className="bg-black/50 border border-white/10 text-white text-xs px-3 py-2 rounded-xl focus:ring-1 focus:ring-primary"
+                  >
+                    <option value="featured" className="bg-[#0a0a0a]">Featured</option>
+                    <option value="price-asc" className="bg-[#0a0a0a]">Price: Low to High</option>
+                    <option value="price-desc" className="bg-[#0a0a0a]">Price: High to Low</option>
+                    <option value="capacity" className="bg-[#0a0a0a]">Guest Capacity</option>
+                  </select>
+                </div>
+              </div>
               {isLoading ? (
                 <div className="flex flex-col items-center justify-center py-20 space-y-4">
                   <PremiumSpinner size="lg" text="Curating our finest suites..." />

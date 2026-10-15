@@ -5,6 +5,7 @@ import { ThemeProvider } from '@/components/theme-provider'
 import { CinematicProvider } from '@/components/cinematic-context'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ToastProvider } from '@/components/ui/toast'
+import { LuxuryConfirmProvider } from '@/components/ui/luxury-confirm-dialog'
 import { useState } from 'react'
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -23,7 +24,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <CinematicProvider>
           <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
             <ToastProvider>
-              {children}
+              <LuxuryConfirmProvider>
+                {children}
+              </LuxuryConfirmProvider>
             </ToastProvider>
           </ThemeProvider>
         </CinematicProvider>

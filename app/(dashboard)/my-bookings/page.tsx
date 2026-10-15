@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge'
 // Navigation is handled by layout.tsx
 import { formatPrice, formatDate } from '@/lib/utils'
 import toast from 'react-hot-toast'
+import { useLuxuryConfirm } from '@/components/ui/luxury-confirm-dialog'
 
 interface Booking {
   id: string
@@ -47,6 +48,7 @@ import { GuestPageShell } from '@/components/dashboard/guest/guest-page-shell'
 export default function MyBookingsPage() {
   const { data: session, status } = useSession() || { data: null, status: 'unauthenticated' }
   const router = useRouter()
+  const confirm = useLuxuryConfirm()
   const [bookings, setBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
@@ -86,7 +88,13 @@ export default function MyBookingsPage() {
   }, [session, status, fetchBookings]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleCancelBooking = async (bookingId: string) => {
-    if (!confirm('Are you sure you want to cancel this booking?')) {
+    const approved = await confirm({
+      title: 'Cancel Reservation',
+      message: 'Are you sure you want to cancel this room reservation? Refund eligibility depends on your booking policy.',
+      confirmText: 'Cancel Reservation',
+      isDestructive: true
+    })
+    if (!approved) {
       return
     }
 

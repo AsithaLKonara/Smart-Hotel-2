@@ -6,20 +6,38 @@ import { Button } from '@/components/ui/button'
 import { AnimatePresence, motion } from 'framer-motion'
 import Image from 'next/image'
 
-function GoogleMapFallback({ lat, lng, address }: { lat: number; lng: number; address: string }) {
+function GoogleMapFallback({ lat, lng, address, mapUrl }: { lat: number; lng: number; address: string; mapUrl?: string | null }) {
   const apiKey = typeof window !== 'undefined' 
     ? (window as any).__NEXT_DATA__?.env?.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY 
     : process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
 
   const mapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || apiKey
 
+  // 1. If custom map URL configured by admin, use it directly
+  if (mapUrl && mapUrl.trim().length > 0) {
+    return (
+      <iframe
+        src={mapUrl}
+        width="100%"
+        height="100%"
+        style={{ border: 0 }}
+        allowFullScreen
+        loading="lazy"
+        referrerPolicy="no-referrer-when-downgrade"
+        className="absolute inset-0 w-full h-full"
+        title="SmartHotel Custom Map"
+      />
+    )
+  }
+
+  // 2. If API key exists, use Google Maps Embed API
   if (mapsApiKey && mapsApiKey !== 'AIzaSyYour_Google_Maps_API_Key_Here' && mapsApiKey !== '') {
     return (
       <iframe
         src={`https://www.google.com/maps/embed/v1/place?key=${mapsApiKey}&q=${lat},${lng}&zoom=15`}
         width="100%"
         height="100%"
-        style={{ border: 0, filter: 'grayscale(1) invert(0.9) contrast(1.2)' }}
+        style={{ border: 0 }}
         allowFullScreen
         loading="lazy"
         referrerPolicy="no-referrer-when-downgrade"
@@ -29,19 +47,22 @@ function GoogleMapFallback({ lat, lng, address }: { lat: number; lng: number; ad
     )
   }
 
+  // 3. Real worldwide interactive Google Maps embed with pinpoint (zero API key needed)
+  const embedUrl = `https://maps.google.com/maps?q=${encodeURIComponent(address || `${lat},${lng}`)}&t=&z=15&ie=UTF8&iwloc=&output=embed`
+
   return (
-    <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center bg-midnight/5">
-      <MapPin className="w-12 h-12 text-luxury mb-4" />
-      <h3 className="text-xl font-serif font-bold text-midnight mb-2">Our Sanctuary</h3>
-      <p className="text-gray-500 text-sm mb-6 max-w-xs">{address}</p>
-      <a
-        href={`https://www.google.com/maps?q=${lat},${lng}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-[10px] uppercase tracking-widest font-bold text-luxury hover:underline"
-      >
-        View on Google Maps
-      </a>
+    <div className="absolute inset-0 w-full h-full">
+      <iframe
+        src={embedUrl}
+        width="100%"
+        height="100%"
+        style={{ border: 0, filter: 'contrast(1.05)' }}
+        allowFullScreen
+        loading="lazy"
+        referrerPolicy="no-referrer-when-downgrade"
+        className="w-full h-full"
+        title="SmartHotel Worldwide Pinpoint Map"
+      />
     </div>
   )
 }
@@ -277,6 +298,7 @@ export default function ContactPage() {
                   lat={contactInfo?.coordinates?.lat || 40.7589}
                   lng={contactInfo?.coordinates?.lng || -73.9851}
                   address={contactInfo?.address || '123 Grand Boulevard'}
+                  mapUrl={contactInfo?.mapUrl}
                 />
               </div>
             </div>

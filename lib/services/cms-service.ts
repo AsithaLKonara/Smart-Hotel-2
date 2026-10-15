@@ -614,5 +614,106 @@ export class CmsService {
         await prisma.gallery.create({ data: item })
       }
     }
+
+    // 5. Seed Stay Extra Services if empty
+    const { StayExtraService } = await import('./stay-extra-service')
+    await StayExtraService.ensureDefaultExtraServices()
+
+    // 6. Seed Default Footer Links if empty
+    const footerCount = await prisma.footerLink.count()
+    if (footerCount === 0) {
+      const defaultLinks = [
+        // Legal
+        { label: 'Terms & Conditions', url: '/terms', category: 'Legal', order: 1 },
+        { label: 'Privacy Policy', url: '/privacy', category: 'Legal', order: 2 },
+        { label: 'Cookie Policy', url: '/cookies', category: 'Legal', order: 3 },
+        // Quick Links
+        { label: 'Suites & Accommodations', url: '/rooms', category: 'Quick Links', order: 1 },
+        { label: 'Resort Facilities', url: '/facilities', category: 'Quick Links', order: 2 },
+        { label: 'Photo Archive', url: '/gallery', category: 'Quick Links', order: 3 },
+        { label: 'Our Heritage', url: '/about', category: 'Quick Links', order: 4 },
+        { label: 'Concierge & Contact', url: '/contact', category: 'Quick Links', order: 5 },
+        // Services
+        { label: 'Private Butler Service', url: '/facilities', category: 'Services', order: 1 },
+        { label: 'Serenity Spa & Hydrotherapy', url: '/facilities', category: 'Services', order: 2 },
+        { label: 'Michelin Dining & Lounge', url: '/facilities', category: 'Services', order: 3 },
+        { label: 'Chauffeured Airport Transfer', url: '/booking', category: 'Services', order: 4 },
+      ]
+
+      for (const link of defaultLinks) {
+        await prisma.footerLink.create({
+          data: {
+            label: link.label,
+            url: link.url,
+            category: link.category,
+            order: link.order,
+            active: true
+          }
+        })
+      }
+    }
+
+    // 7. Seed Hero Slides if empty
+    const heroSlideCount = await prisma.heroSlide.count()
+    if (heroSlideCount === 0) {
+      const defaultSlides = [
+        {
+          image: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&q=80&w=1920',
+          title: 'The Art of Luxury',
+          subtitle: 'A Sanctuary of Sophistication',
+          description: 'Experience unparalleled elegance in our meticulously designed suites, where every detail tells a story of refined luxury.',
+          cta: 'Check Availability',
+          ctaLink: '/booking',
+          order: 1,
+          active: true
+        },
+        {
+          image: 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&q=80&w=1920',
+          title: 'Unrivaled Comfort & Grace',
+          subtitle: 'World-Class Hospitality',
+          description: 'Immerse yourself in panoramic city and ocean vistas, tailored butler service, and Michelin-inspired culinary journeys.',
+          cta: 'Explore Suites',
+          ctaLink: '/rooms',
+          order: 2,
+          active: true
+        }
+      ]
+      for (const slide of defaultSlides) {
+        await prisma.heroSlide.create({ data: slide })
+      }
+    }
+  }
+
+  /**
+   * Fetch Hero Slides from CMS (auto-seeds defaults if empty)
+   */
+  static async getHeroSlides(options: { activeOnly?: boolean } = {}) {
+    let slides = await prisma.heroSlide.findMany({
+      where: options.activeOnly ? { active: true } : undefined,
+      orderBy: { order: 'asc' }
+    })
+
+    if (slides.length === 0) {
+      await this.ensureDefaultCmsContent()
+      slides = await prisma.heroSlide.findMany({
+        where: options.activeOnly ? { active: true } : undefined,
+        orderBy: { order: 'asc' }
+      })
+    }
+
+    return slides
+  }
+
+  /**
+   * Fetch primary Hotel Front Story Image from CMS or curated luxury default
+   */
+  static async getStoryImage(): Promise<string> {
+    const galleryImage = await prisma.gallery.findFirst({
+      where: {
+        category: { in: ['EXTERIOR', 'AMENITY'] }
+      },
+      orderBy: { createdAt: 'desc' }
+    })
+    return galleryImage?.imageUrl || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=1200'
   }
 }

@@ -8,6 +8,7 @@ import { Plus, Edit, Trash2, Search, Menu as MenuIcon, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import toast from 'react-hot-toast'
+import { useLuxuryConfirm } from '@/components/ui/luxury-confirm-dialog'
 
 interface NavigationLink {
   id: string
@@ -20,6 +21,7 @@ interface NavigationLink {
 export default function AdminNavigationPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const confirm = useLuxuryConfirm()
   const [items, setItems] = useState<NavigationLink[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -95,7 +97,13 @@ export default function AdminNavigationPage() {
   }
 
   const handleDelete = async (itemId: string) => {
-    if (!confirm('Are you sure you want to delete this navigation link?')) return
+    const approved = await confirm({
+      title: 'Delete Navigation Link',
+      message: 'Are you sure you want to delete this navigation link?',
+      confirmText: 'Delete Link',
+      isDestructive: true
+    })
+    if (!approved) return
 
     try {
       const response = await fetch(`/api/navigation/${itemId}`, {

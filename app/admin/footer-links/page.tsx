@@ -8,6 +8,7 @@ import { Plus, Edit, Trash2, Search, Link as LinkIcon, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import toast from 'react-hot-toast'
+import { useLuxuryConfirm } from '@/components/ui/luxury-confirm-dialog'
 
 interface FooterLink {
   id: string
@@ -21,6 +22,7 @@ interface FooterLink {
 export default function AdminFooterLinksPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const confirm = useLuxuryConfirm()
   const [items, setItems] = useState<FooterLink[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -99,7 +101,13 @@ export default function AdminFooterLinksPage() {
   }
 
   const handleDelete = async (itemId: string) => {
-    if (!confirm('Are you sure you want to delete this footer link?')) return
+    const approved = await confirm({
+      title: 'Delete Footer Link',
+      message: 'Are you sure you want to delete this footer navigation link?',
+      confirmText: 'Delete Link',
+      isDestructive: true
+    })
+    if (!approved) return
 
     try {
       const response = await fetch(`/api/footer-links/${itemId}`, {

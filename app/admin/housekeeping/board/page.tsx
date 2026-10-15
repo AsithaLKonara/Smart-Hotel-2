@@ -7,9 +7,11 @@ import { Badge } from '@/components/ui/badge'
 import { Brush, CheckCircle, AlertTriangle, RefreshCw, User, Wrench, Play } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { PremiumSpinner } from '@/components/ui/premium-spinner'
+import { useLuxuryConfirm } from '@/components/ui/luxury-confirm-dialog'
 
 export default function MobileHousekeepingBoard() {
   const queryClient = useQueryClient()
+  const confirm = useLuxuryConfirm()
 
   const { data: tasksData, isLoading } = useQuery({
     queryKey: ['attendant-tasks'],
@@ -103,8 +105,14 @@ export default function MobileHousekeepingBoard() {
                         <CheckCircle className="w-5 h-5" /> Finish Cleaning
                       </button>
                       <button 
-                        onClick={() => {
-                          if (confirm('Report a maintenance issue for this room?')) {
+                        onClick={async () => {
+                          const approved = await confirm({
+                            title: 'Report Maintenance Issue',
+                            message: 'Create a priority maintenance ticket for this room?',
+                            confirmText: 'Report Issue',
+                            isDestructive: false
+                          })
+                          if (approved) {
                             reportIssueMutation.mutate(task.roomId)
                           }
                         }}

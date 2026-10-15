@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import toast from 'react-hot-toast'
 import Image from 'next/image'
+import { useLuxuryConfirm } from '@/components/ui/luxury-confirm-dialog'
 
 interface HeroSlide {
   id: string
@@ -25,6 +26,7 @@ interface HeroSlide {
 export default function AdminHeroSlidesPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const confirm = useLuxuryConfirm()
   const [items, setItems] = useState<HeroSlide[]>([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
@@ -107,7 +109,13 @@ export default function AdminHeroSlidesPage() {
   }
 
   const handleDelete = async (itemId: string) => {
-    if (!confirm('Are you sure you want to delete this slide?')) return
+    const approved = await confirm({
+      title: 'Delete Hero Slide',
+      message: 'Are you sure you want to delete this hero slide? It will no longer appear on the public hotel front.',
+      confirmText: 'Delete Slide',
+      isDestructive: true
+    })
+    if (!approved) return
 
     try {
       const response = await fetch(`/api/hero-slides/${itemId}`, {

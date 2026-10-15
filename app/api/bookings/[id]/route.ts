@@ -37,11 +37,20 @@ export async function GET(
       where: { id },
       include: {
         guest: true,
+        property: true,
+        folios: {
+          include: {
+            lineItems: { orderBy: { createdAt: 'desc' } }
+          }
+        },
+        payments: { orderBy: { createdAt: 'desc' } },
+        stayEvents: { orderBy: { createdAt: 'desc' } },
         roomAssignments: {
           include: {
             room: {
               include: {
-                roomType: true
+                roomType: true,
+                roomImages: true
               }
             }
           }

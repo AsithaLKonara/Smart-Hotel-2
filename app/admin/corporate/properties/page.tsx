@@ -5,8 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Loader2, Plus, Building2, Globe, Edit, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { useLuxuryConfirm } from '@/components/ui/luxury-confirm-dialog'
 
 export default function PropertiesPage() {
+  const confirm = useLuxuryConfirm()
   const [properties, setProperties] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
@@ -55,7 +57,13 @@ export default function PropertiesPage() {
   }
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Are you sure you want to delete this property? This action cannot be undone.')) return
+    const approved = await confirm({
+      title: 'Delete Property',
+      message: 'Are you sure you want to delete this property? All associated room inventory and operations will be impacted. This action cannot be undone.',
+      confirmText: 'Delete Property',
+      isDestructive: true
+    })
+    if (!approved) return
     
     try {
       const res = await fetch(`/api/admin/corporate/properties/${id}`, {

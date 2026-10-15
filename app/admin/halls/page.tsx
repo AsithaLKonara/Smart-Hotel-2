@@ -15,6 +15,7 @@ import {
 import toast from 'react-hot-toast'
 import { useProperty } from '@/contexts/property-context'
 import { useRouter } from 'next/navigation'
+import { useLuxuryConfirm } from '@/components/ui/luxury-confirm-dialog'
 
 const HALL_TYPES = ['HALL', 'CONFERENCE_ROOM', 'BALLROOM', 'BOARDROOM', 'OUTDOOR'] as const
 type HallType = typeof HALL_TYPES[number]
@@ -97,6 +98,7 @@ const emptyForm = {
 export default function HallsPage() {
   const { activePropertyId } = useProperty()
   const router = useRouter()
+  const confirm = useLuxuryConfirm()
   const [halls, setHalls] = useState<Hall[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -188,7 +190,13 @@ export default function HallsPage() {
   }
 
   const handleDelete = async (hall: Hall) => {
-    if (!confirm(`Delete "${hall.name}"? This action cannot be undone.`)) return
+    const approved = await confirm({
+      title: 'Delete Event Hall',
+      message: `Are you sure you want to delete "${hall.name}"? This action cannot be undone.`,
+      confirmText: 'Delete Hall',
+      isDestructive: true
+    })
+    if (!approved) return
     try {
       const res = await fetch(`/api/admin/halls/${hall.id}`, { method: 'DELETE' })
       const data = await res.json()
