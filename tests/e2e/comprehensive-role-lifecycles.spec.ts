@@ -43,18 +43,21 @@ test.describe('SmartHotel OS - Role-Based End-to-End Enterprise Lifecycles', () 
   // ========================================================
   test.describe('Guest Experience Lifecycle', () => {
     
-    test('1.1 Discovery & Dynamic CMS Hero Slides on Hotel Front', async ({ page }) => {
+    test('1.1 Discovery & Luxury Cinematic Video Hero on Hotel Front', async ({ page }) => {
       await page.goto('/', { waitUntil: 'domcontentloaded' });
 
       // Verify page title and header branding
       await expect(page).toHaveTitle(/SmartHotel|Grand Palace/i);
 
-      // Verify Dynamic CMS Hero Slides container exists and contains slide text
-      const heroContainer = page.locator('section').first();
-      await expect(heroContainer).toBeVisible({ timeout: 20000 });
+      // Verify Luxury Cinematic Background Video exists
+      const heroVideo = page.locator('video source[src*="snaptik_7544319300136471815_v3.mp4"]');
+      await expect(heroVideo).toBeAttached({ timeout: 20000 });
+
+      // Verify Hero Heading "The Art of Luxury"
+      await expect(page.getByRole('heading', { name: /the art of luxury/i })).toBeVisible({ timeout: 20000 });
       
       // Verify Check Availability / Explore CTAs exist
-      const bookCta = page.getByRole('link', { name: /reserve|book|check availability/i }).first();
+      const bookCta = page.getByRole('link', { name: /check availability/i }).first();
       await expect(bookCta).toBeVisible({ timeout: 20000 });
 
       // Verify footer contains links to legal pages
