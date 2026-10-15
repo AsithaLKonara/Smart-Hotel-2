@@ -3,7 +3,7 @@ import prisma from '@/lib/db'
 export interface ExtraServiceInput {
   name: string
   code: string
-  description: string
+  description?: string | null
   price: number | string
   priceType?: 'PER_STAY' | 'PER_NIGHT' | 'PER_GUEST'
   imageUrl?: string | null

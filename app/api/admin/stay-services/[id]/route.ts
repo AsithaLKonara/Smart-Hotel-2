@@ -2,16 +2,16 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { StayExtraService } from '@/lib/services/stay-extra-service'
-import { isDatabaseConfigured } from '@/lib/db-helpers'
 import { z } from 'zod'
 import { handleZodError } from '@/lib/api-utils'
 
 const updateSchema = z.object({
-  name: z.string().min(2).optional(),
-  code: z.string().min(2).optional(),
-  description: z.string().min(5).optional(),
+  name: z.string().min(1).optional(),
+  code: z.string().min(1).optional(),
+  description: z.string().nullable().optional(),
   price: z.number().nonnegative().optional(),
-  priceType: z.enum(['PER_STAY', 'PER_NIGHT', 'PER_GUEST']).optional(),
+  pricingModel: z.enum(['PER_STAY', 'PER_NIGHT', 'PER_GUEST']).optional(),
+  category: z.string().min(1).optional(),
   imageUrl: z.string().nullable().optional(),
   icon: z.string().nullable().optional(),
   active: z.boolean().optional(),
@@ -21,9 +21,13 @@ const updateSchema = z.object({
 
 export const dynamic = 'force-dynamic'
 
+type RouteContext = {
+  params: Promise<{ id: string }>
+}
+
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: RouteContext
 ) {
   const session = await getServerSession(authOptions)
   if (!session?.user) {
@@ -31,7 +35,8 @@ export async function GET(
   }
 
   try {
-    const item = await StayExtraService.getExtraServiceById(params.id)
+    const { id } = await context.params
+    const item = await StayExtraService.getExtraServiceById(id)
     if (!item) {
       return NextResponse.json({ error: 'Extra service not found' }, { status: 404 })
     }
@@ -44,7 +49,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: RouteContext
 ) {
   const session = await getServerSession(authOptions)
   const roleName = (session?.user as any)?.roleName || ''
@@ -54,10 +59,11 @@ export async function PUT(
   }
 
   try {
+    const { id } = await context.params
     const body = await request.json()
     const validated = updateSchema.parse(body)
 
-    const updated = await StayExtraService.updateExtraService(params.id, validated)
+    const updated = await StayExtraService.updateExtraService(id, validated)
     return NextResponse.json({ item: updated })
   } catch (error: any) {
     if (error instanceof z.ZodError) {
@@ -70,7 +76,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: RouteContext
 ) {
   const session = await getServerSession(authOptions)
   const roleName = (session?.user as any)?.roleName || ''
@@ -80,7 +86,8 @@ export async function DELETE(
   }
 
   try {
-    await StayExtraService.deleteExtraService(params.id)
+    const { id } = await context.params
+    await StayExtraService.deleteExtraService(id)
     return NextResponse.json({ success: true, message: 'Extra service deleted successfully' })
   } catch (error: any) {
     console.error('Error deleting extra service:', error)
