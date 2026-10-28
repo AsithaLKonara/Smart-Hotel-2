@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700;800;900&family=Manrope:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700;800;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -122,19 +124,43 @@
   .bg-gold-gradient {
     background: linear-gradient(to bottom right, #c5a059, #816937);
   }
+
+  .font-display {
+    font-family: 'Space Grotesk', sans-serif;
+  }
+
+  .font-modern {
+    font-family: 'Plus Jakarta Sans', var(--font-inter), sans-serif;
+  }
+
+  .font-ibm {
+    font-family: 'IBM Plex Mono', monospace;
+  }
 }
 
-/* Custom Scrollbar for Luxury Feel */
+/* Custom Adaptive Stealth Console Scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.22) transparent;
+}
+
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-background;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-primary/20 rounded-full hover:bg-primary/40 transition-colors;
+  background-color: rgba(100, 116, 139, 0.3);
+  border-radius: 9999px;
+}
+
+.dark ::-webkit-scrollbar-thumb,
+body ::-webkit-scrollbar-thumb {
+  background-color: rgba(148, 163, 184, 0.22);
 }
 
 /* Animations */

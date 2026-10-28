@@ -21,9 +21,9 @@ const Dialog = ({ open, onOpenChange, children }: DialogProps) => {
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center print:static print:block print:inset-auto print:z-auto print:bg-white print:items-start print:h-auto print:min-h-0 print:overflow-visible">
-      <div className="fixed inset-0 bg-black/50 print:hidden" onClick={() => onOpenChange?.(false)} />
-      <div className="relative z-50 print:static print:block print:w-full print:max-w-none print:p-0 print:m-0 print:h-auto print:min-h-0 print:overflow-visible">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 print:static print:block print:inset-auto print:z-auto print:bg-white print:items-start print:h-auto print:min-h-0 print:overflow-visible animate-fade-in">
+      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm print:hidden" onClick={() => onOpenChange?.(false)} />
+      <div className="relative z-50 w-full max-w-lg print:static print:block print:w-full print:max-w-none print:p-0 print:m-0 print:h-auto print:min-h-0 print:overflow-visible">
         {children}
       </div>
     </div>
@@ -35,7 +35,7 @@ const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
     <div
       ref={ref}
       className={cn(
-        "relative bg-white rounded-lg shadow-lg p-6 w-full max-w-md mx-auto print:static print:block print:shadow-none print:w-full print:max-w-none print:h-auto print:min-h-0 print:overflow-visible print:p-0 print:m-0 print:rounded-none",
+        "relative rounded-2xl bg-[#121417] border border-[#2B3037] p-6 shadow-2xl text-zinc-100 print:static print:block print:shadow-none print:w-full print:max-w-none print:h-auto print:min-h-0 print:overflow-visible print:p-0 print:m-0 print:rounded-none",
         className
       )}
       {...props}

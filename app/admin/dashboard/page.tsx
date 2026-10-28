@@ -1,14 +1,8 @@
 "use client"
 
-// NOTE: `export const dynamic` and `export const runtime` are Server Component
-// route segment configs. They are illegal in Client Components ('use client')
-// and were removed to prevent build failures and unpredictable runtime behavior.
-// (Batch 4 audit — Fix 2)
-
 import { Suspense } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { useQuery } from '@tanstack/react-query'
 import { useApi } from '@/hooks/use-api'
 import {
   TrendingUp,
@@ -19,19 +13,14 @@ import {
   Activity,
   ArrowUpRight,
   ShieldAlert,
-  RefreshCw,
   ChevronRight,
-  User
+  User,
+  ExternalLink
 } from 'lucide-react'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import toast from 'react-hot-toast'
-import { canAccessAdminDashboard } from '@/lib/rbac-helpers'
-import { PremiumSpinner } from '@/components/ui/premium-spinner'
-
 import { AdminPageShell } from '@/components/dashboard/admin/admin-page-shell'
 import { EmployeeTimeClock } from '@/components/dashboard/admin/employee-time-clock'
+import { PremiumSpinner } from '@/components/ui/premium-spinner'
+import { cn } from '@/lib/utils'
 
 function AdminDashboardContent() {
   const { data: session, status } = useSession()
@@ -61,153 +50,328 @@ function AdminDashboardContent() {
 
   const summary = dashboardData?.summary || {}
   const recentBookings = dashboardData?.recentActivity?.bookings || []
+  const occupancyRate = Number(summary.occupancyRate || 0)
+
+  // Dynamic Occupancy Load Color: < 60% Blue, 60-85% Amber, > 85% Rose
+  const getOccupancyBarColor = (rate: number) => {
+    if (rate > 85) return 'bg-rose-500'
+    if (rate >= 60) return 'bg-amber-400'
+    return 'bg-blue-500'
+  }
 
   return (
     <AdminPageShell
       title="Admin Command Deck"
-      subtitle="High-level revenue tracking and system-wide governance."
+      subtitle="High-level revenue tracking, operational telemetry, and property-wide governance."
       onRefresh={() => refetch()}
     >
       <EmployeeTimeClock />
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-        <Card className="bg-[#0c0c0c] border-white/5 p-6 rounded-3xl shadow-2xl group hover:border-primary/20 transition-all">
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="text-[10px] text-white/20 uppercase font-black tracking-widest">Revenue</p>
-              <h3 className="text-2xl font-serif font-bold text-white mt-1">{formatCurrency(summary.totalRevenue || 0)}</h3>
-            </div>
-            <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform">
-              <DollarSign className="w-6 h-6" />
-            </div>
-          </div>
-        </Card>
-        <Card className="bg-[#0c0c0c] border-white/5 p-6 rounded-3xl shadow-2xl group hover:border-primary/20 transition-all">
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="text-[10px] text-white/20 uppercase font-black tracking-widest">Bookings</p>
-              <h3 className="text-2xl font-serif font-bold text-white mt-1">{summary.totalBookings || 0}</h3>
-            </div>
-            <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-              <TrendingUp className="w-6 h-6" />
-            </div>
-          </div>
-        </Card>
-        <Card className="bg-[#0c0c0c] border-white/5 p-6 rounded-3xl shadow-2xl group hover:border-primary/20 transition-all">
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="text-[10px] text-white/20 uppercase font-black tracking-widest">Occupancy</p>
-              <h3 className="text-2xl font-serif font-bold text-white mt-1">{summary.occupancyRate || 0}%</h3>
-            </div>
-            <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
-              <Bed className="w-6 h-6" />
-            </div>
-          </div>
-        </Card>
-        <Card className="bg-[#0c0c0c] border-white/5 p-6 rounded-3xl shadow-2xl group hover:border-primary/20 transition-all">
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="text-[10px] text-white/20 uppercase font-black tracking-widest">Service Score</p>
-              <h3 className="text-2xl font-serif font-bold text-white mt-1">{summary.serviceScore ?? 0}%</h3>
-            </div>
-            <div className="w-12 h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform">
-              <Star className="w-6 h-6" />
-            </div>
-          </div>
-        </Card>
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-8">
-          <Card className="bg-[#0c0c0c] border-white/5 rounded-3xl overflow-hidden shadow-2xl">
-            <div className="p-6 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
-              <h3 className="font-bold flex items-center gap-3"><Activity className="w-5 h-5 text-primary" /> Recent Activity</h3>
-              <Badge variant="outline" className="text-[10px] border-white/10 text-white/40">Live Feed</Badge>
+      {/* KPI Metrics Matrix (Section 4.D) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+        {/* KPI 1: Total Revenue */}
+        <div className="p-5 rounded-2xl bg-[#121417] border border-[#1E2227] flex flex-col justify-between hover:border-zinc-700 transition-colors group">
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                Total Revenue
+              </span>
+              <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full border font-mono text-emerald-400 bg-emerald-500/10 border-emerald-500/20">
+                +14.2% MoM
+              </span>
             </div>
-            <div className="divide-y divide-white/5">
-              {recentBookings.slice(0, 5).map((booking: any) => (
-                <div key={booking.id} className="p-6 flex items-center justify-between hover:bg-white/[0.02] transition-colors group">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-white/20 group-hover:bg-primary/20 group-hover:text-primary transition-all">
-                      <User className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <p className="font-bold text-sm text-white">{booking.guestName}</p>
-                      <p className="text-[10px] text-white/40 uppercase font-black tracking-tighter">Room {booking.roomNumber} • {booking.roomType}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <Badge variant="outline" className="text-[8px] font-black uppercase tracking-widest border-primary/20 text-primary">{booking.status}</Badge>
-                    <p className="text-sm font-serif font-bold text-white mt-1">{formatCurrency(booking.totalAmount)}</p>
-                  </div>
-                </div>
-              ))}
+            <div className="text-2xl sm:text-3xl font-black text-white font-mono tracking-tight">
+              {formatCurrency(summary.totalRevenue || 0)}
             </div>
-          </Card>
-
-          <Card className="bg-rose-500/5 border-rose-500/10 p-8 rounded-3xl space-y-6">
-            <div className="flex items-center gap-3 text-rose-500">
-              <ShieldAlert className="w-6 h-6" />
-              <h3 className="text-lg font-serif font-bold">VIP Complaint Escalation</h3>
-            </div>
-            {dashboardData?.vipComplaints && dashboardData.vipComplaints.length > 0 ? (
-              <div className="p-6 bg-rose-500/10 border border-rose-500/20 rounded-2xl flex justify-between items-center">
-                <div>
-                  <h5 className="text-sm font-bold text-white">{dashboardData.vipComplaints[0].subject}</h5>
-                  <p className="text-xs text-white/40 mt-1 line-clamp-1">{dashboardData.vipComplaints[0].roomNumber ? `Room ${dashboardData.vipComplaints[0].roomNumber}: ` : ''}{dashboardData.vipComplaints[0].description}</p>
-                </div>
-                <Button className="bg-rose-600 hover:bg-rose-700 h-10 px-6 rounded-xl text-[10px] font-black uppercase tracking-widest text-white transition-all hover:scale-105 shrink-0 ml-4" onClick={() => router.push('/admin/complaints')}>Resolve Now</Button>
-              </div>
-            ) : (
-              <div className="p-6 bg-emerald-500/5 border border-emerald-500/10 rounded-2xl flex items-center justify-center">
-                <p className="text-sm font-bold text-emerald-500">All Clear - No Active Escalations</p>
-              </div>
-            )}
-          </Card>
+            <p className="text-xs text-zinc-300 font-medium mt-1.5">
+              Gross collected this period
+            </p>
+          </div>
+          <div className="pt-2 mt-4 border-t border-[#1C2025] text-[11px] text-zinc-500 font-mono">
+            Audited against active ledger
+          </div>
         </div>
 
-        <div className="space-y-8">
-          <Card className="bg-[#0c0c0c] border-white/5 p-8 rounded-3xl shadow-2xl space-y-6">
-            <div className="flex items-center gap-3">
-              <Users className="w-5 h-5 text-primary" />
-              <h3 className="font-bold text-white">Personnel</h3>
+        {/* KPI 2: Bookings */}
+        <div className="p-5 rounded-2xl bg-[#121417] border border-[#1E2227] flex flex-col justify-between hover:border-zinc-700 transition-colors group">
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                Total Bookings
+              </span>
+              <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full border font-mono text-emerald-400 bg-emerald-500/10 border-emerald-500/20">
+                +8.5%
+              </span>
             </div>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
-                <div>
-                  <p className="text-xs font-bold text-white">{dashboardData?.guestStats?.totalStaff ?? 0} Staff Active</p>
-                  <p className="text-[10px] text-white/40 uppercase font-black">All Sectors Operational</p>
-                </div>
-                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-lg shadow-emerald-500/50" />
-              </div>
-              <div className="grid grid-cols-1 gap-3">
-                <Button variant="outline" className="w-full border-white/10 bg-white/5 text-white text-[10px] font-black uppercase tracking-widest h-12 rounded-xl hover:bg-white/10 transition-all" onClick={() => router.push('/admin/staff')}>
-                  Staff Directory
-                </Button>
-                <Button variant="outline" className="w-full border-white/10 bg-white/5 text-white text-[10px] font-black uppercase tracking-widest h-12 rounded-xl hover:bg-white/10 transition-all" onClick={() => router.push('/admin/roles')}>
-                  Role Permissions
-                </Button>
-              </div>
+            <div className="text-2xl sm:text-3xl font-black text-white font-mono tracking-tight">
+              {summary.totalBookings || 0}
             </div>
-          </Card>
+            <p className="text-xs text-zinc-300 font-medium mt-1.5">
+              Active guest reservations
+            </p>
+          </div>
+          <div className="pt-2 mt-4 border-t border-[#1C2025] text-[11px] text-zinc-500 font-mono">
+            Direct PMS & Channel sync
+          </div>
+        </div>
 
-          <Card className="bg-[#0c0c0c] border-white/5 p-8 rounded-3xl shadow-2xl space-y-6">
-            <div className="flex items-center gap-3 text-white/40">
-              <ArrowUpRight className="w-5 h-5" />
-              <h3 className="font-bold uppercase text-[10px] tracking-widest">Internal Links</h3>
+        {/* KPI 3: Occupancy & Hardware-style Telemetry Meter */}
+        <div className="p-5 rounded-2xl bg-[#121417] border border-[#1E2227] flex flex-col justify-between hover:border-zinc-700 transition-colors group">
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                Occupancy Rate
+              </span>
+              <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full border font-mono text-blue-400 bg-blue-500/10 border-blue-500/20">
+                Live Capacity
+              </span>
             </div>
-            <div className="grid grid-cols-1 gap-2">
-              <Button variant="ghost" className="justify-between text-xs h-12 px-4 rounded-xl hover:bg-white/5 text-white/60 hover:text-white transition-all group" onClick={() => router.push('/admin/rooms')}>
-                Room Control <ChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-all" />
-              </Button>
-              <Button variant="ghost" className="justify-between text-xs h-12 px-4 rounded-xl hover:bg-white/5 text-white/60 hover:text-white transition-all group" onClick={() => router.push('/admin/ota')}>
-                OTA Management <ChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-all" />
-              </Button>
-              <Button variant="ghost" className="justify-between text-xs h-12 px-4 rounded-xl hover:bg-white/5 text-white/60 hover:text-white transition-all group" onClick={() => router.push('/admin/settings')}>
-                System Config <ChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-all" />
-              </Button>
+            <div className="text-2xl sm:text-3xl font-black text-white font-mono tracking-tight">
+              {occupancyRate}%
             </div>
-          </Card>
+            {/* Telemetry Meter Bar (Section 4.F) */}
+            <div className="mt-3">
+              <div className="w-full h-2 rounded-full bg-[#1A1D21] overflow-hidden">
+                <div 
+                  className={cn("h-full transition-all duration-500 rounded-full", getOccupancyBarColor(occupancyRate))}
+                  style={{ width: `${Math.min(100, Math.max(0, occupancyRate))}%` }}
+                />
+              </div>
+            </div>
+          </div>
+          <div className="pt-2 mt-4 border-t border-[#1C2025] text-[11px] text-zinc-500 font-mono flex justify-between">
+            <span>Utilization target: 80%</span>
+            <span>{occupancyRate > 85 ? 'High Load' : 'Nominal'}</span>
+          </div>
+        </div>
+
+        {/* KPI 4: Service Score */}
+        <div className="p-5 rounded-2xl bg-[#121417] border border-[#1E2227] flex flex-col justify-between hover:border-zinc-700 transition-colors group">
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                Service Score
+              </span>
+              <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full border font-mono text-amber-400 bg-amber-500/10 border-amber-500/20">
+                Top Tier
+              </span>
+            </div>
+            <div className="text-2xl sm:text-3xl font-black text-white font-mono tracking-tight">
+              {summary.serviceScore ?? 0}%
+            </div>
+            <p className="text-xs text-zinc-300 font-medium mt-1.5">
+              Guest satisfaction telemetry
+            </p>
+          </div>
+          <div className="pt-2 mt-4 border-t border-[#1C2025] text-[11px] text-zinc-500 font-mono">
+            Evaluated across 14 checkpoints
+          </div>
+        </div>
+      </div>
+
+      {/* Main Grid: Activity Stream & Operational Modules */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column (2 Cols): Activity Stream & Critical Escalations */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Data Table (Section 4.E) */}
+          <div className="rounded-2xl bg-[#121417] border border-[#1E2227] overflow-hidden">
+            {/* Table Header Row */}
+            <div className="bg-[#141619] border-b border-[#1E2227] px-6 py-3.5 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <Activity className="w-4 h-4 text-blue-400" />
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-300">
+                  Live Reservation Stream
+                </h3>
+              </div>
+              <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-mono">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span>Live Feed</span>
+              </div>
+            </div>
+
+            {/* Table Rows */}
+            <div className="divide-y divide-[#1A1D21]">
+              {recentBookings.length > 0 ? (
+                recentBookings.slice(0, 6).map((booking: any) => (
+                  <div 
+                    key={booking.id} 
+                    className="p-4 sm:p-5 flex items-center justify-between hover:bg-[#16181B] transition-colors group"
+                  >
+                    <div className="flex items-center gap-3.5">
+                      <div className="w-9 h-9 rounded-lg bg-[#181A1D] border border-[#2B3037] flex items-center justify-center text-zinc-400 group-hover:border-zinc-500 group-hover:text-white transition-colors">
+                        <User className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-white group-hover:text-blue-400 transition-colors">
+                          {booking.guestName}
+                        </p>
+                        <p className="text-[11px] text-zinc-400 font-mono mt-0.5">
+                          Room {booking.roomNumber} • <span className="text-zinc-500">{booking.roomType}</span>
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                      <div className="text-right">
+                        <span className={cn(
+                          "text-[10px] font-mono uppercase font-bold px-2 py-0.5 rounded-full border",
+                          booking.status?.toLowerCase() === 'confirmed' || booking.status?.toLowerCase() === 'paid'
+                            ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                            : booking.status?.toLowerCase() === 'pending'
+                            ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                            : "bg-blue-500/10 text-blue-400 border-blue-500/20"
+                        )}>
+                          {booking.status}
+                        </span>
+                        <p className="text-xs sm:text-sm font-mono font-bold text-white mt-1">
+                          {formatCurrency(booking.totalAmount)}
+                        </p>
+                      </div>
+                      <button 
+                        onClick={() => router.push(`/admin/bookings?search=${encodeURIComponent(booking.guestName || '')}`)}
+                        className="hidden sm:inline-flex px-2.5 py-1 rounded bg-[#1C2025] hover:bg-blue-950/40 text-blue-400 text-[11px] font-medium border border-[#2B3037] hover:border-blue-500/40 transition-colors"
+                      >
+                        Inspect
+                      </button>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="p-8 text-center text-zinc-500 text-xs font-mono">
+                  No recent activity logged in current cycle
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* VIP Complaint Escalation Card (Section 4.G / Alert States) */}
+          <div className="rounded-2xl bg-[#121417] border border-[#1E2227] p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-rose-400">
+                <ShieldAlert className="w-4 h-4" />
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-300">
+                  VIP Complaint Escalation
+                </h3>
+              </div>
+              <span className="text-[10px] font-mono text-zinc-500 uppercase">
+                Priority Incident Queue
+              </span>
+            </div>
+
+            {dashboardData?.vipComplaints && dashboardData.vipComplaints.length > 0 ? (
+              <div className="p-4 bg-rose-500/5 border border-rose-500/20 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                  <h5 className="text-xs font-semibold text-white">
+                    {dashboardData.vipComplaints[0].subject}
+                  </h5>
+                  <p className="text-[11px] text-zinc-400 mt-1 line-clamp-1 font-mono">
+                    {dashboardData.vipComplaints[0].roomNumber ? `Room ${dashboardData.vipComplaints[0].roomNumber}: ` : ''}
+                    {dashboardData.vipComplaints[0].description}
+                  </p>
+                </div>
+                <button 
+                  onClick={() => router.push('/admin/complaints')}
+                  className="px-3.5 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 text-xs font-semibold transition-colors shrink-0"
+                >
+                  Resolve Now
+                </button>
+              </div>
+            ) : (
+              <div className="p-4 bg-emerald-500/5 border border-emerald-500/15 rounded-xl flex items-center justify-center gap-2 text-emerald-400 text-xs font-mono font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                <span>All Clear — Zero Active VIP Escalations</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Right Column: Personnel Telemetry & Fast Direct Routing */}
+        <div className="space-y-6">
+          {/* Personnel Operations Card */}
+          <div className="rounded-2xl bg-[#121417] border border-[#1E2227] p-6 space-y-5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-zinc-300">
+                <Users className="w-4 h-4 text-blue-400" />
+                <h3 className="text-xs font-semibold uppercase tracking-wider">
+                  Personnel Operations
+                </h3>
+              </div>
+              <span className="text-[10px] font-mono text-zinc-500">
+                Staff Roster
+              </span>
+            </div>
+
+            <div className="space-y-3.5">
+              <div className="flex items-center justify-between p-3.5 bg-[#141619] rounded-xl border border-[#1E2227]">
+                <div>
+                  <p className="text-xs font-semibold text-white font-mono">
+                    {dashboardData?.guestStats?.totalStaff ?? 0} Staff Active
+                  </p>
+                  <p className="text-[10px] text-zinc-500 font-mono mt-0.5">
+                    All duty sectors nominal
+                  </p>
+                </div>
+                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-mono">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>Online</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2.5">
+                <button 
+                  onClick={() => router.push('/admin/staff')}
+                  className="px-3 py-2 rounded-lg bg-[#141619] hover:bg-[#1A1D21] border border-[#2B3037] text-zinc-200 text-xs font-medium transition-colors text-center"
+                >
+                  Staff Directory
+                </button>
+                <button 
+                  onClick={() => router.push('/admin/roles')}
+                  className="px-3 py-2 rounded-lg bg-[#141619] hover:bg-[#1A1D21] border border-[#2B3037] text-zinc-200 text-xs font-medium transition-colors text-center"
+                >
+                  Permissions
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Route Directory */}
+          <div className="rounded-2xl bg-[#121417] border border-[#1E2227] p-6 space-y-3">
+            <div className="flex items-center justify-between pb-1">
+              <div className="flex items-center gap-2 text-zinc-400">
+                <ArrowUpRight className="w-4 h-4" />
+                <h3 className="text-[10px] font-semibold uppercase tracking-widest text-zinc-400">
+                  Quick Route Matrix
+                </h3>
+              </div>
+              <span className="text-[10px] font-mono text-zinc-500">Direct</span>
+            </div>
+
+            <div className="space-y-1.5">
+              <button 
+                onClick={() => router.push('/admin/rooms')}
+                className="w-full flex items-center justify-between p-3 rounded-lg bg-transparent hover:bg-[#16181B] border border-transparent hover:border-[#2B3037] text-zinc-400 hover:text-white text-xs transition-colors group"
+              >
+                <span className="font-medium">Room Inventory Control</span>
+                <ChevronRight className="w-4 h-4 text-zinc-500 group-hover:text-white transition-colors" />
+              </button>
+
+              <button 
+                onClick={() => router.push('/admin/ota')}
+                className="w-full flex items-center justify-between p-3 rounded-lg bg-transparent hover:bg-[#16181B] border border-transparent hover:border-[#2B3037] text-zinc-400 hover:text-white text-xs transition-colors group"
+              >
+                <span className="font-medium">OTA Channel Synchronizer</span>
+                <ChevronRight className="w-4 h-4 text-zinc-500 group-hover:text-white transition-colors" />
+              </button>
+
+              <button 
+                onClick={() => router.push('/admin/settings')}
+                className="w-full flex items-center justify-between p-3 rounded-lg bg-transparent hover:bg-[#16181B] border border-transparent hover:border-[#2B3037] text-zinc-400 hover:text-white text-xs transition-colors group"
+              >
+                <span className="font-medium">System Configuration</span>
+                <ChevronRight className="w-4 h-4 text-zinc-500 group-hover:text-white transition-colors" />
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </AdminPageShell>

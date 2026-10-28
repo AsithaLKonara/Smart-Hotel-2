@@ -14,26 +14,42 @@ interface ChartCardProps {
   showLegend?: boolean
   className?: string
   loading?: boolean
+  headerAction?: ReactNode
 }
 
-export function ChartCard({ title, subtitle, children, data, type, color, showLegend, className, loading = false }: ChartCardProps) {
+export function ChartCard({ 
+  title, 
+  subtitle, 
+  children, 
+  className, 
+  loading = false,
+  headerAction 
+}: ChartCardProps) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, ease: 'easeOut' }}
+      transition={{ duration: 0.25, ease: 'easeOut' }}
       className={cn(
-        "bg-white rounded-2xl shadow-sm border border-gray-100 p-6",
+        "rounded-2xl bg-[#121417] border border-[#1E2227] p-5 sm:p-6 hover:border-zinc-700 transition-colors group",
         className
       )}
     >
-      <div className="mb-4">
-        <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-        {subtitle && <p className="text-sm text-gray-600 mt-1">{subtitle}</p>}
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h3 className="text-sm font-semibold text-white tracking-wide">{title}</h3>
+          {subtitle && (
+            <p className="text-xs text-zinc-400 font-mono mt-0.5">{subtitle}</p>
+          )}
+        </div>
+        {headerAction && (
+          <div>{headerAction}</div>
+        )}
       </div>
+
       {loading ? (
         <div className="h-64 flex items-center justify-center">
-          <div className="w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
         </div>
       ) : (
         <div className="h-64 flex items-center justify-center">

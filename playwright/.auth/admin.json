@@ -1,18 +1,8 @@
 {
   "cookies": [
     {
-      "name": "_ga",
-      "value": "GA1.1.426596014.1784619804",
-      "domain": "localhost",
-      "path": "/",
-      "expires": 1819179815.482658,
-      "httpOnly": false,
-      "secure": false,
-      "sameSite": "Lax"
-    },
-    {
       "name": "next-auth.csrf-token",
-      "value": "9da0dfdbdf231e72ee1ab73bf2441b06563b8650339642edb743fa89a5a26d4a%7C443fa2b7be324ae87007ac179468e0484aea581d4845f1b2dbff169779c68134",
+      "value": "e799dee624b5fd53dc43edc41e62c68d7e10fa587b5c09e62310d9e6d50cbe5a%7Cdc644e1dd90110f196ef22e59cc93d2524a143a59d942e683073896d01c48891",
       "domain": "localhost",
       "path": "/",
       "expires": -1,
@@ -22,7 +12,7 @@
     },
     {
       "name": "next-auth.callback-url",
-      "value": "https%3A%2F%2Fsmart-hotel-2.vercel.app",
+      "value": "http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fsignin",
       "domain": "localhost",
       "path": "/",
       "expires": -1,
@@ -32,36 +22,26 @@
     },
     {
       "name": "next-auth.session-token",
-      "value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..c1NnxydrEJE_cwKk.zAZQKLWmwX_6hUcSyNVkEuunYHR-86HInVm0VhJ7Zl4CTl38KeK8MnEE-j4SlkRk0pQpEy4fXZCzzE7YZb5rwdZ4DL96AIY64pPY2hTuuaZSyxSl2gl7zQTE7NmZ7W2C-fiCOTLMFVp1b6v1uxbxYuTbgeounHutAC1zx-Bda0hk0XqRPvbWFMsC1_zIpW9iUysZDLtDoTTgbcEiZA9bOCPLiD8I74lCP9S2ZKDwaN8yNcmbIjzCL8EbcGKwesdfBNmCyxp1xKi6lKdvgTtFDH0hESF2RJ2erhnS1TAo_82ERvNozprmikaJfM78Y99pFaMSONFvyUmZcw-f_f-yxwpsZ8t9CPTNN6gaou9WCVo-j4VPIUF3YNq7OV8IVKFb8gba-sRhLYaI5CcZkPcNNjeqtoG1aTty0UPu69NA_ise_tMNL4wWL0ufLTUzKr7E6k6BoVrtVZ65LXlYyR9JvaZ90oTpGNDPN5-HAw.MAvO88YADrQKMYQSKiTPDg",
+      "value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..4ulAgA_p4U76pszu.fMIBGwdeyr0iWOAvHx8KRRXDhwxqX7urw1rEgKsHqRAuGgIYjPrQT7fAbtMCi4WYhdc5sFtdymYg64KR4G2XnP0sDPPSOGDW5yA9QZ23uirWH_aat9Q8-FAyK29ncqpbyCr48oXsLDRvMM_YWIiX5Weo4MT3VDQ_gDWpAna7NSU8UhO2aI1HZeylFuTSmIQDpYXqFDAamK60lPqpXA4Wcs1ZrRXBib0FNU3saGLQarApLJaBoNO_5Zy4VWQoiDOxGPADIjmcYkBOiG1R85JPdwSxl1Edl6DSDCZqNR9ZSm7quMBHVG92JHxR5plgHseegiFNyA2OSly6MlD6_fnHp4ZPITgqRbmc7O_DGF3yfIRHzfJhg-gezYZP29ooKiA6eXGtV6B2cskdBkTrc4iFGqjJIotrguqDK2rGMF05FQRxd0kvwHXOIaXCCfxHyaRsBDZpBXJHOLUXnNAIP-ip_h-lr6gffpVw3wHl.FeZYyVsLcSednz62n4h8Rg",
       "domain": "localhost",
       "path": "/",
-      "expires": 1784648612.20533,
+      "expires": 1793829891.074194,
       "httpOnly": true,
-      "secure": false,
-      "sameSite": "Lax"
-    },
-    {
-      "name": "_ga_XXXXXXXXXX",
-      "value": "GS2.1.s1784619804$o1$g1$t1784619815$j49$l0$h0",
-      "domain": "localhost",
-      "path": "/",
-      "expires": 1819179815.481608,
-      "httpOnly": false,
       "secure": false,
       "sameSite": "Lax"
     }
   ],
   "origins": [
     {
-      "origin": "http://localhost:3001",
+      "origin": "http://localhost:3000",
       "localStorage": [
         {
           "name": "nextauth.message",
-          "value": "{\"event\":\"session\",\"data\":{\"trigger\":\"getSession\"},\"timestamp\":1784619815}"
+          "value": "{\"event\":\"session\",\"data\":{\"trigger\":\"getSession\"},\"timestamp\":1793225091}"
         },
         {
           "name": "smarthotel_chat_session",
-          "value": "0908ce33-eec3-49fd-818f-38b247343ac1"
+          "value": "1f6dfd0b-62b7-4efa-adbf-45505de33b27"
         }
       ]
     }

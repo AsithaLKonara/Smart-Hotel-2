@@ -20,26 +20,29 @@ export function AdminPageShell({
   actions 
 }: AdminPageShellProps) {
   return (
-    <div className="p-6 text-white pb-40">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between border-b border-white/5 pb-6 mb-8">
+    <div className="text-zinc-100 pb-16">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between border-b border-[#1C2025] pb-5 mb-6 gap-4">
         <div>
-          <h1 className="text-3xl font-serif font-bold text-white">{title}</h1>
-          <p className="text-slate-400 text-sm mt-1">{subtitle}</p>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">{title}</h1>
+          <p className="text-xs text-zinc-400 mt-1">{subtitle}</p>
         </div>
-        <div className="flex items-center gap-3 mt-4 md:mt-0">
+        <div className="flex items-center gap-2.5 mt-2 md:mt-0">
           {actions}
           {onRefresh && (
-            <Button onClick={onRefresh} variant="outline" className="bg-white/5 border-white/10 h-10 px-4 text-xs font-bold uppercase tracking-widest">
-              <RefreshCw className="w-4 h-4 mr-2" /> Sync Data
-            </Button>
+            <button 
+              onClick={onRefresh} 
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#141619] hover:bg-[#1A1D21] border border-[#2B3037] text-zinc-300 text-xs font-medium transition-colors"
+            >
+              <RefreshCw className="w-3.5 h-3.5 mr-1" /> Sync Data
+            </button>
           )}
         </div>
       </div>
 
       <motion.div 
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.3 }}
       >
         {children}
       </motion.div>

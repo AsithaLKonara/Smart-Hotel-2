@@ -24,19 +24,37 @@ interface CommandItem {
   category: 'NAVIGATION' | 'QUICK_ACTIONS' | 'SYSTEM'
 }
 
-export function CommandPalette() {
+interface CommandPaletteProps {
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+}
+
+export function CommandPalette({ open: controlledOpen, onOpenChange }: CommandPaletteProps = {}) {
   const router = useRouter()
-  const [isOpen, setIsOpen] = useState(false)
+  const [internalOpen, setInternalOpen] = useState(false)
+  const isControlled = controlledOpen !== undefined
+  const isOpen = isControlled ? controlledOpen : internalOpen
+
+  const setIsOpen = (next: boolean | ((prev: boolean) => boolean)) => {
+    const val = typeof next === 'function' ? next(isOpen) : next
+    if (onOpenChange) {
+      onOpenChange(val)
+    }
+    if (!isControlled) {
+      setInternalOpen(val)
+    }
+  }
+
   const [query, setQuery] = useState("")
   const [selectedIndex, setSelectedIndex] = useState(0)
   
   const paletteRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  // Listen for Cmd+K / Ctrl+K toggle
+  // Listen for Cmd+K / Ctrl+K toggle and open-command-palette custom event
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) {
         e.preventDefault()
         setIsOpen(prev => !prev)
       }
@@ -47,9 +65,15 @@ export function CommandPalette() {
       }
     }
 
+    const handleCustomOpen = () => setIsOpen(true)
+
     window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [])
+    window.addEventListener('open-command-palette', handleCustomOpen)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+      window.removeEventListener('open-command-palette', handleCustomOpen)
+    }
+  }, [isOpen])
 
   // Auto focus input when opened
   useEffect(() => {
@@ -69,9 +93,14 @@ export function CommandPalette() {
     }
 
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
+      const timer = setTimeout(() => {
+        document.addEventListener('mousedown', handleClickOutside)
+      }, 50)
+      return () => {
+        clearTimeout(timer)
+        document.removeEventListener('mousedown', handleClickOutside)
+      }
     }
-    return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [isOpen])
 
   const handleCommandSelected = (item: CommandItem) => {
@@ -230,19 +259,16 @@ export function CommandPalette() {
   const isSlashCommand = query.startsWith('/')
 
   return (
-    <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-start justify-center pt-[15vh]">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-start justify-center pt-[15vh] p-4">
       
       <div 
         ref={paletteRef}
-        className="w-full max-w-xl bg-[#0b061c] border border-purple-900/30 shadow-2xl relative flex flex-col font-sans overflow-hidden max-h-[50vh]"
+        className="w-full max-w-xl bg-[#121417] border border-[#2B3037] shadow-2xl rounded-2xl relative flex flex-col font-sans overflow-hidden max-h-[55vh]"
       >
         
-        {/* Glow header overlay */}
-        <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-purple-500 via-indigo-500 to-rose-500 opacity-60" />
-
         {/* Search input bar */}
-        <form onSubmit={handleCommandLineSubmit} className="flex items-center gap-3 p-4 border-b border-purple-950/40 bg-slate-950/40 shrink-0">
-          <Search className="w-5 h-5 text-purple-400 shrink-0" />
+        <form onSubmit={handleCommandLineSubmit} className="flex items-center gap-3 p-4 border-b border-[#1E2227] bg-[#141619] shrink-0">
+          <Search className="w-4 h-4 text-blue-400 shrink-0" />
           <input
             ref={inputRef}
             type="text"
@@ -250,10 +276,10 @@ export function CommandPalette() {
             onChange={e => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Type search terms or command (/clean, /incident, /chat)..."
-            className="flex-1 bg-transparent border-0 text-slate-200 text-sm focus:outline-none focus:ring-0"
+            className="flex-1 bg-transparent border-0 text-white placeholder-zinc-500 text-xs font-mono focus:outline-none focus:ring-0"
           />
-          <div className="shrink-0 text-[10px] text-slate-500 bg-slate-950 border border-slate-800 px-1.5 py-0.5 font-mono">
-            ESC to close
+          <div className="shrink-0 text-[10px] text-zinc-400 bg-[#1C2025] border border-[#2B3037] px-1.5 py-0.5 rounded font-mono">
+            ESC
           </div>
         </form>
 
@@ -261,26 +287,28 @@ export function CommandPalette() {
         <div className="flex-1 overflow-y-auto p-2 space-y-1 select-none min-h-0">
           {isSlashCommand ? (
             <div className="p-4 space-y-3">
-              <span className="text-[10px] uppercase font-bold tracking-widest text-purple-400 flex items-center gap-1.5 font-mono"><Terminal className="w-4 h-4 text-purple-400" /> Administrative Slash Console</span>
-              <div className="space-y-2 text-xs font-mono text-slate-400 leading-relaxed">
-                <div className="p-2 border border-purple-950/30 bg-slate-950/40">
+              <span className="text-[10px] uppercase font-bold tracking-widest text-blue-400 flex items-center gap-1.5 font-mono">
+                <Terminal className="w-4 h-4 text-blue-400" /> Administrative Slash Console
+              </span>
+              <div className="space-y-2 text-xs font-mono text-zinc-400 leading-relaxed">
+                <div className="p-2.5 rounded-lg border border-[#1E2227] bg-[#141619]">
                   <strong className="text-white">/clean [room_number]</strong>
-                  <p className="text-[10px] mt-0.5 text-slate-500">e.g. <span className="text-purple-300">/clean 102</span> - Dispatch urgent cleaning team</p>
+                  <p className="text-[10px] mt-0.5 text-zinc-500">e.g. <span className="text-emerald-400">/clean 102</span> - Dispatch urgent cleaning team</p>
                 </div>
-                <div className="p-2 border border-purple-950/30 bg-slate-950/40">
+                <div className="p-2.5 rounded-lg border border-[#1E2227] bg-[#141619]">
                   <strong className="text-white">/incident [title]</strong>
-                  <p className="text-[10px] mt-0.5 text-slate-500">e.g. <span className="text-purple-300">/incident Lift Lockout</span> - Open critical SRE incident</p>
+                  <p className="text-[10px] mt-0.5 text-zinc-500">e.g. <span className="text-rose-400">/incident Lift Lockout</span> - Open critical SRE incident</p>
                 </div>
-                <div className="p-2 border border-purple-950/30 bg-slate-950/40">
+                <div className="p-2.5 rounded-lg border border-[#1E2227] bg-[#141619]">
                   <strong className="text-white">/chat [message]</strong>
-                  <p className="text-[10px] mt-0.5 text-slate-500">e.g. <span className="text-purple-300">/chat Allergies 405</span> - Push message bulletin</p>
+                  <p className="text-[10px] mt-0.5 text-zinc-500">e.g. <span className="text-blue-400">/chat Allergies 405</span> - Push message bulletin</p>
                 </div>
               </div>
-              <p className="text-[10px] text-slate-600 italic">Press <kbd className="font-bold text-slate-500 bg-slate-950 border border-slate-800 px-1 py-0.5">Enter</kbd> to execute command console arguments.</p>
+              <p className="text-[10px] text-zinc-500 italic font-mono">Press <kbd className="font-bold text-zinc-300 bg-[#181A1D] border border-[#2B3037] px-1.5 py-0.5 rounded text-[9px]">Enter</kbd> to execute arguments.</p>
             </div>
           ) : filteredCommands.length === 0 ? (
-            <div className="text-slate-600 py-10 text-center text-xs flex flex-col items-center gap-1">
-              <HelpCircle className="w-7 h-7 text-slate-800 animate-bounce" /> No matching operational commands found.
+            <div className="text-zinc-500 py-10 text-center text-xs flex flex-col items-center gap-1 font-mono">
+              <HelpCircle className="w-6 h-6 text-zinc-600 animate-bounce" /> No matching operational commands found.
             </div>
           ) : (
             filteredCommands.map((cmd, idx) => {
@@ -289,14 +317,18 @@ export function CommandPalette() {
                 <button
                   key={cmd.id}
                   onClick={() => handleCommandSelected(cmd)}
-                  className={`w-full p-2.5 flex items-center justify-between gap-4 transition-all text-left border ${isSelected ? 'bg-purple-950/30 border-purple-500/30 text-white' : 'bg-transparent border-transparent text-slate-400'}`}
+                  className={`w-full p-2.5 rounded-lg flex items-center justify-between gap-4 transition-all text-left border ${
+                    isSelected 
+                      ? 'bg-[#181A1D] border-[#2B3037] text-white shadow-sm' 
+                      : 'bg-transparent border-transparent text-zinc-400 hover:text-zinc-200 hover:bg-[#16181B]'
+                  }`}
                 >
                   <div className="flex items-center gap-3 truncate">
                     {cmd.icon}
                     <span className="text-xs font-semibold">{cmd.title}</span>
                   </div>
                   {cmd.shortcut && (
-                    <div className="text-[9px] font-mono text-slate-500 uppercase font-extrabold bg-slate-950 border border-slate-800 px-1.5 py-0.5">
+                    <div className="text-[9px] font-mono text-zinc-400 uppercase font-semibold bg-[#1C2025] border border-[#2B3037] px-1.5 py-0.5 rounded">
                       {cmd.shortcut}
                     </div>
                   )}
@@ -307,13 +339,13 @@ export function CommandPalette() {
         </div>
 
         {/* Footnotes navigation hints */}
-        <div className="p-3 border-t border-purple-950/40 bg-slate-950/60 flex justify-between items-center text-[10px] text-slate-500 shrink-0">
+        <div className="p-3 border-t border-[#1C2025] bg-[#141619] flex justify-between items-center text-[10px] text-zinc-500 font-mono shrink-0">
           <div className="flex items-center gap-3">
-            <span>↑↓ arrow keys to focus</span>
+            <span>↑↓ keys to navigate</span>
             <span>↵ Enter to execute</span>
           </div>
-          <div className="flex items-center gap-1 text-purple-400 font-semibold uppercase text-[9px] tracking-wider">
-            <Sparkles className="w-3.5 h-3.5 animate-pulse" /> Command Engine v2
+          <div className="flex items-center gap-1 text-violet-400 font-semibold uppercase text-[9px] tracking-wider">
+            <Sparkles className="w-3.5 h-3.5" /> Stealth Console v2
           </div>
         </div>
 

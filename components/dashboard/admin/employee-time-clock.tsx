@@ -79,48 +79,57 @@ export function EmployeeTimeClock() {
   const active = data.activeAttendance
 
   return (
-    <Card className="bg-[#0c0c0c] border border-white/10 p-6 rounded-3xl shadow-2xl mb-8 relative overflow-hidden">
-      <div className="absolute top-0 left-0 w-1 h-full bg-primary" />
-      <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+    <div className="bg-[#121417] border border-[#1E2227] p-5 sm:p-6 rounded-2xl mb-8 relative overflow-hidden group hover:border-zinc-700 transition-colors">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div className="flex items-center gap-4">
-          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-white ${active ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white/5'}`}>
-            <Clock className="w-7 h-7" />
+          <div className={`w-12 h-12 rounded-xl flex items-center justify-center border ${
+            active 
+              ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' 
+              : 'bg-[#181A1D] border-[#2B3037] text-zinc-400'
+          }`}>
+            <Clock className="w-6 h-6" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-white mb-1">Employee Time Clock</h2>
-            <p className="text-sm text-white/50">
+            <div className="flex items-center gap-2">
+              <h2 className="text-base font-bold text-white tracking-tight">Employee Telemetry Clock</h2>
+              <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-[#1C2025] text-zinc-400 border border-[#2B3037] uppercase">
+                v2.4
+              </span>
+            </div>
+            <p className="text-xs text-zinc-400 mt-1 font-mono">
               {active 
-                ? `You have been clocked in since ${new Date(active.clockIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}.`
-                : "You are currently clocked out. Ready for your shift?"}
+                ? `Active shift recorded since ${new Date(active.clockIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}.`
+                : "Operational shift currently logged off. Ready to initialize session?"}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 w-full md:w-auto justify-end">
           {active ? (
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 text-emerald-400 bg-emerald-500/10 px-4 py-2 rounded-lg font-bold text-sm">
-                <CheckCircle2 className="w-4 h-4" /> Shift Active
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1.5 text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-lg font-mono text-xs font-semibold">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span>Shift Active</span>
               </div>
-              <Button 
+              <button 
                 onClick={() => handleClockOut(active.id)}
                 disabled={actionLoading}
-                className="bg-rose-600 hover:bg-rose-500 text-white shadow-[0_0_20px_rgba(225,29,72,0.3)] border border-rose-500/50"
+                className="flex items-center gap-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-semibold px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
               >
-                <Square className="w-4 h-4 mr-2 fill-current" /> {actionLoading ? 'Processing...' : 'Clock Out Now'}
-              </Button>
+                <Square className="w-3.5 h-3.5 fill-current" /> {actionLoading ? 'Logging off...' : 'Clock Out Now'}
+              </button>
             </div>
           ) : (
-            <Button 
+            <button 
               onClick={handleClockIn}
               disabled={actionLoading}
-              className="bg-primary hover:bg-primary/90 text-white shadow-[0_0_20px_rgba(234,179,8,0.3)] border border-primary/50 text-lg px-8 py-6 rounded-xl"
+              className="flex items-center gap-2 bg-white hover:bg-zinc-200 text-black font-semibold text-xs px-5 py-2.5 rounded-lg transition-all shadow-sm disabled:opacity-50"
             >
-              <Play className="w-5 h-5 mr-3 fill-current" /> {actionLoading ? 'Starting...' : 'Clock In for Shift'}
-            </Button>
+              <Play className="w-3.5 h-3.5 fill-current" /> {actionLoading ? 'Initializing...' : 'Clock In for Shift'}
+            </button>
           )}
         </div>
       </div>
-    </Card>
+    </div>
   )
 }
