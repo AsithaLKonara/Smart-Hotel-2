@@ -10,17 +10,15 @@ import {
   CheckCircle2, AlertCircle, Sparkles, Building2, ExternalLink
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Modal } from '@/components/ui/modal'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
-import { Breadcrumbs } from '@/components/ui/breadcrumbs'
 import toast from 'react-hot-toast'
 import { PremiumSpinner } from '@/components/ui/premium-spinner'
 import { formatPrice } from '@/lib/utils'
 import { useProperty } from '@/contexts/property-context'
 import { useApi } from '@/hooks/use-api'
 import { useLuxuryConfirm } from '@/components/ui/luxury-confirm-dialog'
+import { AdminPageShell } from '@/components/dashboard/admin/admin-page-shell'
+import { cn } from '@/lib/utils'
 
 interface RoomType {
   id: string;
@@ -130,8 +128,8 @@ export default function AdminRoomsPage() {
     e.preventDefault()
     
     if (!formData.roomTypeId) {
-      toast.error("Please select a Room Type");
-      return;
+      toast.error("Please select a Room Type")
+      return
     }
 
     setUploadingImages(true)
@@ -377,168 +375,165 @@ export default function AdminRoomsPage() {
     return matchesSearch && matchesStatus && matchesType
   })
 
-  const getStatusColor = (status: string) => {
+  // Status badge classes matching Section 6.A
+  const getStatusBadge = (status: string) => {
     switch (status) {
       case 'AVAILABLE':
-        return 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+        return 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20'
       case 'OCCUPIED':
-        return 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
+        return 'text-blue-400 bg-blue-500/10 border-blue-500/20'
       case 'DIRTY':
       case 'CLEANING':
-        return 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+        return 'text-amber-400 bg-amber-500/10 border-amber-500/20'
       case 'MAINTENANCE':
-        return 'bg-purple-500/10 text-purple-400 border border-purple-500/20'
+        return 'text-purple-400 bg-purple-500/10 border-purple-500/20'
       case 'OUT_OF_ORDER':
-        return 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+        return 'text-rose-400 bg-rose-500/10 border-rose-500/20'
       default:
-        return 'bg-white/5 text-white/60 border border-white/10'
+        return 'text-zinc-400 bg-zinc-500/10 border-zinc-500/20'
     }
   }
 
   if (status === 'loading' || (loadingRooms && loadingTypes)) {
     return (
-      <div className="flex items-center justify-center h-screen bg-transparent">
-        <PremiumSpinner size="lg" text="Loading Room Management Center..." />
+      <div className="flex items-center justify-center py-24">
+        <PremiumSpinner size="lg" text="Loading Room Inventory..." />
       </div>
     )
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6 text-white">
-      <Breadcrumbs
-        items={[
-          { label: 'Admin', href: '/admin' },
-          { label: 'Rooms Directory' },
-        ]}
-        className="mb-2"
-      />
+    <AdminPageShell
+      title="Room Inventory & Directory"
+      subtitle="Manage physical rooms, real-time occupancy status, suite tiers, and photo archives."
+      onRefresh={() => { fetchRooms(); fetchRoomTypes(); }}
+      actions={
+        <div className="flex items-center gap-2">
+          {/* Tab Switcher: [ Rooms | Room Types ] */}
+          <div className="flex items-center bg-[#121417] border border-[#1E2227] p-1 rounded-xl gap-1">
+            <button
+              onClick={() => setActiveTab('rooms')}
+              className={cn(
+                "flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all",
+                activeTab === 'rooms'
+                  ? "bg-[#181A1D] text-white border border-[#2B3037] shadow-sm"
+                  : "text-zinc-400 hover:text-white hover:bg-[#16181B]"
+              )}
+            >
+              <Bed className="w-3.5 h-3.5" />
+              <span>Rooms ({rooms.length})</span>
+            </button>
 
-      {/* Header & Tabs */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-6">
-        <div>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-luxury">
-              <Bed className="w-5 h-5" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-serif font-bold text-white tracking-wide">
-                Room Directory & Suites
-              </h1>
-              <p className="text-white/50 text-xs mt-0.5">
-                Manage physical rooms, live occupancy, suite types, and photo archives
-              </p>
-            </div>
+            <button
+              onClick={() => setActiveTab('types')}
+              className={cn(
+                "flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all",
+                activeTab === 'types'
+                  ? "bg-[#181A1D] text-white border border-[#2B3037] shadow-sm"
+                  : "text-zinc-400 hover:text-white hover:bg-[#16181B]"
+              )}
+            >
+              <Layers className="w-3.5 h-3.5" />
+              <span>Suite Types ({roomTypes.length})</span>
+            </button>
           </div>
         </div>
-
-        {/* Tab Switcher: [ Rooms | Room Types ] */}
-        <div className="flex items-center bg-[#111116] border border-white/10 p-1.5 rounded-2xl gap-1 shadow-lg">
-          <button
-            onClick={() => setActiveTab('rooms')}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
-              activeTab === 'rooms'
-                ? 'bg-primary text-black font-black shadow-luxury'
-                : 'text-white/50 hover:text-white hover:bg-white/5'
-            }`}
-          >
-            <Bed className="w-4 h-4" />
-            <span>Rooms ({rooms.length})</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('types')}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
-              activeTab === 'types'
-                ? 'bg-primary text-black font-black shadow-luxury'
-                : 'text-white/50 hover:text-white hover:bg-white/5'
-            }`}
-          >
-            <Layers className="w-4 h-4" />
-            <span>Room Types ({roomTypes.length})</span>
-          </button>
-        </div>
-      </div>
-
+      }
+    >
       {/* ======================================================== */}
       {/* TAB 1: PHYSICAL ROOMS DIRECTORY */}
       {/* ======================================================== */}
       {activeTab === 'rooms' && (
         <div className="space-y-6">
-          {/* Stats Bar */}
+          {/* Stats Bar (Section 4.D) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card className="bg-[#0f0f13] border-white/10">
-              <CardContent className="p-5 flex items-center justify-between">
-                <div>
-                  <p className="text-xs uppercase tracking-wider font-bold text-white/40">Total Rooms</p>
-                  <p className="text-3xl font-serif font-bold text-white mt-1">{rooms.length}</p>
+            <div className="p-5 rounded-2xl bg-[#121417] border border-[#1E2227] flex flex-col justify-between hover:border-zinc-700 transition-colors">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Total Rooms</span>
+                  <div className="w-7 h-7 rounded-lg bg-[#181A1D] border border-[#2B3037] flex items-center justify-center text-zinc-400">
+                    <Bed className="w-3.5 h-3.5" />
+                  </div>
                 </div>
-                <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-primary">
-                  <Bed className="w-5 h-5" />
+                <div className="text-2xl sm:text-3xl font-black text-white font-mono tracking-tight">
+                  {rooms.length}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+              <div className="pt-2 mt-3 border-t border-[#1C2025] text-[11px] text-zinc-500 font-mono">
+                Physical Inventory
+              </div>
+            </div>
 
-            <Card className="bg-[#0f0f13] border-white/10">
-              <CardContent className="p-5 flex items-center justify-between">
-                <div>
-                  <p className="text-xs uppercase tracking-wider font-bold text-white/40">Available Now</p>
-                  <p className="text-3xl font-serif font-bold text-emerald-400 mt-1">
-                    {rooms.filter(r => r.status === 'AVAILABLE').length}
-                  </p>
+            <div className="p-5 rounded-2xl bg-[#121417] border border-[#1E2227] flex flex-col justify-between hover:border-zinc-700 transition-colors">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Available Now</span>
+                  <div className="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                  </div>
                 </div>
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400">
-                  <CheckCircle2 className="w-5 h-5" />
+                <div className="text-2xl sm:text-3xl font-black text-emerald-400 font-mono tracking-tight">
+                  {rooms.filter(r => r.status === 'AVAILABLE').length}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+              <div className="pt-2 mt-3 border-t border-[#1C2025] text-[11px] text-emerald-500/70 font-mono">
+                Ready for check-in
+              </div>
+            </div>
 
-            <Card className="bg-[#0f0f13] border-white/10">
-              <CardContent className="p-5 flex items-center justify-between">
-                <div>
-                  <p className="text-xs uppercase tracking-wider font-bold text-white/40">Occupied</p>
-                  <p className="text-3xl font-serif font-bold text-blue-400 mt-1">
-                    {rooms.filter(r => r.status === 'OCCUPIED').length}
-                  </p>
+            <div className="p-5 rounded-2xl bg-[#121417] border border-[#1E2227] flex flex-col justify-between hover:border-zinc-700 transition-colors">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Occupied</span>
+                  <div className="w-7 h-7 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+                    <Users className="w-3.5 h-3.5" />
+                  </div>
                 </div>
-                <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400">
-                  <Users className="w-5 h-5" />
+                <div className="text-2xl sm:text-3xl font-black text-blue-400 font-mono tracking-tight">
+                  {rooms.filter(r => r.status === 'OCCUPIED').length}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+              <div className="pt-2 mt-3 border-t border-[#1C2025] text-[11px] text-blue-500/70 font-mono">
+                Active in-house guests
+              </div>
+            </div>
 
-            <Card className="bg-[#0f0f13] border-white/10">
-              <CardContent className="p-5 flex items-center justify-between">
-                <div>
-                  <p className="text-xs uppercase tracking-wider font-bold text-white/40">Maintenance / Dirty</p>
-                  <p className="text-3xl font-serif font-bold text-amber-400 mt-1">
-                    {rooms.filter(r => ['MAINTENANCE', 'DIRTY', 'OUT_OF_ORDER'].includes(r.status)).length}
-                  </p>
+            <div className="p-5 rounded-2xl bg-[#121417] border border-[#1E2227] flex flex-col justify-between hover:border-zinc-700 transition-colors">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Maintenance / Dirty</span>
+                  <div className="w-7 h-7 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                  </div>
                 </div>
-                <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-400">
-                  <AlertCircle className="w-5 h-5" />
+                <div className="text-2xl sm:text-3xl font-black text-amber-400 font-mono tracking-tight">
+                  {rooms.filter(r => ['MAINTENANCE', 'DIRTY', 'OUT_OF_ORDER'].includes(r.status)).length}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+              <div className="pt-2 mt-3 border-t border-[#1C2025] text-[11px] text-amber-500/70 font-mono">
+                Service attention required
+              </div>
+            </div>
           </div>
 
           {/* Filters & Actions */}
-          <div className="bg-[#0f0f13] border border-white/10 p-4 rounded-2xl flex flex-col md:flex-row gap-4 items-center justify-between">
-            <div className="flex gap-3 w-full md:w-auto flex-1">
+          <div className="bg-[#121417] border border-[#1E2227] p-3.5 rounded-2xl flex flex-col md:flex-row gap-3 items-center justify-between">
+            <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto flex-1">
               <div className="relative w-full md:w-72">
-                <Search className="w-4 h-4 text-white/40 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   placeholder="Search room number or suite..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full bg-black/40 border border-white/10 text-xs text-white pl-10 pr-4 py-2.5 rounded-xl placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="w-full bg-[#181A1D] border border-[#2B3037] text-xs font-mono text-white pl-9 pr-3 py-2 rounded-xl placeholder:text-zinc-500 focus:outline-none focus:border-zinc-400"
                 />
               </div>
 
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="bg-black/40 border border-white/10 text-xs text-white px-3.5 py-2.5 rounded-xl focus:outline-none focus:ring-1 focus:ring-primary"
+                className="bg-[#181A1D] border border-[#2B3037] text-xs font-mono text-white px-3 py-2 rounded-xl focus:outline-none focus:border-zinc-400"
               >
                 <option value="all">All Statuses</option>
                 <option value="AVAILABLE">Available</option>
@@ -551,7 +546,7 @@ export default function AdminRoomsPage() {
               <select
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value)}
-                className="bg-black/40 border border-white/10 text-xs text-white px-3.5 py-2.5 rounded-xl focus:outline-none focus:ring-1 focus:ring-primary"
+                className="bg-[#181A1D] border border-[#2B3037] text-xs font-mono text-white px-3 py-2 rounded-xl focus:outline-none focus:border-zinc-400"
               >
                 <option value="all">All Room Types</option>
                 {roomTypes.map(rt => (
@@ -560,22 +555,22 @@ export default function AdminRoomsPage() {
               </select>
             </div>
 
-            <Button
+            <button
               onClick={() => {
                 setEditingRoom(null)
                 resetForm()
                 fetchRoomTypes()
                 setShowModal(true)
               }}
-              className="bg-gold-gradient hover:opacity-90 text-white font-bold text-xs uppercase tracking-wider px-6 h-11 rounded-xl shadow-luxury border-none w-full md:w-auto"
+              className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs tracking-wider uppercase px-4 h-9 rounded-xl transition-all shadow-sm flex items-center gap-1.5 w-full md:w-auto justify-center"
             >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Room
-            </Button>
+              <Plus className="w-3.5 h-3.5" />
+              <span>Add Room</span>
+            </button>
           </div>
 
           {/* Rooms Grid with Photography */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {filteredRooms.map((room) => {
               const primaryImage = 
                 room.roomImages?.[0]?.imageUrl || 
@@ -583,54 +578,60 @@ export default function AdminRoomsPage() {
                 'https://images.unsplash.com/photo-1590490359683-658d3d23f972?auto=format&fit=crop&q=80&w=800'
 
               return (
-                <Card 
+                <div 
                   key={room.id} 
-                  className="bg-[#0f0f13] border-white/10 overflow-hidden flex flex-col justify-between hover:border-primary/40 transition-all duration-300 group shadow-lg"
+                  className="rounded-2xl bg-[#121417] border border-[#1E2227] hover:border-zinc-700 transition-all duration-200 group overflow-hidden flex flex-col justify-between"
                 >
                   <div>
                     {/* Room Thumbnail Photography */}
-                    <div className="relative aspect-[16/10] w-full bg-black/40 overflow-hidden">
+                    <div className="relative aspect-[16/10] w-full bg-[#090A0C] overflow-hidden">
                       <Image
                         src={primaryImage}
                         alt={`Room ${room.number}`}
                         fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-700"
+                        unoptimized
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#121417] via-transparent to-transparent" />
 
-                      {/* Room Number & Status Badge */}
-                      <div className="absolute top-3 left-3 bg-black/80 backdrop-blur-md px-3 py-1 rounded-xl border border-white/20">
-                        <span className="text-white font-serif font-bold text-sm">Room {room.number}</span>
+                      {/* Room Number Pill */}
+                      <div className="absolute top-2.5 left-2.5 bg-[#090A0C]/90 backdrop-blur-md px-2.5 py-1 rounded-lg border border-[#22262B]">
+                        <span className="text-white font-mono font-bold text-xs">Room {room.number}</span>
                       </div>
 
-                      <div className="absolute top-3 right-3">
-                        <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider backdrop-blur-md ${getStatusColor(room.status)}`}>
+                      {/* Status Badge */}
+                      <div className="absolute top-2.5 right-2.5">
+                        <span className={cn(
+                          "font-mono text-[10px] font-semibold px-2 py-0.5 rounded-full border tracking-wide uppercase",
+                          getStatusBadge(room.status)
+                        )}>
                           {room.status}
                         </span>
                       </div>
 
-                      <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
-                        <div className="bg-black/80 backdrop-blur-md px-3 py-1 rounded-xl border border-white/10">
-                          <span className="text-emerald-400 font-serif font-bold text-sm">
+                      {/* Price Tag & Capacity */}
+                      <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-end justify-between">
+                        <div className="bg-[#090A0C]/90 backdrop-blur-md px-2.5 py-1 rounded-lg border border-[#22262B]">
+                          <span className="text-emerald-400 font-mono font-bold text-xs">
                             {formatPrice(room.roomType?.baseRate || 0)}
                           </span>
-                          <span className="text-white/40 text-[10px] ml-1">/night</span>
+                          <span className="text-zinc-500 text-[10px] ml-1 font-mono">/night</span>
                         </div>
 
-                        <div className="flex items-center gap-1.5 bg-black/80 backdrop-blur-md px-2.5 py-1 rounded-xl border border-white/10 text-xs text-white/70">
-                          <Users className="w-3.5 h-3.5 text-primary" />
+                        <div className="flex items-center gap-1 bg-[#090A0C]/90 backdrop-blur-md px-2 py-1 rounded-lg border border-[#22262B] text-[11px] text-zinc-300 font-mono">
+                          <Users className="w-3 h-3 text-zinc-400" />
                           <span>{room.roomType?.capacity || 2}</span>
                         </div>
                       </div>
                     </div>
 
                     {/* Room Specs */}
-                    <div className="p-4 space-y-2">
-                      <h3 className="text-lg font-serif font-bold text-white group-hover:text-primary transition-colors truncate">
-                        {room.roomType?.name || 'Luxury Suite'}
+                    <div className="p-4 space-y-1.5">
+                      <h3 className="text-sm font-semibold text-white group-hover:text-zinc-200 transition-colors truncate">
+                        {room.roomType?.name || 'Standard Room'}
                       </h3>
                       
-                      <div className="flex items-center gap-3 text-xs text-white/50 font-light">
+                      <div className="flex items-center gap-2 text-xs text-zinc-400 font-mono">
                         {room.floor !== undefined && room.floor !== null && (
                           <span>Floor {room.floor}</span>
                         )}
@@ -645,51 +646,50 @@ export default function AdminRoomsPage() {
                   </div>
 
                   {/* Actions: View Dossier, Edit, Delete */}
-                  <div className="p-4 pt-0 border-t border-white/5 mt-2 flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
+                  <div className="p-3 pt-0 border-t border-[#1C2025] mt-2 flex items-center gap-2">
+                    <button
                       onClick={() => setViewingRoom(room)}
-                      className="flex-1 bg-white/5 border-white/10 hover:border-primary/50 text-white/90 hover:text-white h-9 rounded-xl text-xs font-bold"
+                      className="flex-1 bg-[#181A1D] hover:bg-[#20242A] border border-[#2B3037] text-zinc-200 text-xs font-mono h-8 rounded-lg flex items-center justify-center gap-1.5 transition-colors"
                     >
-                      <Eye className="w-3.5 h-3.5 mr-1.5 text-primary" />
-                      View Dossier
-                    </Button>
+                      <Eye className="w-3.5 h-3.5 text-zinc-400" />
+                      <span>Dossier</span>
+                    </button>
 
-                    <Button
-                      variant="outline"
-                      size="sm"
+                    <button
                       onClick={() => handleEdit(room)}
-                      className="border-white/10 text-white/70 hover:text-white h-9 rounded-xl text-xs px-2.5"
+                      className="w-8 h-8 flex items-center justify-center rounded-lg bg-[#181A1D] hover:bg-[#20242A] border border-[#2B3037] text-zinc-400 hover:text-white transition-colors"
+                      title="Edit Room"
                     >
                       <Edit className="w-3.5 h-3.5" />
-                    </Button>
+                    </button>
 
-                    <Button
-                      variant="outline"
-                      size="sm"
+                    <button
                       onClick={() => handleDelete(room.id, room.number)}
-                      className="border-rose-500/20 text-rose-400 hover:bg-rose-500/10 hover:border-rose-500/40 h-9 rounded-xl text-xs px-2.5"
+                      className="w-8 h-8 flex items-center justify-center rounded-lg bg-[#181A1D] hover:bg-rose-500/10 border border-rose-500/20 text-rose-400 hover:border-rose-500/40 transition-colors"
+                      title="Delete Room"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
-                    </Button>
+                    </button>
                   </div>
-                </Card>
+                </div>
               )
             })}
           </div>
 
           {filteredRooms.length === 0 && (
-            <Card className="p-16 text-center bg-[#0f0f13] border-white/10 space-y-4">
-              <Bed className="w-16 h-16 mx-auto text-white/20" />
-              <h3 className="text-2xl font-serif font-bold text-white">No Physical Rooms Found</h3>
-              <p className="text-white/50 text-xs max-w-sm mx-auto font-light">
+            <div className="p-16 text-center rounded-2xl bg-[#121417] border border-[#1E2227] space-y-4">
+              <Bed className="w-12 h-12 mx-auto text-zinc-600" />
+              <h3 className="text-lg font-semibold text-white">No Physical Rooms Found</h3>
+              <p className="text-zinc-400 text-xs max-w-sm mx-auto">
                 No rooms matched your active filters. Try adjusting your search query or add a new room.
               </p>
-              <Button onClick={() => setShowModal(true)} className="bg-gold-gradient text-white font-bold text-xs uppercase px-6 h-10 rounded-xl">
-                <Plus className="w-4 h-4 mr-2" /> Add First Room
-              </Button>
-            </Card>
+              <button 
+                onClick={() => setShowModal(true)} 
+                className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs uppercase px-5 h-9 rounded-xl inline-flex items-center gap-1.5"
+              >
+                <Plus className="w-3.5 h-3.5" /> Add First Room
+              </button>
+            </div>
           )}
         </div>
       )}
@@ -699,51 +699,54 @@ export default function AdminRoomsPage() {
       {/* ======================================================== */}
       {activeTab === 'types' && (
         <div className="space-y-6">
-          <div className="bg-[#0f0f13] border border-white/10 p-5 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="bg-[#121417] border border-[#1E2227] p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
             <div>
-              <h2 className="text-xl font-serif font-bold text-white">Suite & Room Type Catalog</h2>
-              <p className="text-white/50 text-xs mt-0.5">
-                Define master suite tiers, base rates, guest capacities, and luxury amenity offerings
+              <h2 className="text-base font-semibold text-white">Suite & Room Type Catalog</h2>
+              <p className="text-zinc-400 text-xs mt-0.5">
+                Define master suite tiers, base rates, guest capacities, and luxury amenity offerings.
               </p>
             </div>
-            <Button
+            <button
               onClick={handleOpenCreateType}
-              className="bg-gold-gradient text-white font-bold text-xs uppercase px-6 h-11 rounded-xl shadow-luxury border-none"
+              className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs tracking-wider uppercase px-4 h-9 rounded-xl transition-all shadow-sm flex items-center gap-1.5"
             >
-              <Plus className="w-4 h-4 mr-2" /> Create Suite Type
-            </Button>
+              <Plus className="w-3.5 h-3.5" /> Create Suite Type
+            </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {roomTypes.map((type) => (
-              <Card key={type.id} className="bg-[#0f0f13] border-white/10 overflow-hidden flex flex-col justify-between hover:border-primary/40 transition-all duration-300">
-                <div className="p-6 space-y-4">
+              <div 
+                key={type.id} 
+                className="rounded-2xl bg-[#121417] border border-[#1E2227] hover:border-zinc-700 transition-all p-5 flex flex-col justify-between"
+              >
+                <div className="space-y-3">
                   <div className="flex items-start justify-between">
                     <div>
-                      <h3 className="text-xl font-serif font-bold text-white">{type.name}</h3>
-                      <p className="text-primary font-serif font-bold text-lg mt-1">
-                        {formatPrice(Number(type.baseRate))}<span className="text-xs text-white/50 font-sans">/night</span>
+                      <h3 className="text-base font-semibold text-white">{type.name}</h3>
+                      <p className="text-emerald-400 font-mono font-bold text-lg mt-0.5">
+                        {formatPrice(Number(type.baseRate))}<span className="text-xs text-zinc-500 font-mono">/night</span>
                       </p>
                     </div>
-                    <Badge variant="outline" className="border-white/10 text-white/70 bg-white/5">
+                    <span className="text-[11px] font-mono text-zinc-300 bg-[#181A1D] border border-[#2B3037] px-2.5 py-0.5 rounded-full">
                       Max {type.capacity || 2} Guests
-                    </Badge>
+                    </span>
                   </div>
 
-                  <p className="text-xs text-white/60 font-light leading-relaxed line-clamp-3">
+                  <p className="text-xs text-zinc-400 leading-relaxed line-clamp-3">
                     {type.description || 'No description provided.'}
                   </p>
 
                   {/* Amenities Preview */}
                   {Array.isArray(type.amenities) && type.amenities.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 pt-2">
+                    <div className="flex flex-wrap gap-1.5 pt-1">
                       {type.amenities.slice(0, 4).map((a, i) => (
-                        <span key={i} className="text-[10px] bg-white/5 border border-white/10 text-white/70 px-2.5 py-1 rounded-lg">
+                        <span key={i} className="text-[10px] font-mono bg-[#181A1D] border border-[#2B3037] text-zinc-300 px-2 py-0.5 rounded-md">
                           {a}
                         </span>
                       ))}
                       {type.amenities.length > 4 && (
-                        <span className="text-[10px] text-primary px-1 self-center">
+                        <span className="text-[10px] text-zinc-500 font-mono self-center">
                           +{type.amenities.length - 4} more
                         </span>
                       )}
@@ -751,25 +754,21 @@ export default function AdminRoomsPage() {
                   )}
                 </div>
 
-                <div className="p-5 pt-0 border-t border-white/5 flex items-center gap-3">
-                  <Button
-                    variant="outline"
-                    size="sm"
+                <div className="pt-4 border-t border-[#1C2025] mt-4 flex items-center gap-2">
+                  <button
                     onClick={() => handleOpenEditType(type)}
-                    className="flex-1 border-white/10 hover:border-primary/40 text-white/80 hover:text-white h-9 rounded-xl text-xs"
+                    className="flex-1 bg-[#181A1D] hover:bg-[#20242A] border border-[#2B3037] text-zinc-200 text-xs font-mono h-8 rounded-lg flex items-center justify-center gap-1.5 transition-colors"
                   >
-                    <Edit className="w-3.5 h-3.5 mr-1.5 text-primary" /> Edit Suite
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
+                    <Edit className="w-3.5 h-3.5 text-zinc-400" /> Edit Suite
+                  </button>
+                  <button
                     onClick={() => handleDeleteType(type)}
-                    className="border-rose-500/20 text-rose-400 hover:bg-rose-500/10 h-9 rounded-xl text-xs px-3"
+                    className="w-8 h-8 flex items-center justify-center rounded-lg bg-[#181A1D] hover:bg-rose-500/10 border border-rose-500/20 text-rose-400 hover:border-rose-500/40 transition-colors"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
-                  </Button>
+                  </button>
                 </div>
-              </Card>
+              </div>
             ))}
           </div>
         </div>
@@ -779,56 +778,59 @@ export default function AdminRoomsPage() {
       {/* ROOM DOSSIER MODAL (ALL DETAILS POPUP) */}
       {/* ======================================================== */}
       <Dialog open={!!viewingRoom} onOpenChange={(open) => !open && setViewingRoom(null)}>
-        <DialogContent className="bg-[#111116] border-white/10 text-white max-w-3xl p-6 rounded-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl bg-[#121417] border border-[#2B3037] p-6 rounded-2xl max-h-[90vh] overflow-y-auto">
           {viewingRoom && (
-            <div className="space-y-6">
-              <DialogHeader className="border-b border-white/10 pb-4">
+            <div className="space-y-5">
+              <DialogHeader className="border-b border-[#1E2227] pb-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <span className="text-2xl font-serif font-bold text-white">
+                    <span className="text-xl font-bold text-white font-mono">
                       Room {viewingRoom.number}
                     </span>
-                    <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${getStatusColor(viewingRoom.status)}`}>
+                    <span className={cn(
+                      "font-mono text-[10px] font-semibold px-2 py-0.5 rounded-full border tracking-wide uppercase",
+                      getStatusBadge(viewingRoom.status)
+                    )}>
                       {viewingRoom.status}
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-1 text-primary">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-primary text-primary" />
-                    ))}
-                    <span className="text-xs font-bold ml-1 text-white">5.0 Star Luxury</span>
+                  <div className="flex items-center gap-1 text-zinc-400">
+                    <span className="text-xs font-mono text-zinc-400">Inventory Verified</span>
                   </div>
                 </div>
-                <DialogDescription className="text-white/60 text-xs">
+                <DialogDescription className="text-zinc-400 text-xs mt-1 font-mono">
                   {viewingRoom.roomType?.name} &bull; Floor {viewingRoom.floor ?? 1} &bull; {viewingRoom.size ?? 30} m²
                 </DialogDescription>
               </DialogHeader>
 
               {/* Photos Gallery */}
               <div className="grid grid-cols-3 gap-3">
-                <div className="col-span-2 relative aspect-[16/10] rounded-xl overflow-hidden bg-black/40 border border-white/10">
+                <div className="col-span-2 relative aspect-[16/10] rounded-xl overflow-hidden bg-[#090A0C] border border-[#1E2227]">
                   <Image
                     src={viewingRoom.roomImages?.[0]?.imageUrl || viewingRoom.roomType?.images?.[0] || 'https://images.unsplash.com/photo-1590490359683-658d3d23f972?auto=format&fit=crop&q=80&w=1200'}
                     alt={`Room ${viewingRoom.number}`}
                     fill
+                    unoptimized
                     className="object-cover"
                   />
                 </div>
                 <div className="flex flex-col gap-3">
-                  <div className="relative aspect-video flex-1 rounded-xl overflow-hidden bg-black/40 border border-white/10">
+                  <div className="relative aspect-video flex-1 rounded-xl overflow-hidden bg-[#090A0C] border border-[#1E2227]">
                     <Image
                       src={viewingRoom.roomImages?.[1]?.imageUrl || 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&q=80&w=800'}
                       alt="Interior"
                       fill
+                      unoptimized
                       className="object-cover"
                     />
                   </div>
-                  <div className="relative aspect-video flex-1 rounded-xl overflow-hidden bg-black/40 border border-white/10">
+                  <div className="relative aspect-video flex-1 rounded-xl overflow-hidden bg-[#090A0C] border border-[#1E2227]">
                     <Image
                       src={viewingRoom.roomImages?.[2]?.imageUrl || 'https://images.unsplash.com/photo-1540518614846-7ede433c4ef4?auto=format&fit=crop&q=80&w=800'}
                       alt="Balcony"
                       fill
+                      unoptimized
                       className="object-cover"
                     />
                   </div>
@@ -836,21 +838,21 @@ export default function AdminRoomsPage() {
               </div>
 
               {/* Specs & Description */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
-                <div className="md:col-span-2 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
+                <div className="md:col-span-2 space-y-3">
                   <div>
-                    <h4 className="text-xs uppercase tracking-wider font-bold text-white/50">Suite Overview</h4>
-                    <p className="text-sm text-white/80 font-light mt-1 leading-relaxed">
-                      {viewingRoom.roomType?.description || 'A sanctuary of sophisticated comfort featuring panoramic views, artisan decor, and world-class luxury bedding.'}
+                    <h4 className="text-xs uppercase tracking-wider font-semibold text-zinc-400">Suite Overview</h4>
+                    <p className="text-xs text-zinc-300 font-normal mt-1 leading-relaxed">
+                      {viewingRoom.roomType?.description || 'Sophisticated accommodations featuring modern design, high-speed amenities, and ergonomic comfort.'}
                     </p>
                   </div>
 
                   <div>
-                    <h4 className="text-xs uppercase tracking-wider font-bold text-white/50 mb-2">Exclusive Amenities</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {(viewingRoom.roomType?.amenities || ['King Bed', 'Rain Shower', 'Private Balcony', 'Butler Call', 'Espresso Bar']).map((amenity, idx) => (
-                        <span key={idx} className="bg-white/5 border border-white/10 text-white/80 text-xs px-3 py-1.5 rounded-xl flex items-center gap-1.5">
-                          <Sparkles className="w-3 h-3 text-primary" />
+                    <h4 className="text-xs uppercase tracking-wider font-semibold text-zinc-400 mb-1.5">Amenities</h4>
+                    <div className="flex flex-wrap gap-1.5">
+                      {(viewingRoom.roomType?.amenities || ['King Bed', 'Rain Shower', 'Private Balcony', 'High-Speed WiFi', 'Work Desk']).map((amenity, idx) => (
+                        <span key={idx} className="bg-[#181A1D] border border-[#2B3037] text-zinc-300 text-[11px] font-mono px-2.5 py-1 rounded-lg flex items-center gap-1.5">
+                          <Sparkles className="w-3 h-3 text-zinc-400" />
                           {amenity}
                         </span>
                       ))}
@@ -858,50 +860,50 @@ export default function AdminRoomsPage() {
                   </div>
                 </div>
 
-                <div className="bg-black/40 border border-white/10 rounded-2xl p-4 space-y-3 h-fit">
-                  <h4 className="text-xs uppercase tracking-wider font-bold text-primary">Financial Telemetry</h4>
+                <div className="bg-[#181A1D] border border-[#2B3037] rounded-xl p-3.5 space-y-2.5 h-fit font-mono">
+                  <h4 className="text-xs uppercase tracking-wider font-semibold text-zinc-400">Rate & Capacity</h4>
                   <div>
-                    <span className="text-white/40 text-xs">Standard Nightly Rate:</span>
-                    <p className="text-2xl font-serif font-bold text-white">
+                    <span className="text-zinc-500 text-[10px]">Standard Rate:</span>
+                    <p className="text-lg font-bold text-emerald-400">
                       {formatPrice(viewingRoom.roomType?.baseRate || 0)}
                     </p>
                   </div>
 
-                  <div className="pt-2 border-t border-white/5 text-xs text-white/60 space-y-1.5">
+                  <div className="pt-2 border-t border-[#22262B] text-xs text-zinc-400 space-y-1">
                     <div className="flex justify-between">
                       <span>Capacity:</span>
-                      <span className="text-white font-bold">{viewingRoom.roomType?.capacity || 2} Guests</span>
+                      <span className="text-zinc-200">{viewingRoom.roomType?.capacity || 2} Guests</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Floor Level:</span>
-                      <span className="text-white font-bold">Floor {viewingRoom.floor ?? 1}</span>
+                      <span>Floor:</span>
+                      <span className="text-zinc-200">Floor {viewingRoom.floor ?? 1}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Room Size:</span>
-                      <span className="text-white font-bold">{viewingRoom.size ?? 30} m²</span>
+                      <span>Size:</span>
+                      <span className="text-zinc-200">{viewingRoom.size ?? 30} m²</span>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Recent & Upcoming Reservations */}
-              <div className="pt-4 border-t border-white/10 space-y-3">
+              <div className="pt-3 border-t border-[#1E2227] space-y-2.5">
                 <div className="flex items-center justify-between">
-                  <h4 className="text-xs uppercase tracking-wider font-bold text-white/50 flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-primary" />
+                  <h4 className="text-xs uppercase tracking-wider font-semibold text-zinc-400 flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5 text-zinc-500" />
                     Reservations on this Room
                   </h4>
-                  {loadingBookings && <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />}
+                  {loadingBookings && <Loader2 className="w-3 h-3 animate-spin text-zinc-500" />}
                 </div>
 
                 {roomBookings.length === 0 ? (
-                  <p className="text-xs text-white/40 italic py-2">
-                    {loadingBookings ? 'Loading reservation telemetry...' : 'No upcoming bookings recorded on this physical room.'}
+                  <p className="text-xs text-zinc-500 font-mono py-1">
+                    {loadingBookings ? 'Loading reservation records...' : 'No upcoming bookings recorded on this physical room.'}
                   </p>
                 ) : (
-                  <div className="border border-white/5 rounded-xl overflow-hidden">
-                    <table className="w-full text-left text-xs">
-                      <thead className="bg-white/5 text-white/40 uppercase text-[10px]">
+                  <div className="border border-[#1E2227] rounded-xl overflow-hidden bg-[#181A1D]">
+                    <table className="w-full text-left text-xs font-mono">
+                      <thead className="bg-[#141619] border-b border-[#1E2227] text-zinc-400 uppercase text-[10px]">
                         <tr>
                           <th className="p-2.5">Guest</th>
                           <th className="p-2.5">Dates</th>
@@ -909,15 +911,15 @@ export default function AdminRoomsPage() {
                           <th className="p-2.5 text-right">Total</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-white/5 text-white/80">
+                      <tbody className="divide-y divide-[#1C2025] text-zinc-300">
                         {roomBookings.map((b: any) => (
-                          <tr key={b.id} className="hover:bg-white/[0.02]">
-                            <td className="p-2.5 font-medium">{b.guest?.name || 'Guest'}</td>
-                            <td className="p-2.5 text-white/60">
+                          <tr key={b.id} className="hover:bg-[#16181B]">
+                            <td className="p-2.5 font-medium text-white">{b.guest?.name || 'Guest'}</td>
+                            <td className="p-2.5 text-zinc-400">
                               {new Date(b.checkIn).toLocaleDateString()} &rarr; {new Date(b.checkOut).toLocaleDateString()}
                             </td>
                             <td className="p-2.5">
-                              <span className="text-[10px] font-bold text-primary uppercase">{b.status}</span>
+                              <span className="text-[10px] font-semibold text-zinc-300 uppercase">{b.status}</span>
                             </td>
                             <td className="p-2.5 text-right font-mono text-emerald-400">
                               {formatPrice(Number(b.totalAmount))}
@@ -930,24 +932,25 @@ export default function AdminRoomsPage() {
                 )}
               </div>
 
-              <DialogFooter className="pt-4 border-t border-white/10 flex justify-end gap-3">
-                <Button
-                  variant="outline"
+              <DialogFooter className="pt-3 border-t border-[#1E2227] flex justify-end gap-2.5">
+                <button
+                  type="button"
                   onClick={() => setViewingRoom(null)}
-                  className="border-white/10 text-white rounded-xl text-xs"
+                  className="px-4 py-2 rounded-xl bg-transparent border border-[#2B3037] text-zinc-300 hover:text-white text-xs font-mono transition-colors"
                 >
                   Close Dossier
-                </Button>
-                <Button
+                </button>
+                <button
+                  type="button"
                   onClick={() => {
                     const toEdit = viewingRoom
                     setViewingRoom(null)
                     handleEdit(toEdit)
                   }}
-                  className="bg-gold-gradient text-white font-bold text-xs uppercase px-5 rounded-xl border-none shadow-luxury"
+                  className="px-4 py-2 rounded-xl bg-white hover:bg-zinc-200 text-black font-semibold text-xs uppercase tracking-wider transition-colors inline-flex items-center gap-1.5"
                 >
-                  <Edit className="w-3.5 h-3.5 mr-1.5" /> Edit Room Details
-                </Button>
+                  <Edit className="w-3.5 h-3.5" /> Edit Room Details
+                </button>
               </DialogFooter>
             </div>
           )}
@@ -957,279 +960,291 @@ export default function AdminRoomsPage() {
       {/* ======================================================== */}
       {/* ADD / EDIT PHYSICAL ROOM MODAL */}
       {/* ======================================================== */}
-      <Modal
-        open={showModal}
-        onClose={() => {
+      <Dialog open={showModal} onOpenChange={(open) => {
+        if (!open) {
           setShowModal(false)
           setEditingRoom(null)
           resetForm()
-        }}
-        title={editingRoom ? 'Edit Room' : 'Add New Room'}
-      >
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5 block">
-                Room Number *
-              </label>
-              <input
-                type="text"
-                value={formData.number || ''}
-                onChange={(e) => setFormData({ ...formData, number: e.target.value })}
-                className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-primary/50 text-sm"
-                required
-              />
+        }
+      }}>
+        <DialogContent className="max-w-lg bg-[#121417] border border-[#2B3037] p-6 rounded-2xl">
+          <DialogHeader className="border-b border-[#1E2227] pb-4">
+            <DialogTitle className="text-lg font-bold text-white flex items-center gap-2">
+              <Bed className="w-4 h-4 text-zinc-400" />
+              {editingRoom ? `Edit Room ${editingRoom.number}` : 'Add New Physical Room'}
+            </DialogTitle>
+            <DialogDescription className="text-zinc-400 text-xs">
+              Configure room parameters, assigned suite tier, and photo media.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleSubmit} className="space-y-4 pt-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider mb-1 block">
+                  Room Number *
+                </label>
+                <input
+                  type="text"
+                  value={formData.number || ''}
+                  onChange={(e) => setFormData({ ...formData, number: e.target.value })}
+                  placeholder="e.g. 101"
+                  className="w-full px-3 py-2 bg-[#181A1D] border border-[#2B3037] rounded-xl text-white font-mono text-xs placeholder:text-zinc-500 focus:outline-none focus:border-zinc-400"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider mb-1 block">
+                  Room Type *
+                </label>
+                <select
+                  value={formData.roomTypeId || ''}
+                  onChange={(e) => {
+                    const typeId = e.target.value
+                    const selected = roomTypes.find(rt => rt.id === typeId)
+                    setFormData(prev => ({
+                      ...prev,
+                      roomTypeId: typeId,
+                      price: selected?.baseRate != null ? selected.baseRate.toString() : (prev.price || '')
+                    }))
+                  }}
+                  className="w-full px-3 py-2 bg-[#181A1D] border border-[#2B3037] rounded-xl text-white font-mono text-xs focus:outline-none focus:border-zinc-400"
+                  required
+                >
+                  <option value="">{roomTypes.length === 0 ? '-- No Types (Create First) --' : 'Select Type'}</option>
+                  {roomTypes.map(rt => (
+                    <option key={rt.id} value={rt.id}>
+                      {rt.name} ({formatPrice(Number(rt.baseRate))})
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             <div>
-              <label className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5 block">
-                Room Type *
+              <label className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider mb-1 block">
+                Nightly Rate (LKR) *
               </label>
-              <select
-                value={formData.roomTypeId || ''}
-                onChange={(e) => {
-                  const typeId = e.target.value
-                  const selected = roomTypes.find(rt => rt.id === typeId)
-                  setFormData(prev => ({
-                    ...prev,
-                    roomTypeId: typeId,
-                    price: selected?.baseRate != null ? selected.baseRate.toString() : (prev.price || '')
-                  }))
-                }}
-                className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-primary/50 text-sm"
-                required
-              >
-                <option value="">{roomTypes.length === 0 ? '-- No Room Types (Create First) --' : 'Select Room Type'}</option>
-                {roomTypes.map(rt => (
-                  <option key={rt.id} value={rt.id}>
-                    {rt.name} {rt.baseRate ? `($${Number(rt.baseRate).toFixed(2)}/night)` : ''}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5 block">
-              Nightly Rate / Price ($/night) *
-            </label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold">$</span>
               <input
                 type="number"
                 step="0.01"
                 min="0"
-                placeholder="e.g. 150.00"
+                placeholder="e.g. 15000"
                 value={formData.price || ''}
                 onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                className="w-full pl-7 pr-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white font-mono text-sm focus:outline-none focus:ring-1 focus:ring-primary/50"
+                className="w-full px-3 py-2 bg-[#181A1D] border border-[#2B3037] rounded-xl text-white font-mono text-xs focus:outline-none focus:border-zinc-400"
                 required
               />
             </div>
-          </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5 block">Floor</label>
-              <input
-                type="number"
-                value={formData.floor}
-                onChange={(e) => setFormData({ ...formData, floor: e.target.value })}
-                className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-primary/50 text-sm"
-                placeholder="0"
-                min="0"
-              />
-            </div>
-
-            <div>
-              <label className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5 block">Size (m²)</label>
-              <input
-                type="number"
-                value={formData.size}
-                onChange={(e) => setFormData({ ...formData, size: e.target.value })}
-                className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-primary/50 text-sm"
-                placeholder="25"
-                min="0"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5 flex items-center justify-between">
-              <span>Room Photography</span>
-              {uploadingImages && <Loader2 className="w-3 h-3 animate-spin" />}
-            </label>
-            <div className="flex gap-2 flex-wrap mb-2">
-              {formData.images.map((url, idx) => (
-                <div key={`existing-${idx}`} className="relative w-20 h-20 bg-black/40 border border-white/10 rounded-lg overflow-hidden group">
-                  <Image src={url} alt={`Preview ${idx}`} fill className="object-cover" />
-                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                    <button type="button" onClick={() => handleDeleteImage(idx)} className="text-red-400 hover:text-red-300">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-              {pendingImageFiles.map((pf, idx) => (
-                <div key={`pending-${idx}`} className="relative w-20 h-20 bg-black/40 border border-white/10 rounded-lg overflow-hidden group">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={pf.preview} alt={`Pending Preview ${idx}`} className="w-full h-full object-cover" />
-                  <div className="absolute top-1 right-1 bg-primary text-[8px] px-1 rounded uppercase font-bold text-white z-10">Pending</div>
-                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity z-20">
-                    <button type="button" onClick={() => handleDeletePendingImage(idx)} className="text-red-400 hover:text-red-300">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-              <label className="w-20 h-20 flex flex-col items-center justify-center border border-dashed border-white/20 rounded-lg cursor-pointer hover:bg-white/5 hover:border-white/40 transition-colors">
-                <ImageIcon className="w-5 h-5 text-slate-400 mb-1" />
-                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Upload</span>
-                <input 
-                  type="file" 
-                  accept="image/webp,image/jpeg,image/png,image/heic" 
-                  multiple 
-                  className="hidden" 
-                  onChange={handleImageSelect}
-                  disabled={uploadingImages}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider mb-1 block">Floor</label>
+                <input
+                  type="number"
+                  value={formData.floor}
+                  onChange={(e) => setFormData({ ...formData, floor: e.target.value })}
+                  className="w-full px-3 py-2 bg-[#181A1D] border border-[#2B3037] rounded-xl text-white font-mono text-xs placeholder:text-zinc-500 focus:outline-none focus:border-zinc-400"
+                  placeholder="1"
+                  min="0"
                 />
-              </label>
+              </div>
+
+              <div>
+                <label className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider mb-1 block">Size (m²)</label>
+                <input
+                  type="number"
+                  value={formData.size}
+                  onChange={(e) => setFormData({ ...formData, size: e.target.value })}
+                  className="w-full px-3 py-2 bg-[#181A1D] border border-[#2B3037] rounded-xl text-white font-mono text-xs placeholder:text-zinc-500 focus:outline-none focus:border-zinc-400"
+                  placeholder="30"
+                  min="0"
+                />
+              </div>
             </div>
-          </div>
 
-          <div>
-            <label className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5 block">
-              Status *
-            </label>
-            <select
-              value={formData.status || 'AVAILABLE'}
-              onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
-              className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-primary/50 text-sm"
-              required
-            >
-              <option value="AVAILABLE">Available</option>
-              <option value="OCCUPIED">Occupied</option>
-              <option value="DIRTY">Dirty</option>
-              <option value="MAINTENANCE">Maintenance</option>
-              <option value="OUT_OF_ORDER">Out of Order</option>
-            </select>
-          </div>
+            <div>
+              <label className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                <span>Room Photography</span>
+                {uploadingImages && <Loader2 className="w-3 h-3 animate-spin text-zinc-400" />}
+              </label>
+              <div className="flex gap-2 flex-wrap mb-2">
+                {formData.images.map((url, idx) => (
+                  <div key={`existing-${idx}`} className="relative w-16 h-16 bg-[#090A0C] border border-[#2B3037] rounded-lg overflow-hidden group">
+                    <Image src={url} alt={`Preview ${idx}`} fill unoptimized className="object-cover" />
+                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                      <button type="button" onClick={() => handleDeleteImage(idx)} className="text-rose-400 hover:text-rose-300">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                {pendingImageFiles.map((pf, idx) => (
+                  <div key={`pending-${idx}`} className="relative w-16 h-16 bg-[#090A0C] border border-[#2B3037] rounded-lg overflow-hidden group">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={pf.preview} alt={`Pending Preview ${idx}`} className="w-full h-full object-cover" />
+                    <div className="absolute top-1 right-1 bg-zinc-700 text-[8px] font-mono px-1 rounded uppercase font-bold text-white z-10">Queue</div>
+                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity z-20">
+                      <button type="button" onClick={() => handleDeletePendingImage(idx)} className="text-rose-400 hover:text-rose-300">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                <label className="w-16 h-16 flex flex-col items-center justify-center border border-dashed border-[#2B3037] rounded-lg cursor-pointer hover:bg-[#181A1D] hover:border-zinc-500 transition-colors">
+                  <ImageIcon className="w-4 h-4 text-zinc-500 mb-0.5" />
+                  <span className="text-[9px] text-zinc-500 font-mono uppercase">Upload</span>
+                  <input 
+                    type="file" 
+                    accept="image/webp,image/jpeg,image/png,image/heic" 
+                    multiple 
+                    className="hidden" 
+                    onChange={handleImageSelect}
+                    disabled={uploadingImages}
+                  />
+                </label>
+              </div>
+            </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-white/5 mt-6">
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => {
-                setShowModal(false)
-                setEditingRoom(null)
-                resetForm()
-              }}
-              className="text-slate-400 hover:text-white hover:bg-white/5"
-            >
-              Cancel
-            </Button>
-            <Button type="submit" className="bg-primary hover:bg-primary/90 text-white min-w-[100px]">
-              {editingRoom ? 'Update Room' : 'Create Room'}
-            </Button>
-          </div>
-        </form>
-      </Modal>
+            <div>
+              <label className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider mb-1 block">
+                Status *
+              </label>
+              <select
+                value={formData.status || 'AVAILABLE'}
+                onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
+                className="w-full px-3 py-2 bg-[#181A1D] border border-[#2B3037] rounded-xl text-white font-mono text-xs focus:outline-none focus:border-zinc-400"
+                required
+              >
+                <option value="AVAILABLE">Available</option>
+                <option value="OCCUPIED">Occupied</option>
+                <option value="DIRTY">Dirty</option>
+                <option value="MAINTENANCE">Maintenance</option>
+                <option value="OUT_OF_ORDER">Out of Order</option>
+              </select>
+            </div>
+
+            <DialogFooter className="pt-3 border-t border-[#1E2227] flex justify-end gap-2.5 mt-4">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowModal(false)
+                  setEditingRoom(null)
+                  resetForm()
+                }}
+                className="px-4 py-2 rounded-xl bg-transparent border border-[#2B3037] text-zinc-400 hover:text-white text-xs font-mono transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 rounded-xl bg-white hover:bg-zinc-200 text-black font-semibold text-xs font-mono uppercase tracking-wider transition-colors inline-flex items-center gap-1.5"
+              >
+                {editingRoom ? 'Update Room' : 'Create Room'}
+              </button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       {/* ======================================================== */}
       {/* CREATE / EDIT ROOM TYPE MODAL */}
       {/* ======================================================== */}
       <Dialog open={showTypeModal} onOpenChange={setShowTypeModal}>
-        <DialogContent className="bg-[#111116] border-white/10 text-white max-w-lg p-6 rounded-2xl">
-          <DialogHeader className="border-b border-white/10 pb-4">
-            <DialogTitle className="text-xl font-serif font-bold text-white flex items-center gap-2">
-              <Layers className="w-5 h-5 text-primary" />
+        <DialogContent className="max-w-lg bg-[#121417] border border-[#2B3037] p-6 rounded-2xl">
+          <DialogHeader className="border-b border-[#1E2227] pb-4">
+            <DialogTitle className="text-lg font-bold text-white flex items-center gap-2">
+              <Layers className="w-4 h-4 text-zinc-400" />
               {editingType ? 'Edit Suite Type' : 'Create New Suite Type'}
             </DialogTitle>
+            <DialogDescription className="text-zinc-400 text-xs">
+              Configure master suite tier rates, guest capacity, and amenities.
+            </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleTypeSubmit} className="space-y-4 pt-4">
-            <div className="space-y-1.5">
-              <label className="text-xs uppercase tracking-wider font-bold text-white/70">Suite Name *</label>
+          <form onSubmit={handleTypeSubmit} className="space-y-4 pt-3">
+            <div>
+              <label className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider mb-1 block">Suite Name *</label>
               <input
                 type="text"
                 required
-                placeholder="e.g. Presidential Penthouse Suite"
+                placeholder="e.g. Deluxe Ocean Suite"
                 value={typeFormData.name}
                 onChange={e => setTypeFormData({ ...typeFormData, name: e.target.value })}
-                className="w-full bg-black/40 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full bg-[#181A1D] border border-[#2B3037] rounded-xl px-3 py-2 text-xs font-mono text-white placeholder:text-zinc-500 focus:outline-none focus:border-zinc-400"
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-xs uppercase tracking-wider font-bold text-white/70">Base Rate ($/night) *</label>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider mb-1 block">Base Rate (LKR/night) *</label>
                 <input
                   type="number"
                   step="0.01"
                   required
-                  placeholder="450.00"
+                  placeholder="25000"
                   value={typeFormData.baseRate}
                   onChange={e => setTypeFormData({ ...typeFormData, baseRate: e.target.value })}
-                  className="w-full bg-black/40 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:ring-1 focus:ring-primary font-mono"
+                  className="w-full bg-[#181A1D] border border-[#2B3037] rounded-xl px-3 py-2 text-xs font-mono text-white placeholder:text-zinc-500 focus:outline-none focus:border-zinc-400"
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs uppercase tracking-wider font-bold text-white/70">Max Capacity *</label>
+              <div>
+                <label className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider mb-1 block">Max Capacity *</label>
                 <input
                   type="number"
                   min="1"
                   required
                   value={typeFormData.capacity}
                   onChange={e => setTypeFormData({ ...typeFormData, capacity: e.target.value })}
-                  className="w-full bg-black/40 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="w-full bg-[#181A1D] border border-[#2B3037] rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-zinc-400"
                 />
               </div>
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs uppercase tracking-wider font-bold text-white/70">Description</label>
+            <div>
+              <label className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider mb-1 block">Description</label>
               <textarea
                 rows={3}
                 placeholder="Describe suite features, view, and architecture..."
                 value={typeFormData.description}
                 onChange={e => setTypeFormData({ ...typeFormData, description: e.target.value })}
-                className="w-full bg-black/40 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:ring-1 focus:ring-primary resize-none"
+                className="w-full bg-[#181A1D] border border-[#2B3037] rounded-xl px-3 py-2 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-zinc-400 resize-none"
               />
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs uppercase tracking-wider font-bold text-white/70">Amenities (comma-separated)</label>
+            <div>
+              <label className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider mb-1 block">Amenities (comma-separated)</label>
               <input
                 type="text"
-                placeholder="King Bed, Ocean View, High-Speed WiFi, Mini Bar, Marble Bath"
+                placeholder="King Bed, Ocean View, High-Speed WiFi, Mini Bar"
                 value={typeFormData.amenities}
                 onChange={e => setTypeFormData({ ...typeFormData, amenities: e.target.value })}
-                className="w-full bg-black/40 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full bg-[#181A1D] border border-[#2B3037] rounded-xl px-3 py-2 text-xs font-mono text-white placeholder:text-zinc-500 focus:outline-none focus:border-zinc-400"
               />
             </div>
 
-            <DialogFooter className="pt-4 border-t border-white/10 flex justify-end gap-3">
-              <Button
+            <DialogFooter className="pt-3 border-t border-[#1E2227] flex justify-end gap-2.5">
+              <button
                 type="button"
-                variant="outline"
                 onClick={() => setShowTypeModal(false)}
-                className="border-white/10 text-white rounded-xl text-xs"
+                className="px-4 py-2 rounded-xl bg-transparent border border-[#2B3037] text-zinc-400 hover:text-white text-xs font-mono transition-colors"
               >
                 Cancel
-              </Button>
-              <Button
+              </button>
+              <button
                 type="submit"
                 disabled={savingType}
-                className="bg-gold-gradient text-white font-bold text-xs uppercase px-5 rounded-xl border-none shadow-luxury"
+                className="px-4 py-2 rounded-xl bg-white hover:bg-zinc-200 text-black font-semibold text-xs font-mono uppercase tracking-wider transition-colors inline-flex items-center gap-1.5"
               >
-                {savingType ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null}
-                {editingType ? 'Update Suite' : 'Create Suite'}
-              </Button>
+                {savingType && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                <span>{editingType ? 'Update Suite' : 'Create Suite'}</span>
+              </button>
             </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
-    </div>
+    </AdminPageShell>
   )
 }

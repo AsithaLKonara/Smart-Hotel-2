@@ -146,28 +146,13 @@ export default function RootLayout({
           </>
         )}
       </head>
-      <body className="min-h-screen bg-[#0a0a0a] text-foreground font-sans antialiased relative">
-        {/* Global Luxury Gradient Background */}
-        <div 
-          className="fixed inset-0 z-[-1] pointer-events-none" 
-          style={{ 
-            backgroundColor: '#0a0a0a',
-            backgroundImage: `
-              radial-gradient(circle at 50% 0%, rgba(197, 160, 89, 0.25) 0%, transparent 60%),
-              radial-gradient(circle at 85% 70%, rgba(197, 160, 89, 0.15) 0%, transparent 50%),
-              radial-gradient(circle at 15% 90%, rgba(197, 160, 89, 0.12) 0%, transparent 50%)
-            `
-          }} 
-        />
+      <body className="min-h-screen bg-[#090A0C] text-zinc-100 font-sans antialiased relative">
         <ErrorBoundary>
           <Providers>
-            <HotelSchema />
             <div className="flex min-h-screen flex-col relative z-10 bg-transparent print:block print:min-h-0 print:h-auto print:overflow-visible">
-              <HotelNavigation />
               <main id="main-content" role="main" className="flex-1 bg-transparent print:block print:overflow-visible print:min-h-0">
                 {children}
               </main>
-              <ConditionalFooter />
             </div>
             <Toaster />
             <ClientScripts />

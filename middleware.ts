@@ -153,22 +153,19 @@ export async function middleware(request: NextRequest) {
   const requestId = requestHeaders.get('x-request-id') ?? crypto.randomUUID()
   requestHeaders.set('x-request-id', requestId)
 
-  // 1. Bypass Public Assets, Public APIs, and Public Pages
-  const isPublicPage = [
-    '/', '/about', '/booking', '/booking-flow', '/contact', '/cookies', 
-    '/facilities', '/gallery', '/privacy', '/rooms', '/spa', '/terms',
-    '/unauthorized'
-  ].some(p => path === p || path.startsWith(`${p}/`))
-  
+  // 1. Bypass Static Assets, Auth, and System Endpoints
   const isAuthPage = path.startsWith('/auth')
+  const isUnauthorizedPage = path === '/unauthorized'
 
   if (
     path.startsWith('/_next') ||
     path.startsWith('/images') ||
     path.startsWith('/videos') ||
     path.startsWith('/favicon') ||
+    path.startsWith('/icons') ||
+    path === '/manifest.json' ||
     isAuthPage ||
-    isPublicPage ||
+    isUnauthorizedPage ||
     PUBLIC_API_PREFIXES.some(p => path.startsWith(p))
   ) {
     const response = NextResponse.next({
@@ -193,11 +190,17 @@ export async function middleware(request: NextRequest) {
   }
 
   // SECURITY (Fix 4): Treat an expired-but-present token as unauthenticated.
-  // The jwt callback marks expired tokens with error:'SessionExpired' instead of
-  // returning null (which the NextAuth v4 type system doesn't allow). We nullify
-  // the token here so all downstream checks behave identically to no-token.
   if ((token as any)?.error === 'SessionExpired') {
     token = null
+  }
+
+  // Handle Root Redirect (Public web is disabled)
+  if (path === '/') {
+    if (token) {
+      const rawRole = (token.roleName || token.role || 'SUPER_ADMIN') as string
+      return NextResponse.redirect(new URL(getDefaultDashboardUrl(rawRole) || '/admin/dashboard', request.url))
+    }
+    return NextResponse.redirect(new URL('/auth/signin', request.url))
   }
 
   // 3. Enforce Authentication for ALL remaining /api routes (Default Deny)

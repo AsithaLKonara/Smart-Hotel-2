@@ -5,17 +5,15 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { 
   Calendar, Search, Filter, Eye, Users, DollarSign, 
-  Bed, CheckCircle2, Clock, X, RefreshCw, Printer, ShieldCheck
+  Bed, CheckCircle2, Clock, X, RefreshCw, Printer, ShieldCheck, Plus
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Breadcrumbs } from '@/components/ui/breadcrumbs'
 import { PremiumSpinner } from '@/components/ui/premium-spinner'
 import { BookingDetailsModal } from '@/components/admin/booking-details-modal'
 import { formatPrice } from '@/lib/utils'
 import { useProperty } from '@/contexts/property-context'
 import toast from 'react-hot-toast'
+import { AdminPageShell } from '@/components/dashboard/admin/admin-page-shell'
+import { cn } from '@/lib/utils'
 
 export default function AdminBookingsPage() {
   const { data: session, status: authStatus } = useSession()
@@ -70,121 +68,99 @@ export default function AdminBookingsPage() {
     return matchesSearch && matchesStatus && matchesProperty
   })
 
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'CONFIRMED':
+        return 'text-blue-400 bg-blue-500/10 border-blue-500/20'
+      case 'CHECKED_IN':
+        return 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20'
+      case 'CHECKED_OUT':
+        return 'text-zinc-400 bg-zinc-500/10 border-zinc-500/20'
+      case 'CANCELLED':
+        return 'text-rose-400 bg-rose-500/10 border-rose-500/20'
+      default:
+        return 'text-zinc-400 bg-zinc-500/10 border-zinc-500/20'
+    }
+  }
+
   if (authStatus === 'loading' || loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-transparent">
-        <PremiumSpinner size="lg" text="Loading Master Bookings Roster..." />
+      <div className="flex items-center justify-center py-24">
+        <PremiumSpinner size="lg" text="Loading Reservations Roster..." />
       </div>
     )
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6 text-white">
-      <Breadcrumbs
-        items={[
-          { label: 'Admin', href: '/admin' },
-          { label: 'Reservations & Bookings' },
-        ]}
-        className="mb-2"
-      />
-
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-6">
-        <div>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-luxury">
-              <Calendar className="w-5 h-5" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-serif font-bold text-white tracking-wide">
-                Reservations Roster
-              </h1>
-              <p className="text-white/50 text-xs mt-0.5">
-                Centralized reservation dossier, guest intake, stay extras, and folio settlements
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <Button
-            variant="outline"
-            onClick={fetchBookings}
-            className="border-white/10 text-white/80 hover:text-white rounded-xl text-xs h-10 px-4"
-          >
-            <RefreshCw className="w-3.5 h-3.5 mr-1.5" /> Refresh
-          </Button>
-          <Button
-            onClick={() => router.push('/booking')}
-            className="bg-gold-gradient text-white font-bold text-xs uppercase px-5 rounded-xl h-10 border-none shadow-luxury"
-          >
-            + New Reservation
-          </Button>
-        </div>
-      </div>
-
+    <AdminPageShell
+      title="Reservations Roster & Folios"
+      subtitle="Centralized reservation registry, stay allocations, guest billing folios, and lifecycle settlements."
+      onRefresh={fetchBookings}
+    >
       {/* Filters Bar */}
-      <div className="bg-[#0f0f13] border border-white/10 p-4 rounded-2xl flex flex-col md:flex-row gap-4 items-center justify-between">
-        <div className="relative w-full md:w-80">
-          <Search className="w-4 h-4 text-white/40 absolute left-3.5 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            placeholder="Search guest, email, code, room..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-black/40 border border-white/10 text-xs text-white pl-10 pr-4 py-2.5 rounded-xl placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-primary"
-          />
-        </div>
+      <div className="bg-[#121417] border border-[#1E2227] p-3.5 rounded-2xl flex flex-col md:flex-row gap-3 items-center justify-between mb-6">
+        <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto flex-1">
+          <div className="relative w-full md:w-80">
+            <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Search guest, email, code, room..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-[#181A1D] border border-[#2B3037] text-xs font-mono text-white pl-9 pr-3 py-2 rounded-xl placeholder:text-zinc-500 focus:outline-none focus:border-zinc-400"
+            />
+          </div>
 
-        <div className="flex items-center gap-3 w-full md:w-auto flex-wrap">
           <select
             value={propertyFilter}
             onChange={(e) => setPropertyFilter(e.target.value)}
-            className="bg-black/40 border border-white/10 text-xs text-white px-3.5 py-2.5 rounded-xl focus:outline-none focus:ring-1 focus:ring-primary"
+            className="bg-[#181A1D] border border-[#2B3037] text-xs font-mono text-white px-3 py-2 rounded-xl focus:outline-none focus:border-zinc-400"
           >
             <option value="all">All Destinations</option>
             {properties.map(p => (
               <option key={p.id} value={p.id}>{p.name} ({p.city})</option>
             ))}
           </select>
+        </div>
 
-          <div className="flex items-center gap-1 bg-black/40 border border-white/10 p-1 rounded-xl">
-            {['ALL', 'CONFIRMED', 'CHECKED_IN', 'CHECKED_OUT', 'CANCELLED'].map(st => (
-              <button
-                key={st}
-                onClick={() => setStatusFilter(st)}
-                className={`text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg transition-all ${
-                  statusFilter === st
-                    ? 'bg-primary text-black font-black'
-                    : 'text-white/40 hover:text-white'
-                }`}
-              >
-                {st === 'ALL' ? 'All' : st.replace('_', ' ')}
-              </button>
-            ))}
-          </div>
+        {/* Status Filter Pills */}
+        <div className="flex items-center gap-1 bg-[#090A0C] border border-[#1E2227] p-1 rounded-xl w-full md:w-auto overflow-x-auto">
+          {['ALL', 'CONFIRMED', 'CHECKED_IN', 'CHECKED_OUT', 'CANCELLED'].map(st => (
+            <button
+              key={st}
+              onClick={() => setStatusFilter(st)}
+              className={cn(
+                "text-[10px] font-mono uppercase tracking-wider px-3 py-1.5 rounded-lg transition-all whitespace-nowrap",
+                statusFilter === st
+                  ? "bg-[#181A1D] border border-[#2B3037] text-white font-semibold shadow-sm"
+                  : "text-zinc-400 hover:text-white"
+              )}
+            >
+              {st === 'ALL' ? 'All' : st.replace('_', ' ')}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Bookings Table */}
-      <Card className="bg-[#0f0f13] border-white/10 overflow-hidden">
+      {/* Bookings Table (Section 4.C) */}
+      <div className="rounded-2xl bg-[#121417] border border-[#1E2227] overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-white/5 text-white/40 uppercase text-[10px] border-b border-white/5 font-bold">
+          <table className="w-full text-left text-xs font-mono">
+            <thead className="bg-[#141619] border-b border-[#1E2227] text-zinc-400 uppercase text-[10px] font-semibold tracking-wider">
               <tr>
-                <th className="py-3.5 px-4">Confirmation</th>
-                <th className="py-3.5 px-4">Guest</th>
-                <th className="py-3.5 px-4">Suite</th>
-                <th className="py-3.5 px-4">Stay Dates</th>
-                <th className="py-3.5 px-4">Payment</th>
-                <th className="py-3.5 px-4">Status</th>
-                <th className="py-3.5 px-4 text-right">Actions</th>
+                <th className="py-3 px-4">Confirmation</th>
+                <th className="py-3 px-4 font-sans">Guest Profile</th>
+                <th className="py-3 px-4">Suite Allocation</th>
+                <th className="py-3 px-4">Stay Dates</th>
+                <th className="py-3 px-4">Folio Total</th>
+                <th className="py-3 px-4">Status</th>
+                <th className="py-3 px-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5 text-white/80">
+            <tbody className="divide-y divide-[#1A1D21] text-zinc-300">
               {filteredBookings.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-16 text-center text-white/40 italic">
+                  <td colSpan={7} className="py-16 text-center text-zinc-500 font-mono italic">
                     No reservations found matching the active criteria.
                   </td>
                 </tr>
@@ -197,64 +173,60 @@ export default function AdminBookingsPage() {
                     : 1
 
                   return (
-                    <tr key={b.id} className="hover:bg-white/[0.02] transition-colors">
-                      <td className="py-3.5 px-4 font-mono font-bold text-primary">
+                    <tr key={b.id} className="hover:bg-[#16181B] transition-colors">
+                      <td className="py-3 px-4 font-mono font-bold text-zinc-100">
                         {b.confirmationCode || b.id.slice(0, 8)}
                       </td>
 
-                      <td className="py-3.5 px-4">
-                        <div className="font-bold text-white">{guest?.name || 'Guest'}</div>
-                        <div className="text-[10px] text-white/40">{guest?.email || 'No email'}</div>
+                      <td className="py-3 px-4 font-sans">
+                        <div className="font-semibold text-white text-xs">{guest?.name || 'Guest'}</div>
+                        <div className="text-[11px] text-zinc-400 font-mono">{guest?.email || 'No email registered'}</div>
                       </td>
 
-                      <td className="py-3.5 px-4">
+                      <td className="py-3 px-4">
                         {room ? (
                           <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="border-white/10 text-white font-mono">
+                            <span className="bg-[#181A1D] border border-[#2B3037] text-zinc-200 font-mono text-xs px-2 py-0.5 rounded-md">
                               #{room.number}
-                            </Badge>
-                            <span className="text-white/60">{room.roomType?.name || room.type || 'Suite'}</span>
+                            </span>
+                            <span className="text-zinc-400 text-xs font-sans truncate max-w-[140px]">
+                              {room.roomType?.name || room.type || 'Standard'}
+                            </span>
                           </div>
                         ) : (
-                          <span className="text-white/30 italic">Unassigned</span>
+                          <span className="text-zinc-500 font-mono italic">Unassigned</span>
                         )}
                       </td>
 
-                      <td className="py-3.5 px-4">
-                        <div className="font-medium text-white">
+                      <td className="py-3 px-4">
+                        <div className="font-medium text-zinc-200">
                           {new Date(b.checkIn).toLocaleDateString()} &rarr; {new Date(b.checkOut).toLocaleDateString()}
                         </div>
-                        <div className="text-[10px] text-white/40">{nights} Nights &bull; {b.guests || 2} Guests</div>
+                        <div className="text-[10px] text-zinc-500">{nights} Nights &bull; {b.guests || 2} Guests</div>
                       </td>
 
-                      <td className="py-3.5 px-4 font-mono">
+                      <td className="py-3 px-4 font-mono">
                         <div className="text-emerald-400 font-bold">{formatPrice(Number(b.totalAmount))}</div>
-                        <div className="text-[10px] text-white/40 uppercase">{b.paymentStatus || 'UNPAID'}</div>
+                        <div className="text-[10px] text-zinc-500 uppercase">{b.paymentStatus || 'UNPAID'}</div>
                       </td>
 
-                      <td className="py-3.5 px-4">
-                        <Badge
-                          variant="outline"
-                          className={`text-[10px] font-bold uppercase ${
-                            b.status === 'CONFIRMED' ? 'border-blue-500/30 text-blue-400 bg-blue-500/10' :
-                            b.status === 'CHECKED_IN' ? 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10' :
-                            b.status === 'CHECKED_OUT' ? 'border-slate-500/30 text-slate-400 bg-slate-500/10' :
-                            'border-rose-500/30 text-rose-400 bg-rose-500/10'
-                          }`}
-                        >
+                      <td className="py-3 px-4">
+                        <span className={cn(
+                          "font-mono text-[10px] font-semibold px-2 py-0.5 rounded-full border tracking-wide uppercase",
+                          getStatusBadge(b.status)
+                        )}>
                           {b.status.replace('_', ' ')}
-                        </Badge>
+                        </span>
                       </td>
 
-                      <td className="py-3.5 px-4 text-right">
-                        <Button
-                          size="sm"
+                      <td className="py-3 px-4 text-right">
+                        <button
                           onClick={() => setViewingBookingId(b.id)}
-                          className="h-8 px-3 text-xs bg-primary/20 text-primary border border-primary/30 hover:bg-primary/30 rounded-xl font-bold"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#181A1D] hover:bg-[#20242A] border border-[#2B3037] text-zinc-200 text-xs font-mono transition-colors"
                         >
-                          <Eye className="w-3.5 h-3.5 mr-1" />
-                          View Dossier
-                        </Button>
+                          <Eye className="w-3.5 h-3.5 text-zinc-400" />
+                          <span>Dossier</span>
+                        </button>
                       </td>
                     </tr>
                   )
@@ -263,7 +235,7 @@ export default function AdminBookingsPage() {
             </tbody>
           </table>
         </div>
-      </Card>
+      </div>
 
       {/* Booking Dossier Popup */}
       <BookingDetailsModal
@@ -271,6 +243,6 @@ export default function AdminBookingsPage() {
         onClose={() => setViewingBookingId(null)}
         onStatusUpdated={fetchBookings}
       />
-    </div>
+    </AdminPageShell>
   )
 }

@@ -44,7 +44,7 @@ export async function GET(
           }
         },
         payments: { orderBy: { createdAt: 'desc' } },
-        stayEvents: { orderBy: { createdAt: 'desc' } },
+        stayEvents: { orderBy: { timestamp: 'desc' } },
         roomAssignments: {
           include: {
             room: {

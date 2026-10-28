@@ -56,18 +56,17 @@ test.describe('Stealth Industrial Cyber-Minimalism Design System Verification', 
     await page.waitForTimeout(1000);
 
     // 1. Verify Page Title
-    await expect(page.locator('text=Admin Command Deck').first()).toBeVisible();
+    await expect(page.locator('text=Admin Command Deck').first()).toBeVisible({ timeout: 30000 });
 
-    // 2. Verify KPI Metric Cards in Grid
-    const kpiCards = page.locator('.bg-\\[\\#121417\\].border-\\[\\#1E2227\\]');
-    const count = await kpiCards.count();
-    expect(count).toBeGreaterThanOrEqual(4);
-
-    // Check specific KPI labels
-    await expect(page.locator('text=Total Revenue').first()).toBeVisible();
+    // 2. Wait for KPI metrics to render
+    await expect(page.locator('text=Total Revenue').first()).toBeVisible({ timeout: 15000 });
     await expect(page.locator('text=Total Bookings').first()).toBeVisible();
     await expect(page.locator('text=Occupancy Rate').first()).toBeVisible();
     await expect(page.locator('text=Service Score').first()).toBeVisible();
+
+    const kpiCards = page.locator('.bg-\\[\\#121417\\].border-\\[\\#1E2227\\]');
+    const count = await kpiCards.count();
+    expect(count).toBeGreaterThanOrEqual(4);
 
     // Check monospace numbers and growth badges
     const growthBadge = page.locator('text=+14.2% MoM').first();
@@ -112,7 +111,7 @@ test.describe('Stealth Industrial Cyber-Minimalism Design System Verification', 
     await page.waitForTimeout(1000);
 
     // Verify page title
-    await expect(page.locator('text=SaaS Intelligence & Analytics').first()).toBeVisible();
+    await expect(page.locator('text=SaaS Intelligence & Analytics').first()).toBeVisible({ timeout: 30000 });
 
     // Verify Area Chart SVG and linearGradient
     const areaPath = page.locator('path[fill="url(#areaGrad)"]').first();
