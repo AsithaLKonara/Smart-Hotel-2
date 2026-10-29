@@ -43,7 +43,7 @@ export default function UnauthorizedPage() {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Go Back
           </Button>
-          <Button asChild className="bg-primary hover:bg-primary/90 text-white font-semibold">
+          <Button asChild className="bg-primary hover:bg-primary/90 text-black font-semibold">
             <Link href="/admin/dashboard">
               <Home className="w-4 h-4 mr-2" />
               Dashboard

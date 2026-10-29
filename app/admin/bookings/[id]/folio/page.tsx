@@ -133,7 +133,7 @@ export default function AdvancedFolioPage({ params }: { params: Promise<{ id: st
           >
             <SplitSquareHorizontal className="w-4 h-4 mr-2" /> New Window
           </Button>
-          <Button className="bg-primary text-white" onClick={() => setChargeModal(true)}>
+          <Button className="bg-primary text-black font-semibold" onClick={() => setChargeModal(true)}>
             <Plus className="w-4 h-4 mr-2" /> Post Charge
           </Button>
         </div>
@@ -280,7 +280,7 @@ export default function AdvancedFolioPage({ params }: { params: Promise<{ id: st
               </div>
               <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
                 <Button type="button" variant="ghost" onClick={() => setChargeModal(false)}>Cancel</Button>
-                <Button type="submit" className="bg-primary text-white"><Plus className="w-4 h-4 mr-2" /> Post Charge</Button>
+                <Button type="submit" className="bg-primary text-black font-semibold"><Plus className="w-4 h-4 mr-2" /> Post Charge</Button>
               </div>
             </form>
           </Dialog.Content>
@@ -319,7 +319,7 @@ export default function AdvancedFolioPage({ params }: { params: Promise<{ id: st
               </div>
               <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
                 <Button type="button" variant="ghost" onClick={() => setRoutingModal(null)}>Cancel</Button>
-                <Button type="submit" className="bg-primary text-white"><MoveRight className="w-4 h-4 mr-2" /> Add Rule</Button>
+                <Button type="submit" className="bg-primary text-black font-semibold"><MoveRight className="w-4 h-4 mr-2" /> Add Rule</Button>
               </div>
             </form>
           </Dialog.Content>

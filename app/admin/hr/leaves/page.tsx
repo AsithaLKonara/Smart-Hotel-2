@@ -110,7 +110,7 @@ export default function LeavesPage() {
     <AdminPageShell title="Leave Management" subtitle="Track and approve vacations, sick days, and time off requests." onRefresh={fetchData}>
 
       <div className="flex justify-end mb-8">
-        <Button onClick={() => setShowModal(true)} className="bg-primary text-white">
+        <Button onClick={() => setShowModal(true)} className="bg-primary text-black font-semibold">
           <Plus className="w-4 h-4 mr-2" /> New Leave Request
         </Button>
       </div>
@@ -220,7 +220,7 @@ export default function LeavesPage() {
           </div>
           <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
             <Button type="button" variant="ghost" onClick={() => setShowModal(false)}>Cancel</Button>
-            <Button type="submit" className="bg-primary text-white">Submit Request</Button>
+            <Button type="submit" className="bg-primary text-black font-semibold">Submit Request</Button>
           </div>
         </form>
       </ModalShell>

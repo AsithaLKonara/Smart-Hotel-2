@@ -161,7 +161,7 @@ export function OrderTracking({ orderId, onOrderComplete, onNewOrder }: OrderTra
             <h2 className="text-2xl font-serif font-bold text-white">Order Not Found</h2>
             <p className="text-white/40">We couldn't find an order with that ID.</p>
           </div>
-          <Button onClick={() => router.push('/dashboard/dining')} className="bg-primary hover:bg-primary/90 text-white rounded-xl h-12 px-8">
+          <Button onClick={() => router.push('/dashboard/dining')} className="bg-primary hover:bg-primary/90 text-black font-bold rounded-xl h-12 px-8">
             Place New Order
           </Button>
         </div>

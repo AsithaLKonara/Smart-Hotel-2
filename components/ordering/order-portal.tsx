@@ -287,7 +287,7 @@ export function OrderPortal({ roomNumber = "101", guestInfo }: OrderPortalProps)
                   <Button
                     onClick={handleCheckout}
                     disabled={isSubmitting}
-                    className="w-full h-16 bg-primary hover:bg-primary/90 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-luxury transition-all active:scale-95"
+                    className="w-full h-16 bg-primary hover:bg-primary/90 text-black rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-luxury transition-all active:scale-95"
                   >
                     {isSubmitting ? (
                       <div className="flex items-center gap-3">

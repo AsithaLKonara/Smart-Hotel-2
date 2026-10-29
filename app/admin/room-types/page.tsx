@@ -194,7 +194,7 @@ export default function AdminRoomTypesPage() {
           <h1 className="text-3xl font-bold text-white tracking-tight">Room Types</h1>
           <p className="text-slate-400 mt-1">Manage global configurations and pricing for room classes.</p>
         </div>
-        <Button onClick={() => openModal()} className="bg-primary hover:bg-primary/90 text-white font-medium">
+        <Button onClick={() => openModal()} className="bg-primary hover:bg-primary/90 text-black font-semibold">
           <Plus className="mr-2 h-4 w-4" /> Add Room Type
         </Button>
       </div>
@@ -343,7 +343,7 @@ export default function AdminRoomTypesPage() {
             <Button type="button" variant="ghost" onClick={() => setShowModal(false)} className="text-slate-400 hover:text-white hover:bg-white/5">
               Cancel
             </Button>
-            <Button type="submit" disabled={saving} className="bg-primary hover:bg-primary/90 text-white min-w-[100px]">
+            <Button type="submit" disabled={saving} className="bg-primary hover:bg-primary/90 text-black font-semibold min-w-[100px]">
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : (editingType ? 'Update' : 'Create')}
             </Button>
           </div>

@@ -200,7 +200,7 @@ export default function CorporateCRMPage() {
             className="pl-10 bg-white/5 border-white/10 text-white w-full"
           />
         </div>
-        <Button onClick={() => { resetForm(); setShowAddModal(true); }} className="bg-primary text-white flex items-center gap-2">
+        <Button onClick={() => { resetForm(); setShowAddModal(true); }} className="bg-primary text-black font-semibold flex items-center gap-2">
             <Plus className="w-4 h-4" /> Add Account
         </Button>
       </div>
@@ -307,7 +307,7 @@ export default function CorporateCRMPage() {
               </div>
               <div className="flex justify-end gap-3 pt-6 border-t border-white/10 mt-6">
                 <Button type="button" variant="ghost" onClick={() => { setShowAddModal(false); setShowEditModal(false); }}>Cancel</Button>
-                <Button type="submit" className="bg-primary text-white">{showEditModal ? 'Save Changes' : 'Create Account'}</Button>
+                <Button type="submit" className="bg-primary text-black font-semibold">{showEditModal ? 'Save Changes' : 'Create Account'}</Button>
               </div>
             </form>
           </Dialog.Content>

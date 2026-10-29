@@ -317,7 +317,7 @@ export function RoomActionDesk({
                     <button
                       onClick={handleCheckOut}
                       disabled={isCheckingOut}
-                      className="flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary/90 disabled:opacity-60 text-white font-bold rounded-xl transition-all shadow-lg shadow-primary/20 whitespace-nowrap text-sm"
+                      className="flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary/90 disabled:opacity-60 text-black font-bold rounded-xl transition-all shadow-lg shadow-primary/20 whitespace-nowrap text-sm"
                     >
                       {isCheckingOut ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogOut className="w-4 h-4" />}
                       Check Out & Settle Bill
@@ -751,7 +751,7 @@ export function RoomActionDesk({
                   <button
                     disabled={!guestName || isCreating}
                     onClick={handleQuickReserve}
-                    className="w-full h-14 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2 text-sm"
+                    className="w-full h-14 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-black font-bold rounded-xl transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2 text-sm"
                   >
                     {isCreating
                       ? <><Loader2 className="w-4 h-4 animate-spin" /> Creating Booking...</>

@@ -95,7 +95,7 @@ export function RoomStatusGrid({
                     onClick={() => onStatusFilterChange(st)}
                     className={cn(
                       "text-[9px] uppercase tracking-[0.1em] font-black px-3 py-2.5 rounded-xl transition-all whitespace-nowrap",
-                      statusFilter === st ? 'bg-primary text-white shadow-lg' : 'text-white/30 hover:text-white/60 hover:bg-white/5'
+                      statusFilter === st ? 'bg-primary text-black shadow-lg' : 'text-white/30 hover:text-white/60 hover:bg-white/5'
                     )}
                   >
                     {st === "ALL" ? "View All" : st.replace('_', ' ')}
@@ -139,8 +139,8 @@ export function RoomStatusGrid({
                     >
                       {/* Interaction Overlay (Quick Actions) */}
                       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-300 flex items-center justify-center gap-2 bg-black/40 backdrop-blur-[2px] rounded-[32px] z-20">
-                        <button className="p-2.5 rounded-full bg-white/10 hover:bg-primary transition-colors pointer-events-auto shadow-lg" title="Inspect Room">
-                          <CheckCircle2 className="w-4 h-4 text-white" />
+                        <button className="p-2.5 rounded-full bg-white/10 hover:bg-primary transition-colors pointer-events-auto shadow-lg group/btn" title="Inspect Room">
+                          <CheckCircle2 className="w-4 h-4 text-white group-hover/btn:text-black transition-colors" />
                         </button>
                         <button className="p-2.5 rounded-full bg-white/10 hover:bg-amber-500 transition-colors pointer-events-auto shadow-lg" title="Assign Cleaning">
                           <Clock className="w-4 h-4 text-white" />

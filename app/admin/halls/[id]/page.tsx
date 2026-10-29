@@ -471,7 +471,7 @@ export default function HallDetailPage({ params }: { params: Promise<{ id: strin
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-5 py-2 rounded-lg text-sm font-bold capitalize transition-all ${activeTab === tab ? 'bg-primary text-white shadow-md' : 'text-slate-400 hover:text-white'}`}
+            className={`px-5 py-2 rounded-lg text-sm font-bold capitalize transition-all ${activeTab === tab ? 'bg-primary text-black shadow-md' : 'text-slate-400 hover:text-white'}`}
           >
             {tab}
           </button>
@@ -540,7 +540,7 @@ export default function HallDetailPage({ params }: { params: Promise<{ id: strin
       {activeTab === 'bookings' && (
         <>
           <div className="flex justify-end mb-4">
-            <Button onClick={openCreateBooking} className="bg-primary text-white">
+            <Button onClick={openCreateBooking} className="bg-primary text-black font-semibold">
               <Plus className="w-4 h-4 mr-2" /> New Booking
             </Button>
           </div>
@@ -858,7 +858,7 @@ export default function HallDetailPage({ params }: { params: Promise<{ id: strin
 
           <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
             <Button type="button" variant="ghost" onClick={() => setShowBookingModal(false)} disabled={saving}>Cancel</Button>
-            <Button type="submit" className="bg-primary text-white" disabled={saving}>
+            <Button type="submit" className="bg-primary text-black font-semibold" disabled={saving}>
               {saving ? 'Saving...' : editingBooking ? 'Update Booking' : 'Confirm Booking'}
             </Button>
           </div>

@@ -146,7 +146,7 @@ export default function ShiftsPage() {
           className="border-rose-500/30 text-rose-400 bg-rose-500/10 hover:bg-rose-500/20">
           <AlertTriangle className="w-4 h-4 mr-2" /> Emergency Clock-Out
         </Button>
-        <Button onClick={() => setShowShiftModal(true)} className="bg-primary text-white">
+        <Button onClick={() => setShowShiftModal(true)} className="bg-primary text-black font-semibold">
           <Plus className="w-4 h-4 mr-2" /> Assign Shift
         </Button>
       </div>
@@ -237,7 +237,7 @@ export default function ShiftsPage() {
           </div>
           <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
             <Button type="button" variant="ghost" onClick={() => setShowShiftModal(false)}>Cancel</Button>
-            <Button type="submit" className="bg-primary text-white">Schedule Shift</Button>
+            <Button type="submit" className="bg-primary text-black font-semibold">Schedule Shift</Button>
           </div>
         </form>
       </ModalShell>

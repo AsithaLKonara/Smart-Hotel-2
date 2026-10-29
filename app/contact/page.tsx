@@ -282,7 +282,7 @@ export default function ContactPage() {
                   { icon: Clock, title: 'Guest Services', value: `Check-in: ${contactInfo?.checkIn || '15:00'} | Check-out: ${contactInfo?.checkOut || '11:00'}` },
                 ].map((item, i) => (
                   <div key={i} className="flex items-start gap-6 p-6 bg-white/5 backdrop-blur-md border border-white/10 hover:border-primary/30 transition-all duration-500 group rounded-2xl">
-                    <div className="w-12 h-12 bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors flex-shrink-0 rounded-xl">
+                    <div className="w-12 h-12 bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-black transition-colors flex-shrink-0 rounded-xl">
                       <item.icon className="w-5 h-5" />
                     </div>
                     <div className="space-y-2">

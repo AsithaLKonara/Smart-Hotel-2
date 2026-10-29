@@ -306,19 +306,19 @@ export function BookingsClient({ initialBookings }: { initialBookings: Booking[]
                   <td className="px-8 py-6">
                     <div className="flex gap-2">
                       {booking.status === 'PENDING' && (
-                        <Button size="sm" className="bg-primary hover:bg-primary/90 text-white rounded-xl text-[10px] font-black uppercase tracking-widest h-8 px-4" onClick={() => handleStatusUpdate(booking.id, 'CONFIRMED')}>
+                        <Button size="sm" className="bg-primary hover:bg-primary/90 text-black rounded-xl text-[10px] font-black uppercase tracking-widest h-8 px-4" onClick={() => handleStatusUpdate(booking.id, 'CONFIRMED')}>
                           Confirm
                         </Button>
                       )}
                       {booking.status === 'CONFIRMED' && (
-                        <Button size="sm" className="bg-primary hover:bg-primary/90 text-white rounded-xl text-[10px] font-black uppercase tracking-widest h-8 px-4" onClick={() => handleStatusUpdate(booking.id, 'CHECKED_IN')}>
+                        <Button size="sm" className="bg-primary hover:bg-primary/90 text-black rounded-xl text-[10px] font-black uppercase tracking-widest h-8 px-4" onClick={() => handleStatusUpdate(booking.id, 'CHECKED_IN')}>
                           Check In
                         </Button>
                       )}
                       {booking.status === 'CHECKED_IN' && (
                         <Button 
                           size="sm" 
-                          className="bg-primary hover:bg-primary/90 text-white rounded-xl text-[10px] font-black uppercase tracking-widest h-8 px-4" 
+                          className="bg-primary hover:bg-primary/90 text-black rounded-xl text-[10px] font-black uppercase tracking-widest h-8 px-4" 
                           onClick={() => {
                             const isPaid = booking.paymentStatus?.toLowerCase() === 'completed' || booking.paymentStatus?.toLowerCase() === 'paid'
                             if (!isPaid) {
@@ -363,7 +363,7 @@ export function BookingsClient({ initialBookings }: { initialBookings: Booking[]
           <DialogFooter className="mt-6 gap-3 sm:justify-start">
             <Button variant="ghost" className="hover:bg-white/10" onClick={() => setCheckoutDialog({ isOpen: false, booking: null })}>Cancel</Button>
             <Button 
-              className="bg-primary text-white" 
+              className="bg-primary text-black" 
               onClick={() => {
                 if (checkoutDialog.booking) {
                   handleStatusUpdate(checkoutDialog.booking.id, 'CHECKED_OUT')

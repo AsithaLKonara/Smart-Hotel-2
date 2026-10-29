@@ -307,7 +307,7 @@ export function BookingCalendar({ onMutationSuccess }: BookingCalendarProps) {
                   className={`p-2 min-h-[90px] sm:min-h-[110px] border-r border-b border-white/5 flex flex-col justify-between transition-colors hover:bg-white/[0.02] cursor-pointer ${todayMark ? 'bg-purple-950/15 border-purple-500/40' : ''}`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className={`text-[10px] sm:text-xs font-mono font-bold ${todayMark ? 'bg-primary text-white h-5 w-5 sm:h-6 sm:w-6 rounded-full flex items-center justify-center shadow-lg shadow-purple-950' : 'text-white/60'}`}>
+                    <span className={`text-[10px] sm:text-xs font-mono font-bold ${todayMark ? 'bg-primary text-black h-5 w-5 sm:h-6 sm:w-6 rounded-full flex items-center justify-center shadow-lg shadow-purple-950' : 'text-white/60'}`}>
                       {day.getDate()}
                     </span>
                     {dateBookings.length > 0 && (
@@ -395,7 +395,7 @@ export function BookingCalendar({ onMutationSuccess }: BookingCalendarProps) {
                       <p className="text-xs text-white/40 font-mono">TOTAL CHARGE</p>
                       <p className="text-sm font-bold text-white">{formatLKR(b.totalAmount)}</p>
                     </div>
-                    <Button size="sm" className="bg-primary/20 hover:bg-primary border border-primary/30 text-white rounded-xl h-8 text-xs font-semibold">
+                    <Button size="sm" className="bg-primary/20 hover:bg-primary border border-primary/30 text-white hover:text-black rounded-xl h-8 text-xs font-semibold">
                       Open PMS
                     </Button>
                   </div>

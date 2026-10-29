@@ -118,7 +118,7 @@ export default function DashboardOrchestrator() {
               </div>
 
               <div className="space-y-3">
-                <Button className="w-full h-14 bg-primary hover:bg-primary/90 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all hover:scale-[1.02] shadow-lg shadow-primary/20">
+                <Button className="w-full h-14 bg-primary hover:bg-primary/90 text-black rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all hover:scale-[1.02] shadow-lg shadow-primary/20">
                   Instant Message
                 </Button>
                 <Button variant="outline" className="w-full h-14 bg-white/5 hover:bg-white/10 border-white/10 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">

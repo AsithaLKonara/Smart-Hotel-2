@@ -83,7 +83,7 @@ export default function ProfilePage() {
                   <User className="w-16 h-16 text-primary" />
                 )}
               </div>
-              <button className="absolute bottom-0 right-0 w-10 h-10 bg-white/5 backdrop-blur-md border border-white/10 rounded-full flex items-center justify-center text-white hover:bg-primary hover:text-white transition-all shadow-lg">
+              <button className="absolute bottom-0 right-0 w-10 h-10 bg-white/5 backdrop-blur-md border border-white/10 rounded-full flex items-center justify-center text-white hover:bg-primary hover:text-black transition-all shadow-lg">
                 <Camera className="w-4 h-4" />
               </button>
             </div>
@@ -140,7 +140,7 @@ export default function ProfilePage() {
               <h4 className="text-xl font-serif font-bold text-white">Guest Information</h4>
               <Button 
                 onClick={() => toast.success("Changes saved successfully (Simulation).")}
-                className="bg-primary hover:bg-primary/90 text-white rounded-2xl px-8 h-12 text-[10px] font-black uppercase tracking-widest"
+                className="bg-primary hover:bg-primary/90 text-black rounded-2xl px-8 h-12 text-[10px] font-black uppercase tracking-widest"
               >
                 <Save className="w-4 h-4 mr-2" /> Save Changes
               </Button>

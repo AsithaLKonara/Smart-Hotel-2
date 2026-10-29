@@ -94,7 +94,7 @@ export default function SpendingPage() {
               <h4 className="font-bold text-white">Express Checkout</h4>
               <p className="text-xs text-white/40">Settle your account and receive your final invoice via email.</p>
             </div>
-            <Button className="w-full bg-primary hover:bg-primary/90 text-white rounded-2xl h-12 text-[10px] font-black uppercase tracking-widest">
+            <Button className="w-full bg-primary hover:bg-primary/90 text-black rounded-2xl h-12 text-[10px] font-black uppercase tracking-widest">
               Review & Pay
             </Button>
           </Card>

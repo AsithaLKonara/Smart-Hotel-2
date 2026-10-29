@@ -102,7 +102,7 @@ export default function CorporatePortal() {
               onChange={(e) => setAccessCode(e.target.value)}
               className="bg-white/5 border-white/10 text-white"
             />
-            <Button onClick={handleLogin} className="bg-primary text-white font-bold h-12 w-full mt-2">
+            <Button onClick={handleLogin} className="bg-primary text-black font-bold h-12 w-full mt-2">
               Access Portal
             </Button>
           </CardContent>
@@ -141,7 +141,7 @@ export default function CorporatePortal() {
               <Button 
                 onClick={handleBook} 
                 disabled={bookingStatus === 'processing'}
-                className="w-full bg-primary h-12 text-white font-bold mt-4"
+                className="w-full bg-primary h-12 text-black font-bold mt-4"
               >
                 {bookingStatus === 'processing' ? 'Confirming...' : bookingStatus === 'success' ? <><CheckCircle className="w-5 h-5 mr-2" /> Booking Confirmed!</> : 'Book with Corporate Rate'}
               </Button>

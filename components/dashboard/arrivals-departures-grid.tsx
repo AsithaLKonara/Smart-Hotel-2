@@ -208,11 +208,11 @@ export function ArrivalsDeparturesGrid({
                             onClick={() => onCheckOut(dep.roomNumber)}
                             className={cn(
                               "w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg transition-all active:scale-95 group-hover:w-32 group-hover:gap-2 transition-all duration-300",
-                              hasBalance ? "bg-rose-600 hover:bg-rose-500 shadow-rose-600/20" : "bg-primary hover:bg-primary/80 shadow-primary/20"
+                              hasBalance ? "bg-rose-600 hover:bg-rose-500 shadow-rose-600/20 text-white" : "bg-primary hover:bg-primary/80 shadow-primary/20 text-black"
                             )}
                           >
-                            <LogOut className="w-5 h-5 shrink-0 text-white" />
-                            <span className="hidden group-hover:block text-[10px] font-black uppercase whitespace-nowrap text-white">Check-Out</span>
+                            <LogOut className={cn("w-5 h-5 shrink-0", hasBalance ? "text-white" : "text-black")} />
+                            <span className={cn("hidden group-hover:block text-[10px] font-black uppercase whitespace-nowrap", hasBalance ? "text-white" : "text-black")}>Check-Out</span>
                           </button>
                         </div>
                       </div>

@@ -236,7 +236,7 @@ export function ExpressCheckInModal({ rooms, onClose, onCreateWalkIn }: ExpressC
           <button
             disabled={!selectedRoom || !guestName || isSubmitting}
             onClick={handleSubmit}
-            className="flex items-center gap-2 px-6 py-2.5 bg-primary hover:bg-primary/90 disabled:opacity-50 text-white font-bold rounded-xl transition-all shadow-lg shadow-primary/20 text-sm"
+            className="flex items-center gap-2 px-6 py-2.5 bg-primary hover:bg-primary/90 disabled:opacity-50 text-black font-bold rounded-xl transition-all shadow-lg shadow-primary/20 text-sm"
           >
             {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCheck className="w-4 h-4" />}
             Confirm Walk-in

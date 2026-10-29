@@ -295,18 +295,18 @@ export default function HallsPage() {
           <div className="flex gap-1 bg-white/5 p-1 rounded-xl">
             <button
               onClick={() => setFilterType('ALL')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${filterType === 'ALL' ? 'bg-primary text-white' : 'text-slate-400 hover:text-white'}`}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${filterType === 'ALL' ? 'bg-primary text-black' : 'text-slate-400 hover:text-white'}`}
             >All</button>
             {HALL_TYPES.map(t => (
               <button
                 key={t}
                 onClick={() => setFilterType(t)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${filterType === t ? 'bg-primary text-white' : 'text-slate-400 hover:text-white'}`}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${filterType === t ? 'bg-primary text-black' : 'text-slate-400 hover:text-white'}`}
               >{HALL_TYPE_LABELS[t]}</button>
             ))}
           </div>
         </div>
-        <Button onClick={openCreate} className="bg-primary text-white">
+        <Button onClick={openCreate} className="bg-primary text-black font-semibold">
           <Plus className="w-4 h-4 mr-2" /> New Hall
         </Button>
       </div>
@@ -564,7 +564,7 @@ export default function HallsPage() {
 
           <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
             <Button type="button" variant="ghost" onClick={() => setShowModal(false)} disabled={saving}>Cancel</Button>
-            <Button type="submit" className="bg-primary text-white" disabled={saving}>
+            <Button type="submit" className="bg-primary text-black font-semibold" disabled={saving}>
               {saving ? 'Saving...' : editingHall ? 'Update Hall' : 'Create Hall'}
             </Button>
           </div>

@@ -330,7 +330,7 @@ export default function EventsDashboard() {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-5 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === tab ? 'bg-primary text-white shadow-md' : 'text-slate-400 hover:text-white'}`}
+              className={`px-5 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === tab ? 'bg-primary text-black shadow-md' : 'text-slate-400 hover:text-white'}`}
             >
               {tab}
             </button>
@@ -341,22 +341,22 @@ export default function EventsDashboard() {
             <Calculator className="w-4 h-4 mr-2" /> Price Quote
           </Button>
           {activeTab === 'EVENTS' && (
-            <Button onClick={() => setNewEventModal(true)} className="bg-primary text-white">
+            <Button onClick={() => setNewEventModal(true)} className="bg-primary text-black font-semibold">
               <Plus className="w-4 h-4 mr-2" /> New Event
             </Button>
           )}
           {activeTab === 'SPACES' && (
-            <Button onClick={() => setNewSpaceModal(true)} className="bg-primary text-white">
+            <Button onClick={() => setNewSpaceModal(true)} className="bg-primary text-black font-semibold">
               <Plus className="w-4 h-4 mr-2" /> New Space
             </Button>
           )}
           {activeTab === 'PACKAGES' && (
-            <Button onClick={() => setNewPackageModal(true)} className="bg-primary text-white">
+            <Button onClick={() => setNewPackageModal(true)} className="bg-primary text-black font-semibold">
               <Plus className="w-4 h-4 mr-2" /> New Package
             </Button>
           )}
           {activeTab === 'BLOCKS' && (
-            <Button onClick={() => setNewBlockModal(true)} className="bg-primary text-white">
+            <Button onClick={() => setNewBlockModal(true)} className="bg-primary text-black font-semibold">
               <Plus className="w-4 h-4 mr-2" /> New Block
             </Button>
           )}
@@ -596,7 +596,7 @@ export default function EventsDashboard() {
           <FormField label="Number of Guests">
             <Input type="number" min="1" required value={quoteForm.guests} onChange={e => setQuoteForm({ ...quoteForm, guests: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white" />
           </FormField>
-          <Button type="submit" className="w-full bg-primary text-white mt-2"><Calculator className="w-4 h-4 mr-2" /> Get Quote</Button>
+          <Button type="submit" className="w-full bg-primary text-black font-semibold mt-2"><Calculator className="w-4 h-4 mr-2" /> Get Quote</Button>
         </form>
         {quoteResult && (
           <div className="mt-6 bg-primary/10 border border-primary/30 rounded-xl p-5 text-white">
@@ -622,7 +622,7 @@ export default function EventsDashboard() {
           </FormField>
           <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
             <Button type="button" variant="ghost" onClick={() => setAttendanceModal(null)}>Cancel</Button>
-            <Button type="submit" className="bg-primary text-white"><BookOpen className="w-4 h-4 mr-2" /> Confirm Booking</Button>
+            <Button type="submit" className="bg-primary text-black font-semibold"><BookOpen className="w-4 h-4 mr-2" /> Confirm Booking</Button>
           </div>
         </form>
       </ModalShell>
@@ -646,7 +646,7 @@ export default function EventsDashboard() {
           </div>
           <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
             <Button type="button" variant="ghost" onClick={() => setNewSpaceModal(false)}>Cancel</Button>
-            <Button type="submit" className="bg-primary text-white">Create Space</Button>
+            <Button type="submit" className="bg-primary text-black font-semibold">Create Space</Button>
           </div>
         </form>
       </ModalShell>
@@ -676,7 +676,7 @@ export default function EventsDashboard() {
           </div>
           <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
             <Button type="button" variant="ghost" onClick={() => setNewBlockModal(false)}>Cancel</Button>
-            <Button type="submit" className="bg-primary text-white">Create Block</Button>
+            <Button type="submit" className="bg-primary text-black font-semibold">Create Block</Button>
           </div>
         </form>
       </ModalShell>
@@ -732,7 +732,7 @@ export default function EventsDashboard() {
           </FormField>
           <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
             <Button type="button" variant="ghost" onClick={() => setNewEventModal(false)}>Cancel</Button>
-            <Button type="submit" className="bg-primary text-white">Create Event</Button>
+            <Button type="submit" className="bg-primary text-black font-semibold">Create Event</Button>
           </div>
         </form>
       </ModalShell>
@@ -768,7 +768,7 @@ export default function EventsDashboard() {
           </FormField>
           <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
             <Button type="button" variant="ghost" onClick={() => setNewPackageModal(false)}>Cancel</Button>
-            <Button type="submit" className="bg-primary text-white">Create Package</Button>
+            <Button type="submit" className="bg-primary text-black font-semibold">Create Package</Button>
           </div>
         </form>
       </ModalShell>
@@ -823,7 +823,7 @@ export default function EventsDashboard() {
 
           <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
             <Button type="button" variant="ghost" onClick={() => setBeoModal(null)}>Cancel</Button>
-            <Button type="submit" className="bg-primary text-white">Save BEO</Button>
+            <Button type="submit" className="bg-primary text-black font-semibold">Save BEO</Button>
           </div>
         </form>
       </ModalShell>

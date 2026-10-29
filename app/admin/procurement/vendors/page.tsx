@@ -76,7 +76,7 @@ export default function VendorsPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50" />
           <Input placeholder="Search vendors..." value={search} onChange={e => setSearch(e.target.value)} className="pl-10 bg-white/5 border-white/10 text-white" />
         </div>
-        <Button onClick={() => setShowModal(true)} className="bg-primary text-white">
+        <Button onClick={() => setShowModal(true)} className="bg-primary text-black font-semibold">
           <Plus className="w-4 h-4 mr-2" /> New Vendor
         </Button>
       </div>
@@ -143,7 +143,7 @@ export default function VendorsPage() {
           </div>
           <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
             <Button type="button" variant="ghost" onClick={() => setShowModal(false)}>Cancel</Button>
-            <Button type="submit" className="bg-primary text-white">Save Vendor</Button>
+            <Button type="submit" className="bg-primary text-black font-semibold">Save Vendor</Button>
           </div>
         </form>
       </ModalShell>

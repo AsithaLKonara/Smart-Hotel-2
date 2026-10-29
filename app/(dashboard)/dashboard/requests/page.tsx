@@ -120,7 +120,7 @@ export default function RequestsPage() {
             <Button 
               disabled={!quickRequest.trim() || submitting}
               onClick={() => submitRequest('GUEST_REQUEST', 'Quick Request', quickRequest)}
-              className="w-full h-14 bg-primary hover:bg-primary/90 text-white rounded-2xl font-black uppercase tracking-widest text-[10px]"
+              className="w-full h-14 bg-primary hover:bg-primary/90 text-black rounded-2xl font-black uppercase tracking-widest text-[10px]"
             >
               {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Submit Request"}
             </Button>

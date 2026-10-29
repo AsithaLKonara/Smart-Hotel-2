@@ -24,7 +24,7 @@ export function ProcurementNavigation() {
             className={cn(
               "px-4 py-2 text-sm font-medium rounded-lg transition-colors",
               isActive 
-                ? "bg-primary text-white" 
+                ? "bg-primary text-black font-semibold" 
                 : "text-white/60 hover:text-white hover:bg-white/5"
             )}
           >

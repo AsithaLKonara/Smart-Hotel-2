@@ -680,7 +680,7 @@ export default function RoomsPage() {
            <h2 className="text-4xl lg:text-5xl font-serif font-bold text-white">Need Assistance?</h2>
            <p className="text-white/50 max-w-xl mx-auto font-light">Our concierge team is available 24/7 to help you choose the perfect suite for your stay.</p>
            <Link href="/contact">
-              <Button variant="outline" className="border-primary text-primary rounded-xl px-12 h-14 uppercase tracking-widest text-xs font-bold hover:bg-primary hover:text-white transition-all">
+              <Button variant="outline" className="border-primary text-primary rounded-xl px-12 h-14 uppercase tracking-widest text-xs font-bold hover:bg-primary hover:text-black transition-all">
                 Contact Concierge
               </Button>
            </Link>

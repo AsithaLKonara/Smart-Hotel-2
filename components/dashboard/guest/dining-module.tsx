@@ -90,7 +90,7 @@ export function DiningModule({ roomNumber = "101", guestInfo }: DiningModuleProp
             className={cn(
               "flex-1 md:w-48 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-3",
               activeTab === 'room-service' 
-                ? "bg-primary text-white shadow-luxury" 
+                ? "bg-primary text-black font-black shadow-luxury" 
                 : "text-white/40 hover:text-white hover:bg-white/5"
             )}
           >
@@ -102,7 +102,7 @@ export function DiningModule({ roomNumber = "101", guestInfo }: DiningModuleProp
             className={cn(
               "flex-1 md:w-48 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-3",
               activeTab === 'table-booking' 
-                ? "bg-primary text-white shadow-luxury" 
+                ? "bg-primary text-black font-black shadow-luxury" 
                 : "text-white/40 hover:text-white hover:bg-white/5"
             )}
           >
@@ -211,7 +211,7 @@ export function DiningModule({ roomNumber = "101", guestInfo }: DiningModuleProp
                   <div className="grid grid-cols-2 gap-4 pt-2">
                     <Button 
                       onClick={() => handleBooking(venue.name)}
-                      className="h-14 bg-primary hover:bg-primary/90 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-luxury transition-all active:scale-95"
+                      className="h-14 bg-primary hover:bg-primary/90 text-black rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-luxury transition-all active:scale-95"
                     >
                       Reserve Table
                     </Button>
