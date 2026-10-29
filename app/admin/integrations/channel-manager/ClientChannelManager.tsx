@@ -11,18 +11,21 @@ import {
   Link as LinkIcon, 
   Settings2, 
   Globe2, 
-  ArrowRight,
-  TrendingUp,
-  Save,
-  Check,
-  ShieldCheck,
-  Layers,
-  X
+  ArrowRight, 
+  TrendingUp, 
+  Save, 
+  Check, 
+  ShieldCheck, 
+  Layers, 
+  X 
 } from 'lucide-react';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
+import { AdminPageShell } from '@/components/dashboard/admin/admin-page-shell';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 export default function ClientChannelManager({ 
   initialProviders, 
@@ -40,9 +43,9 @@ export default function ClientChannelManager({
     providerCode: 'BOOKING_COM', 
     propertyId: properties[0]?.id || '', 
     clientId: '', 
-    affiliateId: '',
-    clientSecret: '',
-    environment: 'PRODUCTION'
+    affiliateId: '', 
+    clientSecret: '', 
+    environment: 'PRODUCTION' 
   });
   
   // Sync Logs audit state
@@ -164,83 +167,70 @@ export default function ClientChannelManager({
   };
 
   return (
-    <div className="min-h-screen bg-transparent text-[#FBFAF7] font-sans p-6 md:p-8">
-      <div className="max-w-6xl mx-auto space-y-8">
-        
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-white/10">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-mono uppercase tracking-wider text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
-                OTA & Distribution Hub
-              </span>
-            </div>
-            <h1 className="text-3xl font-serif font-bold tracking-tight text-white flex items-center gap-3">
-              <Network className="w-8 h-8 text-[#D4AF37]" />
-              Channel Manager Core
-            </h1>
-            <p className="text-[#8E8C94] text-sm max-w-xl">
-              Centralized OTA connectivity for Booking.com, Airbnb, Agoda, and Expedia. Synchronize room availability, push rates, and manage 2-way mappings.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3 self-start md:self-end">
-            <Link 
-              href="/admin/pricing"
-              className="flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded-lg text-xs font-semibold border border-white/10 transition-colors"
-            >
-              <TrendingUp className="w-3.5 h-3.5 text-amber-400" /> Rate Plans & Pricing <ArrowRight className="w-3.5 h-3.5 text-white/50" />
-            </Link>
-            <button 
-              onClick={handleForceSync}
-              disabled={isSyncing}
-              className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg text-xs font-semibold border border-white/20 transition-colors disabled:opacity-50"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 text-emerald-400 ${isSyncing ? 'animate-spin' : ''}`} />
-              {isSyncing ? 'Syncing...' : 'Force Sync All'}
-            </button>
-            <button 
-              onClick={() => setIsModalOpen(true)} 
-              className="flex items-center gap-2 bg-[#D4AF37] text-black hover:bg-[#C3A030] px-4 py-2 rounded-lg text-xs font-bold tracking-wide transition-colors shadow-sm"
-            >
-              <Plus className="w-4 h-4" /> Add Connection
-            </button>
-          </div>
+    <AdminPageShell
+      title="Channel Manager Core"
+      subtitle="Centralized OTA connectivity for Booking.com, Airbnb, Agoda, and Expedia. 2-way inventory, rate broadcast & reservation sync."
+      actions={
+        <div className="flex flex-wrap items-center gap-2">
+          <Link 
+            href="/admin/pricing"
+            className="flex items-center gap-1.5 border border-[#1E2227] bg-[#121417] text-zinc-300 hover:text-white hover:bg-[#181A1D] px-3 py-2 rounded-lg text-xs font-mono transition-colors h-9"
+          >
+            <TrendingUp className="w-3.5 h-3.5 text-emerald-400" /> Rate Plans & Pricing <ArrowRight className="w-3 h-3 text-zinc-500" />
+          </Link>
+          <Button 
+            onClick={handleForceSync}
+            disabled={isSyncing}
+            variant="outline"
+            className="border-[#1E2227] bg-[#121417] text-zinc-300 hover:text-white hover:bg-[#181A1D] text-xs font-mono h-9"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 mr-1.5 text-emerald-400 ${isSyncing ? 'animate-spin' : ''}`} />
+            {isSyncing ? 'Syncing...' : 'Force Sync All'}
+          </Button>
+          <Button 
+            onClick={() => setIsModalOpen(true)} 
+            className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs font-mono uppercase tracking-wider h-9"
+          >
+            <Plus className="w-3.5 h-3.5 mr-1.5" /> Add Connection
+          </Button>
         </div>
-
+      }
+    >
+      <div className="space-y-6">
+        
         {/* View Switcher Tabs */}
-        <div className="flex items-center gap-2 border-b border-white/10 pb-4">
+        <div className="flex items-center gap-2 border-b border-[#1E2227] pb-3">
           <button
             onClick={() => setActiveTab('CHANNELS')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-mono uppercase tracking-wider transition-all ${
               activeTab === 'CHANNELS'
-                ? 'bg-[#D4AF37] text-black shadow-md'
-                : 'bg-white/5 text-white/60 hover:text-white hover:bg-white/10 border border-white/5'
+                ? 'bg-[#181A1D] border border-[#2B3037] text-white font-semibold'
+                : 'text-zinc-400 hover:text-white hover:bg-[#141619]'
             }`}
           >
-            <Globe2 className="w-4 h-4" />
+            <Globe2 className="w-4 h-4 text-zinc-400" />
             Active Channels ({providers.length})
           </button>
           <button
             onClick={() => setActiveTab('MAPPING')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-mono uppercase tracking-wider transition-all ${
               activeTab === 'MAPPING'
-                ? 'bg-[#D4AF37] text-black shadow-md'
-                : 'bg-white/5 text-white/60 hover:text-white hover:bg-white/10 border border-white/5'
+                ? 'bg-[#181A1D] border border-[#2B3037] text-white font-semibold'
+                : 'text-zinc-400 hover:text-white hover:bg-[#141619]'
             }`}
           >
-            <LinkIcon className="w-4 h-4" />
+            <LinkIcon className="w-4 h-4 text-zinc-400" />
             Room Type Mappings
           </button>
           <button
             onClick={() => setActiveTab('LOGS')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-mono uppercase tracking-wider transition-all ${
               activeTab === 'LOGS'
-                ? 'bg-[#D4AF37] text-black shadow-md'
-                : 'bg-white/5 text-white/60 hover:text-white hover:bg-white/10 border border-white/5'
+                ? 'bg-[#181A1D] border border-[#2B3037] text-white font-semibold'
+                : 'text-zinc-400 hover:text-white hover:bg-[#141619]'
             }`}
           >
-            <Activity className="w-4 h-4" />
+            <Activity className="w-4 h-4 text-zinc-400" />
             Sync Events {logs.length > 0 && `(${logs.length})`}
           </button>
         </div>
@@ -249,120 +239,124 @@ export default function ClientChannelManager({
         {activeTab === 'CHANNELS' && (
           <div>
             {providers.length === 0 ? (
-              <div className="bg-[#121118]/80 rounded-xl border border-white/5 p-12 text-center shadow-sm">
-                <div className="w-16 h-16 bg-black/40 rounded-full flex items-center justify-center mx-auto mb-4 border border-white/10">
-                  <Globe2 className="w-8 h-8 text-[#8E8C94]" />
+              <div className="bg-[#121417] rounded-xl border border-[#1E2227] p-12 text-center">
+                <div className="w-12 h-12 bg-[#181A1D] rounded-full flex items-center justify-center mx-auto mb-3 border border-[#2B3037]">
+                  <Globe2 className="w-6 h-6 text-zinc-500" />
                 </div>
-                <h3 className="text-lg font-medium text-white">No OTA Connections Configured</h3>
-                <p className="text-[#8E8C94] text-sm mt-2 max-w-md mx-auto">
+                <h3 className="text-sm font-semibold text-white font-mono uppercase tracking-wider">No OTA Connections Configured</h3>
+                <p className="text-zinc-400 text-xs mt-1.5 max-w-md mx-auto">
                   Connect your first OTA channel (Booking.com, Airbnb, Expedia) to enable automatic 2-way sync of inventory and reservations.
                 </p>
-                <button 
+                <Button 
                   onClick={() => setIsModalOpen(true)} 
-                  className="mt-6 flex items-center gap-2 bg-[#D4AF37] text-black hover:bg-[#C3A030] px-5 py-2.5 rounded-lg text-xs font-bold transition-colors mx-auto"
+                  className="mt-5 bg-white hover:bg-zinc-200 text-black font-semibold text-xs font-mono uppercase tracking-wider h-8"
                 >
-                  <Plus className="w-4 h-4" /> Connect Channel
-                </button>
+                  <Plus className="w-3.5 h-3.5 mr-1" /> Connect Channel
+                </Button>
               </div>
             ) : (
-              <div className="space-y-6">
+              <div className="space-y-4">
                 {providers.map((provider) => (
-                  <div key={provider.id} className="bg-[#121118]/80 rounded-xl border border-white/5 shadow-sm overflow-hidden">
-                    <div className="p-6 border-b border-white/5 flex items-center justify-between bg-black/20">
-                      <div className="flex items-center gap-4">
-                        <div className="h-12 w-12 rounded-lg bg-black/60 shadow-sm flex items-center justify-center border border-[#D4AF37]/30 font-bold text-[#D4AF37] text-xl">
+                  <div key={provider.id} className="bg-[#121417] rounded-xl border border-[#1E2227] overflow-hidden">
+                    <div className="p-4 sm:p-5 border-b border-[#1E2227] flex items-center justify-between bg-[#141619]">
+                      <div className="flex items-center gap-3.5">
+                        <div className="h-10 w-10 rounded-lg bg-[#181A1D] border border-[#2B3037] flex items-center justify-center font-bold font-mono text-white text-base">
                           {provider.code.charAt(0)}
                         </div>
                         <div>
-                          <h2 className="text-lg font-semibold text-white">{provider.name}</h2>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className="text-[10px] font-mono bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/20 uppercase font-bold tracking-wider">
+                          <h2 className="text-sm font-semibold text-white font-mono">{provider.name}</h2>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-[10px] font-mono bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/20 uppercase font-semibold">
                               Active Integration
                             </span>
-                            <span className="text-xs text-white/40">
+                            <span className="text-xs text-zinc-500 font-mono">
                               {provider.connections?.length || 0} Property Linked
                             </span>
                           </div>
                         </div>
                       </div>
 
-                      <button
+                      <Button
                         onClick={handleForceSync}
                         disabled={isSyncing}
-                        className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-white/80 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-colors"
+                        variant="outline"
+                        size="sm"
+                        className="border-[#1E2227] bg-[#121417] text-zinc-300 hover:text-white hover:bg-[#181A1D] text-xs font-mono h-8"
                       >
-                        <RefreshCw className={`w-3.5 h-3.5 text-emerald-400 ${isSyncing ? 'animate-spin' : ''}`} />
+                        <RefreshCw className={`w-3 h-3 mr-1.5 text-emerald-400 ${isSyncing ? 'animate-spin' : ''}`} />
                         Sync Now
-                      </button>
+                      </Button>
                     </div>
                     
-                    <div className="divide-y divide-white/5">
+                    <div className="divide-y divide-[#1E2227]">
                       {provider.connections?.map((conn: any) => (
-                        <div key={conn.id} className="p-6 hover:bg-white/[0.02] transition-colors">
-                          <div className="flex flex-col lg:flex-row justify-between gap-6">
+                        <div key={conn.id} className="p-5 hover:bg-[#141619]/50 transition-colors">
+                          <div className="flex flex-col lg:flex-row justify-between gap-4">
                             
-                            <div className="flex-1 space-y-4">
-                              <div className="flex items-center gap-3">
-                                <h3 className="font-medium text-white">{conn.property.name}</h3>
-                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${
+                            <div className="flex-1 space-y-3">
+                              <div className="flex items-center gap-2.5">
+                                <h3 className="font-semibold text-xs text-white font-mono">{conn.property.name}</h3>
+                                <Badge className={`text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 border ${
                                   conn.status === 'HEALTHY' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 
                                   conn.status === 'WARNING' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
-                                  'bg-red-500/10 text-red-400 border-red-500/20'
+                                  'bg-rose-500/10 text-rose-400 border-rose-500/20'
                                 }`}>
-                                  {conn.status === 'HEALTHY' && <CheckCircle2 className="w-3.5 h-3.5" />}
-                                  {conn.status === 'WARNING' && <Activity className="w-3.5 h-3.5" />}
-                                  {conn.status === 'ERROR' && <AlertCircle className="w-3.5 h-3.5" />}
+                                  {conn.status === 'HEALTHY' && <CheckCircle2 className="w-3 h-3 mr-1 inline" />}
+                                  {conn.status === 'WARNING' && <Activity className="w-3 h-3 mr-1 inline" />}
+                                  {conn.status === 'ERROR' && <AlertCircle className="w-3 h-3 mr-1 inline" />}
                                   {conn.status || 'CONNECTED'}
-                                </span>
-                                <span className="text-[10px] text-[#8E8C94] uppercase tracking-wider font-bold px-2 py-0.5 bg-black/40 border border-white/5 rounded">
+                                </Badge>
+                                <span className="text-[10px] text-zinc-400 uppercase tracking-wider font-mono px-2 py-0.5 bg-[#181A1D] border border-[#2B3037] rounded">
                                   {conn.environment || 'PRODUCTION'}
                                 </span>
                               </div>
 
-                              <div className="flex gap-8 text-sm">
+                              <div className="flex gap-6 text-xs">
                                 <div>
-                                  <p className="text-[#8E8C94] text-xs uppercase tracking-wider font-semibold mb-1">Last Sync</p>
-                                  <p className="font-medium text-white font-mono text-xs">
+                                  <p className="text-zinc-500 text-[10px] uppercase tracking-wider font-mono mb-0.5">Last Sync</p>
+                                  <p className="font-semibold text-zinc-200 font-mono text-xs">
                                     {conn.lastSyncAt ? formatDistanceToNow(new Date(conn.lastSyncAt), { addSuffix: true }) : 'Just now'}
                                   </p>
                                 </div>
                                 <div>
-                                  <p className="text-[#8E8C94] text-xs uppercase tracking-wider font-semibold mb-1">Status</p>
-                                  <p className="font-medium text-emerald-400 font-mono text-xs flex items-center gap-1">
+                                  <p className="text-zinc-500 text-[10px] uppercase tracking-wider font-mono mb-0.5">Status</p>
+                                  <p className="font-semibold text-emerald-400 font-mono text-xs flex items-center gap-1">
                                     <Check className="w-3 h-3" /> 2-Way Live Sync Active
                                   </p>
                                 </div>
                               </div>
                             </div>
 
-                            <div className="flex flex-col sm:flex-row items-center gap-3 self-center">
-                              <button 
+                            <div className="flex items-center gap-2 self-start lg:self-center">
+                              <Button 
                                 onClick={() => setActiveTab('MAPPING')}
-                                className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-wider text-[#FBFAF7] bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-colors"
+                                variant="outline"
+                                size="sm"
+                                className="border-[#1E2227] bg-[#141619] text-zinc-300 hover:text-white hover:bg-[#181A1D] text-xs font-mono h-8"
                               >
-                                <LinkIcon className="w-3.5 h-3.5 text-[#D4AF37]" /> Map Rooms
-                              </button>
+                                <LinkIcon className="w-3 h-3 mr-1.5 text-zinc-400" /> Map Rooms
+                              </Button>
                             </div>
                           </div>
 
                           {conn.syncEvents && conn.syncEvents.length > 0 && (
-                            <div className="mt-6 border border-white/5 rounded-lg overflow-hidden">
-                              <div className="bg-black/40 px-4 py-2 text-[10px] font-bold text-[#8E8C94] uppercase tracking-wider border-b border-white/5">
+                            <div className="mt-4 border border-[#1E2227] rounded-lg overflow-hidden bg-[#090A0C]">
+                              <div className="bg-[#141619] px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider text-zinc-500 border-b border-[#1E2227]">
                                 Recent Sync Events
                               </div>
-                              <div className="divide-y divide-white/5">
+                              <div className="divide-y divide-[#1E2227]">
                                 {conn.syncEvents.map((evt: any) => (
-                                  <div key={evt.id} className="px-4 py-2 flex items-center justify-between text-xs">
-                                    <div className="flex items-center gap-3">
+                                  <div key={evt.id} className="px-3 py-1.5 flex items-center justify-between text-xs font-mono">
+                                    <div className="flex items-center gap-2.5">
                                       <span className={`w-1.5 h-1.5 rounded-full ${
                                         evt.status === 'SUCCESS' ? 'bg-emerald-400' :
-                                        evt.status === 'FAILED' ? 'bg-red-400' : 'bg-amber-400'
+                                        evt.status === 'FAILED' ? 'bg-rose-400' : 'bg-amber-400'
                                       }`} />
-                                      <span className="font-mono text-[10px] text-white">{evt.eventType}</span>
-                                      <span className="text-white/20 hidden sm:inline">→</span>
-                                      <span className="text-[#8E8C94] hidden sm:inline font-mono text-[10px]">{evt.entityType}</span>
+                                      <span className="text-[11px] text-zinc-200">{evt.eventType}</span>
+                                      <span className="text-zinc-600 hidden sm:inline">→</span>
+                                      <span className="text-zinc-400 hidden sm:inline text-[11px]">{evt.entityType}</span>
                                     </div>
-                                    <span className="text-[10px] text-[#8E8C94] font-mono">
+                                    <span className="text-[10px] text-zinc-500">
                                       {formatDistanceToNow(new Date(evt.createdAt), { addSuffix: true })}
                                     </span>
                                   </div>
@@ -375,8 +369,8 @@ export default function ClientChannelManager({
                       ))}
                       
                       {(!provider.connections || provider.connections.length === 0) && (
-                        <div className="p-8 text-center bg-black/20">
-                          <p className="text-sm text-[#8E8C94]">No properties connected to {provider.name}.</p>
+                        <div className="p-6 text-center bg-[#141619]/30">
+                          <p className="text-xs text-zinc-500 font-mono">No properties connected to {provider.name}.</p>
                         </div>
                       )}
                     </div>
@@ -389,41 +383,43 @@ export default function ClientChannelManager({
 
         {/* Tab 2: Room Type Mappings */}
         {activeTab === 'MAPPING' && (
-          <div className="bg-[#121118]/80 rounded-xl border border-white/5 shadow-sm overflow-hidden">
-            <div className="p-6 border-b border-white/5 flex items-center justify-between bg-black/20">
+          <div className="bg-[#121417] rounded-xl border border-[#1E2227] overflow-hidden">
+            <div className="p-4 sm:p-5 border-b border-[#1E2227] flex items-center justify-between bg-[#141619]">
               <div>
-                <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                  <LinkIcon className="w-5 h-5 text-[#D4AF37]" /> OTA Room Type Mappings
+                <h2 className="text-sm font-semibold text-white flex items-center gap-2 font-mono uppercase tracking-wider">
+                  <LinkIcon className="w-4 h-4 text-zinc-400" /> OTA Room Type Mappings
                 </h2>
-                <p className="text-xs text-[#8E8C94] mt-1">
-                  Map each internal PMS room type to its corresponding OTA Channel Room ID and Rate Plan ID.
+                <p className="text-xs text-zinc-400 mt-0.5">
+                  Map internal PMS room types to OTA Channel Room IDs and Rate Plan IDs.
                 </p>
               </div>
-              <button
+              <Button
                 onClick={fetchMappings}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-white/70 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg border border-white/10"
+                variant="outline"
+                size="sm"
+                className="border-[#1E2227] bg-[#121417] text-zinc-300 hover:text-white hover:bg-[#181A1D] text-xs font-mono h-8"
               >
-                <RefreshCw className={`w-3.5 h-3.5 ${loadingMappings ? 'animate-spin' : ''}`} /> Refresh
-              </button>
+                <RefreshCw className={`w-3 h-3 mr-1.5 ${loadingMappings ? 'animate-spin' : ''}`} /> Refresh
+              </Button>
             </div>
 
             {loadingMappings ? (
-              <div className="p-12 text-center text-white/50 text-sm">Loading room mappings...</div>
+              <div className="p-12 text-center text-zinc-500 text-xs font-mono">Loading room mappings...</div>
             ) : roomTypes.length === 0 ? (
-              <div className="p-12 text-center text-white/50 text-sm">No room types found. Create room types first under Room Operations.</div>
+              <div className="p-12 text-center text-zinc-500 text-xs font-mono">No room types found. Create room types first under Room Operations.</div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm text-white">
-                  <thead className="bg-white/5 text-white/50 text-xs uppercase border-b border-white/10">
+                <table className="w-full text-left text-xs text-zinc-200">
+                  <thead className="bg-[#141619] text-zinc-400 uppercase font-mono text-[10px] tracking-wider border-b border-[#1E2227]">
                     <tr>
-                      <th className="p-4">Internal Room Type</th>
-                      <th className="p-4">OTA Room Type ID</th>
-                      <th className="p-4">OTA Rate Plan ID</th>
-                      <th className="p-4 text-center">Sync Enabled</th>
-                      <th className="p-4 text-right">Action</th>
+                      <th className="p-3.5">Internal Room Type</th>
+                      <th className="p-3.5">OTA Room Type ID</th>
+                      <th className="p-3.5">OTA Rate Plan ID</th>
+                      <th className="p-3.5 text-center">Sync Enabled</th>
+                      <th className="p-3.5 text-right">Action</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-white/5">
+                  <tbody className="divide-y divide-[#1E2227]">
                     {roomTypes.map(rt => {
                       const mapping = mappings.find(m => m.localRoomTypeId === rt.id) || {
                         localRoomTypeId: rt.id,
@@ -450,60 +446,64 @@ export default function ClientChannelManager({
 
         {/* Tab 3: Sync Events */}
         {activeTab === 'LOGS' && (
-          <div className="bg-[#121118]/80 rounded-xl border border-white/5 overflow-hidden shadow-sm">
-            <div className="p-6 border-b border-white/5 flex items-center justify-between">
+          <div className="bg-[#121417] rounded-xl border border-[#1E2227] overflow-hidden">
+            <div className="p-4 sm:p-5 border-b border-[#1E2227] flex items-center justify-between bg-[#141619]">
               <div>
-                <h2 className="text-lg font-semibold text-white">Channel Synchronization Logs</h2>
-                <p className="text-[#8E8C94] text-xs mt-1">Audit trail of inbound reservation pulls and outbound availability broadcasts.</p>
+                <h2 className="text-sm font-semibold text-white font-mono uppercase tracking-wider">Channel Synchronization Logs</h2>
+                <p className="text-zinc-400 text-xs mt-0.5">Audit trail of inbound reservation pulls and outbound availability broadcasts.</p>
               </div>
-              <button 
+              <Button 
                 onClick={fetchLogs}
                 disabled={loadingLogs}
-                className="flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white px-3 py-1.5 rounded-lg text-xs font-semibold border border-white/10 transition-colors"
+                variant="outline"
+                size="sm"
+                className="border-[#1E2227] bg-[#121417] text-zinc-300 hover:text-white hover:bg-[#181A1D] text-xs font-mono h-8"
               >
-                <RefreshCw className={`w-3.5 h-3.5 ${loadingLogs ? 'animate-spin' : ''}`} /> Refresh
-              </button>
+                <RefreshCw className={`w-3 h-3 mr-1.5 ${loadingLogs ? 'animate-spin' : ''}`} /> Refresh
+              </Button>
             </div>
             {loadingLogs ? (
-              <div className="p-12 text-center text-[#8E8C94]">Loading audit events...</div>
+              <div className="p-12 text-center text-zinc-500 text-xs font-mono">Loading audit events...</div>
             ) : logs.length === 0 ? (
-              <div className="p-12 text-center text-[#8E8C94]">No sync events recorded yet. Click &quot;Force Sync All&quot; above to initiate a sync.</div>
+              <div className="p-12 text-center text-zinc-500 text-xs font-mono">No sync events recorded yet. Click &quot;Force Sync All&quot; above to initiate a sync.</div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm text-white">
-                  <thead className="bg-white/5 text-white/50 text-xs uppercase border-b border-white/10">
+                <table className="w-full text-left text-xs text-zinc-200 font-mono">
+                  <thead className="bg-[#141619] text-zinc-400 uppercase text-[10px] tracking-wider border-b border-[#1E2227]">
                     <tr>
-                      <th className="p-4">Time</th>
-                      <th className="p-4">Channel</th>
-                      <th className="p-4">Event</th>
-                      <th className="p-4">Direction</th>
-                      <th className="p-4">Status</th>
-                      <th className="p-4">Notes / Error</th>
+                      <th className="p-3.5">Time</th>
+                      <th className="p-3.5">Channel</th>
+                      <th className="p-3.5">Event</th>
+                      <th className="p-3.5">Direction</th>
+                      <th className="p-3.5">Status</th>
+                      <th className="p-3.5">Notes / Error</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-white/5">
+                  <tbody className="divide-y divide-[#1E2227]">
                     {logs.map((log: any) => (
-                      <tr key={log.id} className="hover:bg-white/[0.02]">
-                        <td className="p-4 text-xs font-mono text-white/70">
+                      <tr key={log.id} className="hover:bg-[#141619]/50 transition-colors">
+                        <td className="p-3.5 text-zinc-400 text-[11px]">
                           {new Date(log.createdAt).toLocaleTimeString()} ({formatDistanceToNow(new Date(log.createdAt), { addSuffix: true })})
                         </td>
-                        <td className="p-4 font-semibold text-xs">{log.provider}</td>
-                        <td className="p-4 font-mono text-xs text-[#D4AF37]">{log.eventType}</td>
-                        <td className="p-4 text-xs">
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${log.direction === 'INBOUND' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'bg-purple-500/10 text-purple-400 border border-purple-500/20'}`}>
+                        <td className="p-3.5 font-semibold text-white">{log.provider}</td>
+                        <td className="p-3.5 text-zinc-300">{log.eventType}</td>
+                        <td className="p-3.5">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-semibold ${
+                            log.direction === 'INBOUND' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'bg-purple-500/10 text-purple-400 border border-purple-500/20'
+                          }`}>
                             {log.direction}
                           </span>
                         </td>
-                        <td className="p-4 text-xs">
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                        <td className="p-3.5">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-semibold ${
                             log.status === 'SUCCESS' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
                             log.status === 'QUARANTINED' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
-                            'bg-red-500/10 text-red-400 border border-red-500/20'
+                            'bg-rose-500/10 text-rose-400 border border-rose-500/20'
                           }`}>
                             {log.status}
                           </span>
                         </td>
-                        <td className="p-4 text-xs text-white/60 font-mono max-w-xs truncate">
+                        <td className="p-3.5 text-zinc-400 max-w-xs truncate text-[11px]">
                           {log.errorMessage || 'Completed successfully'}
                         </td>
                       </tr>
@@ -519,30 +519,30 @@ export default function ClientChannelManager({
 
       {/* New Connection Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 sm:p-6 overflow-y-auto">
-          <div className="bg-[#121118] border border-white/10 rounded-2xl w-full max-w-md max-h-[85vh] sm:max-h-[88vh] flex flex-col shadow-2xl overflow-hidden my-auto">
-            <div className="p-5 sm:p-6 border-b border-white/10 flex items-start justify-between flex-shrink-0">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
+          <div className="bg-[#121417] border border-[#1E2227] rounded-2xl w-full max-w-md flex flex-col shadow-2xl overflow-hidden my-auto">
+            <div className="p-5 border-b border-[#1E2227] flex items-start justify-between">
               <div>
-                <h3 className="text-xl font-bold font-serif text-[#D4AF37]">Connect New OTA Channel</h3>
-                <p className="text-sm text-slate-400 mt-1">Configure credentials for automated 2-way distribution.</p>
+                <h3 className="text-sm font-semibold text-white font-mono uppercase tracking-wider">Connect New OTA Channel</h3>
+                <p className="text-xs text-zinc-400 mt-0.5 font-sans">Configure credentials for automated 2-way distribution.</p>
               </div>
               <button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors ml-2"
+                className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-[#181A1D] transition-colors"
                 aria-label="Close modal"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
-            <form onSubmit={handleAddConnection} className="flex flex-col flex-1 overflow-hidden min-h-0">
-              <div className="p-5 sm:p-6 space-y-4 overflow-y-auto flex-1 min-h-0 [scrollbar-width:thin] [scrollbar-color:#333_transparent]">
-                <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-300">OTA Provider</label>
+            <form onSubmit={handleAddConnection} className="flex flex-col flex-1">
+              <div className="p-5 space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-400">OTA Provider</label>
                   <select 
                     value={formData.providerCode} 
                     onChange={e => setFormData({...formData, providerCode: e.target.value})}
-                    className="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-white text-sm focus:outline-none focus:border-[#D4AF37]"
+                    className="w-full bg-[#181A1D] border border-[#2B3037] rounded-lg p-2.5 text-white text-xs font-mono focus:outline-none focus:border-zinc-500"
                   >
                     <option value="BOOKING_COM">Booking.com</option>
                     <option value="EXPEDIA">Expedia</option>
@@ -550,96 +550,92 @@ export default function ClientChannelManager({
                     <option value="AGODA">Agoda</option>
                   </select>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-300">Target Property</label>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-400">Target Property</label>
                   <select 
                     value={formData.propertyId} 
                     onChange={e => setFormData({...formData, propertyId: e.target.value})}
-                    className="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-white text-sm focus:outline-none focus:border-[#D4AF37]"
+                    className="w-full bg-[#181A1D] border border-[#2B3037] rounded-lg p-2.5 text-white text-xs font-mono focus:outline-none focus:border-zinc-500"
                   >
                     {properties.map(p => (
                       <option key={p.id} value={p.id}>{p.name} ({p.code})</option>
                     ))}
                   </select>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-300">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-400">
                     {formData.providerCode === 'AGODA' ? 'Agoda Client ID' : 'Client / Machine Account ID'}
                   </label>
                   <input 
-                    type="text"
-                    required
-                    value={formData.clientId}
-                    onChange={e => setFormData({...formData, clientId: e.target.value})}
-                    placeholder={formData.providerCode === 'AGODA' ? 'e.g. agoda_client_id' : 'e.g. bcom_hotel_74829'}
-                    className="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-white text-sm focus:outline-none focus:border-[#D4AF37]"
+                    type="text" 
+                    required 
+                    value={formData.clientId} 
+                    onChange={e => setFormData({...formData, clientId: e.target.value})} 
+                    placeholder={formData.providerCode === 'AGODA' ? 'e.g. agoda_client_id' : 'e.g. bcom_hotel_74829'} 
+                    className="w-full bg-[#181A1D] border border-[#2B3037] rounded-lg p-2.5 text-white text-xs font-mono focus:outline-none focus:border-zinc-500" 
                   />
                 </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-300">Environment</label>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-400">Environment</label>
                   <select 
                     value={formData.environment} 
-                    onChange={e => setFormData({...formData, environment: e.target.value})}
-                    className="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-white text-sm focus:outline-none focus:border-[#D4AF37]"
+                    onChange={e => setFormData({...formData, environment: e.target.value})} 
+                    className="w-full bg-[#181A1D] border border-[#2B3037] rounded-lg p-2.5 text-white text-xs font-mono focus:outline-none focus:border-zinc-500" 
                   >
                     <option value="PRODUCTION">Production (Live Inventory & Bookings)</option>
                     <option value="TEST">Sandbox / Test (Demand API Sandbox)</option>
                   </select>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-300">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-400">
                     {formData.providerCode === 'AGODA' ? 'Agoda Hotel Code (Property ID)' : 'Affiliate / Partner ID (X-Affiliate-Id)'}
                   </label>
                   <input 
-                    type="text"
-                    required={formData.providerCode === 'AGODA'}
-                    value={formData.affiliateId}
-                    onChange={e => setFormData({...formData, affiliateId: e.target.value})}
-                    placeholder={formData.providerCode === 'AGODA' ? 'e.g. 61027' : 'e.g. 3849201'}
-                    className="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-white text-sm focus:outline-none focus:border-[#D4AF37]"
+                    type="text" 
+                    required={formData.providerCode === 'AGODA'} 
+                    value={formData.affiliateId} 
+                    onChange={e => setFormData({...formData, affiliateId: e.target.value})} 
+                    placeholder={formData.providerCode === 'AGODA' ? 'e.g. 61027' : 'e.g. 3849201'} 
+                    className="w-full bg-[#181A1D] border border-[#2B3037] rounded-lg p-2.5 text-white text-xs font-mono focus:outline-none focus:border-zinc-500" 
                   />
-                  <p className="text-[11px] text-slate-500">
-                    {formData.providerCode === 'AGODA' 
-                      ? 'Agoda Property ID registered in YCS portal' 
-                      : 'Required by Booking.com Demand API v3.2 header'}
-                  </p>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-300">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-400">
                     {formData.providerCode === 'AGODA' ? 'Agoda Client Secret (OAuth 2.0)' : 'API Bearer Token / Secret'}
                   </label>
                   <input 
-                    type="password"
-                    required
-                    value={formData.clientSecret}
-                    onChange={e => setFormData({...formData, clientSecret: e.target.value})}
-                    placeholder="••••••••••••"
-                    className="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-white text-sm focus:outline-none focus:border-[#D4AF37]"
+                    type="password" 
+                    required 
+                    value={formData.clientSecret} 
+                    onChange={e => setFormData({...formData, clientSecret: e.target.value})} 
+                    placeholder="••••••••••••" 
+                    className="w-full bg-[#181A1D] border border-[#2B3037] rounded-lg p-2.5 text-white text-xs font-mono focus:outline-none focus:border-zinc-500" 
                   />
                 </div>
               </div>
-              <div className="p-4 sm:p-5 border-t border-white/10 flex justify-end gap-3 bg-black/40 flex-shrink-0">
-                <button 
+              <div className="p-4 border-t border-[#1E2227] flex justify-end gap-2 bg-[#141619]">
+                <Button 
                   type="button" 
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white"
+                  variant="ghost" 
+                  onClick={() => setIsModalOpen(false)} 
+                  className="text-xs text-zinc-400 hover:text-white font-mono h-8" 
                 >
                   Cancel
-                </button>
-                <button 
+                </Button>
+                <Button 
                   type="submit" 
-                  disabled={isSubmitting}
-                  className="px-6 py-2 text-xs font-bold bg-[#D4AF37] text-black hover:bg-[#C3A030] rounded-lg disabled:opacity-50 transition-colors shadow-lg shadow-[#D4AF37]/10"
+                  disabled={isSubmitting} 
+                  className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs font-mono uppercase tracking-wider h-8" 
                 >
                   {isSubmitting ? 'Connecting...' : 'Connect OTA'}
-                </button>
+                </Button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-    </div>
+    </AdminPageShell>
   );
 }
 
@@ -671,57 +667,58 @@ function RoomMappingRow({
   };
 
   return (
-    <tr className="hover:bg-white/[0.02]">
-      <td className="p-4">
-        <p className="font-semibold text-white">{roomType.name}</p>
-        <p className="text-[11px] text-white/40 font-mono">ID: {roomType.id}</p>
+    <tr className="hover:bg-[#141619]/50 transition-colors">
+      <td className="p-3.5">
+        <p className="font-semibold text-white font-mono text-xs">{roomType.name}</p>
+        <p className="text-[10px] text-zinc-500 font-mono">ID: {roomType.id}</p>
       </td>
-      <td className="p-4">
+      <td className="p-3.5">
         <input 
-          value={otaRoomTypeId}
+          value={otaRoomTypeId} 
           onChange={(e) => {
             setOtaRoomTypeId(e.target.value);
             setIsDirty(true);
-          }}
-          placeholder="e.g. BCOM_DELUXE_01"
-          className="bg-black/50 border border-white/10 rounded px-3 py-1.5 text-xs text-white font-mono w-48 focus:outline-none focus:border-[#D4AF37]"
+          }} 
+          placeholder="e.g. BCOM_DELUXE_01" 
+          className="bg-[#181A1D] border border-[#2B3037] rounded-lg px-2.5 py-1.5 text-xs text-white font-mono w-44 focus:outline-none focus:border-zinc-500" 
         />
       </td>
-      <td className="p-4">
+      <td className="p-3.5">
         <input 
-          value={otaRatePlanId}
+          value={otaRatePlanId} 
           onChange={(e) => {
             setOtaRatePlanId(e.target.value);
             setIsDirty(true);
-          }}
-          placeholder="e.g. BAR_RATE"
-          className="bg-black/50 border border-white/10 rounded px-3 py-1.5 text-xs text-white font-mono w-36 focus:outline-none focus:border-[#D4AF37]"
+          }} 
+          placeholder="e.g. BAR_RATE" 
+          className="bg-[#181A1D] border border-[#2B3037] rounded-lg px-2.5 py-1.5 text-xs text-white font-mono w-36 focus:outline-none focus:border-zinc-500" 
         />
       </td>
-      <td className="p-4 text-center">
+      <td className="p-3.5 text-center">
         <input 
-          type="checkbox"
-          checked={syncEnabled}
+          type="checkbox" 
+          checked={syncEnabled} 
           onChange={(e) => {
             setSyncEnabled(e.target.checked);
             setIsDirty(true);
-          }}
-          className="w-4 h-4 rounded border-white/20 bg-black text-[#D4AF37] focus:ring-[#D4AF37] accent-[#D4AF37]"
+          }} 
+          className="w-4 h-4 rounded border-[#2B3037] bg-[#181A1D] text-white accent-white cursor-pointer" 
         />
       </td>
-      <td className="p-4 text-right">
-        <button
-          onClick={handleSave}
-          disabled={isSaving || !isDirty}
-          className={`px-3 py-1.5 rounded text-xs font-bold flex items-center gap-1.5 ml-auto transition-all ${
-            isDirty
-              ? 'bg-[#D4AF37] text-black hover:bg-[#C3A030]'
-              : 'bg-white/5 text-white/30 cursor-not-allowed'
-          }`}
+      <td className="p-3.5 text-right">
+        <Button 
+          onClick={handleSave} 
+          disabled={isSaving || !isDirty} 
+          size="sm" 
+          className={`h-7 px-2.5 text-xs font-mono uppercase tracking-wider transition-all ${
+            isDirty 
+              ? 'bg-white hover:bg-zinc-200 text-black font-semibold' 
+              : 'bg-[#181A1D] text-zinc-600 border border-[#2B3037] cursor-not-allowed'
+          }`} 
         >
-          <Save className="w-3.5 h-3.5" />
+          <Save className="w-3 h-3 mr-1" />
           {isSaving ? 'Saving...' : 'Save'}
-        </button>
+        </Button>
       </td>
     </tr>
   );

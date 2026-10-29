@@ -2,7 +2,11 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Settings, CheckCircle2, ChevronRight, Puzzle } from 'lucide-react';
+import { ArrowRight, Settings, CheckCircle2, ChevronRight, Puzzle, Check } from 'lucide-react';
+import { AdminPageShell } from '@/components/dashboard/admin/admin-page-shell';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 export interface MarketplaceApp {
   id: string;
@@ -19,7 +23,7 @@ export interface PartnerVendor {
   id: string;
   companyName: string;
   serviceType: string;
-  slaMetric: number; // percentage
+  slaMetric: number;
   status: 'ACTIVE' | 'SUSPENDED' | 'REVIEW' | string;
   lastPayout: number;
 }
@@ -34,150 +38,145 @@ export default function ClientMarketplace({ initialApps, initialVendors }: { ini
   };
 
   return (
-    <div className="min-h-screen bg-transparent text-[#FBFAF7] p-8 font-sans">
-      <div className="max-w-6xl mx-auto space-y-8">
-        
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-white/10">
-          <div className="space-y-2">
-            <h1 className="text-3xl font-medium tracking-tight text-white">App Marketplace</h1>
-            <p className="text-[#8E8C94] text-sm max-w-xl">
-              Extend your property management capabilities with verified integrations, modules, and regional service partners.
-            </p>
-          </div>
-
-          <div className="flex bg-black/40 p-1 rounded-lg self-start md:self-end border border-white/5">
-            <button
-              onClick={() => setActiveTab('extensions')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                activeTab === 'extensions' ? 'bg-white/10 text-white shadow-sm' : 'text-[#8E8C94] hover:text-white'
-              }`}
-            >
-              Extensions
-            </button>
-            <button
-              onClick={() => setActiveTab('vendors')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                activeTab === 'vendors' ? 'bg-white/10 text-white shadow-sm' : 'text-[#8E8C94] hover:text-white'
-              }`}
-            >
-              Service Partners
-            </button>
-          </div>
+    <AdminPageShell
+      title="App & Vendor Marketplace"
+      subtitle="Extend property management capabilities with verified integrations, certified modules, and regional service partners."
+      actions={
+        <div className="flex bg-[#121417] p-1 rounded-lg border border-[#1E2227]">
+          <button
+            onClick={() => setActiveTab('extensions')}
+            className={`px-3 py-1.5 rounded-md text-xs font-mono transition-all ${
+              activeTab === 'extensions' ? 'bg-[#181A1D] border border-[#2B3037] text-white font-semibold' : 'text-zinc-400 hover:text-white'
+            }`}
+          >
+            Extensions
+          </button>
+          <button
+            onClick={() => setActiveTab('vendors')}
+            className={`px-3 py-1.5 rounded-md text-xs font-mono transition-all ${
+              activeTab === 'vendors' ? 'bg-[#181A1D] border border-[#2B3037] text-white font-semibold' : 'text-zinc-400 hover:text-white'
+            }`}
+          >
+            Service Partners
+          </button>
         </div>
-
+      }
+    >
+      <div className="space-y-6">
+        
         {/* Extensions and Apps Grid Rendering */}
         {activeTab === 'extensions' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {apps.map((app) => (
-              <div
+              <Card
                 key={app.id}
-                className="bg-[#121118]/80 p-6 rounded-xl border border-white/5 shadow-sm hover:border-[#D4AF37]/30 hover:shadow-[#D4AF37]/5 transition-all flex flex-col justify-between min-h-[220px]"
+                className="bg-[#121417] p-5 rounded-xl border border-[#1E2227] shadow-none hover:border-[#2B3037] transition-all flex flex-col justify-between min-h-[200px]"
               >
                 <div className="space-y-3">
                   <div className="flex justify-between items-start">
                     <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-lg bg-black/40 flex items-center justify-center border border-white/10">
-                        <Puzzle className="w-5 h-5 text-[#D4AF37]" />
+                      <div className="h-10 w-10 rounded-lg bg-[#181A1D] flex items-center justify-center border border-[#2B3037]">
+                        <Puzzle className="w-5 h-5 text-emerald-400" />
                       </div>
                       <div>
-                        <h3 className="text-base font-medium text-white">{app.title}</h3>
-                        <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded bg-[#D4AF37]/10 text-[#D4AF37]">
+                        <h3 className="text-sm font-semibold text-white font-mono">{app.title}</h3>
+                        <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded bg-[#181A1D] text-zinc-400 border border-[#2B3037]">
                           {app.category}
                         </span>
                       </div>
                     </div>
                   </div>
-                  <p className="text-sm text-[#8E8C94] leading-relaxed mt-4">{app.description}</p>
+                  <p className="text-xs text-zinc-400 leading-relaxed font-sans mt-2">{app.description}</p>
                 </div>
 
-                <div className="flex justify-between items-center pt-5 mt-4 border-t border-white/5">
-                  <span className="text-xs font-medium text-[#8E8C94] bg-black/40 px-2.5 py-1 rounded-md border border-white/5">{app.cost}</span>
+                <div className="flex justify-between items-center pt-4 mt-4 border-t border-[#1E2227]">
+                  <span className="text-xs font-mono text-zinc-400 bg-[#181A1D] px-2.5 py-1 rounded-md border border-[#2B3037]">{app.cost}</span>
                   
                   <div className="flex items-center gap-2">
                     {app.installed && app.id === 'app-ota' && (
                       <Link href="/admin/integrations/channel-manager">
-                        <button className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-white hover:bg-white/10 border border-white/10 rounded-lg transition-colors">
-                          <Settings className="w-4 h-4" />
+                        <Button variant="outline" size="sm" className="flex items-center gap-1.5 h-8 text-xs font-mono border-[#1E2227] bg-[#141619] hover:bg-[#181A1D] text-zinc-300 hover:text-white">
+                          <Settings className="w-3.5 h-3.5" />
                           Configure
-                        </button>
+                        </Button>
                       </Link>
                     )}
                     
-                    <button
+                    <Button
                       onClick={() => handleToggleInstall(app.id)}
-                      className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
+                      size="sm"
+                      className={`h-8 px-3 rounded-lg text-xs font-mono uppercase tracking-wider transition-all flex items-center gap-1.5 ${
                         app.installed 
-                          ? 'bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/20 hover:bg-[#D4AF37]/20' 
-                          : 'bg-[#D4AF37] text-black hover:bg-[#C3A030]'
+                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20' 
+                          : 'bg-white hover:bg-zinc-200 text-black font-semibold'
                       }`}
                     >
                       {app.installed ? (
                         <>
-                          <CheckCircle2 className="w-4 h-4" /> Installed
+                          <Check className="w-3.5 h-3.5" /> Installed
                         </>
                       ) : (
                         'Install'
                       )}
-                    </button>
+                    </Button>
                   </div>
                 </div>
-              </div>
+              </Card>
             ))}
           </div>
         )}
 
         {/* Local Sub-contractor Vendors Table Rendering */}
         {activeTab === 'vendors' && (
-          <div className="bg-[#121118]/80 border border-white/5 rounded-xl overflow-hidden shadow-sm">
-            <div className="p-6 border-b border-white/5">
-              <h2 className="text-lg font-medium text-white">External Service Providers</h2>
-              <p className="text-sm text-[#8E8C94] mt-1">Manage local service contracts and track SLA performance.</p>
+          <Card className="bg-[#121417] border border-[#1E2227] rounded-xl overflow-hidden shadow-none">
+            <div className="p-5 border-b border-[#1E2227] bg-[#141619]">
+              <h2 className="text-sm font-semibold text-white font-mono uppercase tracking-wider">External Service Providers</h2>
+              <p className="text-xs text-zinc-500 mt-0.5 font-sans">Manage local service contracts and track SLA performance.</p>
             </div>
             
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm border-collapse">
+              <table className="w-full text-left text-xs font-mono">
                 <thead>
-                  <tr className="bg-black/20 text-[#8E8C94] border-b border-white/5">
-                    <th className="py-3 px-6 font-medium">Vendor Company</th>
-                    <th className="py-3 px-6 font-medium">Service Domain</th>
-                    <th className="py-3 px-6 font-medium">SLA Achievement</th>
-                    <th className="py-3 px-6 font-medium">Status</th>
-                    <th className="py-3 px-6 text-right font-medium">Payout (This Month)</th>
+                  <tr className="bg-[#141619] text-zinc-400 border-b border-[#1E2227] text-[10px] uppercase tracking-wider">
+                    <th className="py-3 px-5 font-semibold">Vendor Company</th>
+                    <th className="py-3 px-5 font-semibold">Service Domain</th>
+                    <th className="py-3 px-5 font-semibold">SLA Achievement</th>
+                    <th className="py-3 px-5 font-semibold">Status</th>
+                    <th className="py-3 px-5 text-right font-semibold">Payout (This Month)</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5">
+                <tbody className="divide-y divide-[#1E2227]">
                   {vendors.map((vend) => (
-                    <tr key={vend.id} className="text-sm hover:bg-white/[0.02] transition-colors">
-                      <td className="py-4 px-6 font-medium text-white">{vend.companyName}</td>
-                      <td className="py-4 px-6 text-[#8E8C94]">{vend.serviceType}</td>
-                      <td className="py-4 px-6">
+                    <tr key={vend.id} className="hover:bg-[#141619]/50 transition-colors">
+                      <td className="py-3.5 px-5 font-semibold text-white font-sans">{vend.companyName}</td>
+                      <td className="py-3.5 px-5 text-zinc-400">{vend.serviceType}</td>
+                      <td className="py-3.5 px-5">
                         <div className="flex items-center gap-3">
-                          <span className="font-medium text-[#FBFAF7] w-12">{vend.slaMetric}%</span>
-                          <div className="w-24 bg-white/10 h-1.5 rounded-full overflow-hidden">
-                            <div className="bg-[#D4AF37] h-full" style={{ width: `${vend.slaMetric}%` }} />
+                          <span className="font-semibold text-zinc-200 w-10">{vend.slaMetric}%</span>
+                          <div className="w-24 bg-[#181A1D] h-1.5 rounded-full overflow-hidden border border-[#2B3037]">
+                            <div className="bg-emerald-400 h-full" style={{ width: `${vend.slaMetric}%` }} />
                           </div>
                         </div>
                       </td>
-                      <td className="py-4 px-6">
-                        <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${
+                      <td className="py-3.5 px-5">
+                        <Badge className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono border ${
                           vend.status === 'ACTIVE' 
                             ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
                             : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
                         }`}>
                           {vend.status}
-                        </span>
+                        </Badge>
                       </td>
-                      <td className="py-4 px-6 text-right font-mono text-[#D4AF37]">${vend.lastPayout.toLocaleString()}</td>
+                      <td className="py-3.5 px-5 text-right font-mono font-bold text-white">${vend.lastPayout.toLocaleString()}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-          </div>
+          </Card>
         )}
 
       </div>
-    </div>
+    </AdminPageShell>
   );
 }

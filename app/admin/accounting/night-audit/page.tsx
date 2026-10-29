@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Moon, Clock, TrendingUp, AlertTriangle, SkipForward, Activity } from 'lucide-react'
+import { Moon, Clock, TrendingUp, AlertTriangle, SkipForward, Activity, CheckCircle2 } from 'lucide-react'
 import { useToast } from '@/components/ui/use-toast'
 import { useProperty } from '@/contexts/property-context'
+import { AdminPageShell } from '@/components/dashboard/admin/admin-page-shell'
 
 export default function NightAuditPage() {
   const { activePropertyId } = useProperty()
@@ -55,148 +56,166 @@ export default function NightAuditPage() {
   }
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-white">Night Audit & End of Day</h1>
-          <p className="text-white/60 text-sm">Post daily charges, calculate revenue, and roll the business date.</p>
-        </div>
-      </div>
+    <AdminPageShell
+      title="Night Audit & End of Day"
+      subtitle="Post daily room & tax charges, compute revenue reconciliation, lock general ledgers, and roll the operational business date."
+      onRefresh={fetchLogs}
+    >
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Main Execution Cockpit */}
+          <div className="lg:col-span-8">
+            <Card className="bg-[#121417] border border-[#1E2227] rounded-xl p-8 shadow-sm flex flex-col items-center justify-center text-center">
+              <div className="w-16 h-16 bg-[#181A1D] border border-[#2B3037] rounded-2xl flex items-center justify-center mb-5 text-zinc-100 shadow-inner">
+                <Moon className="w-8 h-8 text-zinc-300" />
+              </div>
+              <h2 className="text-xl font-mono font-bold text-zinc-100 mb-2">Automated End-Of-Day Audit</h2>
+              <p className="text-xs text-zinc-400 font-mono max-w-lg mb-6 leading-relaxed">
+                Initiating the night audit will calculate and post room, tax, and package charges to all active guest folios, balance general ledger debits and credits, generate daily financial summaries, and roll the system business date.
+              </p>
+              
+              <div className="flex flex-col sm:flex-row items-center gap-3">
+                <Button 
+                  onClick={runAudit} 
+                  disabled={running}
+                  className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs font-mono uppercase tracking-wider rounded-lg h-10 px-8 shadow-sm transition-all"
+                >
+                  {running ? 'Processing Pipeline...' : 'Run Night Audit'}
+                </Button>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <Card className="bg-[#1a1a1a] border-white/10 md:col-span-2 shadow-2xl">
-          <CardContent className="p-8 flex flex-col items-center justify-center text-center h-full">
-            <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-6">
-              <Moon className="w-10 h-10 text-primary" />
-            </div>
-            <h2 className="text-3xl font-bold text-white mb-2">Ready for Night Audit</h2>
-            <p className="text-white/60 max-w-md mb-8">
-              Running the night audit will post room and tax charges to all currently checked-in guests, finalize the general ledger for today, and roll the system business date to tomorrow.
-            </p>
-            <Button 
-              size="lg" 
-              onClick={runAudit} 
-              disabled={running}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-luxury px-12 py-6 text-lg"
-            >
-              {running ? 'Processing Audit...' : 'Run Night Audit'}
-            </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={rollingForward}
+                  onClick={runAudit}
+                  className="bg-[#181A1D] hover:bg-[#20242A] border border-[#2B3037] text-amber-400 text-xs font-mono font-semibold h-10 px-4 rounded-lg"
+                >
+                  <SkipForward className="w-3.5 h-3.5 mr-1.5" />
+                  {rollingForward ? 'Rolling...' : 'Force Date Roll-Forward'}
+                </Button>
 
-            <div className="flex gap-3 mt-4">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={rollingForward}
-                onClick={runAudit}
-                className="border-amber-500/30 text-amber-400 bg-amber-500/10 hover:bg-amber-500/20"
-              >
-                <SkipForward className="w-4 h-4 mr-2" />
-                {rollingForward ? 'Rolling...' : 'Force Roll-Forward'}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={async () => {
-                  const res = await fetch('/api/debug')
-                  const data = await res.json()
-                  setHealthStatus(data)
-                }}
-                className="border-blue-500/30 text-blue-400 bg-blue-500/10 hover:bg-blue-500/20"
-              >
-                <Activity className="w-4 h-4 mr-2" /> System Health
-              </Button>
-            </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={async () => {
+                    const res = await fetch('/api/debug')
+                    const data = await res.json()
+                    setHealthStatus(data)
+                  }}
+                  className="bg-[#181A1D] hover:bg-[#20242A] border border-[#2B3037] text-blue-400 text-xs font-mono font-semibold h-10 px-4 rounded-lg"
+                >
+                  <Activity className="w-3.5 h-3.5 mr-1.5" /> Diagnostic Check
+                </Button>
+              </div>
 
-            {healthStatus && (
-              <div className="mt-4 w-full text-left bg-black/40 border border-white/10 rounded-xl p-4 text-xs">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className={`w-2 h-2 rounded-full ${healthStatus.status === 'healthy' ? 'bg-emerald-400' : 'bg-rose-400'}`} />
-                  <span className={`font-bold uppercase tracking-widest ${healthStatus.status === 'healthy' ? 'text-emerald-400' : 'text-rose-400'}`}>
-                    {healthStatus.status}
-                  </span>
-                  <span className="text-white/30 ml-auto">{healthStatus.timestamp}</span>
-                </div>
-                <div className="grid grid-cols-2 gap-2 text-white/60">
-                  <span>DB Connection:</span>
-                  <span className={healthStatus.checks?.databaseConnection?.connected ? 'text-emerald-400' : 'text-rose-400'}>
-                    {healthStatus.checks?.databaseConnection?.connected ? `✓ ${healthStatus.checks.databaseConnection.userCount} users` : '✗ Failed'}
-                  </span>
-                  <span>Environment:</span>
-                  <span className="text-white/80">{healthStatus.environment}</span>
-                  <span>Checks Passed:</span>
-                  <span className="text-white/80">{healthStatus.summary?.passedChecks}/{healthStatus.summary?.totalChecks}</span>
-                </div>
-                {healthStatus.errors?.length > 0 && (
-                  <div className="mt-2 pt-2 border-t border-white/10">
-                    {healthStatus.errors.map((e: string, i: number) => (
-                      <p key={i} className="text-rose-400">{e}</p>
-                    ))}
+              {healthStatus && (
+                <div className="mt-6 w-full text-left bg-[#181A1D] border border-[#1E2227] rounded-xl p-4 text-xs font-mono">
+                  <div className="flex items-center gap-2 mb-2 pb-2 border-b border-[#1E2227]">
+                    <span className={`w-2 h-2 rounded-full ${healthStatus.status === 'healthy' ? 'bg-emerald-400' : 'bg-rose-400'}`} />
+                    <span className={`font-bold uppercase tracking-wider ${healthStatus.status === 'healthy' ? 'text-emerald-400' : 'text-rose-400'}`}>
+                      System State: {healthStatus.status}
+                    </span>
+                    <span className="text-zinc-500 ml-auto text-[10px]">{healthStatus.timestamp}</span>
                   </div>
-                )}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                  <div className="grid grid-cols-2 gap-2 text-zinc-400">
+                    <span>Database:</span>
+                    <span className={healthStatus.checks?.databaseConnection?.connected ? 'text-emerald-400' : 'text-rose-400'}>
+                      {healthStatus.checks?.databaseConnection?.connected ? `ONLINE (${healthStatus.checks.databaseConnection.userCount} users)` : 'DISCONNECTED'}
+                    </span>
+                    <span>Active Environment:</span>
+                    <span className="text-zinc-200">{healthStatus.environment}</span>
+                    <span>Operational Checks:</span>
+                    <span className="text-zinc-200">{healthStatus.summary?.passedChecks}/{healthStatus.summary?.totalChecks} passed</span>
+                  </div>
+                  {healthStatus.errors?.length > 0 && (
+                    <div className="mt-2 pt-2 border-t border-[#1E2227]">
+                      {healthStatus.errors.map((e: string, i: number) => (
+                        <p key={i} className="text-rose-400">{e}</p>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </Card>
+          </div>
 
-        <div className="flex flex-col gap-4">
-          <Card className="bg-[#1a1a1a] border-white/10 border-l-4 border-l-yellow-500">
-            <CardContent className="p-4 flex items-start gap-4">
-              <AlertTriangle className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-1" />
-              <div>
-                <h3 className="font-bold text-white text-sm">System Warning</h3>
-                <p className="text-xs text-white/60 mt-1">Users may experience slow performance during the audit. It is recommended to run this after 2:00 AM.</p>
+          {/* Instructions and Safeguards */}
+          <div className="lg:col-span-4 space-y-4">
+            <Card className="bg-[#121417] border border-[#1E2227] border-l-2 border-l-amber-500 rounded-xl p-5 shadow-sm space-y-2">
+              <div className="flex items-center gap-2 text-amber-400">
+                <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                <h3 className="font-mono text-xs font-bold uppercase tracking-wider">Operational Window</h3>
               </div>
-            </CardContent>
-          </Card>
-          <Card className="bg-[#1a1a1a] border-white/10 border-l-4 border-l-primary">
-            <CardContent className="p-4 flex items-start gap-4">
-              <TrendingUp className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
-              <div>
-                <h3 className="font-bold text-white text-sm">Revenue Posting</h3>
-                <p className="text-xs text-white/60 mt-1">This will lock all folios for the current business date and prevent retroactive modifications.</p>
+              <p className="text-xs text-zinc-400 font-mono leading-relaxed">
+                Execute after late arrivals are checked in and daily food & beverage outlets are closed (ideally 02:00 - 04:00 AM).
+              </p>
+            </Card>
+
+            <Card className="bg-[#121417] border border-[#1E2227] border-l-2 border-l-blue-500 rounded-xl p-5 shadow-sm space-y-2">
+              <div className="flex items-center gap-2 text-blue-400">
+                <TrendingUp className="w-4 h-4 flex-shrink-0" />
+                <h3 className="font-mono text-xs font-bold uppercase tracking-wider">General Ledger Lock</h3>
               </div>
-            </CardContent>
-          </Card>
+              <p className="text-xs text-zinc-400 font-mono leading-relaxed">
+                Night audit serializes and seals today's journal batches. Postings after audit require managerial override.
+              </p>
+            </Card>
+
+            <Card className="bg-[#121417] border border-[#1E2227] border-l-2 border-l-emerald-500 rounded-xl p-5 shadow-sm space-y-2">
+              <div className="flex items-center gap-2 text-emerald-400">
+                <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+                <h3 className="font-mono text-xs font-bold uppercase tracking-wider">Channel Sync</h3>
+              </div>
+              <p className="text-xs text-zinc-400 font-mono leading-relaxed">
+                Following closure, room inventories and stop-sell limits are automatically synchronized with connected OTA channels.
+              </p>
+            </Card>
+          </div>
+        </div>
+
+        {/* Recent Audit Logs Table */}
+        <div className="space-y-3">
+          <h2 className="text-xs font-mono uppercase tracking-wider text-zinc-400 font-semibold">Historical Audit Execution Logs</h2>
+          <div className="bg-[#121417] border border-[#1E2227] rounded-xl overflow-hidden shadow-sm">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-[#141619] border-b border-[#1E2227] text-zinc-400 text-[11px] font-mono uppercase tracking-wider">
+                  <tr>
+                    <th className="p-3.5">Execution Timestamp</th>
+                    <th className="p-3.5">Business Date</th>
+                    <th className="p-3.5">Rooms Processed</th>
+                    <th className="p-3.5">Total Revenue Posted</th>
+                    <th className="p-3.5 text-right">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#1E2227]">
+                  {logs.map((log: any) => (
+                    <tr key={log.id} className="hover:bg-[#16181B] transition-colors">
+                      <td className="p-3.5 text-zinc-300 font-mono flex items-center gap-2">
+                        <Clock className="w-3.5 h-3.5 text-zinc-500" />
+                        {new Date(log.createdAt).toLocaleString()}
+                      </td>
+                      <td className="p-3.5 font-mono text-zinc-200">{new Date(log.businessDate).toLocaleDateString()}</td>
+                      <td className="p-3.5 font-mono text-zinc-300">{log.roomsProcessed}</td>
+                      <td className="p-3.5 font-mono font-bold text-emerald-400">${Number(log.totalRevenue || 0).toFixed(2)}</td>
+                      <td className="p-3.5 text-right">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                          {log.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                  {logs.length === 0 && (
+                    <tr>
+                      <td colSpan={5} className="p-8 text-center text-zinc-500 font-mono">No night audit execution logs on record.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
-
-      <h2 className="text-xl font-bold text-white mb-4">Recent Audit Logs</h2>
-      <div className="bg-[#1a1a1a] border border-white/10 rounded-xl overflow-hidden">
-        <table className="w-full text-left">
-          <thead className="bg-white/5 border-b border-white/10">
-            <tr>
-              <th className="p-4 text-sm font-semibold text-white/70">Date Run</th>
-              <th className="p-4 text-sm font-semibold text-white/70">Business Date</th>
-              <th className="p-4 text-sm font-semibold text-white/70">Rooms Processed</th>
-              <th className="p-4 text-sm font-semibold text-white/70">Total Posted</th>
-              <th className="p-4 text-sm font-semibold text-white/70">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {logs.map((log: any) => (
-              <tr key={log.id} className="border-b border-white/5 hover:bg-white/5">
-                <td className="p-4 text-sm text-white flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-white/40" />
-                  {new Date(log.createdAt).toLocaleString()}
-                </td>
-                <td className="p-4 text-sm text-white/80">{new Date(log.businessDate).toLocaleDateString()}</td>
-                <td className="p-4 text-sm text-white/80">{log.roomsProcessed}</td>
-                <td className="p-4 text-sm font-bold text-primary">${Number(log.totalRevenue || 0).toFixed(2)}</td>
-                <td className="p-4 text-sm">
-                  <span className="px-2 py-1 rounded text-xs bg-green-500/20 text-green-400">
-                    {log.status}
-                  </span>
-                </td>
-              </tr>
-            ))}
-            {logs.length === 0 && (
-              <tr>
-                <td colSpan={5} className="p-8 text-center text-white/40">No night audit logs found.</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
+    </AdminPageShell>
   )
 }

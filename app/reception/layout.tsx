@@ -12,7 +12,7 @@ function ReceptionLayoutContent({ children }: { children: React.ReactNode }) {
   const { isCollapsed } = useSidebar()
 
   return (
-    <div className="min-h-screen bg-[#0c0c0c]">
+    <div className="min-h-screen bg-[#090A0C] text-zinc-100 flex flex-col font-sans selection:bg-zinc-800 selection:text-white">
       <DashboardSidebar />
       <main className={cn(
         "transition-all duration-300 pt-16 lg:pt-0 min-h-screen",

@@ -128,122 +128,158 @@ function KitchenDashboardContent() {
       subtitle="Manage real-time room service orders and preparation status."
       onRefresh={fetchKitchenData}
       actions={
-        <Button 
-          variant="destructive" 
+        <button 
+          type="button"
           onClick={() => router.push('/kitchen/complain')}
-          className="bg-rose-500/10 text-rose-400 border border-rose-500/20 hover:bg-rose-500 hover:text-white h-10 px-4 text-[10px] font-black uppercase tracking-widest rounded-xl"
+          className="bg-rose-500/10 text-rose-400 border border-rose-500/20 hover:bg-rose-500/20 h-9 px-3.5 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors"
         >
-          <AlertTriangle className="w-4 h-4 mr-2" /> Report Issue
-        </Button>
+          <AlertTriangle className="w-3.5 h-3.5" /> Report Issue
+        </button>
       }
     >
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* New Orders */}
-        <Card className="bg-[#0c0c0c] border-white/5 rounded-3xl shadow-2xl overflow-hidden">
-          <div className="p-6 border-b border-white/5 flex justify-between items-center bg-amber-500/5">
-            <span className="font-bold text-white uppercase tracking-widest text-[10px]">New Orders</span>
-            <Badge className="bg-amber-500/20 text-amber-500 border-amber-500/20">{ordersByStatus.PENDING.length}</Badge>
+        <div className="bg-[#121417] border border-[#1E2227] rounded-2xl overflow-hidden flex flex-col">
+          <div className="p-4 border-b border-[#1E2227] flex justify-between items-center bg-[#141619]">
+            <span className="font-semibold text-white uppercase tracking-wider text-[11px]">New Orders</span>
+            <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
+              {ordersByStatus.PENDING.length}
+            </span>
           </div>
-          <div className="p-6 space-y-4">
+          <div className="p-3.5 space-y-3 flex-1 overflow-y-auto max-h-[calc(100vh-280px)] custom-scrollbar">
             {ordersByStatus.PENDING.map(ord => (
-              <div key={ord.id} className="p-4 bg-white/5 border border-white/5 rounded-2xl space-y-4 hover:border-primary/30 transition-all group">
-                <div className="flex justify-between font-bold text-sm">
-                  <span className="text-white/40">#{ord.orderNumber}</span>
-                  <span className="text-primary font-black">Room {ord.roomNumber}</span>
+              <div key={ord.id} className="p-3.5 bg-[#181A1D] border border-[#2B3037] rounded-xl space-y-3 hover:border-zinc-500 transition-colors">
+                <div className="flex justify-between items-center font-mono">
+                  <span className="text-xs text-zinc-400">#{ord.orderNumber}</span>
+                  <span className="text-xs font-bold text-white">Room {ord.roomNumber}</span>
                 </div>
                 <div className="space-y-1">
                   {ord.items.map(it => (
-                    <div key={it.id} className="text-xs text-white/60 flex items-center gap-2">
-                      <div className="w-1 h-1 bg-primary rounded-full" />
-                      {it.quantity}x {it.menu.name}
+                    <div key={it.id} className="text-xs text-zinc-300 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-zinc-500 flex-shrink-0" />
+                      <span>{it.quantity}x {it.menu.name}</span>
                     </div>
                   ))}
                 </div>
-                <Button 
+                <button 
+                  type="button"
                   onClick={() => updateOrderStatus(ord.id, 'CONFIRMED')}
-                  className="w-full h-10 text-[10px] font-black uppercase tracking-widest bg-primary hover:bg-primary/90 text-white rounded-xl"
+                  className="w-full h-8 text-xs font-semibold bg-white hover:bg-zinc-200 text-black rounded-lg transition-all shadow-sm disabled:opacity-50"
                   disabled={updatingOrder === ord.id}
                 >
                   Accept Order
-                </Button>
+                </button>
               </div>
             ))}
+            {ordersByStatus.PENDING.length === 0 && (
+              <div className="py-12 text-center text-zinc-500 font-mono text-xs">No pending orders</div>
+            )}
           </div>
-        </Card>
+        </div>
 
         {/* Confirmed */}
-        <Card className="bg-[#0c0c0c] border-white/5 rounded-3xl shadow-2xl overflow-hidden">
-          <div className="p-6 border-b border-white/5 flex justify-between items-center bg-blue-500/5">
-            <span className="font-bold text-white uppercase tracking-widest text-[10px]">Confirmed</span>
-            <Badge className="bg-blue-500/20 text-blue-500 border-blue-500/20">{ordersByStatus.CONFIRMED.length}</Badge>
+        <div className="bg-[#121417] border border-[#1E2227] rounded-2xl overflow-hidden flex flex-col">
+          <div className="p-4 border-b border-[#1E2227] flex justify-between items-center bg-[#141619]">
+            <span className="font-semibold text-white uppercase tracking-wider text-[11px]">Confirmed</span>
+            <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
+              {ordersByStatus.CONFIRMED.length}
+            </span>
           </div>
-          <div className="p-6 space-y-4">
+          <div className="p-3.5 space-y-3 flex-1 overflow-y-auto max-h-[calc(100vh-280px)] custom-scrollbar">
             {ordersByStatus.CONFIRMED.map(ord => (
-              <div key={ord.id} className="p-4 bg-white/5 border border-white/5 rounded-2xl space-y-4">
-                <div className="font-bold text-sm text-white">#{ord.orderNumber} - Room {ord.roomNumber}</div>
-                <Button 
+              <div key={ord.id} className="p-3.5 bg-[#181A1D] border border-[#2B3037] rounded-xl space-y-3 hover:border-zinc-500 transition-colors">
+                <div className="flex justify-between items-center font-mono">
+                  <span className="text-xs text-zinc-400">#{ord.orderNumber}</span>
+                  <span className="text-xs font-bold text-white">Room {ord.roomNumber}</span>
+                </div>
+                <div className="space-y-1">
+                  {ord.items.map(it => (
+                    <div key={it.id} className="text-xs text-zinc-300 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0" />
+                      <span>{it.quantity}x {it.menu.name}</span>
+                    </div>
+                  ))}
+                </div>
+                <button 
+                  type="button"
                   onClick={() => updateOrderStatus(ord.id, 'PREPARING')}
-                  className="w-full h-10 text-[10px] font-black uppercase tracking-widest bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl"
+                  className="w-full h-8 text-xs font-semibold bg-white hover:bg-zinc-200 text-black rounded-lg transition-all shadow-sm disabled:opacity-50"
                   disabled={updatingOrder === ord.id}
                 >
                   Start Preparation
-                </Button>
+                </button>
               </div>
             ))}
+            {ordersByStatus.CONFIRMED.length === 0 && (
+              <div className="py-12 text-center text-zinc-500 font-mono text-xs">No confirmed orders</div>
+            )}
           </div>
-        </Card>
+        </div>
 
         {/* Preparing */}
-        <Card className="bg-[#0c0c0c] border-white/5 rounded-3xl shadow-2xl overflow-hidden">
-          <div className="p-6 border-b border-white/5 flex justify-between items-center bg-purple-500/5">
-            <span className="font-bold text-white uppercase tracking-widest text-[10px]">Preparing</span>
-            <Badge className="bg-purple-500/20 text-purple-500 border-purple-500/20">{ordersByStatus.PREPARING.length}</Badge>
+        <div className="bg-[#121417] border border-[#1E2227] rounded-2xl overflow-hidden flex flex-col">
+          <div className="p-4 border-b border-[#1E2227] flex justify-between items-center bg-[#141619]">
+            <span className="font-semibold text-white uppercase tracking-wider text-[11px]">Preparing</span>
+            <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-400 border border-violet-500/20">
+              {ordersByStatus.PREPARING.length}
+            </span>
           </div>
-          <div className="p-6 space-y-4">
+          <div className="p-3.5 space-y-3 flex-1 overflow-y-auto max-h-[calc(100vh-280px)] custom-scrollbar">
             {ordersByStatus.PREPARING.map(ord => (
-              <div key={ord.id} className="p-4 bg-white/5 border border-white/5 rounded-2xl space-y-4 border-l-4 border-l-purple-500">
-                <div className="font-bold text-sm text-white flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <ChefHat className="w-4 h-4 text-purple-500" /> #{ord.orderNumber}
+              <div key={ord.id} className="p-3.5 bg-[#181A1D] border border-[#2B3037] rounded-xl space-y-3 hover:border-zinc-500 transition-colors">
+                <div className="font-bold text-xs text-white flex items-center justify-between font-mono">
+                  <div className="flex items-center gap-1.5">
+                    <ChefHat className="w-3.5 h-3.5 text-violet-400" />
+                    <span className="text-zinc-400">#{ord.orderNumber}</span>
                   </div>
-                  <span className="text-purple-500 font-black">Room {ord.roomNumber}</span>
+                  <span>Room {ord.roomNumber}</span>
                 </div>
-                <Button 
+                <button 
+                  type="button"
                   onClick={() => updateOrderStatus(ord.id, 'READY')}
-                  className="w-full h-10 text-[10px] font-black uppercase tracking-widest bg-amber-500 hover:bg-amber-600 text-white rounded-xl animate-pulse"
+                  className="w-full h-8 text-xs font-semibold bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20 rounded-lg transition-colors disabled:opacity-50"
                   disabled={updatingOrder === ord.id}
                 >
                   Mark as Ready
-                </Button>
+                </button>
               </div>
             ))}
+            {ordersByStatus.PREPARING.length === 0 && (
+              <div className="py-12 text-center text-zinc-500 font-mono text-xs">No orders in preparation</div>
+            )}
           </div>
-        </Card>
+        </div>
 
         {/* Ready */}
-        <Card className="bg-[#0c0c0c] border-white/5 rounded-3xl shadow-2xl overflow-hidden">
-          <div className="p-6 border-b border-white/5 flex justify-between items-center bg-emerald-500/5">
-            <span className="font-bold text-white uppercase tracking-widest text-[10px]">Ready</span>
-            <Badge className="bg-emerald-500/20 text-emerald-500 border-emerald-500/20">{ordersByStatus.READY.length}</Badge>
+        <div className="bg-[#121417] border border-[#1E2227] rounded-2xl overflow-hidden flex flex-col">
+          <div className="p-4 border-b border-[#1E2227] flex justify-between items-center bg-[#141619]">
+            <span className="font-semibold text-white uppercase tracking-wider text-[11px]">Ready</span>
+            <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              {ordersByStatus.READY.length}
+            </span>
           </div>
-          <div className="p-6 space-y-4">
+          <div className="p-3.5 space-y-3 flex-1 overflow-y-auto max-h-[calc(100vh-280px)] custom-scrollbar">
             {ordersByStatus.READY.map(ord => (
-              <div key={ord.id} className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl space-y-4">
-                <div className="font-bold text-sm text-emerald-400 flex justify-between items-center">
+              <div key={ord.id} className="p-3.5 bg-[#181A1D] border border-emerald-500/20 rounded-xl space-y-3">
+                <div className="font-bold text-xs text-emerald-400 flex justify-between items-center font-mono">
                    <span>#{ord.orderNumber}</span>
                    <span>Room {ord.roomNumber}</span>
                 </div>
-                <Button 
+                <button 
+                  type="button"
                   onClick={() => updateOrderStatus(ord.id, 'DELIVERED')}
-                  className="w-full h-10 text-[10px] font-black uppercase tracking-widest bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl shadow-lg shadow-emerald-900/20"
+                  className="w-full h-8 text-xs font-semibold bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 rounded-lg transition-colors disabled:opacity-50"
                   disabled={updatingOrder === ord.id}
                 >
                   Finish & Deliver
-                </Button>
+                </button>
               </div>
             ))}
+            {ordersByStatus.READY.length === 0 && (
+              <div className="py-12 text-center text-zinc-500 font-mono text-xs">No orders ready</div>
+            )}
           </div>
-        </Card>
+        </div>
       </div>
     </AdminPageShell>
   )

@@ -1,17 +1,31 @@
 'use client';
 
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Edit, Trash2 } from 'lucide-react';
+import { AdminPageShell } from '@/components/dashboard/admin/admin-page-shell';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { 
+  Building2, 
+  TrendingUp, 
+  DollarSign, 
+  Percent, 
+  FileDown, 
+  ShieldCheck, 
+  Edit, 
+  Trash2,
+  CheckCircle2
+} from 'lucide-react';
+
 interface PropertyStat {
   id: string;
   name: string;
   location: string;
-  occupancy: number; // percentage
-  adr: number;       // Average Daily Rate ($)
-  revpar: number;    // Revenue Per Available Room ($)
+  occupancy: number;
+  adr: number;
+  revpar: number;
   totalRevenue: number;
-  slaBreachRatio: number; // percentage
+  slaBreachRatio: number;
 }
 
 const PORTFOLIO_DATA: PropertyStat[] = [
@@ -22,16 +36,13 @@ const PORTFOLIO_DATA: PropertyStat[] = [
 ];
 
 export default function OrganizationDashboard() {
-  const [selectedRegion, setSelectedRegion] = useState<'ALL' | 'APAC' | 'EMEA' | 'AMER'>('ALL');
   const [isExporting, setIsExporting] = useState(false);
   const [exportMessage, setExportMessage] = useState('');
 
-  // Summarize overall portfolio metrics
   const totalRev = PORTFOLIO_DATA.reduce((sum, p) => sum + p.totalRevenue, 0);
   const averageOccupancy = Math.round(PORTFOLIO_DATA.reduce((sum, p) => sum + p.occupancy, 0) / PORTFOLIO_DATA.length);
   const averageADR = Math.round(PORTFOLIO_DATA.reduce((sum, p) => sum + p.adr, 0) / PORTFOLIO_DATA.length);
 
-  // Trigger enterprise SLA/Compliance audit report compiling
   const handleExportAuditPDF = () => {
     setIsExporting(true);
     setExportMessage('Enterprise Forensic Audit Package successfully compiled! [PDF: 2.4MB]');
@@ -39,121 +50,106 @@ export default function OrganizationDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-[#09050D] text-[#FBFAF7] p-8 font-sans">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <AdminPageShell
+      title="Property Portfolio Analytics"
+      subtitle="Consolidated hotel chain intelligence panel for cross-property performance, global occupancy & revenue tracking."
+      actions={
+        <Button
+          onClick={handleExportAuditPDF}
+          disabled={isExporting}
+          className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs font-mono uppercase tracking-wider h-9 px-4 rounded-lg"
+        >
+          <FileDown className="w-3.5 h-3.5 mr-1.5" />
+          {isExporting ? 'GENERATING REPORT...' : 'EXPORT AUDIT DOSSIER'}
+        </Button>
+      }
+    >
+      <div className="space-y-6">
         
-        {/* Page Title */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-white/[0.04]">
-          <div className="space-y-2">
-            <span className="text-xs uppercase tracking-[0.25em] text-[#D4AF37] font-medium">Enterprise Group Overview</span>
-            <h1 className="text-4xl font-serif font-light tracking-wide text-white">Property Portfolio Analytics</h1>
-            <p className="text-[#8E8C94] text-sm">
-              Consolidated hotel chain intelligence panel for cross-property performance, global heatmaps, and financial SLA certification.
-            </p>
-          </div>
-
-          <div className="flex flex-col sm:flex-row gap-4">
-            {/* Compliance Action Button */}
-            <button
-              onClick={handleExportAuditPDF}
-              disabled={isExporting}
-              className="px-5 py-2.5 rounded-xl text-xs font-semibold uppercase tracking-wider bg-gradient-to-r from-[#D4AF37] to-[#9C8259] text-[#09050D] hover:opacity-95 active:scale-[0.98] transition-all disabled:opacity-50"
-            >
-              {isExporting ? 'GENERATING REPORT...' : 'EXPORT FORENSIC AUDIT'}
-            </button>
-          </div>
-        </div>
-
-        {/* Audit Status Message Bubble */}
+        {/* Status Message */}
         {exportMessage && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className={`p-4 rounded-xl text-xs font-mono border ${
-              exportMessage.includes('compiled') 
-                ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400' 
-                : 'bg-white/[0.02] border-white/[0.04] text-[#8E8C94]'
-            }`}
-          >
+          <div className="p-3 rounded-lg text-xs font-mono border bg-emerald-500/10 border-emerald-500/20 text-emerald-400">
             {exportMessage}
-          </motion.div>
+          </div>
         )}
 
         {/* Global KPI Metrics Bar */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-[#121118]/85 border border-white/[0.04] rounded-2xl p-6">
-            <span className="text-xs uppercase tracking-wider text-[#8E8C94] block">Consolidated Revenue</span>
-            <span className="text-3xl font-light font-serif text-white mt-2 block">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <Card className="bg-[#121417] border border-[#1E2227] rounded-xl p-5 shadow-none">
+            <span className="text-[10px] uppercase font-mono tracking-wider text-zinc-500 block">Consolidated Revenue</span>
+            <span className="text-2xl font-bold font-mono text-white mt-1.5 block">
               ${totalRev.toLocaleString()}
             </span>
-            <span className="text-xs text-emerald-400 font-mono mt-1 block">▲ +12.4% vs previous cycle</span>
-          </div>
+            <span className="text-[11px] text-emerald-400 font-mono mt-1 block">▲ +12.4% vs previous cycle</span>
+          </Card>
 
-          <div className="bg-[#121118]/85 border border-white/[0.04] rounded-2xl p-6">
-            <span className="text-xs uppercase tracking-wider text-[#8E8C94] block">Average Occupancy</span>
-            <span className="text-3xl font-light font-serif text-white mt-2 block">
+          <Card className="bg-[#121417] border border-[#1E2227] rounded-xl p-5 shadow-none">
+            <span className="text-[10px] uppercase font-mono tracking-wider text-zinc-500 block">Average Occupancy</span>
+            <span className="text-2xl font-bold font-mono text-emerald-400 mt-1.5 block">
               {averageOccupancy}%
             </span>
-            <span className="text-xs text-emerald-400 font-mono mt-1 block">▲ Optimal portfolio utilization</span>
-          </div>
+            <span className="text-[11px] text-zinc-400 font-mono mt-1 block">Optimal portfolio utilization</span>
+          </Card>
 
-          <div className="bg-[#121118]/85 border border-white/[0.04] rounded-2xl p-6">
-            <span className="text-xs uppercase tracking-wider text-[#8E8C94] block">Chain Wide ADR</span>
-            <span className="text-3xl font-light font-serif text-white mt-2 block">
+          <Card className="bg-[#121417] border border-[#1E2227] rounded-xl p-5 shadow-none">
+            <span className="text-[10px] uppercase font-mono tracking-wider text-zinc-500 block">Chain Wide ADR</span>
+            <span className="text-2xl font-bold font-mono text-white mt-1.5 block">
               ${averageADR}
             </span>
-            <span className="text-xs text-[#8E8C94] font-mono mt-1 block">Weighted portfolio average</span>
-          </div>
+            <span className="text-[11px] text-zinc-500 font-mono mt-1 block">Weighted portfolio average</span>
+          </Card>
         </div>
 
-        {/* Property Grid & Occupancy Heatmap Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Property Grid & Compliance Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           
-          {/* Properties Performance Table */}
-          <div className="lg:col-span-8 bg-[#121118]/85 border border-white/[0.04] rounded-2xl p-6 space-y-4">
-            <h2 className="text-lg font-serif font-light text-white tracking-wider">
-              Branch Performance Directory
-            </h2>
+          {/* Properties Performance Table (8 cols) */}
+          <Card className="lg:col-span-8 bg-[#121417] border border-[#1E2227] rounded-xl overflow-hidden shadow-none">
+            <div className="p-5 border-b border-[#1E2227] bg-[#141619]">
+              <h2 className="text-sm font-semibold text-white font-mono uppercase tracking-wider">
+                Branch Performance Directory
+              </h2>
+            </div>
             
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm border-collapse">
+              <table className="w-full text-left text-xs font-mono">
                 <thead>
-                  <tr className="border-b border-white/[0.04] text-[#8E8C94] text-xs uppercase tracking-wider">
-                    <th className="pb-3 font-semibold">Hotel Location</th>
-                    <th className="pb-3 font-semibold">Occupancy</th>
-                    <th className="pb-3 font-semibold">ADR</th>
-                    <th className="pb-3 font-semibold">RevPAR</th>
-                    <th className="pb-3 font-semibold">Revenue</th>
-                    <th className="pb-3 text-right font-semibold">SLA Breach</th>
-                    <th className="pb-3 text-right font-semibold">Actions</th>
+                  <tr className="bg-[#141619] text-zinc-400 border-b border-[#1E2227] text-[10px] uppercase tracking-wider">
+                    <th className="p-3.5 font-semibold">Hotel Location</th>
+                    <th className="p-3.5 font-semibold">Occupancy</th>
+                    <th className="p-3.5 font-semibold">ADR</th>
+                    <th className="p-3.5 font-semibold">RevPAR</th>
+                    <th className="p-3.5 font-semibold">Revenue</th>
+                    <th className="p-3.5 text-right font-semibold">SLA Breach</th>
+                    <th className="p-3.5 text-right font-semibold">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/[0.02]">
+                <tbody className="divide-y divide-[#1E2227]">
                   {PORTFOLIO_DATA.map((prop) => (
-                    <tr key={prop.id} className="text-xs">
-                      <td className="py-4">
-                        <div className="font-semibold text-white">{prop.name}</div>
-                        <div className="text-[10px] text-[#8E8C94] mt-0.5">{prop.location}</div>
+                    <tr key={prop.id} className="hover:bg-[#141619]/50 transition-colors">
+                      <td className="p-3.5">
+                        <div className="font-semibold text-white font-sans">{prop.name}</div>
+                        <div className="text-[10px] text-zinc-500 font-mono mt-0.5">{prop.location}</div>
                       </td>
-                      <td className="py-4 font-semibold text-white">{prop.occupancy}%</td>
-                      <td className="py-4 text-[#8E8C94]">${prop.adr}</td>
-                      <td className="py-4 text-[#D4AF37]">${prop.revpar}</td>
-                      <td className="py-4 text-[#8E8C94] font-semibold">${prop.totalRevenue.toLocaleString()}</td>
-                      <td className="py-4 text-right">
-                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold ${
-                          prop.slaBreachRatio < 1.0 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
-                          'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                      <td className="p-3.5 font-semibold text-white">{prop.occupancy}%</td>
+                      <td className="p-3.5 text-zinc-400">${prop.adr}</td>
+                      <td className="p-3.5 text-emerald-400">${prop.revpar}</td>
+                      <td className="p-3.5 text-zinc-200 font-semibold">${prop.totalRevenue.toLocaleString()}</td>
+                      <td className="p-3.5 text-right">
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${
+                          prop.slaBreachRatio < 1.0 ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                          'bg-amber-500/10 text-amber-400 border-amber-500/20'
                         }`}>
                           {prop.slaBreachRatio}%
                         </span>
                       </td>
-                      <td className="py-4 text-right">
-                        <div className="flex items-center justify-end gap-3">
-                          <button className="text-[#8E8C94] hover:text-white transition-colors" title="Edit Property">
-                            <Edit className="w-4 h-4" />
+                      <td className="p-3.5 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <button className="text-zinc-500 hover:text-white transition-colors" title="Edit Property">
+                            <Edit className="w-3.5 h-3.5" />
                           </button>
-                          <button className="text-[#8E8C94] hover:text-rose-400 transition-colors" title="Delete Property">
-                            <Trash2 className="w-4 h-4" />
+                          <button className="text-zinc-500 hover:text-rose-400 transition-colors" title="Delete Property">
+                            <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       </td>
@@ -162,55 +158,50 @@ export default function OrganizationDashboard() {
                 </tbody>
               </table>
             </div>
-          </div>
+          </Card>
 
-          {/* SLA & Regional Compliance Health */}
-          <div className="lg:col-span-4 bg-[#121118]/85 border border-white/[0.04] rounded-2xl p-6 space-y-6">
-            <h2 className="text-lg font-serif font-light text-white tracking-wider">
+          {/* Compliance Certifications (4 cols) */}
+          <Card className="lg:col-span-4 bg-[#121417] border border-[#1E2227] rounded-xl p-5 space-y-4 shadow-none">
+            <h2 className="text-sm font-semibold text-white font-mono uppercase tracking-wider">
               Compliance Certifications
             </h2>
             
-            <div className="space-y-4">
-              
-              {/* SOC-2 Certificate status */}
-              <div className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.04] space-y-2">
+            <div className="space-y-3">
+              <div className="p-3.5 rounded-lg bg-[#141619] border border-[#1E2227] space-y-1.5">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs font-semibold text-white">SOC-2 Type II Compliance</span>
-                  <span className="text-[10px] bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded font-mono font-bold">ACTIVE</span>
+                  <span className="text-xs font-semibold text-white font-mono">SOC-2 Type II</span>
+                  <Badge className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono text-[10px]">ACTIVE</Badge>
                 </div>
-                <p className="text-[11px] text-[#8E8C94]">
+                <p className="text-[11px] text-zinc-400 leading-relaxed font-sans">
                   Automated security sweeps successfully verify daily identity audits and RBAC compliance logs.
                 </p>
               </div>
 
-              {/* PCI-DSS Level 1 token protection */}
-              <div className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.04] space-y-2">
+              <div className="p-3.5 rounded-lg bg-[#141619] border border-[#1E2227] space-y-1.5">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs font-semibold text-white">PCI-DSS Token Vaulting</span>
-                  <span className="text-[10px] bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded font-mono font-bold">CERTIFIED</span>
+                  <span className="text-xs font-semibold text-white font-mono">PCI-DSS Token Vault</span>
+                  <Badge className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono text-[10px]">CERTIFIED</Badge>
                 </div>
-                <p className="text-[11px] text-[#8E8C94]">
-                  Sensitive credit card details are fully isolated via secure Stripe-token wrappers, avoiding localized database exposure.
+                <p className="text-[11px] text-zinc-400 leading-relaxed font-sans">
+                  Sensitive card details are fully isolated via secure token wrappers, avoiding localized database exposure.
                 </p>
               </div>
 
-              {/* General SLA Availability metric */}
-              <div className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.04] space-y-2">
+              <div className="p-3.5 rounded-lg bg-[#141619] border border-[#1E2227] space-y-2">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs font-semibold text-white">Platform SLA Target</span>
-                  <span className="text-[10px] text-[#D4AF37] px-1.5 py-0.5 rounded font-mono font-bold">99.99%</span>
+                  <span className="text-xs font-semibold text-white font-mono">Platform SLA Target</span>
+                  <span className="text-xs text-emerald-400 font-mono font-bold">99.99%</span>
                 </div>
-                <div className="w-full bg-white/[0.05] h-1.5 rounded-full overflow-hidden mt-1">
-                  <div className="bg-gradient-to-r from-[#D4AF37] to-[#9C8259] h-full w-[99.99%]" />
+                <div className="w-full bg-[#181A1D] h-1.5 rounded-full overflow-hidden border border-[#2B3037]">
+                  <div className="bg-emerald-400 h-full w-[99.99%]" />
                 </div>
               </div>
-
             </div>
-          </div>
+          </Card>
 
         </div>
 
       </div>
-    </div>
+    </AdminPageShell>
   );
 }

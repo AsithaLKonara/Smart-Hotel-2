@@ -33,6 +33,7 @@ import { Badge } from '@/components/ui/badge'
 import Image from 'next/image'
 import toast from 'react-hot-toast'
 import { useLuxuryConfirm } from '@/components/ui/luxury-confirm-dialog'
+import { AdminPageShell } from '@/components/dashboard/admin/admin-page-shell'
 
 type CmsTab = 'properties' | 'gallery' | 'experiences' | 'facilities'
 
@@ -454,35 +455,23 @@ export default function AdminCmsStudioPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white p-6 lg:p-10 space-y-8">
-      {/* Top Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-white/10">
-        <div>
-          <div className="flex items-center gap-2 text-primary uppercase tracking-[0.25em] text-xs font-bold mb-2">
-            <Globe className="w-4 h-4" />
-            <span>Content Management Studio</span>
-          </div>
-          <h1 className="text-3xl lg:text-4xl font-serif font-bold tracking-tight">
-            Hotel & Website <span className="text-primary italic">CMS</span>
-          </h1>
-          <p className="text-white/50 text-sm mt-1">
-            Orchestrate multi-property imagery, map pinpoints, signature experiences, and luxury facilities.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3">
+    <AdminPageShell
+      title="Content Management Studio"
+      subtitle="Orchestrate multi-property imagery, map pinpoints, signature experiences & luxury facilities."
+      actions={
+        <div className="flex flex-wrap items-center gap-2.5">
           {/* Property Selector */}
-          <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl px-3 py-1.5">
-            <Filter className="w-4 h-4 text-primary" />
-            <span className="text-xs text-white/50">Property:</span>
+          <div className="flex items-center gap-2 bg-[#121417] border border-[#1E2227] rounded-lg px-3 py-1.5">
+            <Filter className="w-3.5 h-3.5 text-zinc-400" />
+            <span className="text-xs font-mono text-zinc-500">Property:</span>
             <select
               value={selectedPropertyFilter}
               onChange={(e) => setSelectedPropertyFilter(e.target.value)}
-              className="bg-transparent text-xs font-medium text-white focus:outline-none cursor-pointer"
+              className="bg-transparent text-xs font-mono text-white focus:outline-none cursor-pointer"
             >
-              <option value="all" className="bg-[#121118] text-white">All Properties</option>
+              <option value="all" className="bg-[#121417] text-white">All Properties</option>
               {properties.map((p) => (
-                <option key={p.id} value={p.id} className="bg-[#121118] text-white">
+                <option key={p.id} value={p.id} className="bg-[#121417] text-white">
                   {p.name} ({p.city})
                 </option>
               ))}
@@ -493,16 +482,16 @@ export default function AdminCmsStudioPage() {
             href="/"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-xs font-bold uppercase tracking-wider text-white transition-all"
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 border border-[#1E2227] bg-[#121417] text-zinc-300 hover:text-white hover:bg-[#181A1D] rounded-lg text-xs font-mono uppercase tracking-wider transition-colors h-9"
           >
-            <Eye className="w-3.5 h-3.5 text-primary" />
+            <Eye className="w-3.5 h-3.5 text-zinc-400" />
             <span>Preview Site</span>
           </a>
         </div>
-      </div>
-
+      }
+    >
       {/* Tabs Navigation */}
-      <div className="flex items-center gap-2 border-b border-white/10 pb-4 overflow-x-auto custom-scrollbar">
+      <div className="flex items-center gap-2 border-b border-[#1E2227] pb-3 overflow-x-auto">
         {[
           { id: 'properties', label: 'Properties & Map Pins', icon: MapPin, count: properties.length },
           { id: 'gallery', label: 'Gallery Hub', icon: ImageIcon, count: galleryItems.length },
@@ -515,16 +504,16 @@ export default function AdminCmsStudioPage() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as CmsTab)}
-              className={`flex items-center gap-2.5 px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap ${
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-mono uppercase tracking-wider transition-all whitespace-nowrap ${
                 isActive
-                  ? 'bg-primary/20 text-primary border border-primary/40 shadow-luxury'
-                  : 'text-white/60 hover:text-white hover:bg-white/5 border border-transparent'
+                  ? 'bg-[#181A1D] border border-[#2B3037] text-white font-semibold'
+                  : 'text-zinc-400 hover:text-white hover:bg-[#141619] border border-transparent'
               }`}
             >
-              <Icon className="w-4 h-4" />
+              <Icon className="w-3.5 h-3.5" />
               <span>{tab.label}</span>
-              <span className={`px-2 py-0.5 rounded-full text-[10px] ${
-                isActive ? 'bg-primary text-black font-extrabold' : 'bg-white/10 text-white/60'
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
+                isActive ? 'bg-[#141619] border border-[#2B3037] text-white font-bold' : 'bg-[#141619] text-zinc-500'
               }`}>
                 {tab.count}
               </span>
@@ -662,56 +651,56 @@ export default function AdminCmsStudioPage() {
             <div className="space-y-6">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                  <h3 className="text-xl font-serif font-bold">Multi-Property Gallery Media</h3>
-                  <p className="text-xs text-white/50">Manage high-resolution photography, categorized suites, lobbies, and wellness assets.</p>
+                  <h3 className="text-sm font-semibold text-zinc-100 font-mono uppercase tracking-wider">Multi-Property Gallery Media</h3>
+                  <p className="text-xs text-zinc-500 font-sans">Manage high-resolution photography, categorized suites, lobbies, and wellness assets.</p>
                 </div>
                 <Button
                   onClick={() => handleOpenGalleryModal()}
-                  className="bg-gold-gradient text-white h-10 px-5 rounded-xl text-xs font-bold uppercase tracking-wider shadow-luxury"
+                  className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs font-mono uppercase tracking-wider h-9 px-4 rounded-lg"
                 >
-                  <Plus className="w-4 h-4 mr-2" />
+                  <Plus className="w-3.5 h-3.5 mr-1.5" />
                   Add Media
                 </Button>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
                 {galleryItems.map((item) => (
                   <div
                     key={item.id}
-                    className="group relative bg-[#121118] border border-white/10 rounded-2xl overflow-hidden shadow-luxury flex flex-col justify-between"
+                    className="group relative bg-[#121417] border border-[#1E2227] hover:border-[#2B3037] rounded-xl overflow-hidden flex flex-col justify-between"
                   >
                     <div>
-                      <div className="relative aspect-square w-full overflow-hidden bg-black/40">
+                      <div className="relative aspect-square w-full overflow-hidden bg-[#090A0C]">
                         <Image
                           src={item.imageUrl}
                           alt={item.title}
                           fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-700"
+                          className="object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20" />
                         
                         <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between">
-                          <Badge className="bg-black/60 text-primary border border-primary/30 text-[9px] uppercase tracking-wider">
+                          <Badge className="bg-black/70 text-zinc-300 border border-white/10 text-[9px] font-mono uppercase tracking-wider">
                             {item.category}
                           </Badge>
                           {item.featured && (
-                            <Badge className="bg-primary text-black font-bold text-[9px] uppercase tracking-wider">
+                            <Badge className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold text-[9px] font-mono uppercase tracking-wider">
                               Featured
                             </Badge>
                           )}
                         </div>
 
                         <div className="absolute bottom-2.5 left-2.5 right-2.5">
-                          <p className="text-xs font-bold text-white truncate">{item.title}</p>
+                          <p className="text-xs font-semibold text-white font-mono truncate">{item.title}</p>
                           {item.caption && (
-                            <p className="text-[10px] text-white/60 truncate">{item.caption}</p>
+                            <p className="text-[10px] text-zinc-400 font-sans truncate">{item.caption}</p>
                           )}
                         </div>
                       </div>
 
-                      <div className="p-3 text-[11px] text-white/50 flex items-center justify-between">
-                        <span>Property:</span>
-                        <span className="text-white font-medium truncate max-w-[120px]">
+                      <div className="p-3 text-[11px] text-zinc-400 flex items-center justify-between font-mono">
+                        <span className="text-zinc-500">Property:</span>
+                        <span className="text-zinc-200 font-medium truncate max-w-[120px]">
                           {item.property?.name || 'Assigned'}
                         </span>
                       </div>
@@ -721,15 +710,15 @@ export default function AdminCmsStudioPage() {
                       <Button
                         onClick={() => handleOpenGalleryModal(item)}
                         variant="outline"
-                        className="flex-1 border-white/10 hover:border-primary/40 h-8 rounded-lg text-[11px] text-white/80 hover:text-white"
+                        className="flex-1 border-[#1E2227] bg-[#141619] hover:bg-[#181A1D] h-8 rounded-lg text-xs font-mono text-zinc-300 hover:text-white"
                       >
-                        <Edit className="w-3 h-3 mr-1" />
+                        <Edit className="w-3 h-3 mr-1 text-zinc-400" />
                         Edit
                       </Button>
                       <Button
                         onClick={() => handleDeleteGallery(item.id)}
                         variant="outline"
-                        className="border-red-500/20 hover:bg-red-500/20 text-red-400 h-8 px-2.5 rounded-lg text-[11px]"
+                        className="border-rose-500/20 hover:bg-rose-500/10 text-rose-400 h-8 px-2.5 rounded-lg text-xs"
                       >
                         <Trash2 className="w-3 h-3" />
                       </Button>
@@ -747,19 +736,19 @@ export default function AdminCmsStudioPage() {
             <div className="space-y-6">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                  <h3 className="text-xl font-serif font-bold">Signature Resort Experiences</h3>
-                  <p className="text-xs text-white/50">Manage bespoke guest journeys, culinary tastings, wellness rituals, and yacht charters.</p>
+                  <h3 className="text-sm font-semibold text-zinc-100 font-mono uppercase tracking-wider">Signature Resort Experiences</h3>
+                  <p className="text-xs text-zinc-500 font-sans">Manage bespoke guest journeys, culinary tastings, wellness rituals, and yacht charters.</p>
                 </div>
                 <Button
                   onClick={() => handleOpenExperienceModal()}
-                  className="bg-gold-gradient text-white h-10 px-5 rounded-xl text-xs font-bold uppercase tracking-wider shadow-luxury"
+                  className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs font-mono uppercase tracking-wider h-9 px-4 rounded-lg"
                 >
-                  <Plus className="w-4 h-4 mr-2" />
+                  <Plus className="w-3.5 h-3.5 mr-1.5" />
                   New Experience
                 </Button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {experiences.map((exp) => (
                   <div
                     key={exp.id}
@@ -855,19 +844,19 @@ export default function AdminCmsStudioPage() {
             <div className="space-y-6">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                  <h3 className="text-xl font-serif font-bold">Resort Facilities & Amenities</h3>
-                  <p className="text-xs text-white/50">Manage infinity pools, elite fitness suites, wellness spas, and business boardrooms.</p>
+                  <h3 className="text-sm font-semibold text-zinc-100 font-mono uppercase tracking-wider">Resort Facilities & Amenities</h3>
+                  <p className="text-xs text-zinc-500 font-sans">Manage infinity pools, fitness suites, wellness spas, and business boardrooms.</p>
                 </div>
                 <Button
                   onClick={() => handleOpenFacilityModal()}
-                  className="bg-gold-gradient text-white h-10 px-5 rounded-xl text-xs font-bold uppercase tracking-wider shadow-luxury"
+                  className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs font-mono uppercase tracking-wider h-9 px-4 rounded-lg"
                 >
-                  <Plus className="w-4 h-4 mr-2" />
+                  <Plus className="w-3.5 h-3.5 mr-1.5" />
                   New Facility
                 </Button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {facilities.map((fac) => {
                   const featureList = fac.features ? fac.features.split(',').map((f: string) => f.trim()).filter(Boolean) : []
                   return (
@@ -1083,14 +1072,14 @@ export default function AdminCmsStudioPage() {
                 type="button"
                 variant="outline"
                 onClick={() => setPropertyModalOpen(false)}
-                className="border-white/10 text-white text-xs"
+                className="border-[#1E2227] text-zinc-400 hover:text-white text-xs font-mono"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={saving}
-                className="bg-gold-gradient text-white text-xs font-bold shadow-luxury"
+                className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs font-mono uppercase tracking-wider h-8 px-4 rounded-lg"
               >
                 {saving && <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />}
                 Save Changes
@@ -1104,9 +1093,9 @@ export default function AdminCmsStudioPage() {
       {/* MODAL 2: GALLERY ITEM MODAL */}
       {/* ======================================================== */}
       <Dialog open={galleryModalOpen} onOpenChange={setGalleryModalOpen}>
-        <DialogContent className="bg-[#121118] border border-white/10 text-white max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogContent className="bg-[#121417] border border-[#1E2227] text-white max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-xl font-serif font-bold text-white">
+            <DialogTitle className="text-base font-semibold font-mono uppercase tracking-wider text-white">
               {editingItem ? 'Edit Gallery Photo' : 'Add Media to Gallery'}
             </DialogTitle>
             <DialogDescription className="text-xs text-white/50">
@@ -1206,7 +1195,7 @@ export default function AdminCmsStudioPage() {
               <Button
                 type="submit"
                 disabled={saving}
-                className="bg-gold-gradient text-white text-xs font-bold shadow-luxury"
+                className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs font-mono uppercase tracking-wider h-8 px-4 rounded-lg"
               >
                 {saving && <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />}
                 Save Media
@@ -1220,9 +1209,9 @@ export default function AdminCmsStudioPage() {
       {/* MODAL 3: EXPERIENCE MODAL */}
       {/* ======================================================== */}
       <Dialog open={experienceModalOpen} onOpenChange={setExperienceModalOpen}>
-        <DialogContent className="bg-[#121118] border border-white/10 text-white max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogContent className="bg-[#121417] border border-[#1E2227] text-white max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-xl font-serif font-bold text-white">
+            <DialogTitle className="text-base font-semibold font-mono uppercase tracking-wider text-white">
               {editingItem ? 'Edit Signature Experience' : 'New Signature Experience'}
             </DialogTitle>
             <DialogDescription className="text-xs text-white/50">
@@ -1366,7 +1355,7 @@ export default function AdminCmsStudioPage() {
               <Button
                 type="submit"
                 disabled={saving}
-                className="bg-gold-gradient text-white text-xs font-bold shadow-luxury"
+                className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs font-mono uppercase tracking-wider h-8 px-4 rounded-lg"
               >
                 {saving && <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />}
                 Save Experience
@@ -1380,9 +1369,9 @@ export default function AdminCmsStudioPage() {
       {/* MODAL 4: FACILITY MODAL */}
       {/* ======================================================== */}
       <Dialog open={facilityModalOpen} onOpenChange={setFacilityModalOpen}>
-        <DialogContent className="bg-[#121118] border border-white/10 text-white max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogContent className="bg-[#121417] border border-[#1E2227] text-white max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-xl font-serif font-bold text-white">
+            <DialogTitle className="text-base font-semibold font-mono uppercase tracking-wider text-white">
               {editingItem ? 'Edit Facility' : 'New Resort Facility'}
             </DialogTitle>
             <DialogDescription className="text-xs text-white/50">
@@ -1529,7 +1518,7 @@ export default function AdminCmsStudioPage() {
               <Button
                 type="submit"
                 disabled={saving}
-                className="bg-gold-gradient text-white text-xs font-bold shadow-luxury"
+                className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs font-mono uppercase tracking-wider h-8 px-4 rounded-lg"
               >
                 {saving && <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />}
                 Save Facility
@@ -1538,6 +1527,6 @@ export default function AdminCmsStudioPage() {
           </form>
         </DialogContent>
       </Dialog>
-    </div>
+    </AdminPageShell>
   )
 }
