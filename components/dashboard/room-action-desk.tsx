@@ -38,6 +38,16 @@ interface Room {
   number: string
   status: string
   vip?: boolean
+  guestName?: string
+}
+
+interface BookingGuest {
+  id?: string
+  name?: string
+  email?: string
+  phone?: string
+  vipStatus?: string
+  vip?: boolean
 }
 
 interface Booking {
@@ -45,10 +55,13 @@ interface Booking {
   checkIn: string
   checkOut: string
   status: string
-  user?: {
-    name: string
-    email: string
-  }
+  confirmationCode?: string
+  totalAmount?: number | string
+  folioBalance?: number
+  guests?: number
+  specialRequests?: string
+  guest?: BookingGuest
+  user?: BookingGuest
 }
 
 interface RoomActionDeskProps {
@@ -126,10 +139,22 @@ export function RoomActionDesk({
     }
   }
 
+  const getBookingGuest = (b: any): BookingGuest | null => b?.guest || b?.user || null
+
   const currentStatus = STATUS_CONFIG[room.status] ?? STATUS_CONFIG['AVAILABLE']
-  const currentBooking = roomBookings.find(b => b.status === 'CHECKED_IN')
+  const currentBooking =
+    roomBookings.find(b => b.status === 'CHECKED_IN') ||
+    roomBookings.find(b => b.status === 'CONFIRMED' && (
+      room.status === 'OCCUPIED' || 
+      (new Date(b.checkIn).getTime() <= Date.now() && new Date(b.checkOut).getTime() >= Date.now())
+    )) ||
+    (room.status === 'OCCUPIED' && roomBookings.length > 0 ? roomBookings[0] : undefined)
+
+  const currentGuest = currentBooking ? getBookingGuest(currentBooking) : null
+  const fallbackGuestName = currentGuest?.name || (room as any).guestName || (room.status === 'OCCUPIED' ? 'In-House Resident' : null)
+
   const upcomingBookings = roomBookings
-    .filter(b => b.status === 'CONFIRMED' || b.status === 'PENDING')
+    .filter(b => b.id !== currentBooking?.id && (b.status === 'CONFIRMED' || b.status === 'PENDING'))
     .sort((a, b) => new Date(a.checkIn).getTime() - new Date(b.checkIn).getTime())
 
   // Lock body scroll when open
@@ -221,6 +246,7 @@ export function RoomActionDesk({
   return (
     // Full-screen overlay
     <div
+      data-testid="room-action-desk"
       className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8"
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
     >
@@ -299,8 +325,8 @@ export function RoomActionDesk({
                     <p className="text-white font-semibold text-sm">
                       {room.status === 'AVAILABLE'
                         ? 'This room is clean and ready to accept a guest.'
-                        : currentBooking?.user?.name
-                          ? `${currentBooking.user.name} is currently checked in.`
+                        : fallbackGuestName
+                          ? `${fallbackGuestName} is currently checked in.`
                           : 'A guest is currently checked in to this room.'}
                     </p>
                   </div>
@@ -461,50 +487,104 @@ export function RoomActionDesk({
             <div className="p-6 space-y-5">
 
               {/* Current guest */}
-              {currentBooking ? (
-                <div className="rounded-2xl bg-emerald-500/10 border border-emerald-500/20 p-5">
-                  <p className="text-xs font-bold text-emerald-400 uppercase tracking-widest mb-3">Current Guest</p>
-                  <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-2xl bg-emerald-500/20 flex items-center justify-center">
+              {(currentBooking || fallbackGuestName) ? (
+                <div className="rounded-2xl bg-emerald-500/10 border border-emerald-500/20 p-5 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-bold text-emerald-400 uppercase tracking-widest">
+                      {currentBooking?.status === 'CHECKED_IN' ? 'Current In-House Guest' : 'Assigned Guest'}
+                    </p>
+                    {(currentGuest?.vipStatus === 'VIP' || currentGuest?.vip || isVip) && (
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500 text-black flex items-center gap-1 shadow-sm">
+                        <Star className="w-3 h-3 fill-black" /> VIP
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex items-start gap-4">
+                    <div className="w-14 h-14 rounded-2xl bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
                       <User className="w-7 h-7 text-emerald-400" />
                     </div>
-                    <div className="flex-1">
-                      <p className="text-white font-bold text-lg">{currentBooking.user?.name || 'Unknown Guest'}</p>
-                      <p className="text-white/40 text-sm">{currentBooking.user?.email}</p>
-                      <p className="text-emerald-400 text-xs mt-1 font-semibold">
-                        Checked in · Leaves {format(new Date(currentBooking.checkOut), 'MMM dd, yyyy')}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white font-bold text-lg truncate">
+                        {currentGuest?.name || fallbackGuestName || 'In-House Resident'}
                       </p>
+                      <p className="text-white/60 text-sm truncate">
+                        {currentGuest?.email || 'No email on file'}
+                      </p>
+                      {currentGuest?.phone && (
+                        <p className="text-white/40 text-xs mt-0.5 font-mono">
+                          📞 {currentGuest.phone}
+                        </p>
+                      )}
+                      {currentBooking?.checkOut && (
+                        <p className="text-emerald-400 text-xs mt-2 font-semibold">
+                          {currentBooking.status === 'CHECKED_IN' ? 'Checked in' : 'Reserved'} · Departure {format(new Date(currentBooking.checkOut), 'MMM dd, yyyy')}
+                        </p>
+                      )}
                     </div>
                   </div>
+
+                  {/* Stay details grid */}
+                  {currentBooking && (
+                    <div className="pt-3 border-t border-emerald-500/20 grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs">
+                      {currentBooking.confirmationCode && (
+                        <div className="bg-black/30 rounded-xl p-2.5 border border-emerald-500/15">
+                          <span className="text-white/40 text-[10px] block font-bold uppercase tracking-wider">Confirmation</span>
+                          <span className="text-white font-mono font-bold">{currentBooking.confirmationCode}</span>
+                        </div>
+                      )}
+                      {currentBooking.checkIn && (
+                        <div className="bg-black/30 rounded-xl p-2.5 border border-emerald-500/15">
+                          <span className="text-white/40 text-[10px] block font-bold uppercase tracking-wider">Arrival</span>
+                          <span className="text-white font-semibold">{format(new Date(currentBooking.checkIn), 'MMM dd, yyyy')}</span>
+                        </div>
+                      )}
+                      {currentBooking.totalAmount !== undefined && (
+                        <div className="bg-black/30 rounded-xl p-2.5 border border-emerald-500/15">
+                          <span className="text-white/40 text-[10px] block font-bold uppercase tracking-wider">Total Folio</span>
+                          <span className="text-emerald-300 font-bold font-mono">
+                            ${Number(currentBooking.totalAmount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {/* Email dispatch */}
-                  <div className="mt-4 pt-4 border-t border-emerald-500/20">
-                    <p className="text-xs text-emerald-400/60 font-semibold uppercase tracking-widest mb-2">Send Email</p>
-                    <div className="flex flex-wrap gap-2">
-                      {(['PRE_ARRIVAL', 'BOOKING_CONFIRMATION', 'PAYMENT_RECEIPT', 'POST_DEPARTURE'] as const).map(template => (
-                        <button
-                          key={template}
-                          onClick={async () => {
-                            const res = await fetch('/api/communications/email', {
-                              method: 'POST',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({ bookingId: currentBooking.id, template })
-                            })
-                            const data = await res.json()
-                            if (res.ok) alert(`Email sent: ${template}`)
-                            else alert('Failed: ' + data.error)
-                          }}
-                          className="px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-[11px] font-semibold hover:bg-emerald-500/20 transition-all"
-                        >
-                          {template.replace(/_/g, ' ')}
-                        </button>
-                      ))}
+                  {currentBooking?.id && (
+                    <div className="pt-3 border-t border-emerald-500/20">
+                      <p className="text-xs text-emerald-400/70 font-semibold uppercase tracking-widest mb-2">Send Operational Notice</p>
+                      <div className="flex flex-wrap gap-2">
+                        {(['PRE_ARRIVAL', 'BOOKING_CONFIRMATION', 'PAYMENT_RECEIPT', 'POST_DEPARTURE'] as const).map(template => (
+                          <button
+                            key={template}
+                            onClick={async () => {
+                              try {
+                                const res = await fetch('/api/communications/email', {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ bookingId: currentBooking.id, template })
+                                })
+                                const data = await res.json()
+                                if (res.ok) toast.success(`Email sent: ${template.replace(/_/g, ' ')}`)
+                                else toast.error('Failed: ' + (data.error || 'Server error'))
+                              } catch {
+                                toast.error('Failed to send email')
+                              }
+                            }}
+                            className="px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-[11px] font-semibold hover:bg-emerald-500/20 transition-all"
+                          >
+                            {template.replace(/_/g, ' ')}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               ) : (
                 <div className="rounded-2xl bg-white/[0.03] border border-white/8 p-5 text-center">
                   <User className="w-8 h-8 text-white/20 mx-auto mb-2" />
-                  <p className="text-white/40 text-sm font-medium">No guest currently in this room</p>
+                  <p className="text-white/40 text-sm font-medium">No guest currently assigned to this room</p>
                 </div>
               )}
 
@@ -556,7 +636,7 @@ export function RoomActionDesk({
                           <Clock className="w-5 h-5" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-white truncate">{booking.user?.name || 'Guest'}</p>
+                          <p className="text-sm font-semibold text-white truncate">{getBookingGuest(booking)?.name || 'Guest'}</p>
                           <p className="text-xs text-white/40">
                             Arrives {format(new Date(booking.checkIn), 'MMM dd')} · Leaves {format(new Date(booking.checkOut), 'MMM dd')}
                           </p>

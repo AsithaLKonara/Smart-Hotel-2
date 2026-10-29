@@ -31,36 +31,54 @@ export async function GET(request: NextRequest) {
     const effectivePropertyId = await getEffectivePropertyId(request)
     const propertyId = reqPropertyId || effectivePropertyId
 
-    const getCachedRooms = async (tId: string | null, stat: string | null, availOnly: boolean, pId: string | null) => {
-      const fetchRooms = unstable_cache(
-        async () => {
-          const whereClause: any = {
-            deletedAt: null
-          }
-          if (tId) whereClause.roomTypeId = tId
-          if (stat) whereClause.status = stat
-          if (availOnly) whereClause.status = 'AVAILABLE'
-          if (pId) whereClause.propertyId = pId
-
-          return prisma.room.findMany({
-            where: whereClause,
-            include: {
-              roomType: true,
-              roomImages: true
-            } as any,
-            orderBy: { number: 'asc' }
-          })
-        },
-        ['public-rooms-list', tId || 'all', stat || 'all', availOnly ? 'avail' : 'all', pId || 'all'],
-        { revalidate: 60, tags: ['rooms'] }
-      )
-      return fetchRooms()
-    }
-
-    const rooms = await getCachedRooms(typeId, status, availableOnly, propertyId)
-
     const session = await getServerSession(authOptions)
     const isAuthenticatedStaff = session && ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'HOUSEKEEPING', 'MAINTENANCE'].includes((session.user as any).roleName as string)
+
+    let rooms;
+    if (isAuthenticatedStaff) {
+      // Operational staff require live, zero-latency room status for front desk & housekeeping
+      const whereClause: any = { deletedAt: null }
+      if (typeId) whereClause.roomTypeId = typeId
+      if (status) whereClause.status = status
+      if (availableOnly) whereClause.status = 'AVAILABLE'
+      if (propertyId) whereClause.propertyId = propertyId
+
+      rooms = await prisma.room.findMany({
+        where: whereClause,
+        include: {
+          roomType: true,
+          roomImages: true
+        } as any,
+        orderBy: { number: 'asc' }
+      })
+    } else {
+      const getCachedRooms = async (tId: string | null, stat: string | null, availOnly: boolean, pId: string | null) => {
+        const fetchRooms = unstable_cache(
+          async () => {
+            const whereClause: any = {
+              deletedAt: null
+            }
+            if (tId) whereClause.roomTypeId = tId
+            if (stat) whereClause.status = stat
+            if (availOnly) whereClause.status = 'AVAILABLE'
+            if (pId) whereClause.propertyId = pId
+
+            return prisma.room.findMany({
+              where: whereClause,
+              include: {
+                roomType: true,
+                roomImages: true
+              } as any,
+              orderBy: { number: 'asc' }
+            })
+          },
+          ['public-rooms-list', tId || 'all', stat || 'all', availOnly ? 'avail' : 'all', pId || 'all'],
+          { revalidate: 60, tags: ['rooms'] }
+        )
+        return fetchRooms()
+      }
+      rooms = await getCachedRooms(typeId, status, availableOnly, propertyId)
+    }
 
     const returnRooms = isAuthenticatedStaff ? rooms : rooms.map(toPublicRoomDTO)
 

@@ -181,21 +181,34 @@ export class BookingService {
       }
 
       // 3. User / Guest Association
-      let primaryGuestId = userId;
+      // Prioritize guest identity if guestEmail is provided (e.g. walk-in booking created by staff or direct booking),
+      // resolving or creating the guest user rather than defaulting to the logged-in staff userId.
+      let primaryGuestId: string | undefined = undefined;
 
-      if (!primaryGuestId && guestEmail) {
+      if (guestEmail) {
         const existing = await tx.user.findFirst({
           where: { email: guestEmail, propertyId: room.propertyId, deletedAt: null }
         });
 
         if (existing) {
           primaryGuestId = existing.id;
+          if (guestName && (!existing.name || existing.name === 'Guest')) {
+            await tx.user.update({
+              where: { id: existing.id },
+              data: {
+                name: guestName,
+                phone: input.guestPhone || existing.phone,
+                updatedAt: new Date()
+              }
+            });
+          }
         } else {
           const guestRole = await tx.role.findUnique({ where: { name: 'GUEST' } });
           const newUser = await tx.user.create({
             data: {
               email: guestEmail,
               name: guestName || 'Guest',
+              phone: input.guestPhone || null,
               password: '',
               roleId: guestRole?.id,
               propertyId: room.propertyId,
@@ -205,6 +218,8 @@ export class BookingService {
           });
           primaryGuestId = newUser.id;
         }
+      } else if (userId) {
+        primaryGuestId = userId;
       }
 
       if (!primaryGuestId) {

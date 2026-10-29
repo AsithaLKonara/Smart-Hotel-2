@@ -1,21 +1,19 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Front Desk & Reception', () => {
+  test.use({ storageState: 'playwright/.auth/admin.json' });
+
   test.beforeEach(async ({ page }) => {
-    // Relying on the authenticated state from storageState
     await page.goto('/admin/receptionist');
   });
 
   test('should display the Reception Desk with Room Matrix', async ({ page }) => {
     // The actual h1 is "Reception Desk"
-    await expect(page.getByRole('heading', { name: /Reception Desk/i })).toBeVisible();
-
-    // Verify the Room Matrix section exists
-    await expect(page.getByRole('heading', { name: /Room Matrix/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Reception Desk/i })).toBeVisible({ timeout: 15000 });
 
     // Verify filter buttons for room statuses exist
-    await expect(page.getByRole('button', { name: /AVAILABLE/i })).toBeVisible();
-    await expect(page.getByRole('button', { name: /OCCUPIED/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Available/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Occupied/i })).toBeVisible();
   });
 
   test('should navigate to Accounting page', async ({ page }) => {

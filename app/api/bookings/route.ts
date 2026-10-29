@@ -218,82 +218,90 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
-  const session = await getRequestSession(request)
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  try {
+    const session = await getRequestSession(request)
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { searchParams } = new URL(request.url)
-  const status = searchParams.get('status') as any
-  const propertyId = await getEffectivePropertyId(request)
-  
-  const bookings = await prisma.booking.findMany({
-    where: {
-      ...((session.user as any).roleName === 'GUEST' ? { primaryGuestId: session.user.id } : {}),
-      ...(status ? { status } : {}),
-      ...(propertyId ? { propertyId } : {})
-    },
-    select: {
-      id: true,
-      checkIn: true,
-      checkOut: true,
-      status: true,
-      totalAmount: true,
-      guests: true,
-      confirmationCode: true,
-      createdAt: true,
-      paymentStatus: true,
-
-      guest: {
-        select: { id: true, name: true, email: true }
+    const { searchParams } = new URL(request.url)
+    const status = searchParams.get('status') as any
+    const propertyId = await getEffectivePropertyId(request)
+    
+    const bookings = await prisma.booking.findMany({
+      where: {
+        deletedAt: null,
+        ...((session.user as any).roleName === 'GUEST' ? { primaryGuestId: session.user.id } : {}),
+        ...(status ? { status } : {}),
+        ...(propertyId ? { propertyId } : {})
       },
-      folios: {
-        include: {
-          lineItems: true,
-          payments: true
-        }
-      },
-      roomAssignments: {
-        include: {
-          room: {
-            select: { number: true, roomType: { select: { name: true, baseRate: true } } }
+      select: {
+        id: true,
+        checkIn: true,
+        checkOut: true,
+        status: true,
+        totalAmount: true,
+        guests: true,
+        confirmationCode: true,
+        createdAt: true,
+        paymentStatus: true,
+        guest: {
+          select: { id: true, name: true, email: true, phone: true, vipStatus: true }
+        },
+        folios: {
+          include: {
+            lineItems: true,
+            payments: true
+          }
+        },
+        roomAssignments: {
+          include: {
+            room: {
+              select: { id: true, number: true, roomType: { select: { name: true, baseRate: true } } }
+            }
           }
         }
+      },
+      orderBy: { createdAt: 'desc' }
+    })
+
+    // Map roomType to type to match the frontend expectations
+    // Also pre-calculate folio balances on the server to avoid expensive
+    // reduce() calls inside the React render loop on the client.
+    const formattedBookings = bookings.map((booking: any) => {
+      const folio = booking.folios?.[0]
+      const totalCharges = (folio?.lineItems || [])
+        .filter((i: any) => i.category !== 'PAYMENT')
+        .reduce((sum: number, i: any) => sum + Number(i.amount || 0), 0)
+      const totalPayments = (folio?.payments || []).reduce((sum: number, p: any) => sum + Number(p.amount || 0), 0)
+      const folioBalance = Math.max(0, totalCharges - totalPayments)
+
+      const calculatedTotal = totalCharges > 0 ? totalCharges : Number(booking.totalAmount || 0)
+
+      return {
+        ...booking,
+        guest: booking.guest,
+        user: booking.guest,
+        totalAmount: calculatedTotal,
+        // Pre-calculated folio summary (avoids client-side reduce on every render)
+        folioBalance,
+        folioTotalCharges: totalCharges,
+        folioTotalPayments: totalPayments,
+        roomAssignments: booking.roomAssignments.map((assignment: any) => ({
+          ...assignment,
+          room: assignment.room ? {
+            id: assignment.room.id,
+            number: assignment.room.number,
+            type: assignment.room.roomType?.name,
+            price: Number(assignment.room.roomType?.baseRate || 0)
+          } : null
+        }))
       }
-    },
-    orderBy: { createdAt: 'desc' }
-  })
+    })
 
-  // Map roomType to type to match the frontend expectations
-  // Also pre-calculate folio balances on the server to avoid expensive
-  // reduce() calls inside the React render loop on the client.
-  const formattedBookings = bookings.map((booking: any) => {
-    const folio = booking.folios?.[0]
-    const totalCharges = (folio?.lineItems || [])
-      .filter((i: any) => i.category !== 'PAYMENT')
-      .reduce((sum: number, i: any) => sum + Number(i.amount || 0), 0)
-    const totalPayments = (folio?.payments || []).reduce((sum: number, p: any) => sum + Number(p.amount || 0), 0)
-    const folioBalance = Math.max(0, totalCharges - totalPayments)
-
-    const calculatedTotal = totalCharges > 0 ? totalCharges : Number(booking.totalAmount || 0)
-
-    return {
-      ...booking,
-      totalAmount: calculatedTotal,
-      // Pre-calculated folio summary (avoids client-side reduce on every render)
-      folioBalance,
-      folioTotalCharges: totalCharges,
-      folioTotalPayments: totalPayments,
-      roomAssignments: booking.roomAssignments.map((assignment: any) => ({
-        ...assignment,
-        room: assignment.room ? {
-          number: assignment.room.number,
-          type: assignment.room.roomType?.name,
-          price: Number(assignment.room.roomType?.baseRate || 0)
-        } : null
-      }))
-    }
-  })
-
-  return NextResponse.json({
-    bookings: formattedBookings
-  })
+    return NextResponse.json({
+      bookings: formattedBookings
+    })
+  } catch (error: any) {
+    logger.error('Error fetching bookings:', error)
+    return NextResponse.json({ error: 'Failed to fetch bookings', details: error.message }, { status: 500 })
+  }
 }

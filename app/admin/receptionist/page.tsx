@@ -131,10 +131,10 @@ function ReceptionistOperationsContent() {
   }
 
   // Fetch Rooms Data
-  const { data: roomsData, isLoading: roomsLoading } = useApi('/api/rooms')
+  const { data: roomsData, isLoading: roomsLoading, mutate: mutateRooms } = useApi('/api/rooms')
 
   // Fetch Bookings Data
-  const { data: bookingsData, isLoading: bookingsLoading } = useApi('/api/bookings')
+  const { data: bookingsData, isLoading: bookingsLoading, mutate: mutateBookings } = useApi('/api/bookings')
 
   useEffect(() => {
     // Rely solely on middleware.ts for enterprise-grade edge protection.
@@ -174,11 +174,17 @@ function ReceptionistOperationsContent() {
   }, [allBookings, rosterSearch, rosterStatusFilter])
 
   // Helper to check if a booking occupies a specific room (handles DDD split-stays)
-  const isRoomAssigned = (booking: any, targetRoomId: string) => {
+  const isRoomAssigned = (booking: any, targetRoomId: string, targetRoomNumber?: string) => {
+    if (!booking || !targetRoomId) return false;
     if (booking.roomAssignments && booking.roomAssignments.length > 0) {
-      return booking.roomAssignments.some((a: any) => a.roomId === targetRoomId && a.status !== 'MOVED');
+      return booking.roomAssignments.some((a: any) => 
+        (a.roomId === targetRoomId || a.room?.id === targetRoomId || (targetRoomNumber && a.room?.number === targetRoomNumber)) && 
+        a.status !== 'MOVED'
+      );
     }
-    return booking.roomId === targetRoomId; // Legacy fallback
+    return booking.roomId === targetRoomId || 
+           booking.room?.id === targetRoomId || 
+           (targetRoomNumber && (booking.roomNumber === targetRoomNumber || booking.room?.number === targetRoomNumber));
   }
 
   // Selected Day Key Metrics for the unified header
@@ -231,11 +237,15 @@ function ReceptionistOperationsContent() {
         },
         body: JSON.stringify({ status })
       })
-      return res.json()
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to update booking')
+      return data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bookings', activePropertyId] })
       queryClient.invalidateQueries({ queryKey: ['rooms', activePropertyId] })
+      mutateBookings()
+      mutateRooms()
     }
   })
 
@@ -243,7 +253,7 @@ function ReceptionistOperationsContent() {
     const room = rooms.find((r: any) => r.number === roomNumber)
     if (!room) return
     try {
-      await fetch(`/api/rooms/${room.id}`, {
+      const res = await fetch(`/api/rooms/${room.id}`, {
         method: 'PATCH',
         headers: { 
           'Content-Type': 'application/json',
@@ -251,29 +261,39 @@ function ReceptionistOperationsContent() {
         },
         body: JSON.stringify({ status: nextStatus })
       })
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.error || 'Status update failed')
+      }
       queryClient.invalidateQueries({ queryKey: ['rooms', activePropertyId] })
+      await mutateRooms()
+      await mutateBookings()
       toast.success(`Room ${roomNumber} updated to ${nextStatus}`)
-    } catch (err) {
-      toast.error('Update failed')
+    } catch (err: any) {
+      toast.error(err.message || 'Update failed')
     }
   }
 
   const handleCheckIn = async (roomNumber: string) => {
     const room = rooms.find((r: any) => r.number === roomNumber)
     if (!room) return
-    const booking = allBookings.find((b: any) => isRoomAssigned(b, room.id) && (b.status === 'CONFIRMED' || b.status === 'PENDING'))
+    const booking = allBookings.find((b: any) => isRoomAssigned(b, room.id, room.number) && (b.status === 'CONFIRMED' || b.status === 'PENDING'))
     if (!booking) {
       toast.error('No pending/confirmed booking found for this room.')
       return
     }
-    updateBookingMutation.mutate({ id: booking.id, status: 'CHECKED_IN' })
-    toast.success(`Check-in successful for Room ${roomNumber}`)
+    try {
+      await updateBookingMutation.mutateAsync({ id: booking.id, status: 'CHECKED_IN' })
+      toast.success(`Check-in successful for Room ${roomNumber}`)
+    } catch (err: any) {
+      toast.error(err.message || 'Check-in failed')
+    }
   }
 
   const handleCheckOut = async (roomNumber: string) => {
     const room = rooms.find((r: any) => r.number === roomNumber)
     if (!room) return
-    const booking = allBookings.find((b: any) => isRoomAssigned(b, room.id) && b.status === 'CHECKED_IN')
+    const booking = allBookings.find((b: any) => isRoomAssigned(b, room.id, room.number) && b.status === 'CHECKED_IN')
     if (!booking) {
       toast.error('No active resident found in this room.')
       return
@@ -291,6 +311,8 @@ function ReceptionistOperationsContent() {
       
       queryClient.invalidateQueries({ queryKey: ['bookings', activePropertyId] })
       queryClient.invalidateQueries({ queryKey: ['rooms', activePropertyId] })
+      await mutateBookings()
+      await mutateRooms()
       toast.success(`Check-out and settlement completed for Room ${roomNumber}`)
     } catch (err: any) {
       toast.error(err.message || 'Check-out failed')
@@ -321,7 +343,7 @@ function ReceptionistOperationsContent() {
       if (!res.ok) throw new Error(result.error || 'Failed to create booking')
       
       if (result.booking?.id) {
-        await fetch(`/api/bookings/${result.booking.id}`, {
+        const patchRes = await fetch(`/api/bookings/${result.booking.id}`, {
           method: 'PATCH',
           headers: { 
             'Content-Type': 'application/json',
@@ -329,13 +351,108 @@ function ReceptionistOperationsContent() {
           },
           body: JSON.stringify({ status: 'CHECKED_IN' })
         })
+        if (!patchRes.ok) {
+          const patchErr = await patchRes.json()
+          console.warn('Auto check-in patch error:', patchErr)
+        }
       }
 
       queryClient.invalidateQueries({ queryKey: ['bookings', activePropertyId] })
       queryClient.invalidateQueries({ queryKey: ['rooms', activePropertyId] })
+      setSelectedRoom((prev: any) => prev ? { ...prev, status: 'OCCUPIED' } : null)
+      await mutateBookings()
+      await mutateRooms()
       toast.success(`Walk-in for ${data.guestName} created and checked into Room ${data.roomNumber}.`)
     } catch (err: any) {
       toast.error(err.message || 'Walk-in creation failed')
+      throw err
+    }
+  }
+
+  // Selected Room Context for RoomActionDesk - live synced with latest room state
+  const liveSelectedRoom = useMemo(() => {
+    if (!selectedRoom) return null
+    const found = rooms.find((r: any) => r.id === selectedRoom.id || r.number === selectedRoom.number)
+    return found ? { ...selectedRoom, ...found } : selectedRoom
+  }, [rooms, selectedRoom])
+
+  const selectedRoomBookings = useMemo(() => {
+    if (!liveSelectedRoom) return []
+    return allBookings.filter((b: any) => isRoomAssigned(b, liveSelectedRoom.id, liveSelectedRoom.number))
+  }, [allBookings, liveSelectedRoom])
+
+  const activeBooking = useMemo(() => {
+    if (!selectedRoomBookings.length) return null
+    return (
+      selectedRoomBookings.find((b: any) => b.status === 'CHECKED_IN') ||
+      selectedRoomBookings.find((b: any) => b.status === 'CONFIRMED') ||
+      selectedRoomBookings[0]
+    )
+  }, [selectedRoomBookings])
+
+  const [roomNotes, setRoomNotes] = useState('')
+  const [isRoomVip, setIsRoomVip] = useState(false)
+
+  useEffect(() => {
+    if (activeBooking) {
+      setRoomNotes(activeBooking.specialRequests || '')
+      const guestObj = activeBooking.guest || activeBooking.user
+      setIsRoomVip(guestObj?.vipStatus === 'VIP' || guestObj?.vip === true || false)
+    } else {
+      setRoomNotes('')
+      setIsRoomVip(false)
+    }
+  }, [activeBooking])
+
+  const handleToggleVip = async (val: boolean) => {
+    setIsRoomVip(val)
+    const guestId = activeBooking?.guest?.id || activeBooking?.user?.id
+    if (!guestId) {
+      toast.error('No registered guest record to update VIP status.')
+      return
+    }
+    try {
+      const res = await fetch('/api/admin/crm/guests', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: guestId,
+          vipStatus: val ? 'VIP' : 'STANDARD'
+        })
+      })
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.error || 'Failed to update VIP status')
+      }
+      toast.success(val ? 'Guest marked as VIP' : 'Guest marked as Standard')
+      await mutateBookings()
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to update VIP status')
+      setIsRoomVip(!val)
+    }
+  }
+
+  const handleUpdateNotes = async () => {
+    if (!activeBooking?.id) return
+    try {
+      const res = await fetch(`/api/bookings/${activeBooking.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-property-id': activePropertyId || 'all'
+        },
+        body: JSON.stringify({
+          specialRequests: roomNotes
+        })
+      })
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.error || 'Failed to save notes')
+      }
+      toast.success('Notes & special requests saved')
+      await mutateBookings()
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to save notes')
     }
   }
 
@@ -869,17 +986,17 @@ function ReceptionistOperationsContent() {
       </div>
 
       <AnimatePresence>
-        {selectedRoom && (
+        {liveSelectedRoom && (
           <RoomActionDesk 
-            room={selectedRoom}
+            room={liveSelectedRoom}
             onStatusTransition={handleStatusTransition}
-            roomBookings={allBookings.filter((b: any) => isRoomAssigned(b, selectedRoom?.id))}
+            roomBookings={selectedRoomBookings}
             onClose={() => setSelectedRoom(null)}
-            isVip={false}
-            onToggleVip={() => {}}
-            notes=""
-            onNotesChange={() => {}}
-            onUpdateMetadata={() => {}}
+            isVip={isRoomVip}
+            onToggleVip={handleToggleVip}
+            notes={roomNotes}
+            onNotesChange={setRoomNotes}
+            onUpdateMetadata={handleUpdateNotes}
             onCheckIn={handleCheckIn}
             onCheckOut={handleCheckOut}
             onCreateBooking={handleCreateBooking}

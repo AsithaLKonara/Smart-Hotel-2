@@ -291,6 +291,8 @@ export function ReceptionRoomMatrixDesk({
                         exit={{ opacity: 0, scale: 0.9 }}
                         transition={{ duration: 0.15, delay: idx * 0.01 }}
                         onClick={() => onSelectRoom(room)}
+                        data-testid="room-card"
+                        data-room-number={room.number}
                         className={cn(
                           "group relative p-3.5 border cursor-pointer transition-all duration-200 flex flex-col justify-between min-h-[124px] rounded-2xl select-none",
                           config.color,

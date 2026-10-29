@@ -150,7 +150,7 @@ export async function PATCH(
     }
 
     const activePropertyId = await getEffectivePropertyId(request);
-    if (booking.propertyId !== activePropertyId) {
+    if (activePropertyId && booking.propertyId && booking.propertyId !== activePropertyId) {
       return NextResponse.json(
         { error: 'Unauthorized: Booking belongs to a different property' },
         { status: 403 }
