@@ -6,76 +6,76 @@
 
 @layer base {
   :root {
-    --background: 220 33% 98%;
-    --foreground: 222 47% 11%;
+    --background: 220 14% 4%; /* #090A0C */
+    --foreground: 240 5% 96%; /* #F4F4F5 */
 
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card: 216 12% 8%; /* #121417 */
+    --card-foreground: 0 0% 100%; /* #FFFFFF */
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover: 216 12% 8%;
+    --popover-foreground: 0 0% 100%;
 
-    --primary: 43 52% 56%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 0 0% 100%; /* Pure White primary trigger */
+    --primary-foreground: 220 14% 4%; /* #090A0C */
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 216 9% 10%; /* #181A1D */
+    --secondary-foreground: 240 5% 96%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 216 9% 10%;
+    --muted-foreground: 240 4% 65%; /* #A1A1AA */
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 216 9% 10%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 43 52% 56%;
+    --border: 214 14% 13%; /* #1E2227 */
+    --input: 216 12% 19%; /* #2B3037 */
+    --ring: 216 12% 19%;
 
     --radius: 0.75rem;
 
-    /* Luxury Variables */
-    --midnight: 217 64% 11%;
-    --gold: 43 52% 56%;
-    --gold-muted: 43 52% 85%;
+    /* Stealth Canonical Variables */
+    --midnight: 220 14% 4%;
+    --gold: 0 0% 100%;
+    --gold-muted: 240 4% 65%;
   }
 
   .dark {
-    --background: 0 0% 4%;
-    --foreground: 0 0% 98%;
+    --background: 220 14% 4%;
+    --foreground: 240 5% 96%;
 
-    --card: 0 0% 6%;
-    --card-foreground: 0 0% 98%;
+    --card: 216 12% 8%;
+    --card-foreground: 0 0% 100%;
 
-    --popover: 0 0% 6%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 216 12% 8%;
+    --popover-foreground: 0 0% 100%;
 
-    --primary: 43 52% 56%;
-    --primary-foreground: 217 64% 5%;
+    --primary: 0 0% 100%;
+    --primary-foreground: 220 14% 4%;
 
-    --secondary: 217 32% 17%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 216 9% 10%;
+    --secondary-foreground: 240 5% 96%;
 
-    --muted: 217 32% 17%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 216 9% 10%;
+    --muted-foreground: 240 4% 65%;
 
-    --accent: 217 32% 17%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 216 9% 10%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 62% 30%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 217 32% 17%;
-    --input: 217 32% 17%;
-    --ring: 43 52% 56%;
+    --border: 214 14% 13%;
+    --input: 216 12% 19%;
+    --ring: 216 12% 19%;
   }
 }
 
 @layer base {
   html {
-    background-color: #0a0a0a;
+    background-color: #090A0C;
   }
   * {
     @apply border-border;
@@ -99,14 +99,13 @@
 }
 
 
-
 @layer utilities {
   .glass {
-    @apply bg-white/10 backdrop-blur-md border border-white/20;
+    @apply bg-white/5 backdrop-blur-md border border-[#1E2227];
   }
   
   .glass-dark {
-    @apply bg-black/40 backdrop-blur-xl border border-white/10;
+    @apply bg-black/40 backdrop-blur-xl border border-[#1E2227];
   }
 
   .text-balance {
@@ -114,15 +113,15 @@
   }
 
   .shadow-luxury {
-    box-shadow: 0 20px 50px -12px rgba(197, 160, 89, 0.25);
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.7);
   }
 
   .bg-midnight-gradient {
-    background: linear-gradient(to bottom right, #0a192f, #060f1c);
+    background: linear-gradient(to bottom right, #121417, #090A0C);
   }
 
   .bg-gold-gradient {
-    background: linear-gradient(to bottom right, #c5a059, #816937);
+    background: linear-gradient(to bottom right, #181A1D, #121417);
   }
 
   .font-display {

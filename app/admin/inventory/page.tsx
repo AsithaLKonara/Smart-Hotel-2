@@ -51,22 +51,22 @@ interface InventoryItem {
 }
 
 const PO_STATUS_CONFIG: Record<string, { label: string; className: string; icon: React.ReactNode }> = {
-  APPROVED:         { label: 'Approved',  className: 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30', icon: <CheckCircle2 className="w-3 h-3" /> },
-  PENDING_APPROVAL: { label: 'Pending',   className: 'bg-amber-500/20 text-amber-400 border border-amber-500/30',   icon: <Clock className="w-3 h-3" /> },
-  DELIVERED:        { label: 'Delivered', className: 'bg-blue-500/20 text-blue-400 border border-blue-500/30',      icon: <Package className="w-3 h-3" /> },
-  SHIPPED:          { label: 'Shipped',   className: 'bg-violet-500/20 text-violet-400 border border-violet-500/30',  icon: <Truck className="w-3 h-3" /> },
-  REJECTED:         { label: 'Rejected',  className: 'bg-red-500/20 text-red-400 border border-red-500/30',        icon: <X className="w-3 h-3" /> },
+  APPROVED:         { label: 'Approved',  className: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20', icon: <CheckCircle2 className="w-3 h-3" /> },
+  PENDING_APPROVAL: { label: 'Pending',   className: 'bg-amber-500/10 text-amber-400 border border-amber-500/20',   icon: <Clock className="w-3 h-3" /> },
+  DELIVERED:        { label: 'Delivered', className: 'bg-blue-500/10 text-blue-400 border border-blue-500/20',      icon: <Package className="w-3 h-3" /> },
+  SHIPPED:          { label: 'Shipped',   className: 'bg-violet-500/10 text-violet-400 border border-violet-500/20',  icon: <Truck className="w-3 h-3" /> },
+  REJECTED:         { label: 'Rejected',  className: 'bg-rose-500/10 text-rose-400 border border-rose-500/20',        icon: <X className="w-3 h-3" /> },
 }
 
 function ModalShell({ open, onClose, title, children }: { open: boolean; onClose: () => void; title: string; children: React.ReactNode }) {
   return (
     <Dialog.Root open={open} onOpenChange={(o: boolean) => !o && onClose()}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50" />
-        <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl bg-[#0a0a0f] border border-white/10 rounded-2xl shadow-2xl p-6 z-50 max-h-[90vh] overflow-y-auto">
+        <Dialog.Overlay className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 animate-fade-in" />
+        <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl bg-[#121417] border border-[#2B3037] rounded-2xl shadow-2xl p-6 z-50 max-h-[90vh] overflow-y-auto">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold text-white">{title}</h2>
-            <button onClick={onClose} className="text-white/40 hover:text-white transition-colors">
+            <h2 className="text-lg font-bold text-white">{title}</h2>
+            <button onClick={onClose} className="text-zinc-500 hover:text-white transition-colors">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -475,14 +475,14 @@ function UnifiedInventoryContent() {
                 })
                 setShowItemModal(true)
               }}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs gap-1.5"
+              className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs gap-1.5 px-3.5 py-2 rounded-lg transition-all shadow-sm"
             >
               <Plus className="w-4 h-4" /> Add Item
             </Button>
           ) : (
             <Button
               onClick={() => setShowPoModal(true)}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs gap-1.5"
+              className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs gap-1.5 px-3.5 py-2 rounded-lg transition-all shadow-sm"
             >
               <Plus className="w-4 h-4" /> Create Purchase Order
             </Button>
@@ -493,14 +493,14 @@ function UnifiedInventoryContent() {
       <div className="space-y-6">
 
         {/* View Switcher Tabs */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#1C2025] pb-4">
+          <div className="flex items-center gap-1.5 p-1 bg-[#121417] border border-[#1E2227] rounded-xl">
             <button
               onClick={() => setActiveTab('STOCK')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all ${
                 activeTab === 'STOCK'
-                  ? 'bg-primary text-black shadow-lg font-black'
-                  : 'bg-white/5 text-white/60 hover:text-white hover:bg-white/10 border border-white/5'
+                  ? 'bg-[#181A1D] text-white border border-[#2B3037] shadow-sm'
+                  : 'text-zinc-400 hover:text-zinc-200 hover:bg-[#131518]'
               }`}
             >
               <Package className="w-4 h-4" />
@@ -508,26 +508,26 @@ function UnifiedInventoryContent() {
             </button>
             <button
               onClick={() => setActiveTab('ORDERS')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all ${
                 activeTab === 'ORDERS'
-                  ? 'bg-primary text-black shadow-lg font-black'
-                  : 'bg-white/5 text-white/60 hover:text-white hover:bg-white/10 border border-white/5'
+                  ? 'bg-[#181A1D] text-white border border-[#2B3037] shadow-sm'
+                  : 'text-zinc-400 hover:text-zinc-200 hover:bg-[#131518]'
               }`}
             >
               <ShoppingCart className="w-4 h-4" />
               Purchase Orders & Deliveries ({orders.length})
               {stats.pendingPos > 0 && (
-                <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] bg-amber-500 text-black font-black">
+                <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] bg-amber-500/10 border border-amber-500/20 text-amber-400 font-mono font-bold">
                   {stats.pendingPos}
                 </span>
               )}
             </button>
           </div>
 
-          <div className="flex items-center gap-3 text-xs text-white/50">
+          <div className="flex items-center gap-3 text-xs text-zinc-400">
             <Link 
               href="/admin/procurement/vendors" 
-              className="hover:text-primary transition-colors flex items-center gap-1 font-semibold"
+              className="hover:text-white transition-colors flex items-center gap-1 font-medium"
             >
               <Building2 className="w-3.5 h-3.5" /> Manage Vendors <ArrowUpRight className="w-3 h-3" />
             </Link>
@@ -535,27 +535,27 @@ function UnifiedInventoryContent() {
         </div>
 
         {/* Quick KPI Stat Strip */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-          <Card className="bg-[#121118] border-white/5 p-4 rounded-xl">
-            <p className="text-[10px] uppercase font-bold text-white/40">Total Items</p>
-            <p className="text-2xl font-bold text-white mt-1">{stats.total}</p>
-          </Card>
-          <Card className="bg-[#121118] border-white/5 p-4 rounded-xl">
-            <p className="text-[10px] uppercase font-bold text-emerald-400">In Stock</p>
-            <p className="text-2xl font-bold text-white mt-1">{stats.inStock}</p>
-          </Card>
-          <Card className="bg-[#121118] border-white/5 p-4 rounded-xl">
-            <p className="text-[10px] uppercase font-bold text-amber-400">Low Stock Alert</p>
-            <p className="text-2xl font-bold text-amber-400 mt-1">{stats.lowStock}</p>
-          </Card>
-          <Card className="bg-[#121118] border-white/5 p-4 rounded-xl">
-            <p className="text-[10px] uppercase font-bold text-rose-400">Out of Stock</p>
-            <p className="text-2xl font-bold text-rose-400 mt-1">{stats.outOfStock}</p>
-          </Card>
-          <Card className="bg-[#121118] border-white/5 p-4 rounded-xl">
-            <p className="text-[10px] uppercase font-bold text-sky-400">Pending POs</p>
-            <p className="text-2xl font-bold text-white mt-1">{stats.pendingPos}</p>
-          </Card>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3.5">
+          <div className="p-5 rounded-2xl bg-[#121417] border border-[#1E2227] flex flex-col justify-between hover:border-zinc-700 transition-colors group">
+            <span className="text-xs font-semibold text-zinc-400">Total Items</span>
+            <span className="text-2xl sm:text-3xl font-black font-mono text-white tracking-tight mt-1">{stats.total}</span>
+          </div>
+          <div className="p-5 rounded-2xl bg-[#121417] border border-[#1E2227] flex flex-col justify-between hover:border-zinc-700 transition-colors group">
+            <span className="text-xs font-semibold text-zinc-400">In Stock</span>
+            <span className="text-2xl sm:text-3xl font-black font-mono text-emerald-400 tracking-tight mt-1">{stats.inStock}</span>
+          </div>
+          <div className="p-5 rounded-2xl bg-[#121417] border border-[#1E2227] flex flex-col justify-between hover:border-zinc-700 transition-colors group">
+            <span className="text-xs font-semibold text-zinc-400">Low Stock Alert</span>
+            <span className="text-2xl sm:text-3xl font-black font-mono text-amber-400 tracking-tight mt-1">{stats.lowStock}</span>
+          </div>
+          <div className="p-5 rounded-2xl bg-[#121417] border border-[#1E2227] flex flex-col justify-between hover:border-zinc-700 transition-colors group">
+            <span className="text-xs font-semibold text-zinc-400">Out of Stock</span>
+            <span className="text-2xl sm:text-3xl font-black font-mono text-rose-400 tracking-tight mt-1">{stats.outOfStock}</span>
+          </div>
+          <div className="p-5 rounded-2xl bg-[#121417] border border-[#1E2227] flex flex-col justify-between hover:border-zinc-700 transition-colors group">
+            <span className="text-xs font-semibold text-zinc-400">Pending POs</span>
+            <span className="text-2xl sm:text-3xl font-black font-mono text-blue-400 tracking-tight mt-1">{stats.pendingPos}</span>
+          </div>
         </div>
 
         {/* ========================================================= */}
@@ -567,12 +567,12 @@ function UnifiedInventoryContent() {
             {/* Search and Category Filters */}
             <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
               <div className="relative w-full sm:w-80">
-                <Search className="w-4 h-4 text-white/40 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <Search className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <Input
                   placeholder="Search item name or description..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 bg-white/5 border-white/10 text-white text-xs h-10 placeholder:text-white/30 focus-visible:border-primary/50"
+                  className="pl-10 bg-[#181A1D] border-[#2B3037] text-white text-xs h-9 rounded-lg placeholder:text-zinc-500 focus-visible:border-zinc-400"
                 />
               </div>
 
@@ -580,7 +580,7 @@ function UnifiedInventoryContent() {
                 <select
                   value={filterCategory}
                   onChange={(e) => setFilterCategory(e.target.value)}
-                  className="bg-[#121118] border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-primary/50"
+                  className="bg-[#181A1D] border border-[#2B3037] rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-zinc-400"
                 >
                   <option value="all">All Categories</option>
                   {categories.map(c => (
@@ -591,7 +591,7 @@ function UnifiedInventoryContent() {
                 <select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
-                  className="bg-[#121118] border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-primary/50"
+                  className="bg-[#181A1D] border border-[#2B3037] rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-zinc-400"
                 >
                   <option value="all">All Status</option>
                   <option value="IN_STOCK">In Stock</option>
@@ -606,9 +606,9 @@ function UnifiedInventoryContent() {
             {loadingItems ? (
               <div className="py-20 flex justify-center"><PremiumSpinner /></div>
             ) : (
-              <div className="bg-[#121118] border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
-                <table className="w-full text-left text-sm text-white">
-                  <thead className="bg-white/5 text-white/50 text-xs uppercase border-b border-white/10">
+              <div className="bg-[#121417] border border-[#1E2227] rounded-2xl overflow-hidden shadow-2xl">
+                <table className="w-full text-left text-sm text-zinc-100">
+                  <thead className="bg-[#141619] border-b border-[#1E2227] text-zinc-500 font-semibold uppercase tracking-wider text-[10px]">
                     <tr>
                       <th className="p-4">Item Name</th>
                       <th className="p-4">Category</th>
@@ -618,34 +618,34 @@ function UnifiedInventoryContent() {
                       <th className="p-4 text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-white/5">
+                  <tbody className="divide-y divide-[#1A1D21]">
                     {filteredItems.map(item => {
                       const isLowOrOut = item.status === 'LOW_STOCK' || item.status === 'OUT_OF_STOCK'
                       return (
-                        <tr key={item.id} className="hover:bg-white/[0.02] transition-colors">
+                        <tr key={item.id} className="hover:bg-[#16181B] transition-colors">
                           <td className="p-4">
-                            <p className="font-semibold text-white">{item.name}</p>
+                            <p className="font-semibold text-white text-xs">{item.name}</p>
                             {item.description && (
-                              <p className="text-xs text-white/40 line-clamp-1">{item.description}</p>
+                              <p className="text-[11px] text-zinc-500 line-clamp-1 mt-0.5">{item.description}</p>
                             )}
                           </td>
                           <td className="p-4">
-                            <span className="text-xs px-2.5 py-1 rounded bg-white/5 text-white/70 border border-white/10">
+                            <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-[#181A1D] text-zinc-300 border border-[#2B3037]">
                               {item.category}
                             </span>
                           </td>
-                          <td className="p-4 font-mono font-bold text-white">
-                            {item.quantity} <span className="text-xs font-normal text-white/40">{item.unit}</span>
+                          <td className="p-4 font-mono font-bold text-white text-xs">
+                            {item.quantity} <span className="text-[11px] font-normal text-zinc-500">{item.unit}</span>
                           </td>
-                          <td className="p-4 text-xs text-white/50 font-mono">
+                          <td className="p-4 text-xs text-zinc-400 font-mono">
                             {item.minQuantity} {item.unit}
                           </td>
                           <td className="p-4">
-                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider border ${
+                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[10px] font-bold font-mono uppercase tracking-wider border ${
                               item.status === 'IN_STOCK' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-                              item.status === 'LOW_STOCK' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20 animate-pulse' :
+                              item.status === 'LOW_STOCK' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
                               item.status === 'OUT_OF_STOCK' ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' :
-                              'bg-white/5 text-white/40 border-white/10'
+                              'bg-zinc-800 text-zinc-400 border-zinc-700'
                             }`}>
                               {item.status === 'IN_STOCK' && <CheckCircle className="w-3 h-3" />}
                               {item.status === 'LOW_STOCK' && <AlertTriangle className="w-3 h-3" />}
@@ -657,17 +657,16 @@ function UnifiedInventoryContent() {
                             <div className="flex items-center justify-end gap-1.5">
                               {/* Integrated Reorder Trigger */}
                               {isLowOrOut && (
-                                <Button
-                                  size="sm"
+                                <button
+                                  type="button"
                                   onClick={() => handleQuickReorder(item)}
-                                  className="h-7 text-[11px] font-bold bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 gap-1"
+                                  className="h-7 text-[11px] font-semibold bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20 px-2 rounded-lg flex items-center gap-1 transition-colors"
                                 >
                                   <ShoppingCart className="w-3 h-3" /> Reorder PO
-                                </Button>
+                                </button>
                               )}
-                              <Button
-                                size="sm"
-                                variant="outline"
+                              <button
+                                type="button"
                                 onClick={() => {
                                   setAdjustModal(item)
                                   setAdjustForm({
@@ -676,14 +675,13 @@ function UnifiedInventoryContent() {
                                     reason: 'Manual Count'
                                   })
                                 }}
-                                className="h-7 px-2 border-white/10 text-white/70 hover:text-white"
+                                className="h-7 px-2 rounded-lg bg-[#1C2025] hover:bg-[#252B33] text-zinc-300 border border-[#2B3037] text-[11px] transition-colors"
                                 title="Adjust Stock"
                               >
                                 <SlidersHorizontal className="w-3.5 h-3.5" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
+                              </button>
+                              <button
+                                type="button"
                                 onClick={() => {
                                   setEditingItem(item)
                                   setItemFormData({
@@ -697,20 +695,19 @@ function UnifiedInventoryContent() {
                                   })
                                   setShowItemModal(true)
                                 }}
-                                className="h-7 px-2 border-white/10 text-white/70 hover:text-white"
+                                className="h-7 px-2 rounded-lg bg-[#1C2025] hover:bg-[#252B33] text-zinc-300 border border-[#2B3037] text-[11px] transition-colors"
                                 title="Edit Item"
                               >
                                 <Edit className="w-3.5 h-3.5" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
+                              </button>
+                              <button
+                                type="button"
                                 onClick={() => handleDeleteItem(item.id)}
-                                className="h-7 px-2 border-white/10 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10"
+                                className="h-7 px-2 rounded-lg bg-[#1C2025] hover:bg-rose-950/40 text-rose-400 border border-[#2B3037] hover:border-rose-500/30 text-[11px] transition-colors"
                                 title="Delete Item"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
-                              </Button>
+                              </button>
                             </div>
                           </td>
                         </tr>
@@ -718,7 +715,7 @@ function UnifiedInventoryContent() {
                     })}
                     {filteredItems.length === 0 && (
                       <tr>
-                        <td colSpan={6} className="p-12 text-center text-white/40">
+                        <td colSpan={6} className="p-12 text-center text-zinc-500 font-mono text-xs">
                           No inventory items match your current filters.
                         </td>
                       </tr>
@@ -740,9 +737,9 @@ function UnifiedInventoryContent() {
             {loadingOrders ? (
               <div className="py-20 flex justify-center"><PremiumSpinner /></div>
             ) : (
-              <div className="bg-[#121118] border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
-                <table className="w-full text-left text-sm text-white">
-                  <thead className="bg-white/5 text-white/50 text-xs uppercase border-b border-white/10">
+              <div className="bg-[#121417] border border-[#1E2227] rounded-2xl overflow-hidden shadow-2xl">
+                <table className="w-full text-left text-sm text-zinc-100">
+                  <thead className="bg-[#141619] border-b border-[#1E2227] text-zinc-500 font-semibold uppercase tracking-wider text-[10px]">
                     <tr>
                       <th className="p-4">PO Number</th>
                       <th className="p-4">Supplier / Vendor</th>
@@ -753,79 +750,78 @@ function UnifiedInventoryContent() {
                       <th className="p-4 text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-white/10">
+                  <tbody className="divide-y divide-[#1A1D21]">
                     {orders.map(order => {
                       const st = PO_STATUS_CONFIG[order.status]
                       return (
-                        <tr key={order.id} className="hover:bg-white/[0.02] transition-colors">
+                        <tr key={order.id} className="hover:bg-[#16181B] transition-colors">
                           <td className="p-4">
                             <div className="flex items-center gap-2">
-                              <FileText className="w-4 h-4 text-primary" />
+                              <FileText className="w-3.5 h-3.5 text-zinc-400" />
                               <span className="font-mono font-bold text-xs text-white">{order.orderNumber}</span>
                             </div>
                           </td>
                           <td className="p-4">
-                            <p className="font-semibold text-white">{order.vendor?.name || 'Vendor'}</p>
-                            <p className="text-xs text-white/40">{order.vendor?.email || ''}</p>
+                            <p className="font-semibold text-white text-xs">{order.vendor?.name || 'Vendor'}</p>
+                            <p className="text-[11px] text-zinc-500">{order.vendor?.email || ''}</p>
                           </td>
-                          <td className="p-4 text-xs text-white/50">
+                          <td className="p-4 text-xs text-zinc-400 font-mono">
                             {new Date(order.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
                           </td>
-                          <td className="p-4 text-xs text-white/50">
+                          <td className="p-4 text-xs text-zinc-400 font-mono">
                             {order.expectedDate ? new Date(order.expectedDate).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}
                           </td>
-                          <td className="p-4 font-mono font-bold text-right text-emerald-400">
+                          <td className="p-4 font-mono font-bold text-right text-emerald-400 text-xs">
                             ${Number(order.totalAmount || 0).toFixed(2)}
                           </td>
                           <td className="p-4">
                             {st ? (
-                              <span className={`inline-flex items-center gap-1.5 text-[10px] font-bold px-2 py-0.5 rounded ${st.className}`}>
+                              <span className={`inline-flex items-center gap-1.5 text-[10px] font-bold font-mono px-2 py-0.5 rounded ${st.className}`}>
                                 {st.icon} {st.label}
                               </span>
                             ) : (
-                              <span className="text-white/40 text-xs">{order.status}</span>
+                              <span className="text-zinc-500 text-xs font-mono">{order.status}</span>
                             )}
                           </td>
                           <td className="p-4 text-right">
                             <div className="flex items-center justify-end gap-1.5">
                               {order.status === 'PENDING_APPROVAL' && (
                                 <>
-                                  <Button
-                                    size="sm"
+                                  <button
+                                    type="button"
                                     onClick={() => handleUpdateOrderStatus(order.id, 'APPROVED')}
-                                    className="h-7 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-bold"
+                                    className="h-7 text-xs bg-white hover:bg-zinc-200 text-black font-semibold px-3 rounded-lg transition-colors"
                                   >
                                     Approve
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
+                                  </button>
+                                  <button
+                                    type="button"
                                     onClick={() => handleUpdateOrderStatus(order.id, 'REJECTED')}
-                                    className="h-7 text-xs border-white/10 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10"
+                                    className="h-7 text-xs border border-rose-500/20 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 font-medium px-3 rounded-lg transition-colors"
                                   >
                                     Reject
-                                  </Button>
+                                  </button>
                                 </>
                               )}
 
                               {(order.status === 'APPROVED' || order.status === 'SHIPPED') && (
-                                <Button
-                                  size="sm"
+                                <button
+                                  type="button"
                                   onClick={() => setReceiveModal(order)}
-                                  className="h-7 text-xs bg-blue-600 hover:bg-blue-500 text-white font-bold gap-1"
+                                  className="h-7 text-xs bg-white hover:bg-zinc-200 text-black font-semibold gap-1 px-3 rounded-lg flex items-center transition-colors"
                                 >
                                   <Package className="w-3.5 h-3.5" /> Receive Goods
-                                </Button>
+                                </button>
                               )}
 
                               {order.status === 'DELIVERED' && (
-                                <Button
-                                  size="sm"
+                                <button
+                                  type="button"
                                   onClick={() => setInvoiceModal(order)}
-                                  className="h-7 text-xs bg-emerald-700 hover:bg-emerald-600 text-white font-bold gap-1"
+                                  className="h-7 text-xs bg-white hover:bg-zinc-200 text-black font-semibold gap-1 px-3 rounded-lg flex items-center transition-colors"
                                 >
                                   <FileText className="w-3.5 h-3.5" /> Register Invoice
-                                </Button>
+                                </button>
                               )}
                             </div>
                           </td>
@@ -834,7 +830,7 @@ function UnifiedInventoryContent() {
                     })}
                     {orders.length === 0 && (
                       <tr>
-                        <td colSpan={7} className="p-12 text-center text-white/40">
+                        <td colSpan={7} className="p-12 text-center text-zinc-500 font-mono text-xs">
                           No purchase orders recorded. Click "+ Create Purchase Order" to start your first replenishment.
                         </td>
                       </tr>
@@ -862,44 +858,44 @@ function UnifiedInventoryContent() {
       >
         <form onSubmit={handleItemSubmit} className="space-y-4">
           <div>
-            <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-1 block">Item Name *</label>
+            <label className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1 block">Item Name *</label>
             <Input
               required
               value={itemFormData.name}
               onChange={e => setItemFormData({ ...itemFormData, name: e.target.value })}
-              className="bg-white/5 border-white/10 text-white"
+              className="bg-[#181A1D] border-[#2B3037] text-white text-xs placeholder-zinc-500 focus:outline-none focus:border-zinc-500"
               placeholder="e.g. Luxury Egyptian Cotton Towel"
             />
           </div>
 
           <div>
-            <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-1 block">Description</label>
+            <label className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1 block">Description</label>
             <Input
               value={itemFormData.description}
               onChange={e => setItemFormData({ ...itemFormData, description: e.target.value })}
-              className="bg-white/5 border-white/10 text-white"
+              className="bg-[#181A1D] border-[#2B3037] text-white text-xs placeholder-zinc-500 focus:outline-none focus:border-zinc-500"
               placeholder="e.g. 800 GSM White Bath Towel"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-1 block">Category *</label>
+              <label className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1 block">Category *</label>
               <Input
                 required
                 value={itemFormData.category}
                 onChange={e => setItemFormData({ ...itemFormData, category: e.target.value })}
-                className="bg-white/5 border-white/10 text-white"
+                className="bg-[#181A1D] border-[#2B3037] text-white text-xs placeholder-zinc-500 focus:outline-none focus:border-zinc-500"
                 placeholder="e.g. Linens, Amenities, F&B"
               />
             </div>
             <div>
-              <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-1 block">Unit of Measure *</label>
+              <label className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1 block">Unit of Measure *</label>
               <Input
                 required
                 value={itemFormData.unit}
                 onChange={e => setItemFormData({ ...itemFormData, unit: e.target.value })}
-                className="bg-white/5 border-white/10 text-white"
+                className="bg-[#181A1D] border-[#2B3037] text-white text-xs placeholder-zinc-500 focus:outline-none focus:border-zinc-500"
                 placeholder="e.g. pcs, sets, kg, bottles"
               />
             </div>
@@ -907,7 +903,7 @@ function UnifiedInventoryContent() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-1 block">Initial Quantity *</label>
+              <label className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1 block">Initial Quantity *</label>
               <Input
                 type="number"
                 min="0"
@@ -915,37 +911,39 @@ function UnifiedInventoryContent() {
                 disabled={!!editingItem}
                 value={itemFormData.quantity}
                 onChange={e => setItemFormData({ ...itemFormData, quantity: e.target.value })}
-                className="bg-white/5 border-white/10 text-white disabled:opacity-50"
+                className="bg-[#181A1D] border-[#2B3037] text-white text-xs font-mono disabled:opacity-50"
               />
             </div>
             <div>
-              <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-1 block">Par Threshold (Min Qty) *</label>
+              <label className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1 block">Par Threshold (Min Qty) *</label>
               <Input
                 type="number"
                 min="0"
                 required
                 value={itemFormData.minQuantity}
                 onChange={e => setItemFormData({ ...itemFormData, minQuantity: e.target.value })}
-                className="bg-white/5 border-white/10 text-white"
+                className="bg-[#181A1D] border-[#2B3037] text-white text-xs font-mono"
               />
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-4 border-t border-white/10">
-            <Button
+          <div className="flex justify-end gap-2 pt-4 border-t border-[#1C2025]">
+            <button
               type="button"
-              variant="outline"
               onClick={() => {
                 setShowItemModal(false)
                 setEditingItem(null)
               }}
-              className="border-white/10 text-white/60 hover:text-white"
+              className="bg-[#141619] hover:bg-[#1A1D21] border border-[#2B3037] text-zinc-300 text-xs font-medium px-4 py-2 rounded-lg transition-colors"
             >
               Cancel
-            </Button>
-            <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold">
+            </button>
+            <button
+              type="submit"
+              className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs px-4 py-2 rounded-lg transition-all shadow-sm"
+            >
               {editingItem ? 'Save Changes' : 'Create Item'}
-            </Button>
+            </button>
           </div>
         </form>
       </ModalShell>
@@ -995,7 +993,7 @@ function UnifiedInventoryContent() {
           className="space-y-4"
         >
           <div>
-            <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-1 block">
+            <label className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1 block">
               New Count ({adjustModal?.unit}) *
             </label>
             <Input
@@ -1004,44 +1002,47 @@ function UnifiedInventoryContent() {
               required
               value={adjustForm.newQuantity}
               onChange={e => setAdjustForm({ ...adjustForm, newQuantity: e.target.value })}
-              className="bg-white/5 border-white/10 text-white text-lg font-bold"
+              className="bg-[#181A1D] border-[#2B3037] text-white text-lg font-mono font-bold"
             />
           </div>
 
           <div>
-            <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-1 block">Storage Location *</label>
+            <label className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1 block">Storage Location *</label>
             <Input
               required
               value={adjustForm.location}
               onChange={e => setAdjustForm({ ...adjustForm, location: e.target.value })}
-              className="bg-white/5 border-white/10 text-white"
+              className="bg-[#181A1D] border-[#2B3037] text-white text-xs placeholder-zinc-500"
               placeholder="e.g. Main Storage, Storeroom B"
             />
           </div>
 
           <div>
-            <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-1 block">Adjustment Reason *</label>
+            <label className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1 block">Adjustment Reason *</label>
             <Input
               required
               value={adjustForm.reason}
               onChange={e => setAdjustForm({ ...adjustForm, reason: e.target.value })}
-              className="bg-white/5 border-white/10 text-white"
+              className="bg-[#181A1D] border-[#2B3037] text-white text-xs placeholder-zinc-500"
               placeholder="e.g. Weekly Physical Audit, Breakage, Restock"
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-4 border-t border-white/10">
-            <Button
+          <div className="flex justify-end gap-2 pt-4 border-t border-[#1C2025]">
+            <button
               type="button"
-              variant="outline"
               onClick={() => setAdjustModal(null)}
-              className="border-white/10 text-white/60 hover:text-white"
+              className="bg-[#141619] hover:bg-[#1A1D21] border border-[#2B3037] text-zinc-300 text-xs font-medium px-4 py-2 rounded-lg transition-colors"
             >
               Cancel
-            </Button>
-            <Button type="submit" disabled={submittingAdjust} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold">
+            </button>
+            <button
+              type="submit"
+              disabled={submittingAdjust}
+              className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs px-4 py-2 rounded-lg transition-all shadow-sm disabled:opacity-50"
+            >
               {submittingAdjust ? 'Updating...' : 'Confirm Count'}
-            </Button>
+            </button>
           </div>
         </form>
       </ModalShell>
@@ -1057,12 +1058,12 @@ function UnifiedInventoryContent() {
         <form onSubmit={handleCreatePo} className="space-y-5">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-1 block">Supplier / Vendor *</label>
+              <label className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1 block">Supplier / Vendor *</label>
               <select
                 required
                 value={poFormData.vendorId}
                 onChange={e => setPoFormData({ ...poFormData, vendorId: e.target.value })}
-                className="w-full bg-[#121118] border border-white/10 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-primary/50"
+                className="w-full bg-[#181A1D] border border-[#2B3037] rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-zinc-500"
               >
                 <option value="">Select Vendor...</option>
                 {vendors.map(v => (
@@ -1072,41 +1073,39 @@ function UnifiedInventoryContent() {
             </div>
 
             <div>
-              <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-1 block">Expected Delivery</label>
+              <label className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1 block">Expected Delivery</label>
               <Input
                 type="date"
                 value={poFormData.expectedDate}
                 onChange={e => setPoFormData({ ...poFormData, expectedDate: e.target.value })}
-                className="bg-white/5 border-white/10 text-white text-xs h-9"
+                className="bg-[#181A1D] border-[#2B3037] text-white text-xs h-9 font-mono"
               />
             </div>
 
             <div className="col-span-2">
-              <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-1 block">Order Notes</label>
+              <label className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1 block">Order Notes</label>
               <Input
                 value={poFormData.notes}
                 onChange={e => setPoFormData({ ...poFormData, notes: e.target.value })}
-                className="bg-white/5 border-white/10 text-white text-xs h-9"
+                className="bg-[#181A1D] border-[#2B3037] text-white text-xs h-9 placeholder-zinc-500"
                 placeholder="Special delivery instructions..."
               />
             </div>
           </div>
 
-          <div className="border border-white/10 rounded-xl p-4 bg-white/[0.02] space-y-3">
+          <div className="border border-[#1E2227] rounded-xl p-4 bg-[#141619] space-y-3">
             <div className="flex justify-between items-center">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-white/70">Order Line Items</h4>
-              <Button
+              <h4 className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">Order Line Items</h4>
+              <button
                 type="button"
-                variant="outline"
-                size="sm"
                 onClick={() => setPoFormData({
                   ...poFormData,
                   orderItems: [...poFormData.orderItems, { itemId: '', quantity: 1, unitPrice: 0 }]
                 })}
-                className="h-7 text-xs border-white/10 text-primary hover:bg-white/5"
+                className="h-7 text-xs border border-[#2B3037] bg-[#181A1D] hover:bg-[#20242A] text-zinc-200 px-2.5 rounded-lg flex items-center gap-1 transition-colors"
               >
-                <Plus className="w-3 h-3 mr-1" /> Add Line
-              </Button>
+                <Plus className="w-3 h-3" /> Add Line
+              </button>
             </div>
 
             {poFormData.orderItems.map((line, idx) => (
@@ -1116,7 +1115,7 @@ function UnifiedInventoryContent() {
                     required
                     value={line.itemId}
                     onChange={e => handlePoItemChange(idx, 'itemId', e.target.value)}
-                    className="w-full bg-[#121118] border border-white/10 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-primary/50"
+                    className="w-full bg-[#181A1D] border border-[#2B3037] rounded-lg p-2 text-xs text-white focus:outline-none focus:border-zinc-500"
                   >
                     <option value="">Select Catalog Item...</option>
                     {procurementCatalog.map(catItem => (
@@ -1134,7 +1133,7 @@ function UnifiedInventoryContent() {
                     required
                     value={line.quantity}
                     onChange={e => handlePoItemChange(idx, 'quantity', e.target.value)}
-                    className="bg-white/5 border-white/10 text-white text-center text-xs h-9"
+                    className="bg-[#181A1D] border-[#2B3037] text-white text-center text-xs h-9 font-mono"
                     placeholder="Qty"
                   />
                 </div>
@@ -1146,7 +1145,7 @@ function UnifiedInventoryContent() {
                     required
                     value={line.unitPrice}
                     onChange={e => handlePoItemChange(idx, 'unitPrice', e.target.value)}
-                    className="bg-white/5 border-white/10 text-white font-mono text-xs h-9"
+                    className="bg-[#181A1D] border-[#2B3037] text-white font-mono text-xs h-9"
                     placeholder="Unit $"
                   />
                 </div>
@@ -1158,7 +1157,7 @@ function UnifiedInventoryContent() {
                       ...poFormData,
                       orderItems: poFormData.orderItems.filter((_, i) => i !== idx)
                     })}
-                    className="text-white/30 hover:text-rose-400 p-1"
+                    className="text-zinc-500 hover:text-rose-400 p-1 transition-colors"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -1167,25 +1166,27 @@ function UnifiedInventoryContent() {
             ))}
           </div>
 
-          <div className="flex justify-between items-center pt-4 border-t border-white/10">
+          <div className="flex justify-between items-center pt-4 border-t border-[#1C2025]">
             <div>
-              <span className="text-white/40 text-xs uppercase tracking-wider block">Total Estimated Cost</span>
+              <span className="text-zinc-500 text-[11px] uppercase tracking-wider block">Total Estimated Cost</span>
               <span className="text-xl font-bold font-mono text-emerald-400">
                 ${poTotalAmount.toFixed(2)}
               </span>
             </div>
             <div className="flex gap-2">
-              <Button
+              <button
                 type="button"
-                variant="outline"
                 onClick={() => setShowPoModal(false)}
-                className="border-white/10 text-white/60 hover:text-white"
+                className="bg-[#141619] hover:bg-[#1A1D21] border border-[#2B3037] text-zinc-300 text-xs font-medium px-4 py-2 rounded-lg transition-colors"
               >
                 Cancel
-              </Button>
-              <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold">
+              </button>
+              <button
+                type="submit"
+                className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs px-4 py-2 rounded-lg transition-all shadow-sm"
+              >
                 Submit Purchase Order
-              </Button>
+              </button>
             </div>
           </div>
         </form>
@@ -1201,12 +1202,12 @@ function UnifiedInventoryContent() {
       >
         <form onSubmit={handleReceiveGoods} className="space-y-4">
           <div>
-            <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-1 block">Target Storeroom Location *</label>
+            <label className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1 block">Target Storeroom Location *</label>
             <select
               required
               value={receiveForm.targetLocation}
               onChange={e => setReceiveForm({ ...receiveForm, targetLocation: e.target.value })}
-              className="w-full bg-[#121118] border border-white/10 rounded-lg p-2.5 text-xs text-white"
+              className="w-full bg-[#181A1D] border border-[#2B3037] rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-zinc-500"
             >
               <option value="MAIN_WAREHOUSE">Main Storeroom A</option>
               <option value="KITCHEN_STORE">Kitchen Store</option>
@@ -1216,27 +1217,29 @@ function UnifiedInventoryContent() {
           </div>
 
           <div>
-            <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-1 block">Delivery Slip / Inspection Notes</label>
+            <label className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1 block">Delivery Slip / Inspection Notes</label>
             <Input
               value={receiveForm.notes}
               onChange={e => setReceiveForm({ ...receiveForm, notes: e.target.value })}
-              className="bg-white/5 border-white/10 text-white text-xs"
+              className="bg-[#181A1D] border-[#2B3037] text-white text-xs placeholder-zinc-500"
               placeholder="e.g. Delivered in full, packaging in good condition."
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-4 border-t border-white/10">
-            <Button
+          <div className="flex justify-end gap-2 pt-4 border-t border-[#1C2025]">
+            <button
               type="button"
-              variant="outline"
               onClick={() => setReceiveModal(null)}
-              className="border-white/10 text-white/60 hover:text-white"
+              className="bg-[#141619] hover:bg-[#1A1D21] border border-[#2B3037] text-zinc-300 text-xs font-medium px-4 py-2 rounded-lg transition-colors"
             >
               Cancel
-            </Button>
-            <Button type="submit" className="bg-blue-600 hover:bg-blue-500 text-white font-bold">
+            </button>
+            <button
+              type="submit"
+              className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs px-4 py-2 rounded-lg transition-all shadow-sm"
+            >
               Confirm Goods Receipt
-            </Button>
+            </button>
           </div>
         </form>
       </ModalShell>
@@ -1251,41 +1254,43 @@ function UnifiedInventoryContent() {
       >
         <form onSubmit={handleRegisterInvoice} className="space-y-4">
           <div>
-            <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-1 block">Invoice Reference Number *</label>
+            <label className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1 block">Invoice Reference Number *</label>
             <Input
               required
               value={invoiceForm.invoiceNumber}
               onChange={e => setInvoiceForm({ ...invoiceForm, invoiceNumber: e.target.value })}
-              className="bg-white/5 border-white/10 text-white text-xs font-mono"
+              className="bg-[#181A1D] border-[#2B3037] text-white text-xs font-mono"
               placeholder="e.g. INV-2026-9481"
             />
           </div>
 
           <div>
-            <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-1 block">Billed Amount ($) *</label>
+            <label className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1 block">Billed Amount ($) *</label>
             <Input
               type="number"
               step="0.01"
               required
               value={invoiceForm.amount}
               onChange={e => setInvoiceForm({ ...invoiceForm, amount: e.target.value })}
-              className="bg-white/5 border-white/10 text-white text-xs font-mono"
+              className="bg-[#181A1D] border-[#2B3037] text-white text-xs font-mono"
               placeholder={invoiceModal?.totalAmount ? Number(invoiceModal.totalAmount).toFixed(2) : '0.00'}
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-4 border-t border-white/10">
-            <Button
+          <div className="flex justify-end gap-2 pt-4 border-t border-[#1C2025]">
+            <button
               type="button"
-              variant="outline"
               onClick={() => setInvoiceModal(null)}
-              className="border-white/10 text-white/60 hover:text-white"
+              className="bg-[#141619] hover:bg-[#1A1D21] border border-[#2B3037] text-zinc-300 text-xs font-medium px-4 py-2 rounded-lg transition-colors"
             >
               Cancel
-            </Button>
-            <Button type="submit" className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold">
+            </button>
+            <button
+              type="submit"
+              className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs px-4 py-2 rounded-lg transition-all shadow-sm"
+            >
               Record Invoice
-            </Button>
+            </button>
           </div>
         </form>
       </ModalShell>

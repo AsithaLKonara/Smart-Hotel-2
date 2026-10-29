@@ -231,42 +231,42 @@ function RoomOperationsContent() {
   }
 
   return (
-    <div className="p-6 md:p-8 space-y-8 max-w-7xl mx-auto text-white">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1560px] mx-auto text-zinc-100">
       {/* 1. Header & Unified Operational Tabs */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#1C2025] pb-5">
         <div>
-          <h1 className="text-3xl font-serif font-bold text-white tracking-tight flex items-center gap-3">
-            <Brush className="w-8 h-8 text-primary" /> Room Operations & Housekeeping
+          <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight flex items-center gap-2.5">
+            <Brush className="w-6 h-6 text-white" /> Room Operations & Housekeeping
           </h1>
-          <p className="text-white/50 text-sm mt-1">
+          <p className="text-zinc-400 text-xs mt-1">
             Real-time floor turnaround board, cleaning inspections, and maintenance work orders.
           </p>
         </div>
 
         {/* View Switcher Pill */}
-        <div className="flex items-center gap-1.5 p-1 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-md">
+        <div className="flex items-center gap-1.5 p-1 bg-[#121417] border border-[#1E2227] rounded-xl">
           <button
             onClick={() => setActiveTab('HOUSEKEEPING')}
             className={cn(
-              "px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all",
+              "px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all",
               activeTab === 'HOUSEKEEPING'
-                ? "bg-primary text-black font-black shadow-lg"
-                : "text-white/60 hover:text-white hover:bg-white/5"
+                ? "bg-[#181A1D] text-white border border-[#2B3037] shadow-sm"
+                : "text-zinc-400 hover:text-zinc-200 hover:bg-[#131518]"
             )}
           >
-            <Brush className="w-4 h-4" />
+            <Brush className="w-3.5 h-3.5" />
             <span>Turnaround Board ({metrics.dirty} Dirty)</span>
           </button>
           <button
             onClick={() => setActiveTab('MAINTENANCE')}
             className={cn(
-              "px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all",
+              "px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all",
               activeTab === 'MAINTENANCE'
-                ? "bg-primary text-black font-black shadow-lg"
-                : "text-white/60 hover:text-white hover:bg-white/5"
+                ? "bg-[#181A1D] text-white border border-[#2B3037] shadow-sm"
+                : "text-zinc-400 hover:text-zinc-200 hover:bg-[#131518]"
             )}
           >
-            <Wrench className="w-4 h-4" />
+            <Wrench className="w-3.5 h-3.5" />
             <span>Work Orders ({metrics.openTickets} Open)</span>
           </button>
         </div>
@@ -274,44 +274,52 @@ function RoomOperationsContent() {
 
       {/* 2. Top Summary KPI Row */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
-        <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-between">
-          <div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-white/40">Total Rooms</span>
-            <div className="text-2xl font-mono font-black text-white mt-0.5">{metrics.total}</div>
+        <div className="p-5 rounded-2xl bg-[#121417] border border-[#1E2227] flex flex-col justify-between hover:border-zinc-700 transition-colors group">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-zinc-400">Total Rooms</span>
+            <Bed className="w-4 h-4 text-zinc-500" />
           </div>
-          <Bed className="w-5 h-5 text-white/30" />
+          <div className="text-2xl sm:text-3xl font-black text-white font-mono tracking-tight mt-2">{metrics.total}</div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between">
-          <div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Clean / Ready</span>
-            <div className="text-2xl font-mono font-black text-emerald-300 mt-0.5">{metrics.clean}</div>
+        <div className="p-5 rounded-2xl bg-[#121417] border border-[#1E2227] flex flex-col justify-between hover:border-zinc-700 transition-colors group">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-zinc-400">Clean / Ready</span>
+            <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full border font-mono text-emerald-400 bg-emerald-500/10 border-emerald-500/20">
+              Active
+            </span>
           </div>
-          <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+          <div className="text-2xl sm:text-3xl font-black text-emerald-400 font-mono tracking-tight mt-2">{metrics.clean}</div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-between">
-          <div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400">Needs Cleaning</span>
-            <div className="text-2xl font-mono font-black text-amber-300 mt-0.5">{metrics.dirty}</div>
+        <div className="p-5 rounded-2xl bg-[#121417] border border-[#1E2227] flex flex-col justify-between hover:border-zinc-700 transition-colors group">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-zinc-400">Needs Cleaning</span>
+            <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full border font-mono text-amber-400 bg-amber-500/10 border-amber-500/20">
+              Pending
+            </span>
           </div>
-          <Clock className="w-5 h-5 text-amber-400" />
+          <div className="text-2xl sm:text-3xl font-black text-amber-400 font-mono tracking-tight mt-2">{metrics.dirty}</div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-between">
-          <div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400">Cleaning Now</span>
-            <div className="text-2xl font-mono font-black text-blue-300 mt-0.5">{metrics.inProgress}</div>
+        <div className="p-5 rounded-2xl bg-[#121417] border border-[#1E2227] flex flex-col justify-between hover:border-zinc-700 transition-colors group">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-zinc-400">Cleaning Now</span>
+            <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full border font-mono text-blue-400 bg-blue-500/10 border-blue-500/20">
+              In-Flight
+            </span>
           </div>
-          <Brush className="w-5 h-5 text-blue-400" />
+          <div className="text-2xl sm:text-3xl font-black text-blue-400 font-mono tracking-tight mt-2">{metrics.inProgress}</div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-between col-span-2 sm:col-span-1">
-          <div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-rose-400">Maintenance</span>
-            <div className="text-2xl font-mono font-black text-rose-300 mt-0.5">{metrics.maintenance}</div>
+        <div className="p-5 rounded-2xl bg-[#121417] border border-[#1E2227] flex flex-col justify-between hover:border-zinc-700 transition-colors group col-span-2 sm:col-span-1">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-zinc-400">Maintenance</span>
+            <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full border font-mono text-rose-400 bg-rose-500/10 border-rose-500/20">
+              Alert
+            </span>
           </div>
-          <AlertTriangle className="w-5 h-5 text-rose-400" />
+          <div className="text-2xl sm:text-3xl font-black text-rose-400 font-mono tracking-tight mt-2">{metrics.maintenance}</div>
         </div>
       </div>
 
@@ -319,17 +327,17 @@ function RoomOperationsContent() {
       {activeTab === 'HOUSEKEEPING' && (
         <div className="space-y-6">
           {/* Quick Filters */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white/[0.02] border border-white/5 p-3 rounded-2xl">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#121417] border border-[#1E2227] p-2.5 rounded-xl">
             <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar">
               {['ALL', 'DIRTY', 'CLEANING', 'AVAILABLE', 'MAINTENANCE'].map(st => (
                 <button
                   key={st}
                   onClick={() => setRoomStatusFilter(st)}
                   className={cn(
-                    "text-[10px] uppercase font-bold px-3 py-1.5 rounded-xl transition-all whitespace-nowrap",
+                    "text-[10px] uppercase font-semibold px-3 py-1.5 rounded-lg transition-all whitespace-nowrap border",
                     roomStatusFilter === st
-                      ? "bg-primary text-black font-black shadow-md"
-                      : "text-white/40 hover:text-white hover:bg-white/5"
+                      ? "bg-[#181A1D] text-white border-[#2B3037] shadow-sm"
+                      : "bg-[#141619] text-zinc-400 border-[#1E2227] hover:text-white hover:bg-[#16181B]"
                   )}
                 >
                   {st === 'ALL' ? 'All Rooms' : st.replace('_', ' ')}
@@ -343,7 +351,7 @@ function RoomOperationsContent() {
                 setTicketForm({ roomId: '', issue: '', priority: 'medium' })
                 setIsTicketModalOpen(true)
               }}
-              className="bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 text-xs font-bold rounded-xl h-8"
+              className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs rounded-lg h-8 px-3 transition-all shadow-sm shrink-0"
             >
               <Plus className="w-3.5 h-3.5 mr-1" /> New Work Order
             </Button>
@@ -362,11 +370,11 @@ function RoomOperationsContent() {
               return (
                 <div key={floor} className="space-y-3">
                   <div className="flex items-center gap-3">
-                    <span className="text-xs font-black uppercase tracking-[0.25em] text-white/40">
+                    <span className="text-xs font-black uppercase tracking-[0.25em] text-zinc-500 font-mono">
                       Floor {floor}
                     </span>
-                    <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent" />
-                    <span className="text-[10px] text-white/30 font-mono">{floorRooms.length} Rooms</span>
+                    <div className="h-px flex-1 bg-gradient-to-r from-[#1E2227] to-transparent" />
+                    <span className="text-[10px] text-zinc-500 font-mono">{floorRooms.length} Rooms</span>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -379,14 +387,7 @@ function RoomOperationsContent() {
                       return (
                         <div
                           key={room.id}
-                          className={cn(
-                            "p-4 rounded-2xl border transition-all flex flex-col justify-between space-y-4 shadow-lg",
-                            isDirty && "bg-amber-950/20 border-amber-500/30",
-                            isCleaning && "bg-blue-950/20 border-blue-500/30",
-                            isClean && "bg-emerald-950/20 border-emerald-500/30",
-                            isMaintenance && "bg-rose-950/20 border-rose-500/30",
-                            !isDirty && !isCleaning && !isClean && !isMaintenance && "bg-white/[0.03] border-white/10"
-                          )}
+                          className="p-4 rounded-2xl bg-[#121417] border border-[#1E2227] hover:border-zinc-700 transition-colors flex flex-col justify-between space-y-4 shadow-sm"
                         >
                           <div>
                             <div className="flex items-start justify-between">
@@ -396,28 +397,28 @@ function RoomOperationsContent() {
                               <Badge
                                 variant="outline"
                                 className={cn(
-                                  "text-[10px] px-2 py-0.5 font-bold uppercase",
-                                  isClean && "border-emerald-500/40 text-emerald-400 bg-emerald-500/10",
-                                  isDirty && "border-amber-500/40 text-amber-400 bg-amber-500/10",
-                                  isCleaning && "border-blue-500/40 text-blue-400 bg-blue-500/10",
-                                  isMaintenance && "border-rose-500/40 text-rose-400 bg-rose-500/10"
+                                  "text-[10px] px-2 py-0.5 font-bold uppercase font-mono",
+                                  isClean && "border-emerald-500/20 text-emerald-400 bg-emerald-500/10",
+                                  isDirty && "border-amber-500/20 text-amber-400 bg-amber-500/10",
+                                  isCleaning && "border-blue-500/20 text-blue-400 bg-blue-500/10",
+                                  isMaintenance && "border-rose-500/20 text-rose-400 bg-rose-500/10"
                                 )}
                               >
                                 {room.status.replace('_', ' ')}
                               </Badge>
                             </div>
-                            <div className="text-[11px] text-white/50 mt-1 uppercase font-semibold tracking-wider">
+                            <div className="text-[11px] text-zinc-400 mt-1 uppercase font-semibold tracking-wider">
                               {room.roomType?.name || room.type || 'Standard'}
                             </div>
                           </div>
 
                           {/* 1-Tap Action Buttons */}
-                          <div className="pt-3 border-t border-white/5 flex items-center gap-1.5 flex-wrap">
+                          <div className="pt-3 border-t border-[#1C2025] flex items-center gap-1.5 flex-wrap">
                             {isDirty && (
                               <Button
                                 size="sm"
                                 onClick={() => updateRoomStatus.mutate({ roomId: room.id, status: 'CLEANING' })}
-                                className="bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-bold h-7 px-2.5 rounded-lg flex-1"
+                                className="bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-semibold h-7 px-2.5 rounded-lg flex-1 transition-colors"
                               >
                                 <Brush className="w-3 h-3 mr-1" /> Start Cleaning
                               </Button>
@@ -427,7 +428,7 @@ function RoomOperationsContent() {
                               <Button
                                 size="sm"
                                 onClick={() => updateRoomStatus.mutate({ roomId: room.id, status: 'AVAILABLE' })}
-                                className="bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold h-7 px-2.5 rounded-lg flex-1"
+                                className="bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-semibold h-7 px-2.5 rounded-lg flex-1 transition-colors"
                               >
                                 <Check className="w-3 h-3 mr-1" /> Mark Clean
                               </Button>
@@ -438,7 +439,7 @@ function RoomOperationsContent() {
                                 size="sm"
                                 variant="ghost"
                                 onClick={() => updateRoomStatus.mutate({ roomId: room.id, status: 'DIRTY' })}
-                                className="text-white/40 hover:text-amber-400 text-[10px] h-7 px-2"
+                                className="bg-[#181A1D] border border-[#2B3037] text-zinc-300 hover:text-amber-400 text-[10px] h-7 px-2.5 rounded-lg transition-colors"
                               >
                                 Mark Dirty
                               </Button>
@@ -451,7 +452,7 @@ function RoomOperationsContent() {
                                 setTicketForm({ roomId: room.id, issue: '', priority: 'medium' })
                                 setIsTicketModalOpen(true)
                               }}
-                              className="text-white/40 hover:text-rose-400 text-[10px] h-7 px-2"
+                              className="bg-[#181A1D] border border-[#2B3037] text-zinc-300 hover:text-rose-400 text-[10px] h-7 px-2.5 rounded-lg transition-colors ml-auto"
                             >
                               <Wrench className="w-3 h-3 mr-1" /> Report Issue
                             </Button>
@@ -470,17 +471,17 @@ function RoomOperationsContent() {
       {/* 4. TAB 2: Maintenance Work Orders */}
       {activeTab === 'MAINTENANCE' && (
         <div className="space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/[0.02] border border-white/5 p-4 rounded-2xl">
-            <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#121417] border border-[#1E2227] p-2.5 rounded-xl">
+            <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar">
               {['ALL', 'OPEN', 'IN_PROGRESS', 'RESOLVED'].map(st => (
                 <button
                   key={st}
                   onClick={() => setTicketStatusFilter(st)}
                   className={cn(
-                    "text-[10px] uppercase font-bold px-3 py-1.5 rounded-xl transition-all",
+                    "text-[10px] uppercase font-semibold px-3 py-1.5 rounded-lg transition-all border",
                     ticketStatusFilter === st
-                      ? "bg-primary text-black font-black"
-                      : "text-white/40 hover:text-white hover:bg-white/5"
+                      ? "bg-[#181A1D] text-white border-[#2B3037] shadow-sm"
+                      : "bg-[#141619] text-zinc-400 border-[#1E2227] hover:text-white hover:bg-[#16181B]"
                   )}
                 >
                   {st === 'ALL' ? 'All Tickets' : st.replace('_', ' ')}
@@ -493,15 +494,15 @@ function RoomOperationsContent() {
                 setTicketForm({ roomId: '', issue: '', priority: 'medium' })
                 setIsTicketModalOpen(true)
               }}
-              className="bg-primary text-black font-bold text-xs h-9 rounded-xl hover:bg-primary/90"
+              className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs h-8 px-3 rounded-lg transition-all shadow-sm"
             >
               <Plus className="w-3.5 h-3.5 mr-1" /> New Work Order
             </Button>
           </div>
 
-          <div className="border border-white/10 rounded-2xl overflow-hidden overflow-x-auto bg-white/[0.02]">
+          <div className="border border-[#1E2227] rounded-xl overflow-hidden overflow-x-auto bg-[#121417]">
             <table className="w-full text-left text-xs">
-              <thead className="bg-white/[0.04] text-white/40 uppercase text-[10px] font-bold border-b border-white/5">
+              <thead className="bg-[#141619] text-zinc-500 uppercase text-[10px] font-semibold tracking-wider border-b border-[#1E2227]">
                 <tr>
                   <th className="py-3 px-4">Work Order / Issue</th>
                   <th className="py-3 px-4">Room</th>
@@ -511,10 +512,10 @@ function RoomOperationsContent() {
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5 text-white/80">
+              <tbody className="divide-y divide-[#1A1D21] text-zinc-200">
                 {filteredTickets.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="py-12 text-center text-white/40">
+                    <td colSpan={6} className="py-12 text-center text-zinc-500">
                       No maintenance work orders found. All assets operational!
                     </td>
                   </tr>
@@ -524,31 +525,31 @@ function RoomOperationsContent() {
                     const isOpen = ticket.status === 'OPEN' || ticket.status === 'PENDING'
 
                     return (
-                      <tr key={ticket.id} className="hover:bg-white/[0.02] transition-colors">
+                      <tr key={ticket.id} className="hover:bg-[#16181B] transition-colors">
                         <td className="py-3.5 px-4">
-                          <div className="font-bold text-white text-sm">{ticket.issue || ticket.description || 'Facility Issue'}</div>
+                          <div className="font-semibold text-white text-sm">{ticket.issue || ticket.description || 'Facility Issue'}</div>
                           {ticket.assignedStaff && (
-                            <div className="text-[10px] text-white/40 mt-0.5">Assigned to: {ticket.assignedStaff}</div>
+                            <div className="text-[10px] text-zinc-500 mt-0.5">Assigned to: {ticket.assignedStaff}</div>
                           )}
                         </td>
                         <td className="py-3.5 px-4">
                           {ticket.room?.number ? (
-                            <Badge variant="outline" className="border-white/10 text-white font-mono">
+                            <Badge variant="outline" className="border-[#2B3037] bg-[#181A1D] text-white font-mono text-[11px]">
                               Room {ticket.room.number}
                             </Badge>
                           ) : (
-                            <span className="text-white/30 italic">General Facility</span>
+                            <span className="text-zinc-600 italic">General Facility</span>
                           )}
                         </td>
                         <td className="py-3.5 px-4">
                           <Badge
                             variant="outline"
                             className={cn(
-                              "text-[10px] px-2 py-0.5 font-bold uppercase",
-                              ticket.priority?.toLowerCase() === 'urgent' && "border-rose-500/40 text-rose-400 bg-rose-500/10",
-                              ticket.priority?.toLowerCase() === 'high' && "border-amber-500/40 text-amber-400 bg-amber-500/10",
-                              ticket.priority?.toLowerCase() === 'medium' && "border-blue-500/40 text-blue-400 bg-blue-500/10",
-                              ticket.priority?.toLowerCase() === 'low' && "border-slate-500/40 text-slate-400 bg-slate-500/10"
+                              "text-[10px] px-2 py-0.5 font-bold uppercase font-mono",
+                              ticket.priority?.toLowerCase() === 'urgent' && "border-rose-500/20 text-rose-400 bg-rose-500/10",
+                              ticket.priority?.toLowerCase() === 'high' && "border-amber-500/20 text-amber-400 bg-amber-500/10",
+                              ticket.priority?.toLowerCase() === 'medium' && "border-blue-500/20 text-blue-400 bg-blue-500/10",
+                              ticket.priority?.toLowerCase() === 'low' && "border-zinc-700 text-zinc-400 bg-zinc-800/30"
                             )}
                           >
                             {ticket.priority || 'Medium'}
@@ -558,16 +559,16 @@ function RoomOperationsContent() {
                           <Badge
                             variant="outline"
                             className={cn(
-                              "text-[10px] px-2 py-0.5 font-bold uppercase",
-                              isResolved && "border-emerald-500/40 text-emerald-400 bg-emerald-500/10",
-                              !isResolved && isOpen && "border-rose-500/40 text-rose-400 bg-rose-500/10",
-                              !isResolved && !isOpen && "border-blue-500/40 text-blue-400 bg-blue-500/10"
+                              "text-[10px] px-2 py-0.5 font-bold uppercase font-mono",
+                              isResolved && "border-emerald-500/20 text-emerald-400 bg-emerald-500/10",
+                              !isResolved && isOpen && "border-rose-500/20 text-rose-400 bg-rose-500/10",
+                              !isResolved && !isOpen && "border-blue-500/20 text-blue-400 bg-blue-500/10"
                             )}
                           >
                             {ticket.status.replace('_', ' ')}
                           </Badge>
                         </td>
-                        <td className="py-3.5 px-4 text-white/40 text-[11px]">
+                        <td className="py-3.5 px-4 text-zinc-500 text-[11px] font-mono">
                           {ticket.createdAt ? new Date(ticket.createdAt).toLocaleDateString() : 'Today'}
                         </td>
                         <td className="py-3.5 px-4 text-right space-x-1.5">
@@ -575,7 +576,7 @@ function RoomOperationsContent() {
                             <Button
                               size="sm"
                               onClick={() => updateTicketStatus.mutate({ id: ticket.id, status: 'IN_PROGRESS' })}
-                              className="h-7 px-2.5 text-[10px] bg-blue-500/20 text-blue-300 border border-blue-500/30 hover:bg-blue-500/30 rounded-lg"
+                              className="h-7 px-2.5 text-[11px] bg-blue-500/10 text-blue-400 border border-blue-500/20 hover:bg-blue-500/20 rounded font-medium transition-colors"
                             >
                               Start Repair
                             </Button>
@@ -584,7 +585,7 @@ function RoomOperationsContent() {
                             <Button
                               size="sm"
                               onClick={() => updateTicketStatus.mutate({ id: ticket.id, status: 'RESOLVED', roomId: ticket.roomId || ticket.room?.id })}
-                              className="h-7 px-2.5 text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/30 rounded-lg"
+                              className="h-7 px-2.5 text-[11px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 rounded font-semibold transition-colors"
                             >
                               Mark Resolved
                             </Button>
@@ -605,9 +606,9 @@ function RoomOperationsContent() {
         <Modal open={isTicketModalOpen} onClose={() => setIsTicketModalOpen(false)} title="Dispatch Maintenance Work Order">
           <form onSubmit={handleCreateTicket} className="space-y-4">
             <div>
-              <label className="text-xs font-bold text-white/60 mb-1 block">Associated Room</label>
+              <label className="text-xs font-semibold text-zinc-300 mb-1 block">Associated Room</label>
               <select
-                className="w-full bg-black/60 border border-white/10 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-primary"
+                className="w-full bg-[#181A1D] border border-[#2B3037] rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-zinc-400"
                 value={ticketForm.roomId}
                 onChange={e => setTicketForm({ ...ticketForm, roomId: e.target.value })}
               >
@@ -621,20 +622,20 @@ function RoomOperationsContent() {
             </div>
 
             <div>
-              <label className="text-xs font-bold text-white/60 mb-1 block">Issue Description</label>
+              <label className="text-xs font-semibold text-zinc-300 mb-1 block">Issue Description</label>
               <Input
                 placeholder="e.g. AC leaking water, bulb blown in bathroom..."
                 value={ticketForm.issue}
                 onChange={e => setTicketForm({ ...ticketForm, issue: e.target.value })}
-                className="bg-black/60 border-white/10 text-xs rounded-xl"
+                className="bg-[#181A1D] border-[#2B3037] text-xs rounded-lg text-white placeholder-zinc-500 focus:border-zinc-400"
                 required
               />
             </div>
 
             <div>
-              <label className="text-xs font-bold text-white/60 mb-1 block">Urgency / Priority</label>
+              <label className="text-xs font-semibold text-zinc-300 mb-1 block">Urgency / Priority</label>
               <select
-                className="w-full bg-black/60 border border-white/10 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-primary"
+                className="w-full bg-[#181A1D] border border-[#2B3037] rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-zinc-400"
                 value={ticketForm.priority}
                 onChange={e => setTicketForm({ ...ticketForm, priority: e.target.value })}
               >
@@ -645,11 +646,11 @@ function RoomOperationsContent() {
               </select>
             </div>
 
-            <div className="pt-4 border-t border-white/10 flex justify-end gap-2">
-              <Button type="button" variant="ghost" onClick={() => setIsTicketModalOpen(false)} className="text-xs">
+            <div className="pt-4 border-t border-[#1C2025] flex justify-end gap-2">
+              <Button type="button" variant="ghost" onClick={() => setIsTicketModalOpen(false)} className="text-xs text-zinc-400 hover:text-white">
                 Cancel
               </Button>
-              <Button type="submit" disabled={submittingTicket} className="bg-primary text-black font-bold text-xs">
+              <Button type="submit" disabled={submittingTicket} className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs rounded-lg px-4 py-2 shadow-sm">
                 {submittingTicket ? 'Dispatching...' : 'Dispatch Work Order'}
               </Button>
             </div>
