@@ -35,7 +35,9 @@ export default function DashboardSidebar() {
     'Front Desk': true,
     'Room Operations': true,
     'Billing & POS': true,
-    'OTA & Rates': false,
+    'Events & Banquets': false,
+    'Distribution & CRS': false,
+    'HR & Workforce': false,
     'Management': false
   })
 
@@ -78,6 +80,9 @@ export default function DashboardSidebar() {
 
   const getNavigation = () => {
     const items: NavItem[] = [
+      // 📊 CORE OVERVIEW (TOP OF SIDEBAR)
+      { name: 'Overview', href: '/admin/dashboard', icon: LayoutDashboard, roles: ['MANAGER', 'SUPER_ADMIN'] },
+
       // 🌐 UNIFIED DASHBOARD LINKS FOR NON-ADMIN ROLES
       { name: 'Dashboard', href: '/dashboard', icon: Home, roles: ['GUEST'] },
       { name: 'Kitchen KDS', href: '/kitchen/dashboard', icon: UtensilsCrossed, roles: ['KITCHEN'] },
@@ -99,30 +104,50 @@ export default function DashboardSidebar() {
       // 5 LEAN OPERATIONAL PILLARS (MID-LEVEL PMS)
       // ==========================================
 
-      // 1. 🛎️ FRONT DESK
+      // 1. 🛎️ FRONT DESK & RESERVATIONS
       { name: 'Front Desk', href: '/admin/receptionist', icon: UserCheck, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'], group: 'Front Desk' },
+      { name: 'Tape Chart', href: '/admin/tape-chart', icon: CalendarRange, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'], group: 'Front Desk' },
+      { name: 'Bookings Master', href: '/admin/bookings', icon: Calendar, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'], group: 'Front Desk' },
       { name: 'Guest CRM', href: '/admin/crm/guests', icon: Users, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'], group: 'Front Desk' },
+      { name: 'Corporate Accounts', href: '/admin/crm/corporate', icon: Briefcase, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Front Desk' },
+      { name: 'Travel Agents', href: '/admin/crm/travel-agents', icon: Plane, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Front Desk' },
 
       // 2. 🧹 ROOM OPERATIONS
       { name: 'Housekeeping & Maint', href: '/admin/housekeeping', icon: Brush, roles: ['HOUSEKEEPING', 'MAINTENANCE', 'RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'], group: 'Room Operations' },
       { name: 'Room Directory', href: '/admin/rooms', icon: Bed, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Room Operations' },
       { name: 'Master Inventory', href: '/admin/inventory', icon: Box, roles: ['MANAGER', 'SUPER_ADMIN', 'HOUSEKEEPING', 'MAINTENANCE'], group: 'Room Operations' },
+      { name: 'Incident Dispatch', href: '/admin/incidents', icon: AlertTriangle, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN', 'HOUSEKEEPING', 'MAINTENANCE'], group: 'Room Operations' },
 
       // 3. 💳 BILLING & POS
       { name: 'Point of Sale', href: '/admin/pos', icon: ShoppingCart, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'], group: 'Billing & POS' },
+      { name: 'Kitchen Orders', href: '/admin/orders', icon: Clock, roles: ['KITCHEN', 'MANAGER', 'SUPER_ADMIN', 'RECEPTIONIST'], group: 'Billing & POS' },
+      { name: 'Menu Editor', href: '/admin/menu', icon: UtensilsCrossed, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Billing & POS' },
       { name: 'Folios & Billing', href: '/admin/accounting/folios', icon: CreditCard, roles: ['RECEPTIONIST', 'MANAGER', 'SUPER_ADMIN'], group: 'Billing & POS' },
       { name: 'Night Audit', href: '/admin/accounting/night-audit', icon: Moon, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Billing & POS' },
 
-      // 4. 🌐 OTA & RATES
-      { name: 'Channel Manager', href: '/admin/integrations/channel-manager', icon: Network, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'OTA & Rates' },
-      { name: 'Rates & Pricing', href: '/admin/pricing', icon: TrendingUp, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'OTA & Rates' },
+      // 4. 🎪 EVENTS & BANQUETS
+      { name: 'Events & BEO', href: '/admin/events/dashboard', icon: CalendarDays, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Events & Banquets' },
+      { name: 'Banquet Halls', href: '/admin/halls', icon: Building2, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Events & Banquets' },
 
-      // 5. 📊 HOTEL MANAGEMENT
-      { name: 'Manager Cockpit', href: '/admin/dashboard', icon: LayoutDashboard, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Management' },
+      // 5. 🌐 DISTRIBUTION & CRS
+      { name: 'CRO Console', href: '/admin/cro', icon: Globe, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Distribution & CRS' },
+      { name: 'Group Blocks', href: '/admin/groups', icon: Layers, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Distribution & CRS' },
+      { name: 'Channel Manager', href: '/admin/integrations/channel-manager', icon: Network, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Distribution & CRS' },
+      { name: 'Rates & Pricing', href: '/admin/pricing', icon: TrendingUp, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Distribution & CRS' },
+      { name: 'Chain Properties', href: '/admin/corporate/properties', icon: Building2, roles: ['SUPER_ADMIN'], group: 'Distribution & CRS' },
+
+      // 6. 👥 HR & WORKFORCE
+      { name: 'Staff Roster', href: '/admin/staff', icon: ShieldCheck, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'HR & Workforce' },
+      { name: 'Payroll Ledger', href: '/admin/hr/payroll', icon: CircleDollarSign, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'HR & Workforce' },
+      { name: 'Shift Scheduling', href: '/admin/hr/shifts', icon: CalendarClock, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'HR & Workforce' },
+      { name: 'Leave Approvals', href: '/admin/hr/leaves', icon: ClipboardCheck, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'HR & Workforce' },
+
+      // 7. 📊 MANAGEMENT & GOVERNANCE
       { name: 'Website CMS', href: '/admin/cms', icon: Globe, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Management' },
-      { name: 'Team & Staff', href: '/admin/staff', icon: ShieldCheck, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Management' },
-      { name: 'System Settings', href: '/admin/settings', icon: SettingsIcon, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Management' },
-      { name: 'Audit Stream', href: '/admin/audit-logs', icon: History, roles: ['SUPER_ADMIN'], group: 'Management' }
+      { name: 'SRE Health Cockpit', href: '/admin/sre', icon: Activity, roles: ['SUPER_ADMIN'], group: 'Management' },
+      { name: 'Governance & Audits', href: '/admin/governance', icon: FileCheck, roles: ['SUPER_ADMIN'], group: 'Management' },
+      { name: 'Audit Stream', href: '/admin/audit-logs', icon: History, roles: ['SUPER_ADMIN'], group: 'Management' },
+      { name: 'System Settings', href: '/admin/settings', icon: SettingsIcon, roles: ['MANAGER', 'SUPER_ADMIN'], group: 'Management' }
     ]
 
     if (role === 'KITCHEN') {
@@ -199,6 +224,7 @@ export default function DashboardSidebar() {
                   href={item.href}
                   scroll={false}
                   onClick={closeMobileMenu}
+                  title={item.name}
                   className={cn(
                     "flex items-center space-x-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-all group relative",
                     isActive 
@@ -233,7 +259,7 @@ export default function DashboardSidebar() {
                   {items.map((item) => {
                     const Icon = item.icon
                     const isActive = pathname === item.href || (item.href !== '/admin/dashboard' && item.href !== '/dashboard' && pathname.startsWith(item.href))
-                    const isTelemetryTab = ['Front Desk', 'Master Inventory', 'Folios & Billing'].includes(item.name)
+                    const isTelemetryTab = ['Front Desk', 'Master Inventory', 'Folios & Billing', 'Kitchen Orders', 'Incident Dispatch', 'SRE Health Cockpit'].includes(item.name)
                     return (
                       <Link
                         key={item.name}

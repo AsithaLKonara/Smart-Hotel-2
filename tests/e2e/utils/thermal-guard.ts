@@ -19,7 +19,7 @@ export function getCpuTemperature(): number | null {
  * If CPU die temperature exceeds maxTempC (default: 82°C to prevent reaching 85°C),
  * pauses execution until temperature cools down below safeThresholdC (default: 72°C).
  */
-export async function enforceThermalGuard(maxTempC = 82, safeThresholdC = 72): Promise<void> {
+export async function enforceThermalGuard(maxTempC = 84, safeThresholdC = 78): Promise<void> {
   const currentTemp = getCpuTemperature();
   if (currentTemp === null) return;
 

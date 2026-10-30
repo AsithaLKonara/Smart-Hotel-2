@@ -35,7 +35,8 @@ const PROTECTED_ROUTES: RouteRule[] = [
   { prefix: '/admin/accounting/night-audit', roles: ['SUPER_ADMIN', 'MANAGER'] },
   { prefix: '/admin/settings', roles: ['SUPER_ADMIN', 'MANAGER'] }, // General system settings
 
-  // 🔵 RECEPTIONIST (Front Office, Reservations, Billing, CRM)
+  // 🔵 RECEPTIONIST (Front Office, Reservations, Billing, CRM, CRO)
+  { prefix: '/admin/cro', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'] },
   { prefix: '/admin/receptionist', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'] },
   { prefix: '/admin/bookings', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'] },
   { prefix: '/admin/pos', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'] },
@@ -89,6 +90,7 @@ const PROTECTED_ROUTES: RouteRule[] = [
   { prefix: '/api/integrations', roles: ['SUPER_ADMIN', 'MANAGER'] },
   { prefix: '/api/reservations', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'] },
   { prefix: '/api/loyalty', roles: ['GUEST', 'SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'] },
+  { prefix: '/api/crs', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'] },
 
   // 🟢 GUEST SUITE & FALLBACKS
   { prefix: '/dashboard', roles: ['GUEST', 'SUPER_ADMIN', 'MANAGER'] },
@@ -282,6 +284,7 @@ const PUBLIC_API_PREFIXES = [
   '/api/room-types',
   '/api/rooms/availability',
   '/api/rooms/check-availability',
+  '/api/crs/availability',
   '/api/contact',
   '/api/settings/contact',
   '/api/faq',
