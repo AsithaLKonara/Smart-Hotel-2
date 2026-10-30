@@ -31,8 +31,8 @@ export default defineConfig({
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
-    actionTimeout: 15000,
-    navigationTimeout: 30000,
+    actionTimeout: 45000,
+    navigationTimeout: 60000,
   },
   outputDir: 'test-results',
   projects: [

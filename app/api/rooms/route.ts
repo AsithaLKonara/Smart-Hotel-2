@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { getToken } from 'next-auth/jwt'
+import { getBroadRole } from '@/lib/rbac-utils'
 import { prisma } from '@/lib/db'
 import { isDatabaseConfigured, getDatabaseErrorMessage } from '@/lib/db-helpers'
 import { getEffectivePropertyId } from '@/lib/server-rbac'
@@ -29,10 +31,23 @@ export async function GET(request: NextRequest) {
     const availableOnly = searchParams.get('available') === 'true'
     const reqPropertyId = searchParams.get('propertyId')
     const effectivePropertyId = await getEffectivePropertyId(request)
-    const propertyId = reqPropertyId || effectivePropertyId
+    const rawPropertyId = reqPropertyId || effectivePropertyId
+    const propertyId = rawPropertyId && rawPropertyId !== 'all' ? rawPropertyId : null
 
     const session = await getServerSession(authOptions)
-    const isAuthenticatedStaff = session && ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'HOUSEKEEPING', 'MAINTENANCE'].includes((session.user as any).roleName as string)
+    let userRole = (session?.user as any)?.roleName || (session?.user as any)?.role?.name
+    if (!userRole) {
+      const token = await getToken({
+        req: request,
+        secret: process.env.NEXTAUTH_SECRET,
+        cookieName: process.env.NODE_ENV === 'production' ? '__Secure-next-auth.session-token' : 'next-auth.session-token'
+      }).catch(() => null)
+      if (token) {
+        userRole = (token.roleName || token.role || '') as string
+      }
+    }
+    const broadRole = getBroadRole(userRole || '')
+    const isAuthenticatedStaff = ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'HOUSEKEEPING', 'MAINTENANCE'].includes(broadRole)
 
     let rooms;
     if (isAuthenticatedStaff) {

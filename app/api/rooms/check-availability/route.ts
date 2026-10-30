@@ -8,6 +8,7 @@ export async function GET(request: NextRequest) {
     const checkOut = searchParams.get('checkOut')
     const roomId = searchParams.get('roomId')
     const capacity = searchParams.get('capacity')
+    const propertyId = searchParams.get('propertyId') || undefined
 
     if (!checkIn || !checkOut) {
       return NextResponse.json(
@@ -55,10 +56,12 @@ export async function GET(request: NextRequest) {
     const availableRooms = await getAvailableRooms(
       checkInDate,
       checkOutDate,
-      capacity ? parseInt(capacity) : undefined
+      capacity ? parseInt(capacity) : undefined,
+      propertyId
     )
 
     return NextResponse.json({
+      success: true,
       checkIn,
       checkOut,
       capacity: capacity || null,

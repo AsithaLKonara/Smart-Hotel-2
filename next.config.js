@@ -62,6 +62,21 @@ const nextConfig = {
     optimizePackageImports: ['lucide-react'],
   },
 
+  async redirects() {
+    return [
+      {
+        source: '/admin/tape-chart',
+        destination: '/admin/receptionist?view=tape-chart',
+        permanent: false,
+      },
+      {
+        source: '/admin/room-rack',
+        destination: '/admin/receptionist',
+        permanent: false,
+      },
+    ]
+  },
+
   // Configure enterprise-grade security headers
   async headers() {
     return [

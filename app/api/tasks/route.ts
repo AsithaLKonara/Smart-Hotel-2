@@ -7,14 +7,17 @@ import { logAction, AUDIT_ACTIONS } from '@/lib/audit'
 import { Prisma, TaskStatus, TaskType, Task } from '@prisma/client'
 import { getEffectivePropertyId } from '@/lib/server-rbac'
 import { handleZodError } from '@/lib/api-utils'
+import { getBroadRole } from '@/lib/rbac-utils'
 
 const taskSchema = z.object({
   title: z.string().min(1, 'Title is required'),
-  description: z.string().optional(),
+  description: z.string().nullable().optional(),
   type: z.enum(['HOUSEKEEPING', 'MAINTENANCE', 'ROOM_SERVICE', 'GUEST_REQUEST', 'ADMINISTRATIVE']),
   priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']),
-  assignedTo: z.string().optional(),
-  dueDate: z.string().optional(),
+  assignedTo: z.string().nullable().optional(),
+  dueDate: z.string().nullable().optional(),
+  roomId: z.string().nullable().optional(),
+  propertyId: z.string().nullable().optional(),
 })
 
 export async function GET(request: NextRequest) {
@@ -109,17 +112,21 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const validatedData = taskSchema.parse(body)
 
+    const rawRole = (session.user as any).roleName || (session.user as any).role?.name || ''
+    const broadRole = getBroadRole(rawRole)
+
     // Authorization logic
-    if ((session.user as any).roleName === 'GUEST') {
+    if (broadRole === 'GUEST') {
       // Guests can only create GUEST_REQUEST or HOUSEKEEPING or MAINTENANCE
       if (!['GUEST_REQUEST', 'HOUSEKEEPING', 'MAINTENANCE'].includes(validatedData.type)) {
         return NextResponse.json({ error: 'Forbidden: Guests can only create service requests.' }, { status: 403 })
       }
-    } else if (!['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'].includes((session.user as any).roleName as string)) {
+    } else if (!['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'HOUSEKEEPING', 'MAINTENANCE'].includes(broadRole)) {
        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
-    const propertyId = await getEffectivePropertyId(request)
+    const effectivePropertyId = await getEffectivePropertyId(request)
+    const targetPropertyId = validatedData.propertyId || effectivePropertyId || (session.user as any).propertyId
 
     const task = await prisma.task.create({
       data: {
@@ -128,10 +135,11 @@ export async function POST(request: NextRequest) {
         type: validatedData.type as any,
         priority: validatedData.priority as any,
         status: 'PENDING',
+        roomId: validatedData.roomId || null,
         assignedTo: validatedData.assignedTo === '' ? null : validatedData.assignedTo,
         dueDate: validatedData.dueDate ? new Date(validatedData.dueDate) : null,
         createdBy: session.user.id,
-        propertyId: propertyId,
+        propertyId: targetPropertyId,
       }
     })
     

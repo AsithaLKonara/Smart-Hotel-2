@@ -13,13 +13,13 @@ import {
  */
 const isPusherConfigured = !!(
   process.env.PUSHER_APP_ID && 
-  process.env.PUSHER_APP_ID !== 'dummy' &&
+  !process.env.PUSHER_APP_ID.toLowerCase().includes('dummy') &&
   !process.env.PUSHER_APP_ID.includes('YOUR_') &&
   process.env.NEXT_PUBLIC_PUSHER_KEY && 
-  process.env.NEXT_PUBLIC_PUSHER_KEY !== 'dummy' &&
+  !process.env.NEXT_PUBLIC_PUSHER_KEY.toLowerCase().includes('dummy') &&
   !process.env.NEXT_PUBLIC_PUSHER_KEY.includes('YOUR_') &&
   process.env.PUSHER_SECRET &&
-  process.env.PUSHER_SECRET !== 'dummy'
+  !process.env.PUSHER_SECRET.toLowerCase().includes('dummy')
 );
 
 const pusherClient = isPusherConfigured 
@@ -35,7 +35,9 @@ const pusherClient = isPusherConfigured
 const safeTrigger = async (channel: string, event: string, data: any) => {
   if (!pusherClient) return;
   try {
-    await pusherClient.trigger(channel, event, data);
+    const triggerPromise = pusherClient.trigger(channel, event, data);
+    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Pusher trigger timed out')), 2000));
+    await Promise.race([triggerPromise, timeoutPromise]);
   } catch (err) {
     console.warn(`[PUSHER_WARNING] Failed to trigger event "${event}" on channel "${channel}":`, (err as any)?.message || err);
   }

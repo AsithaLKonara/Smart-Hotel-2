@@ -1,69 +1,96 @@
 import { test, expect } from '@playwright/test';
+import { prisma } from '@/lib/db';
+import { loginAs } from '../utils/auth-helpers';
 
-// Housekeeping tests require admin storage state
-test.use({ storageState: 'playwright/.auth/admin.json' });
+test.describe.serial('Domain 4: Housekeeping & Maintenance (CMMS) Full Turnaround Workflow', () => {
+  let testRoomId: string;
+  let testRoomNumber: string;
 
-test.describe('E2E Journey: Full Housekeeping Workflow', () => {
-  test.setTimeout(180000);
+  test.beforeAll(async () => {
+    // Pick an operational room from Grand Ocean Resort
+    const room = await prisma.room.findFirst({
+      where: {
+        propertyId: '579ecf1a-5350-42ea-af32-c10397417589'
+      }
+    });
+    if (!room) throw new Error('No room found in Grand Ocean Resort for housekeeping workflow');
+    testRoomId = room.id;
+    testRoomNumber = room.number;
+  });
 
-  test('Room transitions through the full housekeeping lifecycle', async ({ page }) => {
-    // Note: We assume Room 201 starts in a clean or dirty state, 
-    // we'll force it to Dirty first via API to ensure a deterministic test start.
-    await test.step('Setup: Force Room to Dirty', async () => {
-      // await page.request.post('/api/rooms/201/status', {
-      //   data: { status: 'DIRTY' }
-      // });
+  test('Room transitions through complete turnaround: DIRTY -> CLEANING -> AVAILABLE', async ({ page }) => {
+    await loginAs(page, 'HOUSEKEEPING');
+
+    // 1. Force room to DIRTY
+    const dirtyRes = await page.request.patch(`/api/rooms/${testRoomId}`, {
+      data: { status: 'DIRTY' }
+    });
+    expect([200, 204]).toContain(dirtyRes.status());
+
+    let room = await prisma.room.findUnique({ where: { id: testRoomId } });
+    expect(room?.status).toBe('DIRTY');
+
+    // 2. Housekeeper marks room in CLEANING
+    const cleaningRes = await page.request.patch(`/api/rooms/${testRoomId}`, {
+      data: { status: 'CLEANING' }
+    });
+    expect([200, 204]).toContain(cleaningRes.status());
+
+    room = await prisma.room.findUnique({ where: { id: testRoomId } });
+    expect(room?.status).toBe('CLEANING');
+
+    // 3. Inspection complete -> mark AVAILABLE
+    const availableRes = await page.request.patch(`/api/rooms/${testRoomId}`, {
+      data: { status: 'AVAILABLE' }
+    });
+    expect([200, 204]).toContain(availableRes.status());
+
+    room = await prisma.room.findUnique({ where: { id: testRoomId } });
+    expect(room?.status).toBe('AVAILABLE');
+  });
+
+  test('Maintenance CMMS creates Work Order ticket and updates room status', async ({ page }) => {
+    await loginAs(page, 'HOUSEKEEPING');
+
+    // 1. Create Maintenance Work Order Task
+    const taskRes = await page.request.post('/api/tasks', {
+      timeout: 45000,
+      data: {
+        title: `AC Leak in Room ${testRoomNumber}`,
+        description: 'Air conditioner dripping water onto carpet',
+        type: 'MAINTENANCE',
+        priority: 'HIGH',
+        roomId: testRoomId,
+        propertyId: '579ecf1a-5350-42ea-af32-c10397417589'
+      }
     });
 
-    await test.step('1. Dirty & 2. Assigned', async () => {
-      // Housekeeping Manager assigns a dirty room to a maid
-      await page.goto('/admin/housekeeping');
-      await expect(page.getByRole('heading', { name: /Housekeeping Command Center/i })).toBeVisible({ timeout: 15000 });
-      
-      // await page.getByRole('button', { name: /Filter: Dirty/i }).click();
-      // await page.locator('.room-card:has-text("201")').getByRole('button', { name: /Assign/i }).click();
-      // await page.getByRole('listbox').selectOption('Maid Maria');
-      // await page.getByRole('button', { name: /Confirm Assignment/i }).click();
-      // await expect(page.locator('.room-card:has-text("201")')).toContainText(/Assigned: Maria/i);
-    });
+    expect([200, 201]).toContain(taskRes.status());
+    const body = await taskRes.json();
+    const taskId = body.task?.id || body.id;
+    expect(taskId).toBeDefined();
 
-    await test.step('3. Cleaning', async () => {
-      // Maid logs in on mobile device and starts cleaning
-      // await page.locator('.room-card:has-text("201")').getByRole('button', { name: /Start Cleaning/i }).click();
-      // await expect(page.locator('.room-card:has-text("201")')).toContainText(/Status: Cleaning/i);
-    });
+    // 2. Verify ticket in database
+    const taskInDb = await prisma.task.findUnique({ where: { id: taskId } });
+    expect(taskInDb).toBeDefined();
+    expect(taskInDb?.type).toBe('MAINTENANCE');
+    expect(taskInDb?.priority).toBe('HIGH');
 
-    await test.step('4. Inspection', async () => {
-      // Maid finishes cleaning, flags for inspection
-      // await page.locator('.room-card:has-text("201")').getByRole('button', { name: /Finish Cleaning/i }).click();
-      // await expect(page.locator('.room-card:has-text("201")')).toContainText(/Status: Inspection/i);
+    // 3. Maintenance technician completes ticket
+    const updateRes = await page.request.patch(`/api/tasks/${taskId}`, {
+      timeout: 45000,
+      data: {
+        status: 'COMPLETED'
+      }
     });
+    const status = updateRes.status();
+    const text = await updateRes.text();
+    if (![200, 204].includes(status)) {
+      console.log('Task update failed with status:', status, 'body:', text);
+    }
+    expect([200, 204]).toContain(status);
 
-    await test.step('5. Ready', async () => {
-      // Supervisor inspects and marks as ready
-      // await page.locator('.room-card:has-text("201")').getByRole('button', { name: /Pass Inspection/i }).click();
-      // await expect(page.locator('.room-card:has-text("201")')).toContainText(/Status: Ready/i);
-    });
-
-    await test.step('6. Occupied', async () => {
-      // Front desk checks someone in (via API for speed)
-      // await page.request.post('/api/bookings/mock-checkin', {
-      //   data: { roomId: '201', guestName: 'Test Housekeeping' }
-      // });
-      
-      // await page.reload();
-      // await expect(page.locator('.room-card:has-text("201")')).toContainText(/Occupied/i);
-    });
-
-    await test.step('7. Checkout & 8. Dirty', async () => {
-      // Front desk checks them out
-      // await page.request.post('/api/bookings/mock-checkout', {
-      //   data: { roomId: '201' }
-      // });
-
-      // await page.reload();
-      // // After checkout, system automatically marks room as Dirty
-      // await expect(page.locator('.room-card:has-text("201")')).toContainText(/Dirty/i);
-    });
+    const completedTask = await prisma.task.findUnique({ where: { id: taskId } });
+    expect(completedTask?.status).toBe('COMPLETED');
   });
 });

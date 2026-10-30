@@ -231,7 +231,7 @@ export default function SignInPage() {
           )}
 
           {/* Cardless Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form action="javascript:void(0)" onSubmit={handleSubmit} className="space-y-4">
             
             {/* Email Field */}
             <div className="space-y-1.5">

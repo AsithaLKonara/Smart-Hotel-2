@@ -6,16 +6,18 @@ import { z } from 'zod'
 import { logAction, AUDIT_ACTIONS } from '@/lib/audit'
 import { Prisma } from '@prisma/client'
 import { handleZodError } from '@/lib/api-utils'
+import { getToken } from 'next-auth/jwt'
+import { getBroadRole } from '@/lib/rbac-utils'
 
 const taskUpdateSchema = z.object({
   title: z.string().min(1, 'Title is required').optional(),
-  description: z.string().optional(),
+  description: z.string().nullable().optional(),
   type: z.enum(['HOUSEKEEPING', 'MAINTENANCE', 'ROOM_SERVICE', 'GUEST_REQUEST', 'ADMINISTRATIVE']).optional(),
   priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).optional(),
   status: z.enum(['PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'VERIFIED']).optional(),
-  assignedTo: z.string().optional(),
-  dueDate: z.string().optional(),
-  completedAt: z.string().optional(),
+  assignedTo: z.string().nullable().optional(),
+  dueDate: z.string().nullable().optional(),
+  completedAt: z.string().nullable().optional(),
 })
 
 export async function GET(
@@ -89,8 +91,20 @@ export async function PUT(
   try {
     const { id } = await params
     const session = await getServerSession(authOptions)
-    
-    if (!session || !['SUPER_ADMIN', 'MANAGER'].includes((session.user as any).roleName as string)) {
+    let userRole = (session?.user as any)?.roleName || (session?.user as any)?.role?.name
+    if (!userRole) {
+      const token = await getToken({
+        req: request,
+        secret: process.env.NEXTAUTH_SECRET,
+        cookieName: process.env.NODE_ENV === 'production' ? '__Secure-next-auth.session-token' : 'next-auth.session-token'
+      }).catch(() => null)
+      if (token) {
+        userRole = (token.roleName || token.role || '') as string
+      }
+    }
+    const broadRole = getBroadRole(userRole || '')
+    const allowedRoles = ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'HOUSEKEEPING', 'MAINTENANCE']
+    if (!allowedRoles.includes(broadRole)) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -190,8 +204,22 @@ export async function PATCH(
   try {
     const { id } = await params
     const session = await getServerSession(authOptions)
-    
-    if (!session || !['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'].includes((session.user as any).roleName as string)) {
+    let userRole = (session?.user as any)?.roleName || (session?.user as any)?.role?.name
+    let userId = (session?.user as any)?.id
+    if (!userRole) {
+      const token = await getToken({
+        req: request,
+        secret: process.env.NEXTAUTH_SECRET,
+        cookieName: process.env.NODE_ENV === 'production' ? '__Secure-next-auth.session-token' : 'next-auth.session-token'
+      }).catch(() => null)
+      if (token) {
+        userRole = (token.roleName || token.role || '') as string
+        userId = (token.id || token.sub || '') as string
+      }
+    }
+    const broadRole = getBroadRole(userRole || '')
+    const allowedRoles = ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'HOUSEKEEPING', 'MAINTENANCE']
+    if (!allowedRoles.includes(broadRole)) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -199,7 +227,18 @@ export async function PATCH(
     }
 
     const body = await request.json()
-    const validatedData = taskUpdateSchema.parse(body)
+    console.log('PATCH /api/tasks/[id] body:', body)
+    const taskPatchSchema = z.object({
+      title: z.string().min(1, 'Title is required').optional(),
+      description: z.string().nullish(),
+      type: z.enum(['HOUSEKEEPING', 'MAINTENANCE', 'ROOM_SERVICE', 'GUEST_REQUEST', 'ADMINISTRATIVE']).optional(),
+      priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).optional(),
+      status: z.enum(['PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'VERIFIED']).optional(),
+      assignedTo: z.string().nullish(),
+      dueDate: z.string().nullish(),
+      completedAt: z.string().nullish(),
+    })
+    const validatedData = taskPatchSchema.parse(body)
 
     const existingTask = await prisma.task.findUnique({
       where: { id: id }
@@ -279,9 +318,10 @@ export async function PATCH(
     ])
 
     // Log the action
+    const actorId = session?.user?.id || userId || 'system'
     await logAction(
       request,
-      session.user.id,
+      actorId,
       AUDIT_ACTIONS.TASK_UPDATE,
       'Task',
       id,
@@ -311,12 +351,13 @@ export async function PATCH(
     })
   } catch (error) {
     if (error instanceof z.ZodError) {
+      console.error('Task PATCH ZodError details:', JSON.stringify(error.format(), null, 2))
       return handleZodError(error)
     }
 
     console.error('Error updating task:', error)
     return NextResponse.json(
-      { error: 'Failed to update task' },
+      { error: 'Failed to update task', details: String(error) },
       { status: 500 }
     )
   }

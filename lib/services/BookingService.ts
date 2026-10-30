@@ -322,7 +322,7 @@ export class BookingService {
             id: true,
             name: true,
             email: true,
-            phoneNumber: true,
+            phone: true,
             role: { select: { name: true } }
           }
         },

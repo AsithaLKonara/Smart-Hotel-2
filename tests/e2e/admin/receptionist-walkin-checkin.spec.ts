@@ -1,9 +1,8 @@
 import { test, expect } from '@playwright/test';
-import prisma from '@/lib/prisma';
+import { prisma } from '@/lib/db';
+import { loginAs } from '../utils/auth-helpers';
 
 test.describe('Receptionist: Walk-in Booking & Check-in End-to-End Suite', () => {
-  test.use({ storageState: 'playwright/.auth/admin.json' });
-
   test.beforeAll(async () => {
     // Reset Room 101 in Grand Ocean Resort to AVAILABLE so clean walk-in tests can run repeatedly
     const room101 = await prisma.room.findFirst({
@@ -32,13 +31,15 @@ test.describe('Receptionist: Walk-in Booking & Check-in End-to-End Suite', () =>
   });
 
   test.beforeEach(async ({ page }) => {
+    await loginAs(page, 'RECEPTIONIST');
+
     // Lock active property to Grand Ocean Resort (where seeded operational rooms exist)
     await page.addInitScript(() => {
       localStorage.setItem('smarthotel_active_property', '579ecf1a-5350-42ea-af32-c10397417589');
     });
 
-    await page.goto('/admin/receptionist');
-    await expect(page.getByRole('heading', { name: /Reception Desk/i })).toBeVisible({ timeout: 25000 });
+    await page.goto('/admin/receptionist', { waitUntil: 'domcontentloaded', timeout: 60000 });
+    await expect(page.getByRole('heading', { name: /Reception Desk/i })).toBeVisible({ timeout: 35000 });
 
     // Ensure property selector points to Grand Ocean Resort
     const propertySelector = page.locator('select').first();

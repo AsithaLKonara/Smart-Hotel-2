@@ -404,7 +404,7 @@ function RoomOperationsContent() {
                                   isMaintenance && "border-rose-500/20 text-rose-400 bg-rose-500/10"
                                 )}
                               >
-                                {room.status.replace('_', ' ')}
+                                {room.status ? room.status.replace('_', ' ') : 'AVAILABLE'}
                               </Badge>
                             </div>
                             <div className="text-[11px] text-zinc-400 mt-1 uppercase font-semibold tracking-wider">

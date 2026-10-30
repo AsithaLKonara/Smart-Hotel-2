@@ -57,16 +57,21 @@ export async function checkRoomAvailability(
 export async function getAvailableRooms(
   checkIn: Date,
   checkOut: Date,
-  capacity?: number
+  capacity?: number,
+  propertyId?: string
 ) {
   try {
-    // Get all rooms
+    // Get all rooms that are not permanently out of order or undergoing maintenance
     const allRooms = await prisma.room.findMany({
       where: {
-        status: { in: ['AVAILABLE'] },
-        ...(capacity ? { capacity: { gte: Number(capacity) } } : {})
+        deletedAt: null,
+        status: { notIn: ['MAINTENANCE', 'OUT_OF_ORDER'] },
+        ...(capacity ? { capacity: { gte: Number(capacity) } } : {}),
+        ...(propertyId ? { propertyId } : {})
       },
-      // Note: Room model doesn't have bookings relation defined in schema
+      include: {
+        roomType: true
+      }
     })
 
     // Fetch assignments separately to check availability
@@ -100,7 +105,7 @@ export async function getAvailableRooms(
     const bookedRoomIds = new Set(conflictingAssignments.map((a: any) => a.roomId))
     const availableRooms = allRooms.filter((room: any) => !bookedRoomIds.has(room.id))
 
-    // Convert BigInt fields to Number for JSON serialization
+    // Convert BigInt / Decimal fields for JSON serialization
     return availableRooms.map((room: any) => ({
       ...room,
       capacity: Number(room.capacity),

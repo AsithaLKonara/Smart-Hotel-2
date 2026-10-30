@@ -77,6 +77,7 @@ export async function PATCH(
             status: 'PENDING',
             priority: 'HIGH',
             roomId: updatedRoom.id,
+            propertyId: updatedRoom.propertyId || existingRoom.propertyId,
           }
         })
       }
@@ -90,6 +91,7 @@ export async function PATCH(
             status: 'PENDING',
             priority: 'HIGH',
             roomId: updatedRoom.id,
+            propertyId: updatedRoom.propertyId || existingRoom.propertyId,
           }
         })
       }
@@ -97,14 +99,23 @@ export async function PATCH(
       return updatedRoom
     })
 
-    revalidatePath('/', 'layout')
+    try {
+      revalidatePath('/admin/housekeeping')
+      revalidatePath('/admin/receptionist')
+    } catch {}
 
     return NextResponse.json(room)
-  } catch (error) {
+  } catch (error: any) {
+    console.error('PATCH /api/rooms/[id] caught error:', error)
     if (error instanceof z.ZodError) {
       return handleZodError(error)
     }
-    return NextResponse.json({ error: 'Failed to update room' }, { status: 500 })
+    return NextResponse.json({ 
+      error: 'Failed to update room',
+      message: error?.message || String(error),
+      code: error?.code,
+      meta: error?.meta
+    }, { status: 500 })
   }
 }
 
@@ -232,7 +243,10 @@ export async function PUT(
       } as any
     })
 
-    revalidatePath('/', 'layout')
+    try {
+      revalidatePath('/admin/housekeeping')
+      revalidatePath('/admin/receptionist')
+    } catch {}
 
     return NextResponse.json(room)
   } catch (error) {
@@ -306,7 +320,10 @@ export async function DELETE(
       data: { deletedAt: new Date() }
     })
 
-    revalidatePath('/', 'layout')
+    try {
+      revalidatePath('/admin/housekeeping')
+      revalidatePath('/admin/receptionist')
+    } catch {}
 
     return NextResponse.json({ message: 'Room deleted successfully' })
   } catch (error) {

@@ -11,10 +11,10 @@ test.describe('Phase 14: Security E2E Penetration', () => {
       guests: 1
     };
 
-    const res = await request.post('/api/bookings/create', { data: payload });
+    const res = await request.post('/api/bookings', { data: payload });
     
-    // The backend should either strip the tags and return 200, or explicitly reject with 400 Bad Request
-    expect([200, 201, 400]).toContain(res.status());
+    // The security architecture should reject unauthenticated requests (401), reject invalid payloads (400), or sanitize
+    expect([200, 201, 400, 401]).toContain(res.status());
     
     // If it succeeded, verify the XSS was sanitized
     if (res.status() === 200 || res.status() === 201) {

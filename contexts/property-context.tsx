@@ -33,6 +33,10 @@ export function PropertyProvider({ children }: { children: React.ReactNode }) {
   const isSuperAdmin = roleName === 'SUPER_ADMIN'
 
   useEffect(() => {
+    if (userPropertyId && !isSuperAdmin) {
+      setActivePropertyIdState(userPropertyId)
+    }
+
     async function fetchProperties() {
       try {
         const res = await fetch('/api/admin/corporate/properties')
@@ -42,10 +46,8 @@ export function PropertyProvider({ children }: { children: React.ReactNode }) {
           
           // Determine the initial active property
           if (userPropertyId && !isSuperAdmin) {
-            // User is locked to a property
             setActivePropertyIdState(userPropertyId)
           } else {
-            // User can switch properties
             const stored = localStorage.getItem('smarthotel_active_property')
             if (stored && data.some((p: Property) => p.id === stored)) {
               setActivePropertyIdState(stored)
@@ -62,7 +64,7 @@ export function PropertyProvider({ children }: { children: React.ReactNode }) {
     }
     
     fetchProperties()
-  }, [userPropertyId])
+  }, [userPropertyId, isSuperAdmin])
 
   const setActivePropertyId = (id: string) => {
     if (userPropertyId && !isSuperAdmin) return // Cannot change if locked

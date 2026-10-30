@@ -1,49 +1,82 @@
 import { test, expect } from '@playwright/test';
-import { resetDatabase } from '../utils/db-reset';
-import { seedTestHotel } from '../utils/seed-hotel';
+import { loginAs } from '../utils/auth-helpers';
+import { prisma } from '@/lib/db';
 
-test.describe.serial('Phase 3 Booking: Reservation Core Lifecycle', () => {
+test.describe.serial('Domain 2 Booking: Reservation Core Lifecycle & Admin UI', () => {
+  let testRoomId: string;
+  let createdBookingCode: string;
+  const guestName = 'Eleanor Vance';
+  const guestEmail = 'eleanor.vance@hillhouse.local';
+
   test.beforeAll(async () => {
-    await resetDatabase();
-    await seedTestHotel();
+    // Pick an available room in Grand Ocean Resort
+    const room = await prisma.room.findFirst({
+      where: {
+        propertyId: '579ecf1a-5350-42ea-af32-c10397417589',
+        status: 'AVAILABLE'
+      }
+    });
+    if (!room) throw new Error('No available room for reservation test in Grand Ocean Resort');
+    testRoomId = room.id;
   });
 
-  test('Complete Guest Booking Flow generates Reservation and Folio', async ({ page }) => {
-    // 1. Guest Browses and Searches for a room
-    await page.goto('/rooms');
-    
-    // We expect the seeded 'Standard King' room to be visible
-    await expect(page.locator('text=Standard King')).toBeVisible();
+  test('Direct Booking API creates Reservation with linked Folio and Outbox Alert', async ({ page }) => {
+    await loginAs(page, 'RECEPTIONIST');
 
-    // 2. Select Room and Proceed to Checkout
-    // In a headless API test we would mock the POST /api/bookings
-    // Here we simulate the API request to assert backend integrity
-    const guestPayload = {
-      guestName: 'E2E Guest',
-      email: 'e2eguest@smarthotel.local',
-      checkIn: new Date().toISOString(),
-      checkOut: new Date(Date.now() + 86400000 * 2).toISOString(), // 2 days later
-      roomTypeCode: 'STD-K',
-      guests: 2
-    };
+    const futureDays = Math.floor(Math.random() * 300) + 1200;
+    const start = new Date(Date.now() + futureDays * 86400000);
+    const end = new Date(start.getTime() + 3 * 86400000);
+    const checkIn = start.toISOString();
+    const checkOut = end.toISOString();
 
-    const apiRes = await page.evaluate(async (payload) => {
-      const res = await fetch('/api/bookings/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      return { status: res.status, data: await res.json().catch(() => ({})) };
-    }, guestPayload);
+    const res = await page.request.post('/api/bookings', {
+      data: {
+        roomId: testRoomId,
+        checkIn,
+        checkOut,
+        guests: 2,
+        guestName,
+        guestEmail,
+        guestPhone: '+1-555-0144',
+        paymentMethod: 'pay_later',
+        specialRequests: 'Quiet room near corner'
+      },
+      timeout: 35000
+    });
 
-    // Note: The actual API route might be 404 if we are just scaffolding tests, 
-    // but the blueprint specifies we assert the *intent* of the test structure.
-    // Assuming the API exists, it should return 200 or 201 created.
-    expect(apiRes.status).toBeDefined();
+    expect(res.status()).toBe(201);
+    const body = await res.json();
+    expect(body.booking).toBeDefined();
+    expect(body.booking.id).toBeDefined();
+    expect(body.booking.confirmationCode).toBeDefined();
+    expect(body.booking.status).toBe('CONFIRMED');
 
-    // 3. Verify the Booking Record and Folio would exist
-    // In a fully integrated environment, we'd query the DB or an admin API to verify:
-    // await expect(bookingRecord.status).toBe('CONFIRMED');
-    // await expect(folioRecord.totalAmount).toBeGreaterThan(0);
+    createdBookingCode = body.booking.confirmationCode;
+
+    // Verify database Folio record was generated automatically
+    const folios = await prisma.folio.findMany({
+      where: { bookingId: body.booking.id }
+    });
+    expect(folios.length).toBeGreaterThan(0);
+  });
+
+  test('Receptionist can inspect Reservation and Folio details via Admin UI', async ({ page }) => {
+    await loginAs(page, 'RECEPTIONIST');
+
+    await page.goto('/admin/bookings', { waitUntil: 'domcontentloaded', timeout: 60000 });
+    await expect(page.locator('h1, h2, h3').filter({ hasText: /booking|reservation/i }).first()).toBeVisible({ timeout: 15000 });
+
+    // Search for the newly created booking by guest name or confirmation code
+    const searchInput = page.locator('input:not([readonly])[placeholder*="Search guest"], input:not([readonly])[placeholder*="Search"]').first();
+    await searchInput.waitFor({ state: 'visible', timeout: 15000 });
+    await searchInput.fill(createdBookingCode);
+    await page.waitForTimeout(600); // Wait for debounce / filtered list
+
+    // Assert the booking appears in the table/list
+    const bookingRow = page.locator(`text=${createdBookingCode}`).first();
+    await expect(bookingRow).toBeVisible({ timeout: 10000 });
+
+    // Also assert guest name is rendered
+    await expect(page.locator(`text=${guestName}`).first()).toBeVisible();
   });
 });

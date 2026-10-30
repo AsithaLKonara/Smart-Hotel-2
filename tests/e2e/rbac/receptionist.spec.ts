@@ -1,31 +1,30 @@
 import { test, expect } from '@playwright/test';
+import { loginAs } from '../utils/auth-helpers';
 
 test.describe('Phase 2 RBAC: Receptionist Certification', () => {
   test.use({ storageState: { cookies: [], origins: [] } });
 
   test('Receptionist has booking access but is blocked from Payroll and System Admin', async ({ page }) => {
-    await page.goto('/auth/login');
-    await page.fill('input[name="email"]', 'reception@smarthotel.local');
-    await page.fill('input[name="password"]', 'EnterpriseTest123!');
-    await page.click('button[type="submit"]');
+    // 1. Authenticate as Receptionist
+    await loginAs(page, 'RECEPTIONIST');
+    await expect(page).toHaveURL(/.*\/admin\//);
 
-    await page.waitForURL('/admin/bookings'); // Dashboard is blocked, redirects to bookings
+    // 2. Allowed Front-Desk Access (CRM, Bookings, Receptionist)
+    await page.goto('/admin/receptionist');
+    await expect(page).toHaveURL(/.*\/admin\/receptionist/);
+    await expect(page.getByRole('heading', { name: /Reception Desk/i })).toBeVisible({ timeout: 20000 });
 
-    // 1. Allowed Front-Desk Access (CRM, Bookings)
-    await page.goto('/admin/crm/guests');
-    await expect(page.locator('text=/Access Denied/i')).not.toBeVisible();
-
-    // 2. Blocked UI Access (Executive Dashboard)
-    await page.goto('/admin/dashboard');
+    // 3. Blocked UI Access (Executive Dashboard / Roles)
+    await page.goto('/admin/roles');
     await page.waitForLoadState('domcontentloaded');
-    await expect(page).not.toHaveURL(/.*\/admin\/dashboard/);
+    await expect(page).not.toHaveURL(/.*\/admin\/roles$/);
 
-    // 3. Blocked API Access (HR / Payroll)
+    // 4. Blocked API Access (HR / Payroll)
     const apiRes = await page.evaluate(async () => {
-      const res = await fetch('/api/admin/hr/payroll/run', { method: 'GET' });
+      const res = await fetch('/api/admin/roles', { method: 'GET' });
       return res.status;
     });
-    // Strict 403 Forbidden is expected for receptionists attempting payroll lookups
+    // Strict 403 Forbidden is expected for receptionists attempting system role management
     expect(apiRes).toBe(403);
   });
 });

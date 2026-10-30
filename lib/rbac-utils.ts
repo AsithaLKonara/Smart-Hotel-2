@@ -40,8 +40,9 @@ export function getDefaultDashboardUrl(granularRole: string): string {
     case 'KITCHEN':
       return '/kitchen'
     case 'HOUSEKEEPING':
+      return '/admin/housekeeping'
     case 'MAINTENANCE':
-      return '/admin/tasks'
+      return '/admin/housekeeping?tab=maintenance'
     case 'GUEST':
     default:
       return '/dashboard'
