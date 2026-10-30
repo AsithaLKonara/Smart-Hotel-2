@@ -9,17 +9,23 @@ setup('authenticate as admin', async ({ page }) => {
   // For robustness in this mission, we'll force login to generate the state
 
   await page.goto('/auth/signin');
-  
-  // Fill the credentials
-  const emailInput = page.getByPlaceholder(/smarthotel\.com/i).or(page.getByRole('textbox', { name: /Operator Identity/i }));
-  await emailInput.fill('admin@smarthotel.com');
-  await page.locator('input[type="password"]').fill('SmartHotel@2025!Admin');
-  
-  // Submit the form
-  await page.getByRole('button', { name: /initialize session/i }).click();
+  await page.waitForLoadState('networkidle');
 
-  // Wait for navigation to the dashboard and ensure the URL is correct
-  await expect(page).toHaveURL(/.*\/admin\//, { timeout: 60000 });
+  // Fill email & password directly
+  const emailInput = page.locator('input#email');
+  const passwordInput = page.locator('input#password');
+  await emailInput.fill('admin@smarthotel.com');
+  await passwordInput.fill('SmartHotel@2025!Admin');
+  await expect(emailInput).toHaveValue('admin@smarthotel.com');
+  await expect(passwordInput).toHaveValue('SmartHotel@2025!Admin');
+
+  // Submit the form
+  const submitBtn = page.locator('button[type="submit"]').first();
+  await expect(submitBtn).toBeVisible({ timeout: 10000 });
+  await submitBtn.click();
+
+  // Wait for navigation to the dashboard
+  await page.waitForURL(/\/admin\/dashboard/, { timeout: 30000 });
 
   // Ensure directory exists
   const authDir = path.dirname(authFileAdmin);

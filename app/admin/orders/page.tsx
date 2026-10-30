@@ -129,7 +129,7 @@ export default function AdminOrdersPage() {
     delivered: ordersArray.filter(o => o.status === 'DELIVERED').length,
     totalRevenue: ordersArray
       .filter(o => o.status === 'DELIVERED')
-      .reduce((sum, o) => sum + (o.totalAmount || 0), 0)
+      .reduce((sum, o) => sum + Number(o.totalAmount || 0), 0)
   }
 
   if (status === 'loading' || loading) {
@@ -227,7 +227,7 @@ export default function AdminOrdersPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs font-mono text-zinc-400">Items: {order.items?.length || 0}</p>
-                    <p className="font-mono font-bold text-base text-zinc-100">${order.totalAmount.toFixed(2)}</p>
+                    <p className="font-mono font-bold text-base text-zinc-100">${Number(order.totalAmount || 0).toFixed(2)}</p>
                   </div>
                   <div className="text-right">
                     <p className="text-[11px] font-mono text-zinc-500">
@@ -373,7 +373,7 @@ export default function AdminOrdersPage() {
 
               <div className="flex justify-between items-center pt-3 border-t border-[#1E2227]">
                 <p className="text-xs font-mono uppercase tracking-wider text-zinc-400">Total Charged</p>
-                <p className="text-xl font-mono font-bold text-zinc-100">${selectedOrder.totalAmount.toFixed(2)}</p>
+                <p className="text-xl font-mono font-bold text-zinc-100">${Number(selectedOrder.totalAmount || 0).toFixed(2)}</p>
               </div>
 
               <div className="text-[11px] font-mono text-zinc-500 pt-1">

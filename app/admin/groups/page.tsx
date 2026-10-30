@@ -4,9 +4,25 @@ import prisma from '@/lib/db'
 export const dynamic = 'force-dynamic'
 
 export default async function GroupsPage() {
-  const groups = await prisma.groupBlock.findMany({
-    orderBy: { startDate: 'asc' }
+  const rawBlocks = await prisma.groupBlock.findMany({
+    include: {
+      event: true,
+      roomType: true,
+      bookings: true
+    },
+    orderBy: { createdAt: 'desc' }
   })
+
+  const groups = rawBlocks.map((b: any) => ({
+    id: b.id,
+    name: b.event?.name || 'Group Block',
+    code: b.event?.id ? `GRP-${b.event.id.slice(0, 6).toUpperCase()}` : 'GRP-STANDARD',
+    startDate: b.event?.startDate ? new Date(b.event.startDate).toISOString() : new Date(b.createdAt).toISOString(),
+    endDate: b.event?.endDate ? new Date(b.event.endDate).toISOString() : new Date(b.createdAt).toISOString(),
+    totalRooms: b.blockedCount || 0,
+    pickedUpRooms: b.bookings?.length || 0,
+    masterFolioBalance: Number(b.contractedRate || 0) * (b.blockedCount || 0)
+  }))
 
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-8">
@@ -81,13 +97,13 @@ export default async function GroupsPage() {
                       <div className="w-full bg-white/10 rounded-full h-1.5 mb-1 mt-1">
                         <div 
                           className="bg-brand-purple h-1.5 rounded-full" 
-                          style={{ width: `${Math.min(100, (group.pickedUpRooms / group.totalRooms) * 100)}%` }}
+                          style={{ width: `${Math.min(100, (group.pickedUpRooms / (group.totalRooms || 1)) * 100)}%` }}
                         ></div>
                       </div>
                       <span className="text-xs text-white/40">{group.pickedUpRooms} / {group.totalRooms} Picked</span>
                     </td>
                     <td className="p-4">
-                      <div className="font-medium text-white">${group.masterFolioBalance.toFixed(2)}</div>
+                      <div className="font-medium text-white">${Number(group.masterFolioBalance || 0).toFixed(2)}</div>
                     </td>
                     <td className="p-4 text-right">
                       <button className="p-2 text-white/40 hover:text-white hover:bg-white/10 rounded-lg transition-colors">

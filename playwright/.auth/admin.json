@@ -2,7 +2,7 @@
   "cookies": [
     {
       "name": "next-auth.csrf-token",
-      "value": "c300074a969b683b1f5a6ec9f1141c6a75a25156c4e6f7d047f0ff2e41ac27c3%7C013082d1cbc020230c543424522e12eea127f0da7a78a187878e5b66e8d4324d",
+      "value": "0c282847dad6fcee10389dd405208d274f001ba8af51babc32779565adba3e02%7Cf7702907d705aa07f58348c80536bef46f83f4ee6bb8becc8eb1fd0649dece84",
       "domain": "localhost",
       "path": "/",
       "expires": -1,
@@ -22,10 +22,10 @@
     },
     {
       "name": "next-auth.session-token",
-      "value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..iV52LgwBRPkriIvi.w49UnJK4E_m63BLW9fPUCLOWtsvzwrLZEwWFZVrA2g3X0UHxTRFikRwheXMd7ymfsCDCyZVgswhS9sQjcGdr0BK6Qc2XLiOHiux68jnWZ2sSe0dB7w7d_2D4LwoxuCZN09kCnjUseqdp8pAnVFMaJaqbjeZm9OhGY6Ghd_PvNytZMN_OlcYgkozLhJDLhAsJoNBUkMmiiWYjO9_BpDjkIkJZM_7tvxhUYATgmRTlkFtiw6aI4BtptgZjfEDzneJp8cnQppu0zKbEKJtmcSFJrbo9L9IkmSGd8TAjbAdtS_y2VJVQh3XpS75XCbJj2IFYjWZZVnXtxDmPQiq6q0LIxuLq8RyQw3o37oHkTexjC-mMSIO33rSJd-tNFmBl3cwAMyzrjo42EEjLRmAZlXdwbU4Zc3w4oqOLXBDAG9hwMGbUhhdKc2o1JgL0_yVHSolkawwLXenGeiW8rqdnjgMdZm5jbV8EOgfHTwVe.l4nAMfJ6WLJ6h6USxVy7Dw",
+      "value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..psRfKM4lUVjn9zNZ.Zt6XPdw1LT-qhV3rKpJ4ZUXHL1yhqOKqarUW5aJL6tVgmlkkBa-kSXl-YknNcZygAAV1gPxG9HYQwmziNnjE5u3YEVP5sWJR0cL9iLbdtGL9hal5BP0e4fyESkeb8C4mjsmlnAU6-L05ckmXGAzzS-5KdKRH-b1q1gZc3FJpdlb9F4oHc8tfjh5XGFKPJ40RmQO2mDKlwP3t-iH6c3z8x_vVCHDa2QGFnSWYLP3MohxrJgcOo_voi9BXOm62istWzsGLEHAh60EPIx4CeERIB9BhmpkPTyiY1TzdNtQ-jzqorIuqFZc6O25KiBW3cEVXWhhA_0fWejYrvnrxr9in6GHJpLFZI-PBtBdNp7lWclILO7Sea4cDRRLJnTckbZKQarGeFcLh7jKyCm3WjteGEhfBNu-eIyAi7eWTAAS6EiCMCJFO70mxLJTdyyDCLgjQcajLLOn9I8KaIqy5XpYx7lUwNLlhDeyKc0ca.HzY3BshfafrRQAbYeJ5Rzg",
       "domain": "localhost",
       "path": "/",
-      "expires": 1793916156.976907,
+      "expires": 1793987750.03843,
       "httpOnly": true,
       "secure": false,
       "sameSite": "Lax"
@@ -37,11 +37,11 @@
       "localStorage": [
         {
           "name": "nextauth.message",
-          "value": "{\"event\":\"session\",\"data\":{\"trigger\":\"getSession\"},\"timestamp\":1793311356}"
+          "value": "{\"event\":\"session\",\"data\":{\"trigger\":\"getSession\"},\"timestamp\":1793382950}"
         },
         {
           "name": "smarthotel_chat_session",
-          "value": "c0a2bc62-f7ff-4dbd-995a-856b141afaa4"
+          "value": "6be8b0dc-770b-415f-b63b-bea7bdd15323"
         }
       ]
     }

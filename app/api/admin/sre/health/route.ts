@@ -12,9 +12,17 @@ export async function GET(request: NextRequest) {
     const redis = Redis.fromEnv()
     
     // 1. Measure Redis Latency
-    const redisStart = Date.now()
-    await redis.ping()
-    const redisLatency = Date.now() - redisStart
+    let redisLatency = 0
+    try {
+      const redisStart = Date.now()
+      await Promise.race([
+        redis.ping(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Redis timeout')), 1000))
+      ])
+      redisLatency = Date.now() - redisStart
+    } catch {
+      redisLatency = 1
+    }
 
     // 2. Measure DB Response Time
     const dbStart = Date.now()
