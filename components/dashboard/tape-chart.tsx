@@ -119,13 +119,13 @@ export default function TapeChart({ initialStartDate = new Date(), daysToShow = 
         <h2 className="text-white font-bold text-lg">Room Assignment Gantt</h2>
         <div className="flex gap-2">
           <button 
-            className="px-3 py-1 bg-white/5 border border-purple-900/30 text-purple-300 rounded text-sm hover:bg-white/10"
+            className="px-3 py-1 bg-secondary hover:bg-secondary/80 text-foreground dark:bg-white/5 dark:text-purple-300 border border-border dark:border-purple-900/30 rounded text-sm transition-colors"
             onClick={() => setStartDate(addDays(startDate, -7))}
           >
             &larr; Prev 7 Days
           </button>
           <button 
-            className="px-3 py-1 bg-white/5 border border-purple-900/30 text-purple-300 rounded text-sm hover:bg-white/10"
+            className="px-3 py-1 bg-secondary hover:bg-secondary/80 text-foreground dark:bg-white/5 dark:text-purple-300 border border-border dark:border-purple-900/30 rounded text-sm transition-colors"
             onClick={() => setStartDate(addDays(startDate, 7))}
           >
             Next 7 Days &rarr;
@@ -137,14 +137,14 @@ export default function TapeChart({ initialStartDate = new Date(), daysToShow = 
       <div className="flex w-full overflow-x-auto relative">
         
         {/* Y-Axis: Rooms (Sticky left) */}
-        <div className="w-48 flex-shrink-0 border-r border-purple-900/30 bg-[#0f0f15] z-20 sticky left-0">
-          <div className="h-12 border-b border-purple-900/30 flex items-center px-4">
-            <span className="text-xs uppercase text-slate-400 font-bold tracking-wider">Rooms</span>
+        <div className="w-48 flex-shrink-0 border-r border-border dark:border-purple-900/30 bg-card dark:bg-[#0f0f15] z-20 sticky left-0 shadow-sm">
+          <div className="h-12 border-b border-border dark:border-purple-900/30 flex items-center px-4">
+            <span className="text-xs uppercase text-muted-foreground dark:text-slate-400 font-bold tracking-wider">Rooms</span>
           </div>
           {rooms.map(room => (
-            <div key={room.id} className="border-b border-purple-900/10 px-4 flex flex-col justify-center" style={{ height: ROW_HEIGHT }}>
-              <span className="text-white font-bold text-sm">Room {room.number}</span>
-              <span className="text-xs text-slate-500">{room.roomType?.name}</span>
+            <div key={room.id} className="border-b border-border dark:border-purple-900/10 px-4 flex flex-col justify-center" style={{ height: ROW_HEIGHT }}>
+              <span className="text-foreground dark:text-white font-bold text-sm">Room {room.number}</span>
+              <span className="text-xs text-muted-foreground dark:text-slate-500">{room.roomType?.name}</span>
             </div>
           ))}
         </div>
@@ -153,27 +153,27 @@ export default function TapeChart({ initialStartDate = new Date(), daysToShow = 
         <div className="flex flex-col flex-1 relative min-w-max">
           
           {/* Header row: Dates */}
-          <div className="flex h-12 border-b border-purple-900/30 bg-[#0f0f15]">
+          <div className="flex h-12 border-b border-border dark:border-purple-900/30 bg-muted/40 dark:bg-[#0f0f15]">
             {dateHeaders.map((date, idx) => (
               <div 
                 key={idx} 
-                className="border-r border-purple-900/30 flex flex-col items-center justify-center"
+                className="border-r border-border dark:border-purple-900/30 flex flex-col items-center justify-center"
                 style={{ width: CELL_WIDTH, minWidth: CELL_WIDTH }}
               >
-                <span className="text-[10px] text-slate-500 uppercase">{format(date, 'EEE')}</span>
-                <span className="text-white font-bold text-sm">{format(date, 'dd MMM')}</span>
+                <span className="text-[10px] text-muted-foreground dark:text-slate-500 uppercase">{format(date, 'EEE')}</span>
+                <span className="text-foreground dark:text-white font-bold text-sm">{format(date, 'dd MMM')}</span>
               </div>
             ))}
           </div>
 
           {/* Grid Body */}
-          <div className="relative bg-[#050505]">
+          <div className="relative bg-background dark:bg-[#050505]">
             {rooms.map(room => (
-              <div key={room.id} className="flex border-b border-purple-900/10 hover:bg-white/[0.02]" style={{ height: ROW_HEIGHT }}>
+              <div key={room.id} className="flex border-b border-border dark:border-purple-900/10 hover:bg-muted/40 dark:hover:bg-white/[0.02]" style={{ height: ROW_HEIGHT }}>
                 {dateHeaders.map((date, idx) => (
                   <div
                     key={idx}
-                    className="border-r border-purple-900/10"
+                    className="border-r border-border dark:border-purple-900/10"
                     style={{ width: CELL_WIDTH, minWidth: CELL_WIDTH }}
                     onDragOver={handleDragOver}
                     onDrop={(e) => handleDrop(e, room.id, date)}

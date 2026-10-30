@@ -62,32 +62,32 @@ interface BookingAnalyticsProps {
 const statusConfig = {
   PENDING: {
     label: 'Pending',
-    color: 'text-yellow-600',
-    bgColor: 'bg-yellow-100',
+    color: 'text-amber-600 dark:text-amber-400',
+    bgColor: 'bg-amber-100 dark:bg-amber-950/40',
     icon: Clock
   },
   CONFIRMED: {
     label: 'Confirmed',
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-100',
+    color: 'text-blue-600 dark:text-blue-400',
+    bgColor: 'bg-blue-100 dark:bg-blue-950/40',
     icon: CheckCircle
   },
   CHECKED_IN: {
     label: 'Checked In',
-    color: 'text-green-600',
-    bgColor: 'bg-green-100',
+    color: 'text-emerald-600 dark:text-emerald-400',
+    bgColor: 'bg-emerald-100 dark:bg-emerald-950/40',
     icon: CheckCircle
   },
   CHECKED_OUT: {
     label: 'Checked Out',
-    color: 'text-gray-600',
-    bgColor: 'bg-gray-100',
+    color: 'text-muted-foreground',
+    bgColor: 'bg-muted dark:bg-white/10',
     icon: CheckCircle
   },
   CANCELLED: {
     label: 'Cancelled',
-    color: 'text-red-600',
-    bgColor: 'bg-red-100',
+    color: 'text-rose-600 dark:text-rose-400',
+    bgColor: 'bg-rose-100 dark:bg-rose-950/40',
     icon: XCircle
   }
 }
@@ -178,7 +178,7 @@ function BookingCard({
       transition={{ delay: index * 0.1 }}
       whileHover={{ scale: 1.02 }}
       onClick={() => onClick?.(booking.id)}
-      className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 cursor-pointer hover:shadow-xl transition-shadow"
+      className="bg-card dark:bg-[#121417] text-card-foreground rounded-2xl shadow-sm border border-border dark:border-[#1E2227] p-6 cursor-pointer hover:border-primary/50 transition-all"
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
@@ -187,8 +187,8 @@ function BookingCard({
             <StatusIcon className={cn("w-5 h-5", statusConf.color)} />
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900">Booking #{booking.id}</h3>
-            <div className="flex items-center gap-2 text-sm text-gray-500">
+            <h3 className="font-semibold text-foreground dark:text-white">Booking #{booking.id}</h3>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Users className="w-3 h-3" />
               {booking.guestName} • {booking.guests} guests
             </div>
@@ -203,22 +203,22 @@ function BookingCard({
           )}>
             {sourceConf.label}
           </div>
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-muted-foreground">
             {formatDate(booking.createdAt)}
           </div>
         </div>
       </div>
 
       {/* Room Details */}
-      <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+      <div className="mb-4 p-3 bg-muted/40 dark:bg-white/[0.03] border border-border/50 rounded-lg">
         <div className="flex items-center justify-between">
           <div>
-            <div className="font-medium text-gray-900">Room {booking.roomNumber}</div>
-            <div className="text-sm text-gray-600">{booking.roomType}</div>
+            <div className="font-medium text-foreground dark:text-white">Room {booking.roomNumber}</div>
+            <div className="text-sm text-muted-foreground">{booking.roomType}</div>
           </div>
           <div className="text-right">
-            <div className="text-sm text-gray-500">{getNights()} nights</div>
-            <div className="text-xs text-gray-400">
+            <div className="text-sm text-muted-foreground">{getNights()} nights</div>
+            <div className="text-xs text-muted-foreground/75">
               {formatDate(booking.checkIn)} - {formatDate(booking.checkOut)}
             </div>
           </div>
@@ -227,7 +227,7 @@ function BookingCard({
 
       {/* Amount */}
       <div className="flex items-center justify-between">
-        <div className="text-lg font-semibold text-gray-900">
+        <div className="text-lg font-semibold text-foreground dark:text-white">
           ${booking.totalAmount.toFixed(2)}
         </div>
         <div className={cn(
@@ -251,28 +251,28 @@ function OccupancySummary({ data }: { data: OccupancyData[] }) {
   const totalBookings = data.reduce((sum, d) => sum + d.bookings, 0)
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+    <div className="bg-card dark:bg-[#121417] text-card-foreground rounded-2xl shadow-sm border border-border dark:border-[#1E2227] p-6">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-gray-900">Occupancy Summary</h3>
-        <Bed className="w-5 h-5 text-blue-600" />
+        <h3 className="text-lg font-semibold text-foreground dark:text-white">Occupancy Summary</h3>
+        <Bed className="w-5 h-5 text-blue-500" />
       </div>
       
       <div className="grid grid-cols-2 gap-4">
-        <div className="text-center">
-          <div className="text-2xl font-bold text-gray-900">{averageOccupancy.toFixed(1)}%</div>
-          <div className="text-sm text-gray-600">Average Occupancy</div>
+        <div className="text-center p-3 rounded-xl bg-muted/20 dark:bg-white/[0.02] border border-border/40">
+          <div className="text-2xl font-bold text-foreground dark:text-white">{averageOccupancy.toFixed(1)}%</div>
+          <div className="text-sm text-muted-foreground">Average Occupancy</div>
         </div>
-        <div className="text-center">
-          <div className="text-2xl font-bold text-gray-900">{peakDay.occupancy}%</div>
-          <div className="text-sm text-gray-600">Peak Occupancy</div>
+        <div className="text-center p-3 rounded-xl bg-muted/20 dark:bg-white/[0.02] border border-border/40">
+          <div className="text-2xl font-bold text-foreground dark:text-white">{peakDay.occupancy}%</div>
+          <div className="text-sm text-muted-foreground">Peak Occupancy</div>
         </div>
-        <div className="text-center">
-          <div className="text-2xl font-bold text-gray-900">${totalRevenue.toLocaleString()}</div>
-          <div className="text-sm text-gray-600">Total Revenue</div>
+        <div className="text-center p-3 rounded-xl bg-muted/20 dark:bg-white/[0.02] border border-border/40">
+          <div className="text-2xl font-bold text-foreground dark:text-white">${totalRevenue.toLocaleString()}</div>
+          <div className="text-sm text-muted-foreground">Total Revenue</div>
         </div>
-        <div className="text-center">
-          <div className="text-2xl font-bold text-gray-900">{totalBookings}</div>
-          <div className="text-sm text-gray-600">Total Bookings</div>
+        <div className="text-center p-3 rounded-xl bg-muted/20 dark:bg-white/[0.02] border border-border/40">
+          <div className="text-2xl font-bold text-foreground dark:text-white">{totalBookings}</div>
+          <div className="text-sm text-muted-foreground">Total Bookings</div>
         </div>
       </div>
     </div>
@@ -385,13 +385,13 @@ function BookingAnalyticsContent({ onExport, onBookingClick }: BookingAnalyticsP
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      <div className="min-h-screen bg-background text-foreground">
         <div className="container mx-auto px-4 py-8">
           <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-1/3 mb-8"></div>
+            <div className="h-8 bg-muted rounded w-1/3 mb-8"></div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
               {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="h-32 bg-gray-200 rounded-xl"></div>
+                <div key={i} className="h-32 bg-muted rounded-xl"></div>
               ))}
             </div>
           </div>
@@ -402,10 +402,10 @@ function BookingAnalyticsContent({ onExport, onBookingClick }: BookingAnalyticsP
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      <div className="min-h-screen bg-background text-foreground">
         <div className="container mx-auto px-4 py-16 text-center">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-2">Booking analytics unavailable</h2>
-          <p className="text-gray-600">{error}</p>
+          <h2 className="text-2xl font-semibold text-foreground dark:text-white mb-2">Booking analytics unavailable</h2>
+          <p className="text-muted-foreground">{error}</p>
         </div>
       </div>
     )
@@ -425,7 +425,7 @@ function BookingAnalyticsContent({ onExport, onBookingClick }: BookingAnalyticsP
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-background text-foreground">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <motion.div
@@ -435,8 +435,8 @@ function BookingAnalyticsContent({ onExport, onBookingClick }: BookingAnalyticsP
         >
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Booking Analytics</h1>
-              <p className="text-gray-600">Comprehensive insights into guest bookings and occupancy</p>
+              <h1 className="text-3xl font-bold text-foreground dark:text-white mb-2">Booking Analytics</h1>
+              <p className="text-muted-foreground">Comprehensive insights into guest bookings and occupancy</p>
             </div>
             
             <div className="flex gap-3">
@@ -465,60 +465,60 @@ function BookingAnalyticsContent({ onExport, onBookingClick }: BookingAnalyticsP
           transition={{ delay: 0.1 }}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
         >
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+          <div className="bg-card dark:bg-[#121417] text-card-foreground rounded-2xl shadow-sm border border-border dark:border-[#1E2227] p-6">
             <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl">
-                <Calendar className="w-6 h-6 text-blue-600" />
+              <div className="p-3 bg-blue-500/10 dark:bg-blue-500/20 rounded-xl">
+                <Calendar className="w-6 h-6 text-blue-500" />
               </div>
-              <div className="flex items-center gap-1 text-green-600">
+              <div className="flex items-center gap-1 text-emerald-500 text-sm font-medium">
                 <TrendingUp className="w-4 h-4" />
-                <span className="text-sm font-medium">+12.5%</span>
+                <span>+12.5%</span>
               </div>
             </div>
-            <div className="text-2xl font-bold text-gray-900 mb-1">{allBookings.length}</div>
-            <div className="text-gray-600">Total Bookings</div>
+            <div className="text-2xl font-bold text-foreground dark:text-white mb-1">{allBookings.length}</div>
+            <div className="text-muted-foreground text-sm">Total Bookings</div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+          <div className="bg-card dark:bg-[#121417] text-card-foreground rounded-2xl shadow-sm border border-border dark:border-[#1E2227] p-6">
             <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-gradient-to-br from-green-100 to-green-200 rounded-xl">
-                <Users className="w-6 h-6 text-green-600" />
+              <div className="p-3 bg-emerald-500/10 dark:bg-emerald-500/20 rounded-xl">
+                <Users className="w-6 h-6 text-emerald-500" />
               </div>
-              <div className="flex items-center gap-1 text-green-600">
+              <div className="flex items-center gap-1 text-emerald-500 text-sm font-medium">
                 <TrendingUp className="w-4 h-4" />
-                <span className="text-sm font-medium">+8.3%</span>
+                <span>+8.3%</span>
               </div>
             </div>
-            <div className="text-2xl font-bold text-gray-900 mb-1">{guestInsights?.totalGuests ?? 0}</div>
-            <div className="text-gray-600">Total Guests</div>
+            <div className="text-2xl font-bold text-foreground dark:text-white mb-1">{guestInsights?.totalGuests ?? 0}</div>
+            <div className="text-muted-foreground text-sm">Total Guests</div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+          <div className="bg-card dark:bg-[#121417] text-card-foreground rounded-2xl shadow-sm border border-border dark:border-[#1E2227] p-6">
             <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-gradient-to-br from-purple-100 to-purple-200 rounded-xl">
-                <Bed className="w-6 h-6 text-purple-600" />
+              <div className="p-3 bg-purple-500/10 dark:bg-purple-500/20 rounded-xl">
+                <Bed className="w-6 h-6 text-purple-500" />
               </div>
-              <div className="flex items-center gap-1 text-green-600">
+              <div className="flex items-center gap-1 text-emerald-500 text-sm font-medium">
                 <TrendingUp className="w-4 h-4" />
-                <span className="text-sm font-medium">+5.2%</span>
+                <span>+5.2%</span>
               </div>
             </div>
-            <div className="text-2xl font-bold text-gray-900 mb-1">{guestInsights?.averageStay ?? 0}</div>
-            <div className="text-gray-600">Avg Stay (days)</div>
+            <div className="text-2xl font-bold text-foreground dark:text-white mb-1">{guestInsights?.averageStay ?? 0}</div>
+            <div className="text-muted-foreground text-sm">Avg Stay (days)</div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+          <div className="bg-card dark:bg-[#121417] text-card-foreground rounded-2xl shadow-sm border border-border dark:border-[#1E2227] p-6">
             <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-gradient-to-br from-amber-100 to-amber-200 rounded-xl">
-                <Star className="w-6 h-6 text-amber-600" />
+              <div className="p-3 bg-amber-500/10 dark:bg-amber-500/20 rounded-xl">
+                <Star className="w-6 h-6 text-amber-500" />
               </div>
-              <div className="flex items-center gap-1 text-green-600">
+              <div className="flex items-center gap-1 text-emerald-500 text-sm font-medium">
                 <TrendingUp className="w-4 h-4" />
-                <span className="text-sm font-medium">+2.1%</span>
+                <span>+2.1%</span>
               </div>
             </div>
-            <div className="text-2xl font-bold text-gray-900 mb-1">{guestInsights?.satisfaction ?? 0}</div>
-            <div className="text-gray-600">Guest Rating</div>
+            <div className="text-2xl font-bold text-foreground dark:text-white mb-1">{guestInsights?.satisfaction ?? 0}</div>
+            <div className="text-muted-foreground text-sm">Guest Rating</div>
           </div>
         </motion.div>
 
@@ -527,28 +527,28 @@ function BookingAnalyticsContent({ onExport, onBookingClick }: BookingAnalyticsP
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="flex gap-2 mb-6 overflow-x-auto"
+          className="flex gap-2 mb-6 overflow-x-auto pb-1"
         >
           {statusFilters.map((filter) => (
             <motion.button
               key={filter.key}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => setSelectedStatus(filter.key)}
               className={cn(
-                "flex-shrink-0 px-4 py-2 rounded-lg border-2 transition-all font-medium flex items-center gap-2",
+                "flex-shrink-0 px-4 py-2 rounded-xl border transition-all font-medium flex items-center gap-2 text-sm",
                 selectedStatus === filter.key
-                  ? "border-blue-500 bg-blue-500 text-white shadow-lg"
-                  : "border-gray-200 bg-white text-gray-700 hover:border-blue-300"
+                  ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                  : "border-border bg-card dark:bg-white/5 text-muted-foreground hover:text-foreground hover:border-primary/50"
               )}
             >
               {filter.label}
               {filter.count > 0 && (
                 <span className={cn(
-                  "px-2 py-1 rounded-full text-xs font-bold",
+                  "px-2 py-0.5 rounded-full text-xs font-bold",
                   selectedStatus === filter.key
-                    ? "bg-white/20 text-white"
-                    : "bg-blue-100 text-blue-600"
+                    ? "bg-white/20 text-primary-foreground"
+                    : "bg-muted dark:bg-white/10 text-muted-foreground"
                 )}>
                   {filter.count}
                 </span>
@@ -616,11 +616,11 @@ function BookingAnalyticsContent({ onExport, onBookingClick }: BookingAnalyticsP
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
-          className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6"
+          className="bg-card dark:bg-[#121417] text-card-foreground rounded-2xl shadow-sm border border-border dark:border-[#1E2227] p-6"
         >
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-gray-900">Recent Bookings</h3>
-            <Calendar className="w-5 h-5 text-blue-600" />
+            <h3 className="text-lg font-semibold text-foreground dark:text-white">Recent Bookings</h3>
+            <Calendar className="w-5 h-5 text-blue-500" />
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

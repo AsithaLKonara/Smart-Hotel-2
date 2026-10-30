@@ -6,17 +6,54 @@
 
 @layer base {
   :root {
+    --background: 210 20% 98%; /* #F8FAFC */
+    --foreground: 222 47% 11%; /* #0F172A */
+
+    --card: 0 0% 100%; /* #FFFFFF */
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    --primary: 222 47% 11%; /* #0F172A */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 20% 94%; /* #EBF0F5 */
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 210 20% 95%;
+    --muted-foreground: 215 16% 47%; /* #64748B */
+
+    --accent: 210 20% 94%;
+    --accent-foreground: 222 47% 11%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 214 32% 91%; /* #E2E8F0 */
+    --input: 214 32% 91%;
+    --ring: 222 47% 11%;
+
+    --radius: 0.75rem;
+
+    /* Stealth Canonical Variables */
+    --midnight: 0 0% 100%;
+    --gold: 38 92% 50%;
+    --gold-muted: 38 92% 40%;
+  }
+
+  .dark {
     --background: 220 14% 4%; /* #090A0C */
     --foreground: 240 5% 96%; /* #F4F4F5 */
 
     --card: 216 12% 8%; /* #121417 */
-    --card-foreground: 0 0% 100%; /* #FFFFFF */
+    --card-foreground: 0 0% 100%;
 
     --popover: 216 12% 8%;
     --popover-foreground: 0 0% 100%;
 
-    --primary: 0 0% 100%; /* Pure White primary trigger */
-    --primary-foreground: 220 14% 4%; /* #090A0C */
+    --primary: 0 0% 100%;
+    --primary-foreground: 220 14% 4%;
 
     --secondary: 216 9% 10%; /* #181A1D */
     --secondary-foreground: 240 5% 96%;
@@ -34,48 +71,17 @@
     --input: 216 12% 19%; /* #2B3037 */
     --ring: 216 12% 19%;
 
-    --radius: 0.75rem;
-
     /* Stealth Canonical Variables */
     --midnight: 220 14% 4%;
     --gold: 0 0% 100%;
     --gold-muted: 240 4% 65%;
   }
-
-  .dark {
-    --background: 220 14% 4%;
-    --foreground: 240 5% 96%;
-
-    --card: 216 12% 8%;
-    --card-foreground: 0 0% 100%;
-
-    --popover: 216 12% 8%;
-    --popover-foreground: 0 0% 100%;
-
-    --primary: 0 0% 100%;
-    --primary-foreground: 220 14% 4%;
-
-    --secondary: 216 9% 10%;
-    --secondary-foreground: 240 5% 96%;
-
-    --muted: 216 9% 10%;
-    --muted-foreground: 240 4% 65%;
-
-    --accent: 216 9% 10%;
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 214 14% 13%;
-    --input: 216 12% 19%;
-    --ring: 216 12% 19%;
-  }
 }
 
 @layer base {
   html {
-    background-color: #090A0C;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
   }
   * {
     @apply border-border;

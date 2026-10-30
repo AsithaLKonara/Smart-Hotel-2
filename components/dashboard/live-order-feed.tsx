@@ -55,45 +55,45 @@ interface LiveOrderFeedProps {
 const statusConfig = {
   PENDING: {
     label: 'New Order',
-    color: 'text-yellow-600',
-    bgColor: 'bg-yellow-100',
-    borderColor: 'border-yellow-200',
+    color: 'text-amber-500',
+    bgColor: 'bg-amber-500/10 dark:bg-amber-500/20',
+    borderColor: 'border-amber-500/40',
     icon: Clock
   },
   CONFIRMED: {
     label: 'Confirmed',
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-100',
-    borderColor: 'border-blue-200',
+    color: 'text-blue-500',
+    bgColor: 'bg-blue-500/10 dark:bg-blue-500/20',
+    borderColor: 'border-blue-500/40',
     icon: CheckCircle
   },
   PREPARING: {
     label: 'Preparing',
-    color: 'text-orange-600',
-    bgColor: 'bg-orange-100',
-    borderColor: 'border-orange-200',
+    color: 'text-orange-500',
+    bgColor: 'bg-orange-500/10 dark:bg-orange-500/20',
+    borderColor: 'border-orange-500/40',
     icon: ChefHat
   },
   READY: {
     label: 'Ready',
-    color: 'text-green-600',
-    bgColor: 'bg-green-100',
-    borderColor: 'border-green-200',
+    color: 'text-emerald-500',
+    bgColor: 'bg-emerald-500/10 dark:bg-emerald-500/20',
+    borderColor: 'border-emerald-500/40',
     icon: CheckCircle
   },
   DELIVERED: {
     label: 'Delivered',
-    color: 'text-gray-600',
-    bgColor: 'bg-gray-100',
-    borderColor: 'border-gray-200',
+    color: 'text-muted-foreground',
+    bgColor: 'bg-muted dark:bg-white/10',
+    borderColor: 'border-border',
     icon: CheckCircle
   }
 }
 
 const priorityConfig = {
-  normal: { color: 'text-gray-600', bgColor: 'bg-gray-100', label: 'Normal' },
-  high: { color: 'text-orange-600', bgColor: 'bg-orange-100', label: 'High' },
-  urgent: { color: 'text-red-600', bgColor: 'bg-red-100', label: 'Urgent' }
+  normal: { color: 'text-muted-foreground', bgColor: 'bg-muted dark:bg-white/10', label: 'Normal' },
+  high: { color: 'text-orange-500', bgColor: 'bg-orange-500/10 dark:bg-orange-500/20', label: 'High' },
+  urgent: { color: 'text-rose-500', bgColor: 'bg-rose-500/10 dark:bg-rose-500/20', label: 'Urgent' }
 }
 
 // Order card component
@@ -130,10 +130,10 @@ const OrderCard = memo(function OrderCard({
       whileHover={{ scale: 1.02 }}
       onClick={() => onClick?.(order.id)}
       className={cn(
-        "bg-white rounded-2xl shadow-lg border-2 cursor-pointer transition-all",
+        "bg-card dark:bg-[#121417] text-card-foreground rounded-2xl shadow-sm border-2 cursor-pointer transition-all",
         statusConf.borderColor,
         order.isNew && "ring-2 ring-amber-400 ring-opacity-50",
-        "hover:shadow-xl"
+        "hover:shadow-md"
       )}
     >
       {/* New Order Indicator */}
@@ -141,7 +141,7 @@ const OrderCard = memo(function OrderCard({
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          className="absolute -top-2 -right-2 w-6 h-6 bg-amber-500 rounded-full flex items-center justify-center"
+          className="absolute -top-2 -right-2 w-6 h-6 bg-amber-500 rounded-full flex items-center justify-center shadow-md"
         >
           <Zap className="w-3 h-3 text-white" />
         </motion.div>
@@ -155,8 +155,8 @@ const OrderCard = memo(function OrderCard({
               <StatusIcon className={cn("w-5 h-5", statusConf.color)} />
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900">Order #{order.id}</h3>
-              <div className="flex items-center gap-2 text-sm text-gray-500">
+              <h3 className="font-semibold text-foreground dark:text-white">Order #{order.id}</h3>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Users className="w-3 h-3" />
                 {order.guestName} • Room {order.roomNumber}
               </div>
@@ -171,7 +171,7 @@ const OrderCard = memo(function OrderCard({
             )}>
               {priorityConf.label}
             </div>
-            <div className="text-sm text-gray-500">
+            <div className="text-sm text-muted-foreground">
               {timeElapsed}m ago
             </div>
           </div>
@@ -185,22 +185,22 @@ const OrderCard = memo(function OrderCard({
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.1 + itemIndex * 0.05 }}
-              className="flex items-center justify-between p-2 bg-gray-50 rounded-lg"
+              className="flex items-center justify-between p-2 bg-muted/40 dark:bg-white/[0.03] border border-border/40 rounded-lg"
             >
               <div className="flex-1">
-                <div className="font-medium text-gray-900">{item.name}</div>
-                <div className="text-sm text-gray-500">
+                <div className="font-medium text-foreground dark:text-white text-sm">{item.name}</div>
+                <div className="text-xs text-muted-foreground">
                   × {item.quantity}
                   {item.specialRequests && (
-                    <span className="text-amber-600 ml-2">• {item.specialRequests}</span>
+                    <span className="text-amber-500 ml-2">• {item.specialRequests}</span>
                   )}
                 </div>
               </div>
               <div className={cn(
-                "px-2 py-1 rounded-full text-xs font-medium",
-                item.status === 'ready' ? "bg-green-100 text-green-600" :
-                item.status === 'preparing' ? "bg-orange-100 text-orange-600" :
-                "bg-yellow-100 text-yellow-600"
+                "px-2 py-0.5 rounded-full text-xs font-medium",
+                item.status === 'ready' ? "bg-emerald-500/10 text-emerald-500" :
+                item.status === 'preparing' ? "bg-orange-500/10 text-orange-500" :
+                "bg-amber-500/10 text-amber-500"
               )}>
                 {item.status}
               </div>
@@ -208,7 +208,7 @@ const OrderCard = memo(function OrderCard({
           ))}
           
           {order.items.length > 3 && (
-            <div className="text-sm text-gray-500 text-center py-2">
+            <div className="text-xs text-muted-foreground text-center py-1">
               +{order.items.length - 3} more items
             </div>
           )}
@@ -216,24 +216,24 @@ const OrderCard = memo(function OrderCard({
 
         {/* Special Instructions */}
         {order.specialInstructions && (
-          <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+          <div className="mb-4 p-3 bg-amber-500/10 dark:bg-amber-500/20 border border-amber-500/30 rounded-lg">
             <div className="flex items-center gap-2 mb-1">
-              <AlertCircle className="w-4 h-4 text-amber-600" />
-              <span className="text-sm font-medium text-amber-800">Special Instructions</span>
+              <AlertCircle className="w-4 h-4 text-amber-500" />
+              <span className="text-sm font-medium text-amber-600 dark:text-amber-400">Special Instructions</span>
             </div>
-            <p className="text-sm text-amber-700">{order.specialInstructions}</p>
+            <p className="text-sm text-foreground/80 dark:text-white/80">{order.specialInstructions}</p>
           </div>
         )}
 
         {/* Footer */}
         <div className="flex items-center justify-between">
-          <div className="text-lg font-semibold text-gray-900">
+          <div className="text-lg font-semibold text-foreground dark:text-white">
             ${order.totalAmount.toFixed(2)}
           </div>
           
           <div className="flex items-center gap-2">
-            <Timer className="w-4 h-4 text-gray-500" />
-            <span className="text-sm text-gray-600">{order.estimatedTime} min</span>
+            <Timer className="w-4 h-4 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">{order.estimatedTime} min</span>
           </div>
         </div>
 
@@ -385,60 +385,60 @@ function LiveOrderFeedContent({
     <div className="space-y-6">
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl shadow-md p-4">
+        <div className="bg-card dark:bg-[#121417] text-card-foreground rounded-xl shadow-sm border border-border dark:border-[#1E2227] p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Total Orders</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+              <p className="text-sm text-muted-foreground">Total Orders</p>
+              <p className="text-2xl font-bold text-foreground dark:text-white">{stats.total}</p>
             </div>
-            <Bell className="w-8 h-8 text-gray-400" />
+            <Bell className="w-8 h-8 text-muted-foreground/40" />
           </div>
         </div>
         
-        <div className="bg-yellow-50 rounded-xl shadow-md p-4">
+        <div className="bg-amber-500/10 dark:bg-amber-500/20 border border-amber-500/30 rounded-xl shadow-sm p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-yellow-700">Pending</p>
-              <p className="text-2xl font-bold text-yellow-900">{stats.pending}</p>
+              <p className="text-sm text-amber-600 dark:text-amber-400 font-medium">Pending</p>
+              <p className="text-2xl font-bold text-foreground dark:text-white">{stats.pending}</p>
             </div>
-            <Clock className="w-8 h-8 text-yellow-600" />
+            <Clock className="w-8 h-8 text-amber-500" />
           </div>
         </div>
         
-        <div className="bg-orange-50 rounded-xl shadow-md p-4">
+        <div className="bg-orange-500/10 dark:bg-orange-500/20 border border-orange-500/30 rounded-xl shadow-sm p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-orange-700">Preparing</p>
-              <p className="text-2xl font-bold text-orange-900">{stats.preparing}</p>
+              <p className="text-sm text-orange-600 dark:text-orange-400 font-medium">Preparing</p>
+              <p className="text-2xl font-bold text-foreground dark:text-white">{stats.preparing}</p>
             </div>
-            <ChefHat className="w-8 h-8 text-orange-600" />
+            <ChefHat className="w-8 h-8 text-orange-500" />
           </div>
         </div>
         
-        <div className="bg-green-50 rounded-xl shadow-md p-4">
+        <div className="bg-emerald-500/10 dark:bg-emerald-500/20 border border-emerald-500/30 rounded-xl shadow-sm p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-green-700">Ready</p>
-              <p className="text-2xl font-bold text-green-900">{stats.ready}</p>
+              <p className="text-sm text-emerald-600 dark:text-emerald-400 font-medium">Ready</p>
+              <p className="text-2xl font-bold text-foreground dark:text-white">{stats.ready}</p>
             </div>
-            <CheckCircle className="w-8 h-8 text-green-600" />
+            <CheckCircle className="w-8 h-8 text-emerald-500" />
           </div>
         </div>
       </div>
 
       {/* Orders List */}
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-gray-900">Active Orders ({activeOrders.length})</h3>
+        <h3 className="text-lg font-semibold text-foreground dark:text-white">Active Orders ({activeOrders.length})</h3>
         
         <AnimatePresence mode="popLayout">
           {activeOrders.length === 0 ? (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="text-center py-12 bg-white rounded-xl shadow-md"
+              className="text-center py-12 bg-card dark:bg-[#121417] text-card-foreground rounded-xl border border-border dark:border-[#1E2227] shadow-sm"
             >
-              <Clock className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">No active orders</p>
+              <Clock className="w-12 h-12 text-muted-foreground/30 mx-auto mb-4" />
+              <p className="text-muted-foreground">No active orders</p>
             </motion.div>
           ) : (
             activeOrders.map((order, index) => (

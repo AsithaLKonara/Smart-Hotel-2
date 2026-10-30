@@ -12,7 +12,7 @@ interface GuestPageShellProps {
 
 export function GuestPageShell({ title, subtitle, children, firstName }: GuestPageShellProps) {
   return (
-    <div className="p-6 text-white pb-40">
+    <div className="p-6 text-foreground pb-40">
       <DashboardHeader 
         title={title}
         firstName={firstName}

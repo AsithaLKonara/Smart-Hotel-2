@@ -122,10 +122,10 @@ export function WebcamCapture({ onCapture, onCancel }: WebcamCaptureProps) {
   }
 
   return (
-    <div className="relative w-full rounded-2xl overflow-hidden bg-black/50 border border-white/10 flex flex-col items-center justify-center min-h-[300px]">
+    <div className="relative w-full rounded-2xl overflow-hidden bg-muted/40 dark:bg-black/50 border border-border dark:border-white/10 flex flex-col items-center justify-center min-h-[300px]">
       
       {isInitializing && !error && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-white/50 bg-black/50 z-10">
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground dark:text-white/50 bg-background/80 dark:bg-black/50 z-10 backdrop-blur-xs">
           <Loader2 className="w-6 h-6 animate-spin mb-2" />
           <p className="text-xs">Initializing Camera...</p>
         </div>
@@ -134,12 +134,12 @@ export function WebcamCapture({ onCapture, onCancel }: WebcamCaptureProps) {
       {error ? (
         <div className="p-6 flex flex-col items-center justify-center text-center">
           <div className="w-12 h-12 bg-rose-500/20 rounded-full flex items-center justify-center mb-4">
-            <Camera className="w-6 h-6 text-rose-400" />
+            <Camera className="w-6 h-6 text-rose-500 dark:text-rose-400" />
           </div>
-          <p className="text-sm font-semibold text-rose-400 mb-1">Camera Access Blocked</p>
-          <p className="text-xs text-white/50 mb-6 max-w-[250px]">{error}</p>
+          <p className="text-sm font-semibold text-rose-600 dark:text-rose-400 mb-1">Camera Access Blocked</p>
+          <p className="text-xs text-muted-foreground dark:text-white/50 mb-6 max-w-[250px]">{error}</p>
           <div className="flex gap-3">
-            <button onClick={handleCancel} className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white text-xs rounded-lg transition-all">
+            <button onClick={handleCancel} className="px-4 py-2 bg-secondary hover:bg-secondary/80 text-secondary-foreground text-xs rounded-lg transition-all">
               Cancel
             </button>
             <button onClick={handleManualRetry} className="px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold rounded-lg transition-all">

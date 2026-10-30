@@ -71,7 +71,7 @@ export function SalesPerformanceAreaChart({
               y1={y}
               x2={width - paddingX}
               y2={y}
-              stroke="#1F2329"
+              className="stroke-zinc-200 dark:stroke-[#1F2329]"
               strokeDasharray="3 3"
               strokeWidth="1"
             />
@@ -128,9 +128,9 @@ export function SalesPerformanceAreaChart({
             top: `${(points[hoverIndex].y / height) * 100 - 8}%`,
           }}
         >
-          <div className="bg-[#181A1D] border border-[#2B3037] shadow-2xl rounded-lg p-2 font-mono text-center">
-            <p className="text-[10px] text-zinc-400">{points[hoverIndex].label}</p>
-            <p className="text-xs font-bold text-white tracking-tight">{points[hoverIndex].formatted}</p>
+          <div className="bg-card dark:bg-[#181A1D] border border-border dark:border-[#2B3037] shadow-xl rounded-lg p-2 font-mono text-center">
+            <p className="text-[10px] text-muted-foreground dark:text-zinc-400">{points[hoverIndex].label}</p>
+            <p className="text-xs font-bold text-foreground dark:text-white tracking-tight">{points[hoverIndex].formatted}</p>
           </div>
         </div>
       )}
@@ -138,7 +138,7 @@ export function SalesPerformanceAreaChart({
       {/* X-Axis Labels */}
       <div className="flex justify-between px-4 mt-2">
         {data.map((d, i) => (
-          <span key={i} className="text-[10px] font-mono text-zinc-500">
+          <span key={i} className="text-[10px] font-mono text-muted-foreground dark:text-zinc-500">
             {d.label}
           </span>
         ))}
@@ -183,7 +183,7 @@ export function RevenueBreakdownDonutChart({
             cx="50"
             cy="50"
             r={r}
-            stroke="#1C2025"
+            className="stroke-zinc-200 dark:stroke-[#1C2025]"
             strokeWidth="14"
             fill="none"
           />
@@ -213,8 +213,8 @@ export function RevenueBreakdownDonutChart({
 
         {/* Center Label */}
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
-          <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">{centerTitle}</span>
-          <span className="text-sm font-mono font-bold text-white">{centerValue}</span>
+          <span className="text-[10px] font-mono text-muted-foreground dark:text-zinc-500 uppercase tracking-wider">{centerTitle}</span>
+          <span className="text-sm font-mono font-bold text-foreground dark:text-white">{centerValue}</span>
         </div>
       </div>
 
@@ -224,9 +224,9 @@ export function RevenueBreakdownDonutChart({
           <div key={i} className="flex items-center justify-between sm:justify-start gap-3">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: seg.color }} />
-              <span className="text-xs text-zinc-300 font-medium">{seg.label}</span>
+              <span className="text-xs text-foreground dark:text-zinc-300 font-medium">{seg.label}</span>
             </div>
-            <span className="text-xs font-mono font-semibold text-zinc-400">
+            <span className="text-xs font-mono font-semibold text-muted-foreground dark:text-zinc-400">
               {seg.percentage}%
             </span>
           </div>

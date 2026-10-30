@@ -43,51 +43,52 @@ export function ReceptionSplitContainer({
   return (
     <div className="space-y-4">
       {/* View Mode Controls Toolbar (Only shown if not hidden) */}
+      {/* View Mode Controls Toolbar (Only shown if not hidden) */}
       {!hideToolbar && (
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white/[0.03] border border-white/5 rounded-2xl p-2.5 px-4 backdrop-blur-md">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-card dark:bg-white/[0.03] border border-border dark:border-white/5 rounded-2xl p-2.5 px-4 backdrop-blur-md shadow-sm">
           {/* Left: View Mode Indicator */}
-          <div className="flex items-center space-x-2 text-xs text-white/50">
+          <div className="flex items-center space-x-2 text-xs text-muted-foreground dark:text-white/50">
             <Columns className="w-4 h-4 text-primary" />
-            <span className="font-semibold text-white/80">Dual Command Desk</span>
-            <span className="text-white/20">•</span>
+            <span className="font-semibold text-foreground dark:text-white/80">Dual Command Desk</span>
+            <span className="text-muted-foreground/40 dark:text-white/20">•</span>
             <span>Calendar & Inventory Synced</span>
           </div>
 
           {/* Right: Desktop Split Ratio Switcher */}
-          <div className="hidden xl:flex items-center gap-1 bg-black/40 border border-white/10 p-1 rounded-xl">
-          <button
-            onClick={() => setSplitMode('calendar-focus')}
-            className={cn(
-              "text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg transition-all",
-              splitMode === 'calendar-focus'
-                ? "bg-primary text-black font-black shadow-sm"
-                : "text-white/40 hover:text-white"
-            )}
-            title="Wider Calendar (60/40)"
-          >
-            Calendar Wide
-          </button>
+          <div className="hidden xl:flex items-center gap-1 bg-muted/50 dark:bg-black/40 border border-border dark:border-white/10 p-1 rounded-xl">
+            <button
+              onClick={() => setSplitMode('calendar-focus')}
+              className={cn(
+                "text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg transition-all",
+                splitMode === 'calendar-focus'
+                  ? "bg-primary text-primary-foreground font-black shadow-sm"
+                  : "text-muted-foreground hover:text-foreground dark:text-white/40 dark:hover:text-white"
+              )}
+              title="Wider Calendar (60/40)"
+            >
+              Calendar Wide
+            </button>
 
-          <button
-            onClick={() => setSplitMode('equal')}
-            className={cn(
-              "text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg transition-all",
-              splitMode === 'equal'
-                ? "bg-primary text-black font-black shadow-sm"
-                : "text-white/40 hover:text-white"
-            )}
-            title="Equal Split (50/50)"
-          >
-            50 / 50 Split
-          </button>
+            <button
+              onClick={() => setSplitMode('equal')}
+              className={cn(
+                "text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg transition-all",
+                splitMode === 'equal'
+                  ? "bg-primary text-primary-foreground font-black shadow-sm"
+                  : "text-muted-foreground hover:text-foreground dark:text-white/40 dark:hover:text-white"
+              )}
+              title="Equal Split (50/50)"
+            >
+              50 / 50 Split
+            </button>
 
             <button
               onClick={() => setSplitMode('matrix-focus')}
               className={cn(
                 "text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg transition-all",
                 splitMode === 'matrix-focus'
-                  ? "bg-primary text-black font-black shadow-sm"
-                  : "text-white/40 hover:text-white"
+                  ? "bg-primary text-primary-foreground font-black shadow-sm"
+                  : "text-muted-foreground hover:text-foreground dark:text-white/40 dark:hover:text-white"
               )}
               title="Wider Room Matrix (40/60)"
             >
@@ -96,14 +97,14 @@ export function ReceptionSplitContainer({
           </div>
 
           {/* Mobile / Tablet Segmented Tabs (Displayed when < xl) */}
-          <div className="flex xl:hidden w-full sm:w-auto items-center gap-1 bg-black/40 border border-white/10 p-1 rounded-xl">
+          <div className="flex xl:hidden w-full sm:w-auto items-center gap-1 bg-muted/50 dark:bg-black/40 border border-border dark:border-white/10 p-1 rounded-xl">
             <button
               onClick={() => setMobileActiveTab('calendar')}
               className={cn(
                 "flex-1 sm:flex-none text-xs font-bold px-3 py-1.5 rounded-lg transition-all flex items-center justify-center gap-1.5",
                 mobileActiveTab === 'calendar'
-                  ? "bg-primary text-black font-black"
-                  : "text-white/40 hover:text-white"
+                  ? "bg-primary text-primary-foreground font-black shadow-sm"
+                  : "text-muted-foreground hover:text-foreground dark:text-white/40 dark:hover:text-white"
               )}
             >
               <CalendarIcon className="w-3.5 h-3.5" />
@@ -115,8 +116,8 @@ export function ReceptionSplitContainer({
               className={cn(
                 "flex-1 sm:flex-none text-xs font-bold px-3 py-1.5 rounded-lg transition-all flex items-center justify-center gap-1.5",
                 mobileActiveTab === 'matrix'
-                  ? "bg-primary text-black font-black"
-                  : "text-white/40 hover:text-white"
+                  ? "bg-primary text-primary-foreground font-black shadow-sm"
+                  : "text-muted-foreground hover:text-foreground dark:text-white/40 dark:hover:text-white"
               )}
             >
               <Bed className="w-3.5 h-3.5" />
@@ -128,14 +129,14 @@ export function ReceptionSplitContainer({
 
       {/* Standalone Mobile / Tablet Segmented Tabs if main toolbar was hidden into unified bar */}
       {hideToolbar && (
-        <div className="flex xl:hidden w-full items-center gap-1 bg-black/40 border border-white/10 p-1 rounded-xl">
+        <div className="flex xl:hidden w-full items-center gap-1 bg-muted/50 dark:bg-black/40 border border-border dark:border-white/10 p-1 rounded-xl">
           <button
             onClick={() => setMobileActiveTab('calendar')}
             className={cn(
               "flex-1 text-xs font-bold px-3 py-1.5 rounded-lg transition-all flex items-center justify-center gap-1.5",
               mobileActiveTab === 'calendar'
-                ? "bg-primary text-black font-black"
-                : "text-white/40 hover:text-white"
+                ? "bg-primary text-primary-foreground font-black shadow-sm"
+                : "text-muted-foreground hover:text-foreground dark:text-white/40 dark:hover:text-white"
             )}
           >
             <CalendarIcon className="w-3.5 h-3.5" />
@@ -147,8 +148,8 @@ export function ReceptionSplitContainer({
             className={cn(
               "flex-1 text-xs font-bold px-3 py-1.5 rounded-lg transition-all flex items-center justify-center gap-1.5",
               mobileActiveTab === 'matrix'
-                ? "bg-primary text-black font-black"
-                : "text-white/40 hover:text-white"
+                ? "bg-primary text-primary-foreground font-black shadow-sm"
+                : "text-muted-foreground hover:text-foreground dark:text-white/40 dark:hover:text-white"
             )}
           >
             <Bed className="w-3.5 h-3.5" />

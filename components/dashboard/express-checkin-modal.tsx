@@ -93,20 +93,20 @@ export function ExpressCheckInModal({ rooms, onClose, onCreateWalkIn }: ExpressC
   }
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-      <div className="relative w-full max-w-2xl bg-[#0d0d0d] border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+      <div className="relative w-full max-w-2xl bg-card dark:bg-[#0d0d0d] border border-border dark:border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden text-card-foreground">
         {/* Top Accent */}
         <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-primary to-transparent" />
         
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-white/5 bg-white/[0.02]">
+        <div className="flex items-center justify-between p-5 border-b border-border dark:border-white/5 bg-muted/40 dark:bg-white/[0.02]">
           <div>
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
-              Express Check-in <span className="px-2 py-0.5 rounded bg-white/10 text-xs font-mono text-white/50 border border-white/5">Alt+C</span>
+            <h2 className="text-xl font-bold text-foreground dark:text-white flex items-center gap-2">
+              Express Check-in <span className="px-2 py-0.5 rounded bg-muted dark:bg-white/10 text-xs font-mono text-muted-foreground dark:text-white/50 border border-border dark:border-white/5">Alt+C</span>
             </h2>
-            <p className="text-sm text-white/40 mt-1">Walk-in reservation workflow</p>
+            <p className="text-sm text-muted-foreground dark:text-white/40 mt-1">Walk-in reservation workflow</p>
           </div>
-          <button onClick={onClose} className="p-2 rounded-lg hover:bg-white/10 text-white/50 hover:text-white transition-colors">
+          <button onClick={onClose} className="p-2 rounded-lg hover:bg-muted dark:hover:bg-white/10 text-muted-foreground hover:text-foreground dark:text-white/50 dark:hover:text-white transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -116,17 +116,17 @@ export function ExpressCheckInModal({ rooms, onClose, onCreateWalkIn }: ExpressC
           
           {/* Room Selection */}
           <div className="space-y-3">
-            <label className="text-xs font-bold text-white/40 uppercase tracking-widest">1. Select Room</label>
+            <label className="text-xs font-bold text-muted-foreground dark:text-white/40 uppercase tracking-widest">1. Select Room</label>
             {!selectedRoom ? (
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground dark:text-white/30" />
                 <input
                   ref={inputRef}
                   type="text"
                   placeholder="Type room number to search..."
                   value={roomQuery}
                   onChange={(e) => setRoomQuery(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:border-primary/50"
+                  className="w-full bg-background dark:bg-white/5 border border-input dark:border-white/10 rounded-xl pl-10 pr-4 py-3 text-sm text-foreground dark:text-white placeholder-muted-foreground dark:placeholder-white/30 focus:outline-none focus:border-primary/50"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && availableRooms.length > 0) {
                       setSelectedRoom(availableRooms[0])
@@ -135,21 +135,21 @@ export function ExpressCheckInModal({ rooms, onClose, onCreateWalkIn }: ExpressC
                 />
                 
                 {roomQuery && (
-                  <div className="absolute z-10 w-full mt-2 bg-[#1a1a1a] border border-white/10 rounded-xl max-h-48 overflow-y-auto shadow-xl">
+                  <div className="absolute z-10 w-full mt-2 bg-popover dark:bg-[#1a1a1a] border border-border dark:border-white/10 rounded-xl max-h-48 overflow-y-auto shadow-xl">
                     {availableRooms.length === 0 ? (
-                      <div className="p-4 text-sm text-white/40 text-center">No available rooms match</div>
+                      <div className="p-4 text-sm text-muted-foreground dark:text-white/40 text-center">No available rooms match</div>
                     ) : (
                       availableRooms.map((room, idx) => (
                         <button
                           key={room.id}
                           onClick={() => setSelectedRoom(room)}
                           className={cn(
-                            "w-full text-left px-4 py-3 text-sm hover:bg-white/5 flex items-center justify-between border-b border-white/5 last:border-0",
-                            idx === 0 && "bg-white/5"
+                            "w-full text-left px-4 py-3 text-sm hover:bg-muted dark:hover:bg-white/5 flex items-center justify-between border-b border-border dark:border-white/5 last:border-0",
+                            idx === 0 && "bg-muted/50 dark:bg-white/5"
                           )}
                         >
-                          <span className="font-bold text-white">Room {room.number}</span>
-                          <span className="text-xs text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded">Available</span>
+                          <span className="font-bold text-foreground dark:text-white">Room {room.number}</span>
+                          <span className="text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded">Available</span>
                         </button>
                       ))
                     )}
@@ -159,12 +159,12 @@ export function ExpressCheckInModal({ rooms, onClose, onCreateWalkIn }: ExpressC
             ) : (
               <div className="flex items-center justify-between bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-xl">
                 <div>
-                  <p className="text-emerald-400 text-xs font-bold uppercase tracking-widest mb-1">Selected Room</p>
-                  <p className="text-white font-bold text-lg">{selectedRoom.number}</p>
+                  <p className="text-emerald-600 dark:text-emerald-400 text-xs font-bold uppercase tracking-widest mb-1">Selected Room</p>
+                  <p className="text-foreground dark:text-white font-bold text-lg">{selectedRoom.number}</p>
                 </div>
                 <button 
                   onClick={() => { setSelectedRoom(null); setRoomQuery(''); setTimeout(() => inputRef.current?.focus(), 50) }}
-                  className="text-xs text-white/50 hover:text-white underline"
+                  className="text-xs text-muted-foreground hover:text-foreground dark:text-white/50 dark:hover:text-white underline"
                 >
                   Change
                 </button>
@@ -174,52 +174,52 @@ export function ExpressCheckInModal({ rooms, onClose, onCreateWalkIn }: ExpressC
 
           {/* Guest Details */}
           <div className={cn("space-y-4 transition-opacity duration-300", !selectedRoom ? "opacity-30 pointer-events-none" : "opacity-100")}>
-            <label className="text-xs font-bold text-white/40 uppercase tracking-widest">2. Guest Details</label>
+            <label className="text-xs font-bold text-muted-foreground dark:text-white/40 uppercase tracking-widest">2. Guest Details</label>
             
             <div className="grid grid-cols-2 gap-4">
               <div className="relative col-span-2">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground dark:text-white/30" />
                 <input
                   type="text"
                   placeholder="Full Name *"
                   value={guestName}
                   onChange={(e) => setGuestName(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:border-primary/50"
+                  className="w-full bg-background dark:bg-white/5 border border-input dark:border-white/10 rounded-xl pl-10 pr-4 py-3 text-sm text-foreground dark:text-white placeholder-muted-foreground dark:placeholder-white/30 focus:outline-none focus:border-primary/50"
                   autoFocus={!!selectedRoom}
                 />
               </div>
 
               <div className="relative">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground dark:text-white/30" />
                 <input
                   type="text"
                   placeholder="Phone"
                   value={guestPhone}
                   onChange={(e) => setGuestPhone(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:border-primary/50"
+                  className="w-full bg-background dark:bg-white/5 border border-input dark:border-white/10 rounded-xl pl-10 pr-4 py-3 text-sm text-foreground dark:text-white placeholder-muted-foreground dark:placeholder-white/30 focus:outline-none focus:border-primary/50"
                 />
               </div>
 
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground dark:text-white/30" />
                 <input
                   type="email"
                   placeholder="Email (Optional)"
                   value={guestEmail}
                   onChange={(e) => setGuestEmail(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:border-primary/50"
+                  className="w-full bg-background dark:bg-white/5 border border-input dark:border-white/10 rounded-xl pl-10 pr-4 py-3 text-sm text-foreground dark:text-white placeholder-muted-foreground dark:placeholder-white/30 focus:outline-none focus:border-primary/50"
                 />
               </div>
               
               <div className="relative col-span-2">
-                <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground dark:text-white/30" />
                 <select
                   value={nights}
                   onChange={(e) => setNights(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-sm text-white focus:outline-none focus:border-primary/50 appearance-none"
+                  className="w-full bg-background dark:bg-white/5 border border-input dark:border-white/10 rounded-xl pl-10 pr-4 py-3 text-sm text-foreground dark:text-white focus:outline-none focus:border-primary/50 appearance-none"
                 >
                   {[1, 2, 3, 4, 5, 7, 10, 14, 21].map(n => (
-                    <option key={n} value={n} className="bg-[#1a1a1a]">{n} {n === 1 ? 'Night' : 'Nights'}</option>
+                    <option key={n} value={n} className="bg-popover dark:bg-[#1a1a1a] text-popover-foreground dark:text-white">{n} {n === 1 ? 'Night' : 'Nights'}</option>
                   ))}
                 </select>
               </div>
@@ -229,14 +229,14 @@ export function ExpressCheckInModal({ rooms, onClose, onCreateWalkIn }: ExpressC
         </div>
 
         {/* Footer */}
-        <div className="p-5 border-t border-white/5 bg-white/[0.02] flex items-center justify-between">
-          <p className="text-xs text-white/30 font-mono">
-            Press <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-white/70 mx-1 border border-white/10">Ctrl</kbd> + <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-white/70 mx-1 border border-white/10">Enter</kbd> to submit
+        <div className="p-5 border-t border-border dark:border-white/5 bg-muted/40 dark:bg-white/[0.02] flex items-center justify-between">
+          <p className="text-xs text-muted-foreground dark:text-white/30 font-mono">
+            Press <kbd className="px-1.5 py-0.5 rounded bg-muted dark:bg-white/10 text-foreground dark:text-white/70 mx-1 border border-border dark:border-white/10">Ctrl</kbd> + <kbd className="px-1.5 py-0.5 rounded bg-muted dark:bg-white/10 text-foreground dark:text-white/70 mx-1 border border-border dark:border-white/10">Enter</kbd> to submit
           </p>
           <button
             disabled={!selectedRoom || !guestName || isSubmitting}
             onClick={handleSubmit}
-            className="flex items-center gap-2 px-6 py-2.5 bg-primary hover:bg-primary/90 disabled:opacity-50 text-black font-bold rounded-xl transition-all shadow-lg shadow-primary/20 text-sm"
+            className="flex items-center gap-2 px-6 py-2.5 bg-primary hover:bg-primary/90 disabled:opacity-50 text-primary-foreground font-bold rounded-xl transition-all shadow-lg shadow-primary/20 text-sm"
           >
             {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCheck className="w-4 h-4" />}
             Confirm Walk-in

@@ -14,7 +14,7 @@ export function AdminLayoutShell({ children }: { children: React.ReactNode }) {
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
 
   return (
-    <div className="min-h-screen bg-[#090A0C] text-zinc-100 flex flex-col font-sans selection:bg-zinc-800 selection:text-white print:bg-white">
+    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans selection:bg-amber-500/20 selection:text-amber-500 print:bg-white transition-colors duration-200">
       <div className="print:hidden">
         <DashboardSidebar />
       </div>

@@ -83,15 +83,15 @@ export function DiningModule({ roomNumber = "101", guestInfo }: DiningModuleProp
   return (
     <div className="space-y-12 pb-20">
       {/* Module Navigation */}
-      <div className="flex flex-col md:flex-row gap-6 items-center justify-between bg-white/[0.02] border border-white/5 p-4 rounded-[32px] backdrop-blur-xl">
-        <div className="flex gap-2 p-1 bg-black/40 rounded-2xl border border-white/5 w-full md:w-auto">
+      <div className="flex flex-col md:flex-row gap-6 items-center justify-between bg-card dark:bg-white/[0.02] border border-border dark:border-white/5 p-4 rounded-[32px] backdrop-blur-xl shadow-sm">
+        <div className="flex gap-2 p-1 bg-muted/50 dark:bg-black/40 rounded-2xl border border-border dark:border-white/5 w-full md:w-auto">
           <button
             onClick={() => setActiveTab('room-service')}
             className={cn(
               "flex-1 md:w-48 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-3",
               activeTab === 'room-service' 
-                ? "bg-primary text-black font-black shadow-luxury" 
-                : "text-white/40 hover:text-white hover:bg-white/5"
+                ? "bg-primary text-primary-foreground font-black shadow-sm" 
+                : "text-muted-foreground hover:text-foreground dark:hover:text-white hover:bg-muted dark:hover:bg-white/5"
             )}
           >
             <UtensilsCrossed className="w-4 h-4" />
@@ -102,8 +102,8 @@ export function DiningModule({ roomNumber = "101", guestInfo }: DiningModuleProp
             className={cn(
               "flex-1 md:w-48 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-3",
               activeTab === 'table-booking' 
-                ? "bg-primary text-black font-black shadow-luxury" 
-                : "text-white/40 hover:text-white hover:bg-white/5"
+                ? "bg-primary text-primary-foreground font-black shadow-sm" 
+                : "text-muted-foreground hover:text-foreground dark:hover:text-white hover:bg-muted dark:hover:bg-white/5"
             )}
           >
             <CalendarDays className="w-4 h-4" />
@@ -111,24 +111,24 @@ export function DiningModule({ roomNumber = "101", guestInfo }: DiningModuleProp
           </button>
         </div>
 
-        <div className="flex items-center gap-6 px-6 py-2 border-l border-white/5 hidden md:flex">
+        <div className="flex items-center gap-6 px-6 py-2 border-l border-border dark:border-white/5 hidden md:flex">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
               <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             </div>
             <div>
-              <p className="text-[8px] font-black uppercase tracking-widest text-white/20">Kitchen Status</p>
-              <p className="text-[10px] font-bold text-emerald-400">Operational</p>
+              <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground">Kitchen Status</p>
+              <p className="text-[10px] font-bold text-emerald-500">Operational</p>
             </div>
           </div>
-          <div className="h-8 w-px bg-white/5" />
+          <div className="h-8 w-px bg-border dark:bg-white/5" />
           <div className="flex items-center gap-3">
              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
                 <Clock className="w-4 h-4 text-primary" />
              </div>
              <div>
-                <p className="text-[8px] font-black uppercase tracking-widest text-white/20">Current Delay</p>
-                <p className="text-[10px] font-bold text-white">~15-20 Mins</p>
+                <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground">Current Delay</p>
+                <p className="text-[10px] font-bold text-foreground dark:text-white">~15-20 Mins</p>
              </div>
           </div>
         </div>
@@ -155,11 +155,11 @@ export function DiningModule({ roomNumber = "101", guestInfo }: DiningModuleProp
             className="grid grid-cols-1 lg:grid-cols-2 gap-8"
           >
             {venues.map((venue) => (
-              <Card key={venue.id} className="bg-[#0c0c0c] border-white/5 rounded-[40px] overflow-hidden group hover:border-primary/30 transition-all duration-500 shadow-2xl relative">
+              <Card key={venue.id} className="bg-card dark:bg-[#0c0c0c] border border-border dark:border-white/5 rounded-[40px] overflow-hidden group hover:border-primary/50 transition-all duration-500 shadow-md relative">
                 <div className="absolute top-6 right-6 z-20">
-                  <div className="bg-black/60 backdrop-blur-md border border-white/10 rounded-full px-4 py-1.5 flex items-center gap-2">
+                  <div className="bg-background/80 dark:bg-black/60 backdrop-blur-md border border-border dark:border-white/10 rounded-full px-4 py-1.5 flex items-center gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
-                    <span className="text-[8px] font-black uppercase tracking-widest text-white/80">Available Today</span>
+                    <span className="text-[8px] font-black uppercase tracking-widest text-foreground dark:text-white/80">Available Today</span>
                   </div>
                 </div>
 
@@ -171,39 +171,39 @@ export function DiningModule({ roomNumber = "101", guestInfo }: DiningModuleProp
                     className="object-cover group-hover:scale-110 transition-transform duration-1000" 
                     unoptimized
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0c0c0c] via-[#0c0c0c]/40 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-card dark:from-[#0c0c0c] via-card/40 dark:via-[#0c0c0c]/40 to-transparent" />
                   <div className="absolute bottom-8 left-8 space-y-1">
                     <p className="text-[10px] font-black text-primary uppercase tracking-[0.3em]">{venue.subtitle}</p>
-                    <h3 className="text-3xl font-serif font-bold text-white tracking-tight">{venue.name}</h3>
+                    <h3 className="text-3xl font-serif font-bold text-foreground dark:text-white tracking-tight">{venue.name}</h3>
                   </div>
                 </div>
 
                 <div className="p-8 space-y-6">
-                  <p className="text-sm text-white/40 leading-relaxed font-medium italic">
+                  <p className="text-sm text-muted-foreground leading-relaxed font-medium italic">
                     "{venue.description}"
                   </p>
 
                   <div className="flex flex-wrap gap-2">
                     {venue.tags.map((tag, i) => (
-                      <Badge key={i} variant="outline" className="border-white/5 bg-white/[0.02] text-white/40 text-[8px] uppercase tracking-widest px-3 py-1">
+                      <Badge key={i} variant="outline" className="border-border dark:border-white/5 bg-muted/30 dark:bg-white/[0.02] text-muted-foreground text-[8px] uppercase tracking-widest px-3 py-1">
                         {tag}
                       </Badge>
                     ))}
                   </div>
 
-                  <div className="grid grid-cols-2 gap-6 py-6 border-y border-white/5">
+                  <div className="grid grid-cols-2 gap-6 py-6 border-y border-border dark:border-white/5">
                     <div className="flex items-center gap-3">
                       <Clock className="w-4 h-4 text-primary" />
                       <div>
-                        <p className="text-[8px] uppercase tracking-widest text-white/20 font-black">Service Hours</p>
-                        <p className="text-xs font-bold text-white">{venue.hours}</p>
+                        <p className="text-[8px] uppercase tracking-widest text-muted-foreground font-black">Service Hours</p>
+                        <p className="text-xs font-bold text-foreground dark:text-white">{venue.hours}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
                       <MapPin className="w-4 h-4 text-primary" />
                       <div>
-                        <p className="text-[8px] uppercase tracking-widest text-white/20 font-black">Level</p>
-                        <p className="text-xs font-bold text-white">{venue.location}</p>
+                        <p className="text-[8px] uppercase tracking-widest text-muted-foreground font-black">Level</p>
+                        <p className="text-xs font-bold text-foreground dark:text-white">{venue.location}</p>
                       </div>
                     </div>
                   </div>
@@ -211,14 +211,14 @@ export function DiningModule({ roomNumber = "101", guestInfo }: DiningModuleProp
                   <div className="grid grid-cols-2 gap-4 pt-2">
                     <Button 
                       onClick={() => handleBooking(venue.name)}
-                      className="h-14 bg-primary hover:bg-primary/90 text-black rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-luxury transition-all active:scale-95"
+                      className="h-14 bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-sm transition-all active:scale-95"
                     >
                       Reserve Table
                     </Button>
                     <Button 
                       onClick={() => handleViewMenu(venue.name)}
                       variant="outline" 
-                      className="h-14 border-white/10 bg-white/5 hover:bg-white/10 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all"
+                      className="h-14 border border-border dark:border-white/10 bg-secondary/80 hover:bg-secondary text-foreground dark:bg-white/5 dark:hover:bg-white/10 dark:text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all"
                     >
                       View Menu
                     </Button>
@@ -228,17 +228,17 @@ export function DiningModule({ roomNumber = "101", guestInfo }: DiningModuleProp
             ))}
 
             {/* Special Collection Promotion */}
-            <Card className="lg:col-span-2 bg-gradient-to-br from-primary/10 via-[#0c0c0c] to-[#0c0c0c] border-primary/20 rounded-[40px] p-10 flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden group">
+            <Card className="lg:col-span-2 bg-gradient-to-br from-primary/10 via-card dark:via-[#0c0c0c] to-card dark:to-[#0c0c0c] border border-primary/20 rounded-[40px] p-10 flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden group shadow-md">
                <div className="absolute -right-20 -bottom-20 w-80 h-80 bg-primary/10 blur-[100px] rounded-full group-hover:bg-primary/20 transition-all duration-1000" />
                <div className="relative z-10 space-y-4 max-w-xl text-center md:text-left">
                   <div className="inline-flex items-center gap-3 px-4 py-1.5 bg-primary/20 rounded-full border border-primary/30">
                     <Sparkles className="w-4 h-4 text-primary" />
                     <span className="text-[10px] font-black uppercase tracking-widest text-primary">Private Collection</span>
                   </div>
-                  <h2 className="text-3xl md:text-4xl font-serif font-bold text-white tracking-tight">The Sommelier's Reserve</h2>
-                  <p className="text-sm text-white/40 leading-relaxed">Experience our exclusive vault of vintage selections and limited-release distillates. Personal tastings available upon request.</p>
+                  <h2 className="text-3xl md:text-4xl font-serif font-bold text-foreground dark:text-white tracking-tight">The Sommelier's Reserve</h2>
+                  <p className="text-sm text-muted-foreground leading-relaxed">Experience our exclusive vault of vintage selections and limited-release distillates. Personal tastings available upon request.</p>
                </div>
-               <Button className="relative z-10 h-16 px-10 bg-white text-black hover:bg-white/90 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl transition-all active:scale-95">
+               <Button className="relative z-10 h-16 px-10 bg-foreground text-background hover:bg-foreground/90 dark:bg-white dark:text-black dark:hover:bg-white/90 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg transition-all active:scale-95">
                   Book Experience
                </Button>
             </Card>

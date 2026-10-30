@@ -105,17 +105,17 @@ function RevenueSummaryCard({
   return (
     <motion.div
       whileHover={{ scale: 1.02 }}
-      className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6"
+      className="bg-card dark:bg-[#121417] text-card-foreground rounded-2xl shadow-sm border border-border dark:border-[#1E2227] p-6"
     >
       <div className="flex items-center justify-between mb-4">
-        <div className="p-3 bg-gradient-to-br from-amber-100 to-amber-200 rounded-xl">
-          <Icon className="w-6 h-6 text-amber-600" />
+        <div className="p-3 bg-amber-500/10 dark:bg-amber-500/20 rounded-xl">
+          <Icon className="w-6 h-6 text-amber-500" />
         </div>
         <div className={cn(
           "flex items-center gap-1 text-sm font-medium",
-          trend === 'up' && "text-green-600",
-          trend === 'down' && "text-red-600",
-          trend === 'stable' && "text-gray-600"
+          trend === 'up' && "text-emerald-500",
+          trend === 'down' && "text-rose-500",
+          trend === 'stable' && "text-muted-foreground"
         )}>
           {trend === 'up' && <TrendingUp className="w-4 h-4" />}
           {trend === 'down' && <TrendingDown className="w-4 h-4" />}
@@ -123,9 +123,9 @@ function RevenueSummaryCard({
         </div>
       </div>
       
-      <h3 className="text-2xl font-bold text-gray-900 mb-1">{value}</h3>
-      <p className="text-gray-600">{title}</p>
-      {subtitle && <p className="text-sm text-gray-500 mt-1">{subtitle}</p>}
+      <h3 className="text-2xl font-bold text-foreground dark:text-white mb-1">{value}</h3>
+      <p className="text-muted-foreground text-sm">{title}</p>
+      {subtitle && <p className="text-xs text-muted-foreground/80 mt-1">{subtitle}</p>}
     </motion.div>
   )
 }
@@ -135,10 +135,10 @@ function RoomTypeBreakdown({ data }: { data: RevenueBreakdown[] }) {
   const total = data.reduce((sum, item) => sum + item.revenue, 0)
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+    <div className="bg-card dark:bg-[#121417] text-card-foreground rounded-2xl shadow-sm border border-border dark:border-[#1E2227] p-6">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-gray-900">Revenue by Room Type</h3>
-        <PieChart className="w-5 h-5 text-blue-600" />
+        <h3 className="text-lg font-semibold text-foreground dark:text-white">Revenue by Room Type</h3>
+        <PieChart className="w-5 h-5 text-blue-500" />
       </div>
       
       <div className="space-y-4">
@@ -151,13 +151,13 @@ function RoomTypeBreakdown({ data }: { data: RevenueBreakdown[] }) {
             className="flex items-center justify-between"
           >
             <div className="flex items-center gap-3">
-              <div className={cn("w-4 h-4 rounded-full", roomTypes[index]?.color || 'bg-gray-500')} />
-              <span className="font-medium text-gray-900">{item.roomType}</span>
+              <div className={cn("w-4 h-4 rounded-full", roomTypes[index]?.color || 'bg-muted')} />
+              <span className="font-medium text-foreground dark:text-white">{item.roomType}</span>
             </div>
             
             <div className="text-right">
-              <div className="font-semibold text-gray-900">${item.revenue.toLocaleString()}</div>
-              <div className="text-sm text-gray-500">{item.percentage.toFixed(1)}%</div>
+              <div className="font-semibold text-foreground dark:text-white">${item.revenue.toLocaleString()}</div>
+              <div className="text-sm text-muted-foreground">{item.percentage.toFixed(1)}%</div>
             </div>
           </motion.div>
         ))}
@@ -166,12 +166,12 @@ function RoomTypeBreakdown({ data }: { data: RevenueBreakdown[] }) {
         <div className="mt-6 space-y-2">
           {data.map((item, index) => (
             <div key={item.roomType} className="relative">
-              <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="w-full bg-muted dark:bg-white/10 rounded-full h-2">
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${item.percentage}%` }}
                   transition={{ duration: 1, delay: index * 0.1 }}
-                  className={cn("h-2 rounded-full", roomTypes[index]?.color || 'bg-gray-500')}
+                  className={cn("h-2 rounded-full", roomTypes[index]?.color || 'bg-primary')}
                 />
               </div>
             </div>
@@ -191,18 +191,18 @@ function TimeRangeSelector({
   onRangeChange: (range: string) => void
 }) {
   return (
-    <div className="flex gap-2 overflow-x-auto">
+    <div className="flex gap-2 overflow-x-auto pb-1">
       {timeRanges.map((range) => (
         <motion.button
           key={range.value}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
           onClick={() => onRangeChange(range.value)}
           className={cn(
-            "flex-shrink-0 px-4 py-2 rounded-lg border-2 transition-all font-medium",
+            "flex-shrink-0 px-4 py-2 rounded-xl border transition-all font-medium text-sm",
             selectedRange === range.value
-              ? "border-amber-500 bg-amber-500 text-white shadow-lg"
-              : "border-gray-200 bg-white text-gray-700 hover:border-amber-300"
+              ? "border-amber-500 bg-amber-500 text-white shadow-sm"
+              : "border-border bg-card dark:bg-white/5 text-muted-foreground hover:text-foreground hover:border-amber-400"
           )}
         >
           {range.label}
@@ -327,25 +327,24 @@ function RevenueAnalyticsContent({ onExport }: RevenueAnalyticsProps) {
   }, [selectedRange])
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-blue-50">
+      <div className="min-h-screen bg-background text-foreground">
         <div className="container mx-auto px-4 py-16 text-center">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-2">Analytics Unavailable</h2>
-          <p className="text-gray-600">{error}</p>
+          <h2 className="text-2xl font-semibold text-foreground dark:text-white mb-2">Analytics Unavailable</h2>
+          <p className="text-muted-foreground">{error}</p>
         </div>
       </div>
     )
   }
 
-
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-blue-50">
+      <div className="min-h-screen bg-background text-foreground">
         <div className="container mx-auto px-4 py-8">
           <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-1/3 mb-8"></div>
+            <div className="h-8 bg-muted rounded w-1/3 mb-8"></div>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
               {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="h-32 bg-gray-200 rounded-xl"></div>
+                <div key={i} className="h-32 bg-muted rounded-xl"></div>
               ))}
             </div>
           </div>
@@ -355,7 +354,7 @@ function RevenueAnalyticsContent({ onExport }: RevenueAnalyticsProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-blue-50">
+    <div className="min-h-screen bg-background text-foreground">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <motion.div
@@ -365,8 +364,8 @@ function RevenueAnalyticsContent({ onExport }: RevenueAnalyticsProps) {
         >
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Revenue Analytics</h1>
-              <p className="text-gray-600">Comprehensive financial insights and performance metrics</p>
+              <h1 className="text-3xl font-bold text-foreground dark:text-white mb-2">Revenue Analytics</h1>
+              <p className="text-muted-foreground">Comprehensive financial insights and performance metrics</p>
             </div>
             
             <div className="flex gap-3">

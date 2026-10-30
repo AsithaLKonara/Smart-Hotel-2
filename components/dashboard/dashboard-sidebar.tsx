@@ -168,17 +168,17 @@ export default function DashboardSidebar() {
   }, {} as Record<string, NavItem[]>)
 
   const SidebarContent = () => (
-    <div className="flex flex-col h-full bg-[#090A0C]">
+    <div className="flex flex-col h-full bg-card dark:bg-[#090A0C] border-r border-border dark:border-[#1C2025] transition-colors duration-200">
       {/* Brand Header */}
-      <div className={cn("h-[64px] px-4 border-b border-[#1C2025] flex items-center justify-between shrink-0", isCollapsed && "px-2 justify-center")}>
+      <div className={cn("h-[64px] px-4 border-b border-border dark:border-[#1C2025] flex items-center justify-between shrink-0", isCollapsed && "px-2 justify-center")}>
         <Link href="/" className="flex items-center space-x-2.5 overflow-hidden">
           <div className="flex-shrink-0 w-8 h-8 bg-zinc-900 border border-zinc-700/60 rounded-lg flex items-center justify-center shadow-sm">
             <span className="text-white font-mono font-black text-xs">SH</span>
           </div>
           {!isCollapsed && (
             <div className="flex items-center gap-2 transition-all duration-300">
-              <span className="text-sm font-bold text-white tracking-tight">SmartHotel</span>
-              <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-violet-500/10 text-violet-400 border border-violet-500/30 uppercase tracking-wider">
+              <span className="text-sm font-bold text-zinc-900 dark:text-white tracking-tight">SmartHotel</span>
+              <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-violet-500/10 text-violet-500 dark:text-violet-400 border border-violet-500/30 uppercase tracking-wider">
                 ELITE
               </span>
             </div>
@@ -187,17 +187,17 @@ export default function DashboardSidebar() {
       </div>
 
       {/* User Info / Property Switcher */}
-      <div className={cn("p-3 border-b border-[#1C2025] transition-all duration-300 shrink-0", isCollapsed && "p-2")}>
-        <div className={cn("flex items-center space-x-2.5 p-2 rounded-lg bg-[#121417] border border-[#1E2227]", isCollapsed && "p-1 justify-center")}>
+      <div className={cn("p-3 border-b border-border dark:border-[#1C2025] transition-all duration-300 shrink-0", isCollapsed && "p-2")}>
+        <div className={cn("flex items-center space-x-2.5 p-2 rounded-lg bg-zinc-100 dark:bg-[#121417] border border-zinc-200 dark:border-[#1E2227]", isCollapsed && "p-1 justify-center")}>
           <div className="w-7 h-7 bg-zinc-800 border border-zinc-700 rounded-full flex items-center justify-center flex-shrink-0 text-white font-mono font-bold text-xs">
             {session?.user?.name?.charAt(0).toUpperCase() || 'U'}
           </div>
           {!isCollapsed && (
             <div className="flex-1 min-w-0 transition-all duration-300">
-              <p className="text-xs font-semibold text-white truncate leading-tight">{session?.user?.name || 'Administrator'}</p>
+              <p className="text-xs font-semibold text-zinc-900 dark:text-white truncate leading-tight">{session?.user?.name || 'Administrator'}</p>
               <div className="flex items-center gap-1.5 mt-0.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <p className="text-[10px] text-zinc-400 truncate uppercase font-mono font-medium">{rawRole || 'Staff'}</p>
+                <p className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate uppercase font-mono font-medium">{rawRole || 'Staff'}</p>
               </div>
             </div>
           )}
@@ -228,12 +228,12 @@ export default function DashboardSidebar() {
                   className={cn(
                     "flex items-center space-x-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-all group relative",
                     isActive 
-                      ? 'bg-[#181A1D] text-white border border-[#2B3037] shadow-sm font-semibold' 
-                      : 'text-zinc-400 hover:text-zinc-200 hover:bg-[#131518]',
+                      ? 'bg-zinc-200 dark:bg-[#181A1D] text-zinc-900 dark:text-white border border-zinc-300 dark:border-[#2B3037] shadow-sm font-semibold' 
+                      : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-[#131518]',
                     isCollapsed && "justify-center px-0"
                   )}
                 >
-                  <Icon className={cn("w-4 h-4 flex-shrink-0", isActive ? "text-white" : "text-zinc-500 group-hover:text-zinc-300")} />
+                  <Icon className={cn("w-4 h-4 flex-shrink-0", isActive ? "text-zinc-900 dark:text-white" : "text-zinc-400 dark:text-zinc-500 group-hover:text-zinc-700 dark:group-hover:text-zinc-300")} />
                   {!isCollapsed && <span className="truncate">{item.name}</span>}
                 </Link>
               )
@@ -249,13 +249,13 @@ export default function DashboardSidebar() {
             <div key={groupName} className="space-y-1">
               <button 
                 onClick={() => toggleGroup(groupName)}
-                className="w-full flex items-center justify-between px-2.5 py-1.5 text-[10px] font-semibold text-zinc-500 uppercase tracking-wider hover:text-zinc-300 transition-colors"
+                className="w-full flex items-center justify-between px-2.5 py-1.5 text-[10px] font-semibold text-zinc-500 uppercase tracking-wider hover:text-zinc-800 dark:hover:text-zinc-300 transition-colors"
               >
                 <span>{groupName}</span>
-                <ChevronDown className={cn("w-3.5 h-3.5 text-zinc-600 transition-transform", isOpen ? "rotate-180" : "rotate-0")} />
+                <ChevronDown className={cn("w-3.5 h-3.5 text-zinc-400 dark:text-zinc-600 transition-transform", isOpen ? "rotate-180" : "rotate-0")} />
               </button>
               {isOpen && (
-                <div className="space-y-1 pl-1.5 border-l border-[#1C2025] ml-2">
+                <div className="space-y-1 pl-1.5 border-l border-zinc-200 dark:border-[#1C2025] ml-2">
                   {items.map((item) => {
                     const Icon = item.icon
                     const isActive = pathname === item.href || (item.href !== '/admin/dashboard' && item.href !== '/dashboard' && pathname.startsWith(item.href))
@@ -270,12 +270,12 @@ export default function DashboardSidebar() {
                         className={cn(
                           "flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all group",
                           isActive 
-                            ? 'bg-[#181A1D] text-white border border-[#2B3037] shadow-sm font-semibold' 
-                            : 'text-zinc-400 hover:text-zinc-200 hover:bg-[#131518]'
+                            ? 'bg-zinc-200 dark:bg-[#181A1D] text-zinc-900 dark:text-white border border-zinc-300 dark:border-[#2B3037] shadow-sm font-semibold' 
+                            : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-[#131518]'
                         )}
                       >
                         <div className="flex items-center gap-2 min-w-0">
-                          <Icon className={cn("w-3.5 h-3.5 flex-shrink-0", isActive ? "text-white" : "text-zinc-500 group-hover:text-zinc-300")} />
+                          <Icon className={cn("w-3.5 h-3.5 flex-shrink-0", isActive ? "text-zinc-900 dark:text-white" : "text-zinc-400 dark:text-zinc-500 group-hover:text-zinc-700 dark:group-hover:text-zinc-300")} />
                           <span className="truncate">{item.name}</span>
                         </div>
                         {isTelemetryTab && (
@@ -292,7 +292,7 @@ export default function DashboardSidebar() {
 
         {/* Collapsed view icons */}
         {isCollapsed && Object.keys(groupedItems).map((groupName) => (
-          <div key={groupName} className="space-y-1 pt-2 border-t border-[#1C2025]">
+          <div key={groupName} className="space-y-1 pt-2 border-t border-zinc-200 dark:border-[#1C2025]">
             {groupedItems[groupName].map((item) => {
               const Icon = item.icon
               const isActive = pathname === item.href || (item.href !== '/admin/dashboard' && item.href !== '/dashboard' && pathname.startsWith(item.href))
@@ -307,11 +307,11 @@ export default function DashboardSidebar() {
                   className={cn(
                     "flex items-center justify-center p-2 rounded-lg transition-all duration-200 group relative",
                     isActive 
-                      ? 'bg-[#181A1D] text-white border border-[#2B3037] shadow-sm' 
-                      : 'text-zinc-500 hover:text-zinc-200 hover:bg-[#131518]'
+                      ? 'bg-zinc-200 dark:bg-[#181A1D] text-zinc-900 dark:text-white border border-zinc-300 dark:border-[#2B3037] shadow-sm' 
+                      : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-[#131518]'
                   )}
                 >
-                  <Icon className={cn("w-4 h-4 flex-shrink-0", isActive ? "text-white" : "text-zinc-500 group-hover:text-zinc-200")} />
+                  <Icon className={cn("w-4 h-4 flex-shrink-0", isActive ? "text-zinc-900 dark:text-white" : "text-zinc-500 group-hover:text-zinc-900 dark:group-hover:text-zinc-200")} />
                 </Link>
               )
             })}
@@ -320,15 +320,15 @@ export default function DashboardSidebar() {
       </nav>
 
       {/* Footer Profile & Logout Bar */}
-      <div className="p-3 border-t border-[#1C2025] shrink-0 bg-[#090A0C]">
-        <div className="flex items-center justify-between p-2 rounded-lg hover:bg-[#131518] transition-colors">
+      <div className="p-3 border-t border-border dark:border-[#1C2025] shrink-0 bg-card dark:bg-[#090A0C]">
+        <div className="flex items-center justify-between p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-[#131518] transition-colors">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-7 h-7 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-white font-bold text-xs shrink-0 font-mono">
+            <div className="w-7 h-7 rounded-full bg-zinc-200 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 flex items-center justify-center text-zinc-800 dark:text-white font-bold text-xs shrink-0 font-mono">
               {session?.user?.name?.substring(0, 2).toUpperCase() || 'SA'}
             </div>
             {!isCollapsed && (
               <div className="flex flex-col min-w-0">
-                <span className="text-xs font-semibold text-white truncate leading-tight">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-white truncate leading-tight">
                   {session?.user?.name || "Admin"}
                 </span>
                 <span className="text-[10px] text-zinc-500 truncate font-mono">
@@ -339,7 +339,7 @@ export default function DashboardSidebar() {
           </div>
           <button
             onClick={() => signOut({ callbackUrl: '/' })}
-            className="p-1.5 text-zinc-500 hover:text-rose-400 hover:bg-rose-950/20 rounded-md transition-colors shrink-0"
+            className="p-1.5 text-zinc-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-md transition-colors shrink-0"
             title="Sign out of System"
           >
             <LogOut size={14} />
@@ -350,7 +350,7 @@ export default function DashboardSidebar() {
       {/* Desktop Collapse Toggle */}
       <button
         onClick={toggleSidebar}
-        className="hidden lg:flex absolute -right-3 top-20 w-6 h-6 bg-[#121417] border border-[#2B3037] rounded-full items-center justify-center text-zinc-400 hover:text-white transition-colors z-50 shadow-sm"
+        className="hidden lg:flex absolute -right-3 top-20 w-6 h-6 bg-card dark:bg-[#121417] border border-border dark:border-[#2B3037] rounded-full items-center justify-center text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors z-50 shadow-sm"
         title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
         aria-label="Toggle Collapse"
       >
@@ -362,14 +362,14 @@ export default function DashboardSidebar() {
   return (
     <>
       {/* Mobile Top Bar */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-[#090A0C]/90 backdrop-blur-md border-b border-[#1C2025] p-3.5 hide-on-print">
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-card/90 dark:bg-[#090A0C]/90 backdrop-blur-md border-b border-border dark:border-[#1C2025] p-3.5 hide-on-print">
         <div className="flex items-center justify-between">
           <Link href="/" className="flex items-center space-x-2">
             <div className="w-7 h-7 bg-zinc-900 border border-zinc-700 rounded-lg flex items-center justify-center">
               <span className="text-white font-mono font-bold text-xs">SH</span>
             </div>
-            <span className="font-bold text-white text-xs tracking-tight">SmartHotel</span>
-            <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-violet-500/10 text-violet-400 border border-violet-500/30 uppercase tracking-wider">
+            <span className="font-bold text-zinc-900 dark:text-white text-xs tracking-tight">SmartHotel</span>
+            <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-violet-500/10 text-violet-500 dark:text-violet-400 border border-violet-500/30 uppercase tracking-wider">
               ELITE
             </span>
           </Link>
@@ -377,7 +377,7 @@ export default function DashboardSidebar() {
             variant="ghost"
             size="icon"
             onClick={toggleMobileMenu}
-            className="text-zinc-400 hover:text-white hover:bg-[#181A1D] h-8 w-8"
+            className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-[#181A1D] h-8 w-8"
           >
             {isMobileOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
           </Button>
@@ -388,7 +388,7 @@ export default function DashboardSidebar() {
       {isMobileOpen && (
         <div className="lg:hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm" onClick={closeMobileMenu}>
           <div
-            className="fixed inset-y-0 left-0 w-72 bg-[#090A0C] border-r border-[#1C2025] shadow-2xl flex flex-col animate-in slide-in-from-left duration-300"
+            className="fixed inset-y-0 left-0 w-72 bg-card dark:bg-[#090A0C] border-r border-border dark:border-[#1C2025] shadow-2xl flex flex-col animate-in slide-in-from-left duration-300"
             onClick={(e: any) => e.stopPropagation()}
           >
             <SidebarContent />
@@ -398,7 +398,7 @@ export default function DashboardSidebar() {
 
       {/* Desktop Aside */}
       <aside className={cn(
-        "hidden lg:flex fixed left-0 top-0 bottom-0 bg-[#090A0C] border-r border-[#1C2025] flex-col transition-all duration-300 z-40 hide-on-print",
+        "hidden lg:flex fixed left-0 top-0 bottom-0 bg-card dark:bg-[#090A0C] border-r border-border dark:border-[#1C2025] flex-col transition-all duration-300 z-40 hide-on-print",
         isCollapsed ? "w-20" : "w-64"
       )}>
         <SidebarContent />

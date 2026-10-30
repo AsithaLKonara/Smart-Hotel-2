@@ -269,35 +269,35 @@ export function ReceptionCalendarDesk({
 
             {/* Focal Date & KPIs */}
             <div className="flex items-center gap-2 flex-wrap sm:justify-end">
-              <div className="flex items-center gap-1.5 bg-black/40 border border-white/10 rounded-xl px-2.5 py-1 text-xs">
-                <span className="font-bold text-white">{format(selectedDate, 'MMM dd')}</span>
+              <div className="flex items-center gap-1.5 bg-muted/50 dark:bg-black/40 border border-border dark:border-white/10 rounded-xl px-2.5 py-1 text-xs">
+                <span className="font-bold text-foreground dark:text-white">{format(selectedDate, 'MMM dd')}</span>
                 {isToday(selectedDate) ? (
-                  <span className="text-[9px] text-emerald-400 font-bold bg-emerald-500/10 px-1 rounded">TODAY</span>
+                  <span className="text-[9px] text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-500/10 px-1 rounded">TODAY</span>
                 ) : (
-                  <span className="text-[9px] text-amber-300 font-bold bg-amber-500/10 px-1 rounded">FOCAL</span>
+                  <span className="text-[9px] text-amber-600 dark:text-amber-300 font-bold bg-amber-500/10 px-1 rounded">FOCAL</span>
                 )}
               </div>
 
-              <div className="flex items-center gap-1 bg-black/40 border border-white/10 rounded-xl px-2 py-1 text-[11px]">
-                <span className="text-white/40">Occ:</span>
-                <span className="font-bold text-amber-400">{selectedOccupancyRate}%</span>
+              <div className="flex items-center gap-1 bg-muted/50 dark:bg-black/40 border border-border dark:border-white/10 rounded-xl px-2 py-1 text-[11px]">
+                <span className="text-muted-foreground dark:text-white/40">Occ:</span>
+                <span className="font-bold text-amber-500 dark:text-amber-400">{selectedOccupancyRate}%</span>
               </div>
 
-              <div className="flex items-center gap-1 bg-black/40 border border-white/10 rounded-xl px-2 py-1 text-[11px]">
-                <span className="text-emerald-400/70">Arr:</span>
-                <span className="font-bold text-emerald-400">{selectedDayData.arrivals.length}</span>
+              <div className="flex items-center gap-1 bg-muted/50 dark:bg-black/40 border border-border dark:border-white/10 rounded-xl px-2 py-1 text-[11px]">
+                <span className="text-emerald-600 dark:text-emerald-400/70">Arr:</span>
+                <span className="font-bold text-emerald-600 dark:text-emerald-400">{selectedDayData.arrivals.length}</span>
               </div>
 
-              <div className="flex items-center gap-1 bg-black/40 border border-white/10 rounded-xl px-2 py-1 text-[11px]">
-                <span className="text-rose-400/70">Dep:</span>
-                <span className="font-bold text-rose-400">{selectedDayData.departures.length}</span>
+              <div className="flex items-center gap-1 bg-muted/50 dark:bg-black/40 border border-border dark:border-white/10 rounded-xl px-2 py-1 text-[11px]">
+                <span className="text-rose-600 dark:text-rose-400/70">Dep:</span>
+                <span className="font-bold text-rose-600 dark:text-rose-400">{selectedDayData.departures.length}</span>
               </div>
 
               <Button
                 size="sm"
                 onClick={handleToggleRoster}
                 variant="outline"
-                className="text-xs bg-white/5 border-white/10 text-white hover:bg-white/10 h-7 px-2 rounded-xl"
+                className="text-xs bg-secondary hover:bg-secondary/80 border-border text-secondary-foreground dark:bg-white/5 dark:border-white/10 dark:text-white dark:hover:bg-white/10 h-7 px-2 rounded-xl"
               >
                 <Users className="w-3 h-3 mr-1 text-primary" />
                 {isDayRosterOpen ? 'Hide' : 'Roster'}
@@ -307,14 +307,14 @@ export function ReceptionCalendarDesk({
 
           {/* Room Highlighting Alert Banner (if a room was clicked in the Room Matrix) */}
           {highlightedRoomNumber && (
-            <div className="pt-2 border-t border-white/5 flex items-center justify-between animate-in fade-in slide-in-from-top-1 duration-200">
-              <div className="flex items-center gap-2 text-xs text-amber-400">
-                <span className="flex h-1.5 w-1.5 rounded-full bg-amber-400 animate-ping" />
+            <div className="pt-2 border-t border-border dark:border-white/5 flex items-center justify-between animate-in fade-in slide-in-from-top-1 duration-200">
+              <div className="flex items-center gap-2 text-xs text-amber-500 dark:text-amber-400">
+                <span className="flex h-1.5 w-1.5 rounded-full bg-amber-500 animate-ping" />
                 <span>Filtering calendar stays for <strong>Room #{highlightedRoomNumber}</strong></span>
               </div>
               <button
                 onClick={onClearRoomHighlight}
-                className="text-[11px] text-white/50 hover:text-white flex items-center gap-1 underline"
+                className="text-[11px] text-muted-foreground hover:text-foreground dark:text-white/50 dark:hover:text-white flex items-center gap-1 underline"
               >
                 <X className="w-3 h-3" /> Show All
               </button>
@@ -325,14 +325,14 @@ export function ReceptionCalendarDesk({
 
       {/* 3. Optional Day Roster Drawer (Quick list of arrivals/departures for focal date) */}
       {isDayRosterOpen && (
-        <div className="bg-[#181A1D] border border-[#2B3037] rounded-2xl p-4 space-y-3 animate-in fade-in duration-200 max-h-56 overflow-y-auto custom-scrollbar">
-          <div className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center justify-between">
+        <div className="bg-card dark:bg-[#181A1D] border border-border dark:border-[#2B3037] rounded-2xl p-4 space-y-3 animate-in fade-in duration-200 max-h-56 overflow-y-auto custom-scrollbar text-card-foreground shadow-sm">
+          <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground dark:text-zinc-400 flex items-center justify-between">
             <span>Roster for {format(selectedDate, 'MMM dd')}</span>
-            <span className="text-[10px] font-normal text-zinc-500">{selectedDayData.all.length} Total Bookings</span>
+            <span className="text-[10px] font-normal text-muted-foreground/70 dark:text-zinc-500">{selectedDayData.all.length} Total Bookings</span>
           </div>
 
           {selectedDayData.all.length === 0 ? (
-            <div className="py-4 text-center text-xs text-zinc-500">
+            <div className="py-4 text-center text-xs text-muted-foreground dark:text-zinc-500">
               No reservations scheduled for this date.
             </div>
           ) : (
@@ -346,19 +346,19 @@ export function ReceptionCalendarDesk({
                   <div
                     key={b.id}
                     onClick={() => onSelectBooking && onSelectBooking(b)}
-                    className="p-2.5 rounded-xl bg-[#141619] border border-[#1E2227] hover:border-zinc-700 hover:bg-[#16181B] transition-all cursor-pointer flex items-center justify-between"
+                    className="p-2.5 rounded-xl bg-muted/40 dark:bg-[#141619] border border-border dark:border-[#1E2227] hover:border-border/80 dark:hover:border-zinc-700 hover:bg-muted/60 dark:hover:bg-[#16181B] transition-all cursor-pointer flex items-center justify-between"
                   >
                     <div>
-                      <div className="text-xs font-semibold text-white flex items-center gap-1.5">
+                      <div className="text-xs font-semibold text-foreground dark:text-white flex items-center gap-1.5">
                         <span>{b.guest?.name || 'Guest'}</span>
-                        <Badge variant="outline" className="text-[9px] px-1 py-0 border-[#2B3037] bg-[#181A1D] text-zinc-300 font-mono">
+                        <Badge variant="outline" className="text-[9px] px-1 py-0 border-border dark:border-[#2B3037] bg-card dark:bg-[#181A1D] text-foreground dark:text-zinc-300 font-mono">
                           #{roomNum}
                         </Badge>
                       </div>
-                      <div className="text-[10px] text-zinc-500 flex items-center gap-1 mt-0.5">
-                        {isArrival && <span className="text-emerald-400 font-medium">● Check-in</span>}
-                        {isDeparture && <span className="text-rose-400 font-medium">● Check-out</span>}
-                        {!isArrival && !isDeparture && <span className="text-blue-400 font-medium">● In-House</span>}
+                      <div className="text-[10px] text-muted-foreground dark:text-zinc-500 flex items-center gap-1 mt-0.5">
+                        {isArrival && <span className="text-emerald-600 dark:text-emerald-400 font-medium">● Check-in</span>}
+                        {isDeparture && <span className="text-rose-600 dark:text-rose-400 font-medium">● Check-out</span>}
+                        {!isArrival && !isDeparture && <span className="text-blue-600 dark:text-blue-400 font-medium">● In-House</span>}
                         <span>• Status: {b.status}</span>
                       </div>
                     </div>
@@ -370,7 +370,7 @@ export function ReceptionCalendarDesk({
                           e.stopPropagation()
                           onQuickCheckIn(b.id)
                         }}
-                        className="h-7 px-2 text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 rounded-lg"
+                        className="h-7 px-2 text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 rounded-lg"
                       >
                         Check-in
                       </Button>
@@ -384,13 +384,13 @@ export function ReceptionCalendarDesk({
       )}
 
       {/* 4. The Monthly Calendar Grid */}
-      <div className="bg-[#121417] border border-[#1E2227] rounded-2xl overflow-hidden shadow-sm flex-1 flex flex-col">
+      <div className="bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] rounded-2xl overflow-hidden shadow-sm flex-1 flex flex-col">
         {/* Day of Week Header */}
-        <div className="grid grid-cols-7 border-b border-[#1E2227] bg-[#141619]">
+        <div className="grid grid-cols-7 border-b border-border dark:border-[#1E2227] bg-muted/40 dark:bg-[#141619]">
           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
             <div
               key={day}
-              className="text-center py-2.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-500 border-r border-[#1E2227] last:border-r-0"
+              className="text-center py-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground dark:text-zinc-500 border-r border-border dark:border-[#1E2227] last:border-r-0"
             >
               {day}
             </div>
@@ -398,7 +398,7 @@ export function ReceptionCalendarDesk({
         </div>
 
         {/* Calendar Days Matrix */}
-        <div className="grid grid-cols-7 divide-x divide-y divide-[#1A1D21] bg-[#121417] flex-1">
+        <div className="grid grid-cols-7 divide-x divide-y divide-border dark:divide-[#1A1D21] bg-card dark:bg-[#121417] flex-1">
           {monthDays.map(day => {
             const isCurrentMonth = isSameMonth(day, currentMonth)
             const isSelected = isSameDay(day, selectedDate)
@@ -423,9 +423,9 @@ export function ReceptionCalendarDesk({
                 onClick={() => onSelectDate(day)}
                 className={cn(
                   "relative p-2 min-h-[85px] sm:min-h-[100px] flex flex-col justify-between transition-all duration-200 cursor-pointer select-none group",
-                  !isCurrentMonth && "bg-[#090A0C]/60 opacity-30",
-                  isSelected && "bg-[#181A1D] ring-1 ring-[#2B3037] ring-inset z-10",
-                  !isSelected && "hover:bg-[#16181B]",
+                  !isCurrentMonth && "bg-muted/30 dark:bg-[#090A0C]/60 opacity-40",
+                  isSelected && "bg-muted/60 dark:bg-[#181A1D] ring-1 ring-border dark:ring-[#2B3037] ring-inset z-10",
+                  !isSelected && "hover:bg-muted/40 dark:hover:bg-[#16181B]",
                   containsHighlightedRoom && "bg-amber-500/10 ring-1 ring-amber-400/50"
                 )}
               >
@@ -435,10 +435,10 @@ export function ReceptionCalendarDesk({
                     className={cn(
                       "text-xs font-mono font-bold flex items-center justify-center transition-colors",
                       isTodayDay
-                        ? "bg-white text-black h-5 w-5 rounded-full shadow-sm font-bold"
+                        ? "bg-primary text-primary-foreground h-5 w-5 rounded-full shadow-sm font-bold"
                         : isSelected
-                        ? "text-white font-bold"
-                        : "text-zinc-400 group-hover:text-white"
+                        ? "text-primary dark:text-white font-bold"
+                        : "text-muted-foreground group-hover:text-foreground dark:text-zinc-400 dark:group-hover:text-white"
                     )}
                   >
                     {format(day, 'd')}

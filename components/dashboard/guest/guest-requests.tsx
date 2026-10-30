@@ -36,12 +36,12 @@ export function GuestRequests() {
   }
 
   return (
-    <Card className="bg-[#0c0c0c] border-white/5 rounded-[40px] overflow-hidden group">
+    <Card className="bg-card dark:bg-[#0c0c0c] border border-border dark:border-white/5 rounded-[40px] overflow-hidden group shadow-sm">
       <div className="p-10 space-y-8">
         <div className="flex items-center justify-between">
           <div className="space-y-1">
-            <h3 className="text-2xl font-serif font-bold text-white tracking-tight">Guest Services</h3>
-            <p className="text-xs text-white/40 font-medium">Housekeeping, Maintenance & Butler requests</p>
+            <h3 className="text-2xl font-serif font-bold text-foreground dark:text-white tracking-tight">Guest Services</h3>
+            <p className="text-xs text-muted-foreground font-medium">Housekeeping, Maintenance & Butler requests</p>
           </div>
           <Button 
             onClick={handleNewRequest}
@@ -54,24 +54,24 @@ export function GuestRequests() {
         {isLoading ? (
           <div className="py-10 flex justify-center"><PremiumSpinner /></div>
         ) : tasks.length === 0 ? (
-          <div className="py-10 text-center space-y-4 bg-white/5 rounded-3xl border border-white/5">
-            <Settings2 className="w-10 h-10 text-white/10 mx-auto" />
-            <p className="text-sm text-white/30 font-light">No active requests.</p>
+          <div className="py-10 text-center space-y-4 bg-muted/30 dark:bg-white/5 rounded-3xl border border-border dark:border-white/5">
+            <Settings2 className="w-10 h-10 text-muted-foreground/30 mx-auto" />
+            <p className="text-sm text-muted-foreground font-light">No active requests.</p>
           </div>
         ) : (
           <div className="space-y-4">
             {tasks.slice(0, 3).map((task) => (
-              <div key={task.id} className="flex items-center justify-between p-6 bg-white/[0.03] border border-white/5 rounded-3xl hover:border-primary/30 transition-all group/item">
+              <div key={task.id} className="flex items-center justify-between p-6 bg-muted/30 dark:bg-white/[0.03] border border-border dark:border-white/5 rounded-3xl hover:border-primary/50 transition-all group/item">
                 <div className="flex items-center gap-4">
-                  <div className="p-3 rounded-2xl bg-white/5 text-white/40 group-hover/item:text-primary transition-colors">
+                  <div className="p-3 rounded-2xl bg-muted dark:bg-white/5 text-muted-foreground group-hover/item:text-primary transition-colors">
                     <Bell className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-white">{task.title}</p>
-                    <p className="text-[10px] text-white/40 font-medium uppercase tracking-widest">{task.status}</p>
+                    <p className="text-sm font-bold text-foreground dark:text-white">{task.title}</p>
+                    <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest">{task.status}</p>
                   </div>
                 </div>
-                <Badge variant="outline" className={`text-[8px] uppercase font-bold tracking-widest px-2 py-0.5 border-white/10 ${task.priority === 'HIGH' ? 'text-red-400' : 'text-white/40'}`}>
+                <Badge variant="outline" className={`text-[8px] uppercase font-bold tracking-widest px-2 py-0.5 border-border dark:border-white/10 ${task.priority === 'HIGH' ? 'text-rose-500' : 'text-muted-foreground'}`}>
                   {task.priority}
                 </Badge>
               </div>

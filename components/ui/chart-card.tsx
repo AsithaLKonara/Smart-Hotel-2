@@ -31,15 +31,15 @@ export function ChartCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25, ease: 'easeOut' }}
       className={cn(
-        "rounded-2xl bg-[#121417] border border-[#1E2227] p-5 sm:p-6 hover:border-zinc-700 transition-colors group",
+        "rounded-2xl bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] p-5 sm:p-6 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors shadow-sm group",
         className
       )}
     >
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="text-sm font-semibold text-white tracking-wide">{title}</h3>
+          <h3 className="text-sm font-semibold text-foreground dark:text-white tracking-wide">{title}</h3>
           {subtitle && (
-            <p className="text-xs text-zinc-400 font-mono mt-0.5">{subtitle}</p>
+            <p className="text-xs text-muted-foreground dark:text-zinc-400 font-mono mt-0.5">{subtitle}</p>
           )}
         </div>
         {headerAction && (

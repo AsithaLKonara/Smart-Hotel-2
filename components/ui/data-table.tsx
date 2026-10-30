@@ -171,10 +171,10 @@ export function DataTable<T extends Record<string, any>>({
     <Card className={cn('overflow-hidden', className)}>
       {/* Toolbar */}
       {(searchable || exportable || true) && (
-        <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row gap-4 items-center justify-between">
+        <div className="p-4 border-b border-border flex flex-col sm:flex-row gap-4 items-center justify-between">
           {searchable && (
             <div className="relative flex-1 max-w-md w-full">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 type="text"
                 placeholder={searchPlaceholder}
@@ -216,13 +216,13 @@ export function DataTable<T extends Record<string, any>>({
       {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full">
-          <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+          <thead className="bg-muted/40 dark:bg-zinc-900 border-b border-border">
             <tr>
               {columns.map((column) => (
                 <th
                   key={column.key}
                   className={cn(
-                    'text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider',
+                    'text-left text-xs font-semibold text-muted-foreground dark:text-zinc-400 uppercase tracking-wider',
                     isCompact ? 'px-3 py-2' : 'px-6 py-3',
                     column.headerClassName
                   )}
@@ -243,12 +243,12 @@ export function DataTable<T extends Record<string, any>>({
               ))}
             </tr>
           </thead>
-          <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+          <tbody className="bg-card divide-y divide-border">
             {paginatedData.length === 0 ? (
               <tr>
                 <td
                   colSpan={columns.length}
-                  className="px-6 py-12 text-center text-gray-500 dark:text-gray-400"
+                  className="px-6 py-12 text-center text-muted-foreground dark:text-zinc-400"
                 >
                   {emptyMessage}
                 </td>
@@ -259,20 +259,20 @@ export function DataTable<T extends Record<string, any>>({
                   key={rowIndex}
                   onClick={() => onRowClick?.(row)}
                   className={cn(
-                    'hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors',
+                    'hover:bg-muted/40 dark:hover:bg-zinc-800/40 transition-colors',
                     onRowClick && 'cursor-pointer'
                   )}
                 >
                   {columns.map((column) => {
                     const value = column.accessor
-                      ? column.accessor(row)
-                      : row[column.key]
+                    ? column.accessor(row)
+                    : row[column.key]
 
                     return (
                       <td
                         key={column.key}
                         className={cn(
-                          'whitespace-nowrap text-sm text-gray-900 dark:text-white',
+                          'whitespace-nowrap text-sm text-foreground dark:text-white',
                           isCompact ? 'px-3 py-1.5' : 'px-6 py-4',
                           column.className
                         )}
@@ -290,7 +290,7 @@ export function DataTable<T extends Record<string, any>>({
 
       {/* Pagination */}
       {paginated && sortedData.length > 0 && (
-        <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="p-4 border-t border-border">
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}

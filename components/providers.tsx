@@ -22,7 +22,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <SessionProvider>
       <QueryClientProvider client={queryClient}>
         <CinematicProvider>
-          <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+          <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={true} storageKey="smarthotel-theme">
             <ToastProvider>
               <LuxuryConfirmProvider>
                 {children}

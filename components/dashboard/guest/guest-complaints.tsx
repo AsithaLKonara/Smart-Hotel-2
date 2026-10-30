@@ -29,14 +29,14 @@ export function GuestComplaints() {
   }
 
   return (
-    <Card className="bg-[#0c0c0c] border-white/5 rounded-[40px] overflow-hidden group">
+    <Card className="bg-card dark:bg-[#0c0c0c] border border-border dark:border-white/5 rounded-[40px] overflow-hidden group shadow-sm">
       <div className="p-10 space-y-8">
         <div className="flex items-center justify-between">
           <div className="space-y-1">
-            <h3 className="text-2xl font-serif font-bold text-white tracking-tight">Resolution Center</h3>
-            <p className="text-xs text-white/40 font-medium">Report issues and track their resolution</p>
+            <h3 className="text-2xl font-serif font-bold text-foreground dark:text-white tracking-tight">Resolution Center</h3>
+            <p className="text-xs text-muted-foreground font-medium">Report issues and track their resolution</p>
           </div>
-          <Button className="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-2xl h-12 px-6 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest">
+          <Button className="bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/20 rounded-2xl h-12 px-6 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest">
             <Plus className="w-4 h-4" /> Report Issue
           </Button>
         </div>
@@ -44,24 +44,24 @@ export function GuestComplaints() {
         {isLoading ? (
           <div className="py-10 flex justify-center"><PremiumSpinner /></div>
         ) : complaints.length === 0 ? (
-          <div className="py-10 text-center space-y-4 bg-white/5 rounded-3xl border border-white/5">
-            <ShieldAlert className="w-10 h-10 text-white/10 mx-auto" />
-            <p className="text-sm text-white/30 font-light">Everything is perfect! No issues reported.</p>
+          <div className="py-10 text-center space-y-4 bg-muted/30 dark:bg-white/5 rounded-3xl border border-border dark:border-white/5">
+            <ShieldAlert className="w-10 h-10 text-muted-foreground/30 mx-auto" />
+            <p className="text-sm text-muted-foreground font-light">Everything is perfect! No issues reported.</p>
           </div>
         ) : (
           <div className="space-y-4">
             {complaints.slice(0, 3).map((item) => (
-              <div key={item.id} className="flex items-center justify-between p-6 bg-white/[0.03] border border-white/5 rounded-3xl">
+              <div key={item.id} className="flex items-center justify-between p-6 bg-muted/30 dark:bg-white/[0.03] border border-border dark:border-white/5 rounded-3xl">
                 <div className="flex items-center gap-4">
-                  <div className={`p-3 rounded-2xl ${item.status === 'RESOLVED' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}`}>
+                  <div className={`p-3 rounded-2xl ${item.status === 'RESOLVED' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'}`}>
                     {item.status === 'RESOLVED' ? <CheckCircle2 className="w-5 h-5" /> : <Clock className="w-5 h-5" />}
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-white">{item.subject}</p>
-                    <p className="text-[10px] text-white/40 font-medium uppercase tracking-widest">{item.status}</p>
+                    <p className="text-sm font-bold text-foreground dark:text-white">{item.subject}</p>
+                    <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest">{item.status}</p>
                   </div>
                 </div>
-                <Badge variant="outline" className="text-[8px] uppercase font-bold tracking-widest px-2 py-0.5 border-white/10 text-white/40">
+                <Badge variant="outline" className="text-[8px] uppercase font-bold tracking-widest px-2 py-0.5 border-border dark:border-white/10 text-muted-foreground">
                   {item.category}
                 </Badge>
               </div>

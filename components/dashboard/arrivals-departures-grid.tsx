@@ -46,11 +46,11 @@ export function ArrivalsDeparturesGrid({
               <Clock className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-2xl font-serif font-bold text-white tracking-tight">Arrivals Timeline</h3>
-              <p className="text-white/40 text-xs font-medium mt-1">Expected check-ins for current shift</p>
+              <h3 className="text-2xl font-serif font-bold text-foreground dark:text-white tracking-tight">Arrivals Timeline</h3>
+              <p className="text-muted-foreground dark:text-white/40 text-xs font-medium mt-1">Expected check-ins for current shift</p>
             </div>
           </div>
-          <Badge className="bg-emerald-500/10 text-emerald-400 border-none px-4 py-1.5 font-black uppercase tracking-widest text-[10px]">
+          <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-none px-4 py-1.5 font-black uppercase tracking-widest text-[10px]">
             {arrivals.length} EXPECTED
           </Badge>
         </div>
@@ -69,40 +69,40 @@ export function ArrivalsDeparturesGrid({
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ delay: idx * 0.03 }}
-                    className="group relative p-6 bg-[#0c0c0c] border border-white/[0.05] hover:border-emerald-500/40 rounded-[32px] transition-all"
+                    className="group relative p-6 bg-card dark:bg-[#0c0c0c] border border-border dark:border-white/[0.05] hover:border-emerald-500/40 rounded-[32px] transition-all shadow-sm"
                   >
                     <div className="flex items-start justify-between gap-6">
                       <div className="flex-1 space-y-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/40 font-bold text-xs uppercase">
+                          <div className="w-10 h-10 rounded-full bg-muted dark:bg-white/5 border border-border dark:border-white/10 flex items-center justify-center text-muted-foreground dark:text-white/40 font-bold text-xs uppercase">
                             {arr.guestName.split(' ').map(n => n[0]).join('')}
                           </div>
                           <div>
-                            <h4 className="font-bold text-white text-lg tracking-tight flex items-center gap-2">
+                            <h4 className="font-bold text-foreground dark:text-white text-lg tracking-tight flex items-center gap-2">
                               {arr.guestName}
-                              {arr.vip && <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />}
+                              {arr.vip && <Sparkles className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400 animate-pulse" />}
                             </h4>
-                            <p className="text-white/30 text-[10px] font-black uppercase tracking-widest">
+                            <p className="text-muted-foreground dark:text-white/30 text-[10px] font-black uppercase tracking-widest">
                               Room {arr.roomNumber} • {arr.roomType}
                             </p>
                           </div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
-                          <div className="p-3 rounded-2xl bg-white/[0.02] border border-white/5">
-                            <span className="text-[9px] font-black text-white/20 uppercase tracking-widest block mb-1">Check-in</span>
-                            <span className={cn("text-xs font-bold", arr.isLate ? "text-rose-400" : "text-white/60")}>
+                          <div className="p-3 rounded-2xl bg-muted/40 dark:bg-white/[0.02] border border-border dark:border-white/5">
+                            <span className="text-[9px] font-black text-muted-foreground/70 dark:text-white/20 uppercase tracking-widest block mb-1">Check-in</span>
+                            <span className={cn("text-xs font-bold", arr.isLate ? "text-rose-500 dark:text-rose-400" : "text-foreground/80 dark:text-white/60")}>
                               {arr.time} {arr.isLate && " (LATE)"}
                             </span>
                           </div>
-                          <div className="p-3 rounded-2xl bg-white/[0.02] border border-white/5">
-                            <span className="text-[9px] font-black text-white/20 uppercase tracking-widest block mb-1">Status</span>
-                            <span className="text-xs font-bold text-emerald-400">Paid: {arr.payment}</span>
+                          <div className="p-3 rounded-2xl bg-muted/40 dark:bg-white/[0.02] border border-border dark:border-white/5">
+                            <span className="text-[9px] font-black text-muted-foreground/70 dark:text-white/20 uppercase tracking-widest block mb-1">Status</span>
+                            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">Paid: {arr.payment}</span>
                           </div>
                         </div>
 
                         {arr.notes && (
-                          <p className="text-[11px] text-white/40 italic leading-relaxed px-1">"{arr.notes}"</p>
+                          <p className="text-[11px] text-muted-foreground dark:text-white/40 italic leading-relaxed px-1">"{arr.notes}"</p>
                         )}
                       </div>
 
@@ -114,7 +114,7 @@ export function ArrivalsDeparturesGrid({
                           <CheckCircle2 className="w-5 h-5 shrink-0" />
                           <span className="hidden group-hover:block text-[10px] font-black uppercase whitespace-nowrap">Check-In</span>
                         </button>
-                        <button className="w-12 h-12 rounded-2xl bg-white/5 hover:bg-white/10 text-white/40 flex items-center justify-center transition-all">
+                        <button className="w-12 h-12 rounded-2xl bg-muted/60 hover:bg-muted dark:bg-white/5 dark:hover:bg-white/10 text-muted-foreground dark:text-white/40 flex items-center justify-center transition-all">
                           <ArrowRight className="w-5 h-5" />
                         </button>
                       </div>
@@ -135,8 +135,8 @@ export function ArrivalsDeparturesGrid({
               <DoorOpen className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-2xl font-serif font-bold text-white tracking-tight">Departures List</h3>
-              <p className="text-white/40 text-xs font-medium mt-1">Pending check-outs and room releases</p>
+              <h3 className="text-2xl font-serif font-bold text-foreground dark:text-white tracking-tight">Departures List</h3>
+              <p className="text-muted-foreground dark:text-white/40 text-xs font-medium mt-1">Pending check-outs and room releases</p>
             </div>
           </div>
           <Badge className="bg-primary/10 text-primary border-none px-4 py-1.5 font-black uppercase tracking-widest text-[10px]">
@@ -161,34 +161,34 @@ export function ArrivalsDeparturesGrid({
                       exit={{ opacity: 0, scale: 0.95 }}
                       transition={{ delay: idx * 0.03 }}
                       className={cn(
-                        "group relative p-6 bg-[#0c0c0c] border rounded-[32px] transition-all",
-                        hasBalance ? "border-rose-500/30 hover:border-rose-500/60" : "border-white/[0.05] hover:border-primary/40"
+                        "group relative p-6 bg-card dark:bg-[#0c0c0c] border rounded-[32px] transition-all shadow-sm",
+                        hasBalance ? "border-rose-500/30 hover:border-rose-500/60" : "border-border dark:border-white/[0.05] hover:border-primary/40"
                       )}
                     >
                       <div className="flex items-start justify-between gap-6">
                         <div className="flex-1 space-y-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/40 font-bold text-xs uppercase">
+                            <div className="w-10 h-10 rounded-full bg-muted dark:bg-white/5 border border-border dark:border-white/10 flex items-center justify-center text-muted-foreground dark:text-white/40 font-bold text-xs uppercase">
                               {dep.guestName.split(' ').map(n => n[0]).join('')}
                             </div>
                             <div>
-                              <h4 className="font-bold text-white text-lg tracking-tight">{dep.guestName}</h4>
-                              <p className="text-white/30 text-[10px] font-black uppercase tracking-widest">
+                              <h4 className="font-bold text-foreground dark:text-white text-lg tracking-tight">{dep.guestName}</h4>
+                              <p className="text-muted-foreground dark:text-white/30 text-[10px] font-black uppercase tracking-widest">
                                 Room {dep.roomNumber} • {dep.roomType}
                               </p>
                             </div>
                           </div>
 
                           <div className="grid grid-cols-2 gap-4">
-                            <div className="p-3 rounded-2xl bg-white/[0.02] border border-white/5">
-                              <span className="text-[9px] font-black text-white/20 uppercase tracking-widest block mb-1">Check-out</span>
-                              <span className="text-xs font-bold text-white/60">{dep.time}</span>
+                            <div className="p-3 rounded-2xl bg-muted/40 dark:bg-white/[0.02] border border-border dark:border-white/5">
+                              <span className="text-[9px] font-black text-muted-foreground/70 dark:text-white/20 uppercase tracking-widest block mb-1">Check-out</span>
+                              <span className="text-xs font-bold text-foreground/80 dark:text-white/60">{dep.time}</span>
                             </div>
-                            <div className={cn("p-3 rounded-2xl border", hasBalance ? "bg-rose-500/10 border-rose-500/20" : "bg-white/[0.02] border-white/5")}>
-                              <span className="text-[9px] font-black text-white/20 uppercase tracking-widest block mb-1">Balance</span>
+                            <div className={cn("p-3 rounded-2xl border", hasBalance ? "bg-rose-500/10 border-rose-500/20" : "bg-muted/40 dark:bg-white/[0.02] border-border dark:border-white/5")}>
+                              <span className="text-[9px] font-black text-muted-foreground/70 dark:text-white/20 uppercase tracking-widest block mb-1">Balance</span>
                               <div className="flex items-center gap-1.5">
                                 <Wallet className={cn("w-3 h-3", hasBalance ? "text-rose-500" : "text-emerald-500")} />
-                                <span className={cn("text-xs font-black", hasBalance ? "text-rose-400" : "text-emerald-400")}>
+                                <span className={cn("text-xs font-black", hasBalance ? "text-rose-500 dark:text-rose-400" : "text-emerald-600 dark:text-emerald-400")}>
                                   {hasBalance ? `$${dep.balance}` : 'Settled'}
                                 </span>
                               </div>

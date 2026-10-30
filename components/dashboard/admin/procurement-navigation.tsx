@@ -14,7 +14,7 @@ export function ProcurementNavigation() {
   ]
 
   return (
-    <div className="flex space-x-2 border-b border-white/10 mb-6 pb-2">
+    <div className="flex space-x-2 border-b border-border dark:border-white/10 mb-6 pb-2">
       {tabs.map((tab) => {
         const isActive = pathname === tab.href
         return (
@@ -24,8 +24,8 @@ export function ProcurementNavigation() {
             className={cn(
               "px-4 py-2 text-sm font-medium rounded-lg transition-colors",
               isActive 
-                ? "bg-primary text-black font-semibold" 
-                : "text-white/60 hover:text-white hover:bg-white/5"
+                ? "bg-primary text-primary-foreground font-semibold shadow-sm" 
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/50 dark:text-white/60 dark:hover:text-white dark:hover:bg-white/5"
             )}
           >
             {tab.name}

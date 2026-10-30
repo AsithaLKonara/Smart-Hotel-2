@@ -66,22 +66,22 @@ export function AgodaVccViewer({ bookingId }: { bookingId: string }) {
       </button>
 
       {open && data && data.isVcc && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="bg-[#12141A] border border-white/10 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-card dark:bg-[#12141A] border border-border dark:border-white/10 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl text-card-foreground">
             {/* Header */}
-            <div className="p-5 border-b border-white/10 flex items-center justify-between">
+            <div className="p-5 border-b border-border dark:border-white/10 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg bg-[#D4AF37]/10 flex items-center justify-center text-[#D4AF37]">
                   <CreditCard className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-white text-sm">Agoda Virtual Credit Card</h3>
-                  <p className="text-[11px] text-slate-400">OTA Reference: {data.otaReference}</p>
+                  <h3 className="font-semibold text-foreground dark:text-white text-sm">Agoda Virtual Credit Card</h3>
+                  <p className="text-[11px] text-muted-foreground dark:text-slate-400">OTA Reference: {data.otaReference}</p>
                 </div>
               </div>
               <button 
                 onClick={() => { setOpen(false); setRevealed(false); }}
-                className="text-slate-400 hover:text-white text-sm"
+                className="text-muted-foreground hover:text-foreground dark:text-slate-400 dark:hover:text-white text-sm"
               >
                 ✕
               </button>
@@ -137,13 +137,13 @@ export function AgodaVccViewer({ bookingId }: { bookingId: string }) {
               {data.effectiveDate && (
                 <div className={`p-3 rounded-xl border text-xs flex items-start gap-2.5 ${
                   data.isChargeableNow 
-                    ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300' 
-                    : 'bg-amber-500/10 border-amber-500/30 text-amber-300'
+                    ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-300' 
+                    : 'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-300'
                 }`}>
                   {data.isChargeableNow ? (
-                    <ShieldCheck className="w-4 h-4 flex-shrink-0 mt-0.5 text-emerald-400" />
+                    <ShieldCheck className="w-4 h-4 flex-shrink-0 mt-0.5 text-emerald-500 dark:text-emerald-400" />
                   ) : (
-                    <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5 text-amber-400" />
+                    <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5 text-amber-500 dark:text-amber-400" />
                   )}
                   <div>
                     <p className="font-semibold">
@@ -161,26 +161,26 @@ export function AgodaVccViewer({ bookingId }: { bookingId: string }) {
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => data.fullCardNumber && copyToClipboard(data.fullCardNumber, 'Card Number')}
-                  className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-xs text-slate-200"
+                  className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg border border-border dark:border-white/10 bg-secondary/50 hover:bg-secondary dark:bg-white/5 dark:hover:bg-white/10 text-xs text-foreground dark:text-slate-200 transition-colors"
                 >
-                  {copiedField === 'Card Number' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  {copiedField === 'Card Number' ? <Check className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                   Copy Card Number
                 </button>
                 <button
                   onClick={() => data.secureInd && copyToClipboard(data.secureInd, 'CVV')}
-                  className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-xs text-slate-200"
+                  className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg border border-border dark:border-white/10 bg-secondary/50 hover:bg-secondary dark:bg-white/5 dark:hover:bg-white/10 text-xs text-foreground dark:text-slate-200 transition-colors"
                 >
-                  {copiedField === 'CVV' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  {copiedField === 'CVV' ? <Check className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                   Copy CVV
                 </button>
               </div>
             </div>
 
             {/* Footer */}
-            <div className="p-4 bg-black/40 border-t border-white/10 flex justify-end">
+            <div className="p-4 bg-muted/40 dark:bg-black/40 border-t border-border dark:border-white/10 flex justify-end">
               <button
                 onClick={() => { setOpen(false); setRevealed(false); }}
-                className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-xs font-medium"
+                className="px-4 py-2 bg-secondary hover:bg-secondary/80 dark:bg-white/10 dark:hover:bg-white/20 text-foreground dark:text-white rounded-lg text-xs font-medium transition-colors"
               >
                 Close
               </button>

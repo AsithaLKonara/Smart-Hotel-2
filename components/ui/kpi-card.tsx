@@ -85,7 +85,7 @@ export function KpiCard({
   return (
     <div
       className={cn(
-        "p-5 rounded-2xl bg-[#121417] border border-[#1E2227] flex flex-col justify-between hover:border-zinc-700 transition-colors group relative overflow-hidden",
+        "p-5 rounded-2xl bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] flex flex-col justify-between hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors group relative overflow-hidden shadow-sm",
         onClick && "cursor-pointer active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400",
         className
       )}
@@ -112,11 +112,11 @@ export function KpiCard({
         <div className="flex items-center justify-between gap-2 mb-3">
           <div className="flex items-center gap-2">
             {icon && (
-              <div className="p-1.5 rounded-lg bg-[#181A1D] border border-[#2B3037] text-zinc-300">
+              <div className="p-1.5 rounded-lg bg-secondary dark:bg-[#181A1D] border border-border dark:border-[#2B3037] text-foreground dark:text-zinc-300">
                 {icon}
               </div>
             )}
-            <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+            <span className="text-xs font-semibold text-muted-foreground dark:text-zinc-400 uppercase tracking-wider">
               {title}
             </span>
           </div>
@@ -136,11 +136,11 @@ export function KpiCard({
 
         {/* Primary Metric Value */}
         <div className="flex items-baseline gap-2">
-          <span className="text-2xl sm:text-3xl font-black text-white font-mono tracking-tight leading-none">
+          <span className="text-2xl sm:text-3xl font-black text-foreground dark:text-white font-mono tracking-tight leading-none">
             {formatValue(value)}
           </span>
           {comparativeValue && (
-            <span className="text-xs text-zinc-500 font-mono font-medium">
+            <span className="text-xs text-muted-foreground dark:text-zinc-500 font-mono font-medium">
               / {comparativeValue}
             </span>
           )}
@@ -148,15 +148,15 @@ export function KpiCard({
 
         {/* Sub-caption */}
         {subtitle && (
-          <p className="text-xs text-zinc-300 font-medium mt-1.5">
+          <p className="text-xs text-muted-foreground dark:text-zinc-300 font-medium mt-1.5">
             {subtitle}
           </p>
         )}
 
         {aiInsight && (
-          <div className="mt-2.5 flex items-start gap-1.5 p-2 rounded-lg bg-[#141619] border border-[#1E2227]">
+          <div className="mt-2.5 flex items-start gap-1.5 p-2 rounded-lg bg-muted/50 dark:bg-[#141619] border border-border dark:border-[#1E2227]">
             <Sparkles className="w-3 h-3 text-emerald-400 mt-0.5 shrink-0" />
-            <p className="text-[11px] text-zinc-300 leading-tight font-mono">
+            <p className="text-[11px] text-foreground dark:text-zinc-300 leading-tight font-mono">
               {aiInsight}
             </p>
           </div>
@@ -165,10 +165,10 @@ export function KpiCard({
 
       {/* Footnote or Action Divider */}
       {(footnote || actionLabel || deltaLabel) && (
-        <div className="pt-2 mt-4 border-t border-[#1C2025] flex items-center justify-between text-[11px] text-zinc-500 font-mono">
+        <div className="pt-2 mt-4 border-t border-border dark:border-[#1C2025] flex items-center justify-between text-[11px] text-muted-foreground dark:text-zinc-500 font-mono">
           <span>{footnote || deltaLabel}</span>
           {actionLabel && (
-            <span className="flex items-center gap-1 text-zinc-400 group-hover:text-white transition-colors">
+            <span className="flex items-center gap-1 text-muted-foreground group-hover:text-foreground dark:text-zinc-400 dark:group-hover:text-white transition-colors">
               {actionLabel} <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
             </span>
           )}

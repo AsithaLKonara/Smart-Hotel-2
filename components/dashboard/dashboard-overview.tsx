@@ -143,22 +143,22 @@ function ActivityItem({ activity, index }: { activity: RecentActivity, index: nu
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: index * 0.1 }}
-      className="flex items-start gap-3 p-4 bg-white rounded-xl border border-gray-100 hover:shadow-md transition-shadow"
+      className="flex items-start gap-3 p-4 bg-card dark:bg-[#121417] text-card-foreground rounded-xl border border-border dark:border-[#1E2227] hover:border-primary/50 transition-all"
     >
-      <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-amber-100 to-amber-200 rounded-lg flex items-center justify-center">
+      <div className="flex-shrink-0 w-10 h-10 bg-amber-500/10 dark:bg-amber-500/20 text-amber-500 rounded-lg flex items-center justify-center">
         {getTypeIcon()}
       </div>
       
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
-          <h4 className="font-medium text-gray-900 truncate">{activity.title}</h4>
+          <h4 className="font-medium text-foreground dark:text-white truncate">{activity.title}</h4>
           {getStatusIcon()}
         </div>
-        <p className="text-sm text-gray-600 mb-2">{activity.description}</p>
+        <p className="text-sm text-muted-foreground mb-2">{activity.description}</p>
         <div className="flex items-center justify-between">
-          <span className="text-xs text-gray-500">{formatTime(activity.timestamp)}</span>
+          <span className="text-xs text-muted-foreground">{formatTime(activity.timestamp)}</span>
           {activity.amount && (
-            <span className="text-sm font-medium text-amber-600">
+            <span className="text-sm font-medium text-amber-500">
               ${activity.amount.toFixed(2)}
             </span>
           )}
@@ -292,13 +292,13 @@ function DashboardOverviewContent({ onNavigate }: DashboardOverviewProps) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+      <div className="min-h-screen bg-background text-foreground">
         <div className="container mx-auto px-4 py-8">
           <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-1/3 mb-8"></div>
+            <div className="h-8 bg-muted rounded w-1/3 mb-8"></div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
               {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="h-32 bg-gray-200 rounded-xl"></div>
+                <div key={i} className="h-32 bg-muted rounded-xl"></div>
               ))}
             </div>
           </div>
@@ -310,7 +310,7 @@ function DashboardOverviewContent({ onNavigate }: DashboardOverviewProps) {
   if (!metrics) return null
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+    <div className="min-h-screen bg-background text-foreground">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <motion.div
@@ -318,8 +318,8 @@ function DashboardOverviewContent({ onNavigate }: DashboardOverviewProps) {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard Overview</h1>
-          <p className="text-gray-600">Real-time insights for hotel and restaurant operations</p>
+          <h1 className="text-3xl font-bold text-foreground dark:text-white mb-2">Dashboard Overview</h1>
+          <p className="text-muted-foreground">Real-time insights for hotel and restaurant operations</p>
         </motion.div>
 
         {/* Main KPI Grid */}
@@ -378,39 +378,39 @@ function DashboardOverviewContent({ onNavigate }: DashboardOverviewProps) {
           className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
         >
           {/* Tasks */}
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+          <div className="bg-card dark:bg-[#121417] text-card-foreground rounded-2xl shadow-sm border border-border dark:border-[#1E2227] p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Task Management</h3>
-              <CheckCircle className="w-5 h-5 text-blue-600" />
+              <h3 className="text-lg font-semibold text-foreground dark:text-white">Task Management</h3>
+              <CheckCircle className="w-5 h-5 text-blue-500" />
             </div>
             <div className="space-y-3">
               <div className="flex justify-between">
-                <span className="text-gray-600">Total Tasks</span>
-                <span className="font-medium">{metrics.tasks.total}</span>
+                <span className="text-muted-foreground text-sm">Total Tasks</span>
+                <span className="font-medium text-foreground dark:text-white">{metrics.tasks.total}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Completed</span>
-                <span className="font-medium text-green-600">{metrics.tasks.completed}</span>
+                <span className="text-muted-foreground text-sm">Completed</span>
+                <span className="font-medium text-emerald-500">{metrics.tasks.completed}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Pending</span>
-                <span className="font-medium text-yellow-600">{metrics.tasks.pending}</span>
+                <span className="text-muted-foreground text-sm">Pending</span>
+                <span className="font-medium text-amber-500">{metrics.tasks.pending}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Overdue</span>
-                <span className="font-medium text-red-600">{metrics.tasks.overdue}</span>
+                <span className="text-muted-foreground text-sm">Overdue</span>
+                <span className="font-medium text-rose-500">{metrics.tasks.overdue}</span>
               </div>
               <div className="mt-4">
                 <div className="flex justify-between text-sm mb-1">
-                  <span>Completion Rate</span>
-                  <span>{metrics.tasks.completionRate.toFixed(1)}%</span>
+                  <span className="text-muted-foreground">Completion Rate</span>
+                  <span className="font-medium text-foreground dark:text-white">{metrics.tasks.completionRate.toFixed(1)}%</span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="w-full bg-muted dark:bg-white/10 rounded-full h-2">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${metrics.tasks.completionRate}%` }}
                     transition={{ duration: 1, ease: 'easeOut' }}
-                    className="bg-gradient-to-r from-green-500 to-green-600 h-2 rounded-full"
+                    className="bg-gradient-to-r from-emerald-500 to-emerald-600 h-2 rounded-full"
                   />
                 </div>
               </div>
@@ -418,13 +418,13 @@ function DashboardOverviewContent({ onNavigate }: DashboardOverviewProps) {
           </div>
 
           {/* Guest Satisfaction */}
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+          <div className="bg-card dark:bg-[#121417] text-card-foreground rounded-2xl shadow-sm border border-border dark:border-[#1E2227] p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Guest Satisfaction</h3>
-              <Star className="w-5 h-5 text-yellow-500" />
+              <h3 className="text-lg font-semibold text-foreground dark:text-white">Guest Satisfaction</h3>
+              <Star className="w-5 h-5 text-amber-500" />
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-gray-900 mb-2">{metrics.guestSatisfaction.rating}</div>
+              <div className="text-3xl font-bold text-foreground dark:text-white mb-2">{metrics.guestSatisfaction.rating}</div>
               <div className="flex justify-center mb-2">
                 {Array.from({ length: 5 }).map((_, i) => (
                   <Star
@@ -432,13 +432,13 @@ function DashboardOverviewContent({ onNavigate }: DashboardOverviewProps) {
                     className={cn(
                       "w-4 h-4",
                       i < Math.floor(metrics.guestSatisfaction.rating)
-                        ? "text-yellow-400 fill-current"
-                        : "text-gray-300"
+                        ? "text-amber-400 fill-current"
+                        : "text-muted-foreground/30"
                     )}
                   />
                 ))}
               </div>
-              <div className="text-sm text-gray-600 mb-2">{metrics.guestSatisfaction.reviews} reviews</div>
+              <div className="text-sm text-muted-foreground mb-2">{metrics.guestSatisfaction.reviews} reviews</div>
               <TrendIndicator 
                 trend={metrics.guestSatisfaction.trend} 
                 change={metrics.guestSatisfaction.change} 
@@ -447,18 +447,18 @@ function DashboardOverviewContent({ onNavigate }: DashboardOverviewProps) {
           </div>
 
           {/* Restaurant Popular Item */}
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+          <div className="bg-card dark:bg-[#121417] text-card-foreground rounded-2xl shadow-sm border border-border dark:border-[#1E2227] p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Popular Item</h3>
-              <Utensils className="w-5 h-5 text-amber-600" />
+              <h3 className="text-lg font-semibold text-foreground dark:text-white">Popular Item</h3>
+              <Utensils className="w-5 h-5 text-amber-500" />
             </div>
             <div className="text-center">
-              <div className="text-xl font-bold text-gray-900 mb-2">{metrics.restaurant.popularItem}</div>
-              <div className="text-sm text-gray-600 mb-2">Most ordered today</div>
-              <div className="text-lg font-semibold text-amber-600">
+              <div className="text-xl font-bold text-foreground dark:text-white mb-2">{metrics.restaurant.popularItem}</div>
+              <div className="text-sm text-muted-foreground mb-2">Most ordered today</div>
+              <div className="text-lg font-semibold text-amber-500">
                 ${metrics.restaurant.revenueToday.toFixed(2)}
               </div>
-              <div className="text-xs text-gray-500 mt-1">Restaurant revenue</div>
+              <div className="text-xs text-muted-foreground mt-1">Restaurant revenue</div>
             </div>
           </div>
         </motion.div>
@@ -493,14 +493,14 @@ function DashboardOverviewContent({ onNavigate }: DashboardOverviewProps) {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.4 }}
-            className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6"
+            className="bg-card dark:bg-[#121417] text-card-foreground rounded-2xl shadow-sm border border-border dark:border-[#1E2227] p-6"
           >
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-gray-900">Recent Activity</h3>
-              <Activity className="w-5 h-5 text-blue-600" />
+              <h3 className="text-lg font-semibold text-foreground dark:text-white">Recent Activity</h3>
+              <Activity className="w-5 h-5 text-blue-500" />
             </div>
             
-            <div className="space-y-3 max-h-96 overflow-y-auto">
+            <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
               <AnimatePresence>
                 {recentActivity.map((activity, index) => (
                   <ActivityItem key={activity.id} activity={activity} index={index} />

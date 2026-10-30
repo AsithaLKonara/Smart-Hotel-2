@@ -23,7 +23,7 @@ export function DashboardHeader({
   firstName
 }: DashboardHeaderProps) {
   return (
-    <div className="p-6 sm:p-8 rounded-2xl bg-[#121417] border border-[#1E2227] text-white relative overflow-hidden mb-8 group hide-on-print">
+    <div className="p-6 sm:p-8 rounded-2xl bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] text-foreground dark:text-white relative overflow-hidden mb-8 group hide-on-print shadow-sm">
       {/* Hairline subtle accent glow */}
       <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
       <div className="absolute -right-20 -top-20 w-[300px] h-[300px] bg-blue-500/5 blur-[90px] rounded-full pointer-events-none" />
@@ -39,8 +39,8 @@ export function DashboardHeader({
               <Sparkles className="w-3 h-3 text-violet-400" />
               <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-violet-400">Node: {role || 'Operational'}</span>
             </div>
-            <div className="h-px w-6 bg-[#2B3037]" />
-            <span className="text-[10px] font-mono font-semibold uppercase tracking-wider text-zinc-500">v4.0 Enterprise</span>
+            <div className="h-px w-6 bg-border dark:bg-[#2B3037]" />
+            <span className="text-[10px] font-mono font-semibold uppercase tracking-wider text-muted-foreground dark:text-zinc-500">v4.0 Enterprise</span>
           </motion.div>
           
           <div className="space-y-1">
@@ -48,7 +48,7 @@ export function DashboardHeader({
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-2xl sm:text-3xl font-black text-white tracking-tight"
+              className="text-2xl sm:text-3xl font-black text-foreground dark:text-white tracking-tight"
             >
               {title}{firstName ? `, ${firstName}` : ''}
             </motion.h1>
@@ -57,7 +57,7 @@ export function DashboardHeader({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2 }}
-              className="text-zinc-400 max-w-2xl text-xs sm:text-sm leading-relaxed"
+              className="text-muted-foreground dark:text-zinc-400 max-w-2xl text-xs sm:text-sm leading-relaxed"
             >
               {subtitle}
             </motion.p>
@@ -73,7 +73,7 @@ export function DashboardHeader({
           <OperationalAlertCenter />
           
           <button
-            className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-rose-400 hover:bg-rose-950/20 rounded-lg border border-[#2B3037] hover:border-rose-900/40 bg-[#141619] transition-all"
+            className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 rounded-lg border border-border dark:border-[#2B3037] bg-secondary/50 dark:bg-[#141619] transition-all"
             onClick={() => signOut({ callbackUrl: '/' })}
           >
             <LogOut className="w-3.5 h-3.5" /> 

@@ -57,38 +57,38 @@ export interface ReceptionRoomMatrixDeskProps {
 const STATUS_CONFIG: Record<string, { label: string; color: string; badge: string; icon: any }> = {
   AVAILABLE: {
     label: "Available",
-    color: "bg-[#121417] border-[#1E2227] hover:border-zinc-700",
-    badge: "text-emerald-400 border-emerald-500/20 bg-emerald-500/10",
+    color: "bg-card dark:bg-[#121417] border-border dark:border-[#1E2227] hover:border-border/80 dark:hover:border-zinc-700 text-card-foreground shadow-sm",
+    badge: "text-emerald-600 dark:text-emerald-400 border-emerald-500/20 bg-emerald-500/10",
     icon: CheckCircle2
   },
   OCCUPIED: {
     label: "Occupied",
-    color: "bg-[#121417] border-[#1E2227] hover:border-zinc-700",
-    badge: "text-rose-400 border-rose-500/20 bg-rose-500/10",
+    color: "bg-card dark:bg-[#121417] border-border dark:border-[#1E2227] hover:border-border/80 dark:hover:border-zinc-700 text-card-foreground shadow-sm",
+    badge: "text-rose-600 dark:text-rose-400 border-rose-500/20 bg-rose-500/10",
     icon: UserCheck
   },
   DIRTY: {
     label: "Dirty",
-    color: "bg-[#121417] border-[#1E2227] hover:border-zinc-700",
-    badge: "text-amber-400 border-amber-500/20 bg-amber-500/10",
+    color: "bg-card dark:bg-[#121417] border-border dark:border-[#1E2227] hover:border-border/80 dark:hover:border-zinc-700 text-card-foreground shadow-sm",
+    badge: "text-amber-600 dark:text-amber-400 border-amber-500/20 bg-amber-500/10",
     icon: Clock
   },
   INSPECTED: {
     label: "Inspected",
-    color: "bg-[#121417] border-[#1E2227] hover:border-zinc-700",
-    badge: "text-blue-400 border-blue-500/20 bg-blue-500/10",
+    color: "bg-card dark:bg-[#121417] border-border dark:border-[#1E2227] hover:border-border/80 dark:hover:border-zinc-700 text-card-foreground shadow-sm",
+    badge: "text-blue-600 dark:text-blue-400 border-blue-500/20 bg-blue-500/10",
     icon: CheckCircle2
   },
   MAINTENANCE: {
     label: "Maintenance",
-    color: "bg-[#121417] border-[#1E2227] hover:border-zinc-700",
-    badge: "text-rose-400 border-rose-500/20 bg-rose-500/10",
+    color: "bg-card dark:bg-[#121417] border-border dark:border-[#1E2227] hover:border-border/80 dark:hover:border-zinc-700 text-card-foreground shadow-sm",
+    badge: "text-rose-600 dark:text-rose-400 border-rose-500/20 bg-rose-500/10",
     icon: Hammer
   },
   BLOCKED: {
     label: "Blocked",
-    color: "bg-[#121417] border-[#1E2227] hover:border-zinc-700",
-    badge: "text-zinc-400 border-[#2B3037] bg-[#181A1D]",
+    color: "bg-card dark:bg-[#121417] border-border dark:border-[#1E2227] hover:border-border/80 dark:hover:border-zinc-700 text-card-foreground shadow-sm",
+    badge: "text-muted-foreground dark:text-zinc-400 border-border dark:border-[#2B3037] bg-muted dark:bg-[#181A1D]",
     icon: Ban
   },
 }
@@ -297,35 +297,35 @@ export function ReceptionRoomMatrixDesk({
                           "group relative p-3.5 border cursor-pointer transition-all duration-200 flex flex-col justify-between min-h-[124px] rounded-2xl select-none",
                           config.color,
                           isSelected
-                            ? "ring-1 ring-[#2B3037] border-white/40 shadow-sm scale-[1.02] bg-[#181A1D]"
-                            : "hover:border-zinc-700 hover:bg-[#16181B]"
+                            ? "ring-1 ring-border dark:ring-[#2B3037] border-primary/50 shadow-sm scale-[1.02] bg-muted/60 dark:bg-[#181A1D]"
+                            : "hover:border-border/80 dark:hover:border-zinc-700 hover:bg-muted/40 dark:hover:bg-[#16181B]"
                         )}
                       >
                         {/* Top: Room Number & Type */}
                         <div>
                           <div className="flex items-start justify-between gap-1">
-                            <span className="text-xl font-black font-mono tracking-tight text-white group-hover:text-zinc-100 transition-colors">
+                            <span className="text-xl font-black font-mono tracking-tight text-foreground dark:text-white group-hover:text-primary transition-colors">
                               {room.number}
                             </span>
-                            <span className="text-[9px] uppercase tracking-wider text-zinc-500 font-semibold truncate max-w-[85px] text-right">
+                            <span className="text-[9px] uppercase tracking-wider text-muted-foreground dark:text-zinc-500 font-semibold truncate max-w-[85px] text-right">
                               {room.type}
                             </span>
                           </div>
 
                           {room.guestName ? (
-                            <div className="text-[10px] text-zinc-300 font-medium truncate mt-1 flex items-center gap-1.5 bg-[#181A1D] px-2 py-0.5 rounded-lg border border-[#2B3037]">
-                              <span className="h-1.5 w-1.5 rounded-full bg-rose-400 shrink-0" />
+                            <div className="text-[10px] text-muted-foreground dark:text-zinc-300 font-medium truncate mt-1 flex items-center gap-1.5 bg-muted/50 dark:bg-[#181A1D] px-2 py-0.5 rounded-lg border border-border dark:border-[#2B3037]">
+                              <span className="h-1.5 w-1.5 rounded-full bg-rose-500 shrink-0" />
                               <span className="truncate">{room.guestName}</span>
                             </div>
                           ) : (
-                            <div className="text-[10px] text-zinc-600 italic mt-1 font-mono">
+                            <div className="text-[10px] text-muted-foreground/60 dark:text-zinc-600 italic mt-1 font-mono">
                               No active folio
                             </div>
                           )}
                         </div>
 
                         {/* Bottom: Status Pill & Action */}
-                        <div className="flex items-center justify-between gap-1.5 pt-2 border-t border-[#1C2025]">
+                        <div className="flex items-center justify-between gap-1.5 pt-2 border-t border-border dark:border-[#1C2025]">
                           <span className={cn(
                             "text-[9px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-md flex items-center gap-1 border shrink-0",
                             config.badge

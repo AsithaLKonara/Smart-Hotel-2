@@ -114,7 +114,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`dark ${inter.variable}`} suppressHydrationWarning>
+    <html lang="en" className={inter.variable} suppressHydrationWarning>
       <head>
         {/* Preconnect to external domains for performance */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -146,7 +146,7 @@ export default function RootLayout({
           </>
         )}
       </head>
-      <body className="min-h-screen bg-[#090A0C] text-zinc-100 font-sans antialiased relative">
+      <body className="min-h-screen bg-background text-foreground font-sans antialiased relative selection:bg-amber-500/20 selection:text-amber-500 transition-colors duration-200">
         <ErrorBoundary>
           <Providers>
             <div className="flex min-h-screen flex-col relative z-10 bg-transparent print:block print:min-h-0 print:h-auto print:overflow-visible">

@@ -33,10 +33,10 @@ export function GuestReviews() {
   }
 
   return (
-    <Card className="p-10 bg-[#0c0c0c] border-white/[0.05] rounded-[40px] space-y-8">
+    <Card className="p-10 bg-card dark:bg-[#0c0c0c] border border-border dark:border-white/[0.05] rounded-[40px] space-y-8 shadow-sm">
       <div className="space-y-1">
-        <h3 className="text-2xl font-serif font-bold text-white tracking-tight">Your Experience</h3>
-        <p className="text-xs text-white/40 font-medium">How are we doing? Your voice shapes our future.</p>
+        <h3 className="text-2xl font-serif font-bold text-foreground dark:text-white tracking-tight">Your Experience</h3>
+        <p className="text-xs text-muted-foreground font-medium">How are we doing? Your voice shapes our future.</p>
       </div>
 
       <div className="flex items-center gap-4 py-4">
@@ -51,8 +51,8 @@ export function GuestReviews() {
             <Star 
               className={`w-10 h-10 ${
                 (hoveredRating || rating) >= star 
-                  ? 'fill-primary text-primary drop-shadow-[0_0_8px_rgba(197,160,89,0.4)]' 
-                  : 'text-white/10'
+                  ? 'fill-amber-400 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.4)]' 
+                  : 'text-muted-foreground/20'
               } transition-colors`} 
             />
           </button>
@@ -64,12 +64,12 @@ export function GuestReviews() {
           value={comment}
           onChange={e => setComment(e.target.value)}
           placeholder="Share your experience..."
-          className="bg-white/[0.03] border-white/10 rounded-[24px] p-6 text-sm text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-primary/50 min-h-[120px]"
+          className="bg-muted/30 dark:bg-white/[0.03] border border-input dark:border-white/10 rounded-[24px] p-6 text-sm text-foreground dark:text-white placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 min-h-[120px]"
         />
         <Button 
           onClick={handleSubmit}
           disabled={isSubmitting}
-          className="w-full h-16 bg-gold-gradient text-white rounded-[24px] uppercase tracking-[0.2em] text-[10px] font-black border-none shadow-luxury flex items-center gap-3"
+          className="w-full h-16 bg-primary hover:bg-primary/90 text-primary-foreground rounded-[24px] uppercase tracking-[0.2em] text-[10px] font-black border-none shadow-sm flex items-center gap-3"
         >
           {isSubmitting ? 'Submitting...' : (
             <>Submit Review <Send className="w-4 h-4" /></>

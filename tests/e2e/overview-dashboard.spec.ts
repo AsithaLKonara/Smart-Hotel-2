@@ -28,7 +28,7 @@ test.describe('Task 1: Top Level - Overview Dashboard (/admin/dashboard)', () =>
     await expect(page.locator('text=Service Score').first()).toBeVisible();
 
     // 5. Verify Telemetry Gauge / Progress Bar
-    const telemetryBar = page.locator('.h-2.rounded-full.bg-\\[\\#1A1D21\\]').first();
+    const telemetryBar = page.locator('.h-2.rounded-full').first();
     await expect(telemetryBar).toBeVisible();
 
     // 6. Verify Live Reservation Stream section

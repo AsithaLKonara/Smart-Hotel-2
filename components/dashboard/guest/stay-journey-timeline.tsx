@@ -29,14 +29,14 @@ export function StayJourneyTimeline({
   activeStep = 1 
 }: StayJourneyTimelineProps) {
   return (
-    <Card className="bg-white/5 border-white/10 backdrop-blur-xl mb-10 overflow-hidden relative">
+    <Card className="bg-card dark:bg-white/5 border border-border dark:border-white/10 backdrop-blur-xl mb-10 overflow-hidden relative shadow-sm">
       <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
       <CardContent className="p-8 lg:p-10">
-        <h3 className="text-[10px] uppercase tracking-[0.3em] font-black text-white/30 mb-10 text-center lg:text-left">Your Experience Journey</h3>
+        <h3 className="text-[10px] uppercase tracking-[0.3em] font-black text-muted-foreground mb-10 text-center lg:text-left">Your Experience Journey</h3>
 
         <div className="relative flex flex-col lg:flex-row justify-between gap-10">
           {/* Connecting Line (Desktop) */}
-          <div className="hidden lg:block absolute top-6 left-12 right-12 h-[1px] bg-white/5 -z-0" />
+          <div className="hidden lg:block absolute top-6 left-12 right-12 h-[1px] bg-border dark:bg-white/5 -z-0" />
           
           {steps.map((step, idx) => {
             const isActive = idx === activeStep
@@ -53,15 +53,15 @@ export function StayJourneyTimeline({
               >
                 {/* Node */}
                 <div className={cn(
-                  "w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all duration-500 shadow-lg",
+                  "w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all duration-500 shadow-md",
                   isActive ? "bg-primary/20 border-primary shadow-primary/20 animate-pulse scale-110" : 
                   isPassed ? "bg-emerald-500/10 border-emerald-500 shadow-emerald-500/10" : 
-                  "bg-white/5 border-white/10 opacity-40 group-hover:opacity-60"
+                  "bg-muted/40 dark:bg-white/5 border-border dark:border-white/10 text-muted-foreground opacity-60 group-hover:opacity-100"
                 )}>
                   {isPassed ? (
-                    <CheckCircle className="w-6 h-6 text-emerald-400" />
+                    <CheckCircle className="w-6 h-6 text-emerald-500" />
                   ) : (
-                    <span className={cn("text-sm font-black font-mono", isActive ? "text-primary" : "text-white/40")}>
+                    <span className={cn("text-sm font-black font-mono", isActive ? "text-primary" : "text-muted-foreground")}>
                       0{idx + 1}
                     </span>
                   )}
@@ -70,17 +70,17 @@ export function StayJourneyTimeline({
                 <div className="flex-1">
                   <Badge variant="outline" className={cn(
                     "mb-2 border-none px-0 text-[10px] font-black uppercase tracking-widest",
-                    isActive ? "text-primary" : isPassed ? "text-emerald-400" : "text-white/20"
+                    isActive ? "text-primary" : isPassed ? "text-emerald-500" : "text-muted-foreground/60"
                   )}>
                     {step.label}
                   </Badge>
                   <h4 className={cn(
                     "text-sm font-bold tracking-tight mb-1 transition-colors",
-                    isActive ? "text-white" : "text-white/40"
+                    isActive ? "text-foreground dark:text-white" : "text-muted-foreground"
                   )}>
                     {step.desc}
                   </h4>
-                  <p className="text-[10px] font-mono text-white/20 uppercase tracking-tighter">
+                  <p className="text-[10px] font-mono text-muted-foreground/75 uppercase tracking-tighter">
                     {step.date}
                   </p>
                 </div>

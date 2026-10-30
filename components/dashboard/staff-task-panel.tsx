@@ -68,48 +68,48 @@ interface StaffTaskPanelProps {
 const taskTypeConfig = {
   HOUSEKEEPING: {
     label: 'Housekeeping',
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-100',
+    color: 'text-blue-500',
+    bgColor: 'bg-blue-500/10 dark:bg-blue-500/20',
     icon: '🧹'
   },
   MAINTENANCE: {
     label: 'Maintenance',
-    color: 'text-orange-600',
-    bgColor: 'bg-orange-100',
+    color: 'text-orange-500',
+    bgColor: 'bg-orange-500/10 dark:bg-orange-500/20',
     icon: '🔧'
   },
   GUEST_REQUEST: {
     label: 'Guest Request',
-    color: 'text-green-600',
-    bgColor: 'bg-green-100',
+    color: 'text-emerald-500',
+    bgColor: 'bg-emerald-500/10 dark:bg-emerald-500/20',
     icon: '🎯'
   },
   ADMINISTRATIVE: {
     label: 'Administrative',
-    color: 'text-purple-600',
-    bgColor: 'bg-purple-100',
+    color: 'text-purple-500',
+    bgColor: 'bg-purple-500/10 dark:bg-purple-500/20',
     icon: '📋'
   },
   ROOM_SERVICE: {
     label: 'Room Service',
-    color: 'text-amber-600',
-    bgColor: 'bg-amber-100',
+    color: 'text-amber-500',
+    bgColor: 'bg-amber-500/10 dark:bg-amber-500/20',
     icon: '🍽️'
   }
 }
 
 const priorityConfig = {
-  LOW: { color: 'text-gray-600', bgColor: 'bg-gray-100', label: 'Low' },
-  MEDIUM: { color: 'text-blue-600', bgColor: 'bg-blue-100', label: 'Medium' },
-  HIGH: { color: 'text-orange-600', bgColor: 'bg-orange-100', label: 'High' },
-  URGENT: { color: 'text-red-600', bgColor: 'bg-red-100', label: 'Urgent' }
+  LOW: { color: 'text-muted-foreground', bgColor: 'bg-muted dark:bg-white/10', label: 'Low' },
+  MEDIUM: { color: 'text-blue-500', bgColor: 'bg-blue-500/10 dark:bg-blue-500/20', label: 'Medium' },
+  HIGH: { color: 'text-orange-500', bgColor: 'bg-orange-500/10 dark:bg-orange-500/20', label: 'High' },
+  URGENT: { color: 'text-rose-500', bgColor: 'bg-rose-500/10 dark:bg-rose-500/20', label: 'Urgent' }
 }
 
 const statusConfig = {
-  PENDING: { color: 'text-yellow-600', bgColor: 'bg-yellow-100', label: 'Pending' },
-  IN_PROGRESS: { color: 'text-blue-600', bgColor: 'bg-blue-100', label: 'In Progress' },
-  COMPLETED: { color: 'text-green-600', bgColor: 'bg-green-100', label: 'Completed' },
-  OVERDUE: { color: 'text-red-600', bgColor: 'bg-red-100', label: 'Overdue' }
+  PENDING: { color: 'text-amber-500', bgColor: 'bg-amber-500/10 dark:bg-amber-500/20', label: 'Pending' },
+  IN_PROGRESS: { color: 'text-blue-500', bgColor: 'bg-blue-500/10 dark:bg-blue-500/20', label: 'In Progress' },
+  COMPLETED: { color: 'text-emerald-500', bgColor: 'bg-emerald-500/10 dark:bg-emerald-500/20', label: 'Completed' },
+  OVERDUE: { color: 'text-rose-500', bgColor: 'bg-rose-500/10 dark:bg-rose-500/20', label: 'Overdue' }
 }
 
 // Task card component
@@ -146,8 +146,8 @@ function TaskCard({
       whileHover={{ scale: 1.02 }}
       onClick={() => onClick?.(task.id)}
       className={cn(
-        "bg-white rounded-2xl shadow-lg border border-gray-100 p-6 cursor-pointer hover:shadow-xl transition-shadow",
-        isOverdue && "border-red-200 bg-red-50"
+        "bg-card dark:bg-[#121417] text-card-foreground rounded-2xl shadow-sm border border-border dark:border-[#1E2227] p-6 cursor-pointer hover:border-primary/50 transition-all",
+        isOverdue && "border-rose-500/50 bg-rose-500/[0.04]"
       )}
     >
       {/* Header */}
@@ -155,8 +155,8 @@ function TaskCard({
         <div className="flex items-center gap-3">
           <div className="text-2xl">{typeConf.icon}</div>
           <div>
-            <h3 className="font-semibold text-gray-900">{task.title}</h3>
-            <div className="flex items-center gap-2 text-sm text-gray-500">
+            <h3 className="font-semibold text-foreground dark:text-white">{task.title}</h3>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <span>{typeConf.label}</span>
               {task.roomNumber && (
                 <>
@@ -177,34 +177,34 @@ function TaskCard({
             {priorityConf.label}
           </div>
           {isOverdue && (
-            <div className="text-xs text-red-600 font-medium">Overdue</div>
+            <div className="text-xs text-rose-500 font-medium">Overdue</div>
           )}
         </div>
       </div>
 
       {/* Description */}
-      <p className="text-gray-600 text-sm mb-4 line-clamp-2">{task.description}</p>
+      <p className="text-muted-foreground text-sm mb-4 line-clamp-2">{task.description}</p>
 
       {/* Assigned To */}
       {task.assignedTo && (
         <div className="flex items-center gap-2 mb-4">
-          <div className="w-8 h-8 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center">
-            <User className="w-4 h-4 text-blue-600" />
+          <div className="w-8 h-8 bg-blue-500/10 dark:bg-blue-500/20 text-blue-500 rounded-full flex items-center justify-center">
+            <User className="w-4 h-4" />
           </div>
           <div>
-            <div className="text-sm font-medium text-gray-900">{task.assignedTo.name}</div>
-            <div className="text-xs text-gray-500">{task.assignedTo.role}</div>
+            <div className="text-sm font-medium text-foreground dark:text-white">{task.assignedTo.name}</div>
+            <div className="text-xs text-muted-foreground">{task.assignedTo.role}</div>
           </div>
         </div>
       )}
 
       {/* Tags */}
       {task.tags && task.tags.length > 0 && (
-        <div className="flex gap-1 mb-4">
+        <div className="flex gap-1 mb-4 flex-wrap">
           {task.tags.map((tag, tagIndex) => (
             <span
               key={tagIndex}
-              className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full"
+              className="px-2 py-0.5 bg-muted dark:bg-white/10 text-muted-foreground text-xs rounded-full"
             >
               {tag}
             </span>
@@ -214,7 +214,7 @@ function TaskCard({
 
       {/* Footer */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4 text-sm text-gray-500">
+        <div className="flex items-center gap-4 text-sm text-muted-foreground">
           <div className="flex items-center gap-1">
             <Calendar className="w-4 h-4" />
             <span>{task.dueDate.toLocaleDateString()}</span>
@@ -287,50 +287,50 @@ function StaffCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1 }}
-      className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6"
+      className="bg-card dark:bg-[#121417] text-card-foreground rounded-2xl shadow-sm border border-border dark:border-[#1E2227] p-6"
     >
       <div className="flex items-center gap-4 mb-4">
         <div className="relative">
-          <div className="w-12 h-12 bg-gradient-to-br from-amber-100 to-amber-200 rounded-full flex items-center justify-center">
-            <User className="w-6 h-6 text-amber-600" />
+          <div className="w-12 h-12 bg-amber-500/10 dark:bg-amber-500/20 text-amber-500 rounded-full flex items-center justify-center">
+            <User className="w-6 h-6" />
           </div>
           {staff.isOnline && (
-            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
+            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-card rounded-full"></div>
           )}
         </div>
         
-        <div className="flex-1">
-          <h3 className="font-semibold text-gray-900">{staff.name}</h3>
-          <div className="text-sm text-gray-600">{staff.role}</div>
-          <div className="text-xs text-gray-500">{staff.department}</div>
+        <div className="flex-1 min-w-0">
+          <h3 className="font-semibold text-foreground dark:text-white truncate">{staff.name}</h3>
+          <div className="text-sm text-muted-foreground truncate">{staff.role}</div>
+          <div className="text-xs text-muted-foreground/75 truncate">{staff.department}</div>
         </div>
         
         <div className="flex items-center gap-1">
-          <Star className="w-4 h-4 text-yellow-500" />
-          <span className="text-sm font-medium">{staff.rating}</span>
+          <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+          <span className="text-sm font-medium text-foreground dark:text-white">{staff.rating}</span>
         </div>
       </div>
 
       <div className="space-y-3">
         <div className="flex justify-between text-sm">
-          <span className="text-gray-600">Tasks</span>
-          <span className="font-medium">{staff.tasks}</span>
+          <span className="text-muted-foreground">Tasks</span>
+          <span className="font-medium text-foreground dark:text-white">{staff.tasks}</span>
         </div>
         <div className="flex justify-between text-sm">
-          <span className="text-gray-600">Completed</span>
-          <span className="font-medium text-green-600">{staff.completed}</span>
+          <span className="text-muted-foreground">Completed</span>
+          <span className="font-medium text-emerald-500">{staff.completed}</span>
         </div>
         <div>
           <div className="flex justify-between text-sm mb-1">
-            <span className="text-gray-600">Completion Rate</span>
-            <span className="font-medium">{completionRate.toFixed(0)}%</span>
+            <span className="text-muted-foreground">Completion Rate</span>
+            <span className="font-medium text-foreground dark:text-white">{completionRate.toFixed(0)}%</span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full bg-muted dark:bg-white/10 rounded-full h-2">
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${completionRate}%` }}
               transition={{ duration: 1, delay: index * 0.1 }}
-              className="bg-gradient-to-r from-green-500 to-green-600 h-2 rounded-full"
+              className="bg-gradient-to-r from-emerald-500 to-emerald-600 h-2 rounded-full"
             />
           </div>
         </div>
@@ -450,13 +450,13 @@ function StaffTaskPanelContent({ onTaskClick, onTaskUpdate, onCreateTask }: Staf
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50">
+      <div className="min-h-screen bg-background text-foreground">
         <div className="container mx-auto px-4 py-8">
           <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-1/3 mb-8"></div>
+            <div className="h-8 bg-muted rounded w-1/3 mb-8"></div>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
               {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="h-32 bg-gray-200 rounded-xl"></div>
+                <div key={i} className="h-32 bg-muted rounded-xl"></div>
               ))}
             </div>
           </div>
@@ -466,7 +466,7 @@ function StaffTaskPanelContent({ onTaskClick, onTaskUpdate, onCreateTask }: Staf
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50">
+    <div className="min-h-screen bg-background text-foreground">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <motion.div
@@ -476,8 +476,8 @@ function StaffTaskPanelContent({ onTaskClick, onTaskUpdate, onCreateTask }: Staf
         >
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Staff Task Management</h1>
-              <p className="text-gray-600">Manage staff tasks, assignments, and performance tracking</p>
+              <h1 className="text-3xl font-bold text-foreground dark:text-white mb-2">Staff Task Management</h1>
+              <p className="text-muted-foreground">Manage staff tasks, assignments, and performance tracking</p>
             </div>
             
             <PremiumButton
@@ -497,54 +497,54 @@ function StaffTaskPanelContent({ onTaskClick, onTaskUpdate, onCreateTask }: Staf
           transition={{ delay: 0.1 }}
           className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8"
         >
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+          <div className="bg-card dark:bg-[#121417] text-card-foreground rounded-2xl shadow-sm border border-border dark:border-[#1E2227] p-6">
             <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl">
-                <BarChart3 className="w-6 h-6 text-blue-600" />
+              <div className="p-3 bg-blue-500/10 dark:bg-blue-500/20 rounded-xl">
+                <BarChart3 className="w-6 h-6 text-blue-500" />
               </div>
             </div>
-            <div className="text-2xl font-bold text-gray-900 mb-1">{stats.total}</div>
-            <div className="text-gray-600">Total Tasks</div>
+            <div className="text-2xl font-bold text-foreground dark:text-white mb-1">{stats.total}</div>
+            <div className="text-muted-foreground text-sm">Total Tasks</div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+          <div className="bg-card dark:bg-[#121417] text-card-foreground rounded-2xl shadow-sm border border-border dark:border-[#1E2227] p-6">
             <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-gradient-to-br from-yellow-100 to-yellow-200 rounded-xl">
-                <Clock className="w-6 h-6 text-yellow-600" />
+              <div className="p-3 bg-amber-500/10 dark:bg-amber-500/20 rounded-xl">
+                <Clock className="w-6 h-6 text-amber-500" />
               </div>
             </div>
-            <div className="text-2xl font-bold text-gray-900 mb-1">{stats.pending}</div>
-            <div className="text-gray-600">Pending</div>
+            <div className="text-2xl font-bold text-foreground dark:text-white mb-1">{stats.pending}</div>
+            <div className="text-muted-foreground text-sm">Pending</div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+          <div className="bg-card dark:bg-[#121417] text-card-foreground rounded-2xl shadow-sm border border-border dark:border-[#1E2227] p-6">
             <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl">
-                <Zap className="w-6 h-6 text-blue-600" />
+              <div className="p-3 bg-blue-500/10 dark:bg-blue-500/20 rounded-xl">
+                <Zap className="w-6 h-6 text-blue-500" />
               </div>
             </div>
-            <div className="text-2xl font-bold text-gray-900 mb-1">{stats.inProgress}</div>
-            <div className="text-gray-600">In Progress</div>
+            <div className="text-2xl font-bold text-foreground dark:text-white mb-1">{stats.inProgress}</div>
+            <div className="text-muted-foreground text-sm">In Progress</div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+          <div className="bg-card dark:bg-[#121417] text-card-foreground rounded-2xl shadow-sm border border-border dark:border-[#1E2227] p-6">
             <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-gradient-to-br from-green-100 to-green-200 rounded-xl">
-                <CheckCircle className="w-6 h-6 text-green-600" />
+              <div className="p-3 bg-emerald-500/10 dark:bg-emerald-500/20 rounded-xl">
+                <CheckCircle className="w-6 h-6 text-emerald-500" />
               </div>
             </div>
-            <div className="text-2xl font-bold text-gray-900 mb-1">{stats.completed}</div>
-            <div className="text-gray-600">Completed</div>
+            <div className="text-2xl font-bold text-foreground dark:text-white mb-1">{stats.completed}</div>
+            <div className="text-muted-foreground text-sm">Completed</div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+          <div className="bg-card dark:bg-[#121417] text-card-foreground rounded-2xl shadow-sm border border-border dark:border-[#1E2227] p-6">
             <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-gradient-to-br from-red-100 to-red-200 rounded-xl">
-                <AlertCircle className="w-6 h-6 text-red-600" />
+              <div className="p-3 bg-rose-500/10 dark:bg-rose-500/20 rounded-xl">
+                <AlertCircle className="w-6 h-6 text-rose-500" />
               </div>
             </div>
-            <div className="text-2xl font-bold text-gray-900 mb-1">{stats.overdue}</div>
-            <div className="text-gray-600">Overdue</div>
+            <div className="text-2xl font-bold text-foreground dark:text-white mb-1">{stats.overdue}</div>
+            <div className="text-muted-foreground text-sm">Overdue</div>
           </div>
         </motion.div>
 
@@ -558,39 +558,39 @@ function StaffTaskPanelContent({ onTaskClick, onTaskUpdate, onCreateTask }: Staf
           {/* Search */}
           <div className="flex-1">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
                 type="text"
                 placeholder="Search tasks..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-input bg-background text-foreground rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent placeholder:text-muted-foreground text-sm"
               />
             </div>
           </div>
 
           {/* Type Filter */}
-          <div className="flex gap-2 overflow-x-auto">
+          <div className="flex gap-2 overflow-x-auto pb-1">
             {typeFilters.map((filter) => (
               <motion.button
                 key={filter.key}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => setSelectedType(filter.key)}
                 className={cn(
-                  "flex-shrink-0 px-4 py-2 rounded-lg border-2 transition-all font-medium flex items-center gap-2",
+                  "flex-shrink-0 px-4 py-2 rounded-xl border transition-all font-medium flex items-center gap-2 text-sm",
                   selectedType === filter.key
-                    ? "border-purple-500 bg-purple-500 text-white shadow-lg"
-                    : "border-gray-200 bg-white text-gray-700 hover:border-purple-300"
+                    ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                    : "border-border bg-card dark:bg-white/5 text-muted-foreground hover:text-foreground hover:border-primary/50"
                 )}
               >
                 {filter.label}
                 {filter.count > 0 && (
                   <span className={cn(
-                    "px-2 py-1 rounded-full text-xs font-bold",
+                    "px-2 py-0.5 rounded-full text-xs font-bold",
                     selectedType === filter.key
-                      ? "bg-white/20 text-white"
-                      : "bg-purple-100 text-purple-600"
+                      ? "bg-white/20 text-primary-foreground"
+                      : "bg-muted dark:bg-white/10 text-muted-foreground"
                   )}>
                     {filter.count}
                   </span>
@@ -607,7 +607,7 @@ function StaffTaskPanelContent({ onTaskClick, onTaskUpdate, onCreateTask }: Staf
           transition={{ delay: 0.3 }}
           className="mb-8"
         >
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Staff Overview</h2>
+          <h2 className="text-xl font-semibold text-foreground dark:text-white mb-4">Staff Overview</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {staff.map((member, index) => (
               <StaffCard key={member.id} staff={member} index={index} />
@@ -621,7 +621,7 @@ function StaffTaskPanelContent({ onTaskClick, onTaskUpdate, onCreateTask }: Staf
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
         >
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Tasks</h2>
+          <h2 className="text-xl font-semibold text-foreground dark:text-white mb-4">Tasks</h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
             <AnimatePresence>
               {filteredTasks.map((task, index) => (
@@ -642,11 +642,11 @@ function StaffTaskPanelContent({ onTaskClick, onTaskUpdate, onCreateTask }: Staf
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center py-12"
+            className="text-center py-12 bg-card dark:bg-[#121417] text-card-foreground rounded-2xl border border-border dark:border-[#1E2227]"
           >
-            <BarChart3 className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-medium text-gray-900 mb-2">No tasks found</h3>
-            <p className="text-gray-500">No tasks match the current filters</p>
+            <BarChart3 className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" />
+            <h3 className="text-xl font-medium text-foreground dark:text-white mb-2">No tasks found</h3>
+            <p className="text-muted-foreground text-sm">No tasks match the current filters</p>
           </motion.div>
         )}
       </div>

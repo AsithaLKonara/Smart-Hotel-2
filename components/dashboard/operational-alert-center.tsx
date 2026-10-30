@@ -89,12 +89,12 @@ export function OperationalAlertCenter() {
           "relative p-3 rounded-2xl border transition-all duration-300 group",
           alerts.length > 0 
             ? "bg-rose-500/10 border-rose-500/20 text-rose-500 animate-pulse-soft" 
-            : "bg-white/5 border-white/10 text-white/40 hover:text-white"
+            : "bg-muted/50 dark:bg-white/5 border-border dark:border-white/10 text-muted-foreground hover:text-foreground dark:text-white/40 dark:hover:text-white"
         )}
       >
         <ShieldAlert className="w-5 h-5" />
         {alerts.length > 0 && (
-          <span className="absolute -top-1 -right-1 w-5 h-5 bg-rose-500 text-white text-[10px] font-black flex items-center justify-center rounded-full border-2 border-[#0c0c0c] shadow-lg">
+          <span className="absolute -top-1 -right-1 w-5 h-5 bg-rose-500 text-white text-[10px] font-black flex items-center justify-center rounded-full border-2 border-background dark:border-[#0c0c0c] shadow-lg">
             {alerts.length}
           </span>
         )}
@@ -108,20 +108,20 @@ export function OperationalAlertCenter() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsOpen(false)}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
             />
             <motion.div 
               initial={{ opacity: 0, y: 20, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.95 }}
-              className="absolute right-0 sm:right-0 mt-4 w-[calc(100vw-2rem)] sm:w-[400px] bg-[#0c0c0c] border border-white/10 rounded-[32px] shadow-2xl overflow-hidden z-50"
+              className="absolute right-0 sm:right-0 mt-4 w-[calc(100vw-2rem)] sm:w-[400px] bg-card dark:bg-[#0c0c0c] border border-border dark:border-white/10 rounded-[32px] shadow-2xl overflow-hidden z-50 text-card-foreground"
             >
-              <div className="p-6 border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
+              <div className="p-6 border-b border-border dark:border-white/5 bg-muted/30 dark:bg-white/[0.02] flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-serif font-bold text-white">Command Center</h3>
-                  <p className="text-white/40 text-[10px] uppercase tracking-widest font-black">P0 Operational Alerts</p>
+                  <h3 className="text-lg font-serif font-bold text-foreground dark:text-white">Command Center</h3>
+                  <p className="text-muted-foreground dark:text-white/40 text-[10px] uppercase tracking-widest font-black">P0 Operational Alerts</p>
                 </div>
-                <button onClick={() => setIsOpen(false)} className="p-2 rounded-full hover:bg-white/5 text-white/20 hover:text-white">
+                <button onClick={() => setIsOpen(false)} className="p-2 rounded-full hover:bg-muted dark:hover:bg-white/5 text-muted-foreground hover:text-foreground dark:text-white/20 dark:hover:text-white">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -132,7 +132,7 @@ export function OperationalAlertCenter() {
                     <div className="w-16 h-16 bg-emerald-500/10 text-emerald-500 rounded-full flex items-center justify-center mx-auto border border-emerald-500/20">
                       <Bell className="w-8 h-8" />
                     </div>
-                    <p className="text-white/40 text-sm font-medium">All clear. No active P0 alerts.</p>
+                    <p className="text-muted-foreground dark:text-white/40 text-sm font-medium">All clear. No active P0 alerts.</p>
                   </div>
                 ) : (
                   alerts.map((alert) => (
@@ -142,19 +142,19 @@ export function OperationalAlertCenter() {
                       className={cn("p-5 rounded-[24px] border relative group", getAlertStyles(alert.type))}
                     >
                       <div className="flex items-start gap-4">
-                        <div className="p-2.5 rounded-xl bg-white/5 border border-white/10">
+                        <div className="p-2.5 rounded-xl bg-background/80 dark:bg-white/5 border border-border dark:border-white/10">
                           {getCategoryIcon(alert.category)}
                         </div>
                         <div className="flex-1 space-y-1">
                           <div className="flex items-center justify-between">
                             <h4 className="text-xs font-black uppercase tracking-wider">{alert.title}</h4>
-                            <span className="text-[9px] font-medium opacity-40">{alert.timestamp}</span>
+                            <span className="text-[9px] font-medium opacity-60">{alert.timestamp}</span>
                           </div>
-                          <p className="text-xs font-medium text-white/70 leading-relaxed italic">
+                          <p className="text-xs font-medium text-foreground/80 dark:text-white/70 leading-relaxed italic">
                             {alert.message}
                           </p>
                           {alert.actionLabel && (
-                            <button className="mt-3 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest py-1.5 px-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-all group/btn">
+                            <button className="mt-3 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest py-1.5 px-3 bg-background/80 hover:bg-background border border-border dark:bg-white/5 dark:hover:bg-white/10 dark:border-white/10 rounded-lg transition-all group/btn text-foreground dark:text-white">
                               {alert.actionLabel}
                               <ChevronRight className="w-3 h-3 group-hover/btn:translate-x-1 transition-transform" />
                             </button>
@@ -163,7 +163,7 @@ export function OperationalAlertCenter() {
                       </div>
                       <button 
                         onClick={(e) => { e.stopPropagation(); removeAlert(alert.id); }}
-                        className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 p-1 rounded-md hover:bg-black/20 transition-all"
+                        className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 p-1 rounded-md hover:bg-black/10 dark:hover:bg-black/20 transition-all"
                       >
                         <X className="w-3 h-3" />
                       </button>
@@ -173,8 +173,8 @@ export function OperationalAlertCenter() {
               </div>
 
               {alerts.length > 0 && (
-                <div className="p-4 bg-white/[0.02] border-t border-white/5">
-                  <button className="w-full py-3 text-[10px] font-black uppercase tracking-[0.2em] text-white/40 hover:text-white transition-colors">
+                <div className="p-4 bg-muted/30 dark:bg-white/[0.02] border-t border-border dark:border-white/5">
+                  <button className="w-full py-3 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground dark:text-white/40 dark:hover:text-white transition-colors">
                     View Full Incident Log
                   </button>
                 </div>

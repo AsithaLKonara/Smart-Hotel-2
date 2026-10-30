@@ -254,13 +254,13 @@ export function RoomActionDesk({
       <div className="absolute inset-0 bg-black/80 backdrop-blur-md" />
 
       {/* Modal */}
-      <div className="relative w-full max-w-3xl max-h-[95vh] flex flex-col bg-[#0d0d0d] border border-white/10 rounded-3xl shadow-[0_40px_140px_-20px_rgba(0,0,0,0.9)] overflow-hidden">
+      <div className="relative w-full max-w-3xl max-h-[95vh] flex flex-col bg-card dark:bg-[#0d0d0d] border border-border dark:border-white/10 rounded-3xl shadow-2xl overflow-hidden text-card-foreground">
 
         {/* Gold top line */}
         <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-primary/70 to-transparent" />
 
         {/* ─── HEADER ─── */}
-        <div className="flex items-center justify-between p-6 border-b border-white/5 bg-white/[0.02] flex-shrink-0">
+        <div className="flex items-center justify-between p-6 border-b border-border dark:border-white/5 bg-muted/40 dark:bg-white/[0.02] flex-shrink-0">
           <div className="flex items-center gap-4">
             {/* Status pill */}
             <div className={cn('flex items-center gap-2 px-3.5 py-1.5 rounded-full border text-sm font-semibold', currentStatus.bg)}>
@@ -268,8 +268,8 @@ export function RoomActionDesk({
               <span className={currentStatus.color}>{currentStatus.label}</span>
             </div>
             <div>
-              <p className="text-xs text-white/40 uppercase tracking-widest font-medium">Room</p>
-              <h2 className="text-2xl font-bold text-white leading-tight">
+              <p className="text-xs text-muted-foreground dark:text-white/40 uppercase tracking-widest font-medium">Room</p>
+              <h2 className="text-2xl font-bold text-foreground dark:text-white leading-tight">
                 Suite <span className="text-primary">{room.number}</span>
               </h2>
             </div>
@@ -278,14 +278,14 @@ export function RoomActionDesk({
           {/* Close */}
           <button
             onClick={onClose}
-            className="w-10 h-10 flex items-center justify-center rounded-xl border border-white/10 text-white/40 hover:text-white hover:bg-white/10 transition-all"
+            className="w-10 h-10 flex items-center justify-center rounded-xl border border-border dark:border-white/10 text-muted-foreground hover:text-foreground hover:bg-muted dark:text-white/40 dark:hover:text-white dark:hover:bg-white/10 transition-all"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* ─── TABS ─── */}
-        <div className="flex border-b border-white/5 flex-shrink-0">
+        <div className="flex border-b border-border dark:border-white/5 flex-shrink-0 bg-muted/20 dark:bg-transparent">
           {TABS.map(tab => (
             <button
               key={tab.id}
@@ -294,7 +294,7 @@ export function RoomActionDesk({
                 'flex-1 flex items-center justify-center gap-2 py-3.5 text-sm font-semibold transition-all',
                 activeTab === tab.id
                   ? 'text-primary border-b-2 border-primary bg-primary/5'
-                  : 'text-white/40 hover:text-white/60 border-b-2 border-transparent'
+                  : 'text-muted-foreground hover:text-foreground dark:text-white/40 dark:hover:text-white/60 border-b-2 border-transparent'
               )}
             >
               <tab.icon className="w-4 h-4" />

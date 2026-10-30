@@ -20,7 +20,7 @@ export function GuestDashboardView({ session }: GuestDashboardViewProps) {
   const firstName = guestName.split(' ')[0]
 
   return (
-    <div className="p-6 text-white pb-40">
+    <div className="p-6 text-foreground pb-40">
       <DashboardHeader 
         title="Welcome Home"
         firstName={firstName}
@@ -50,21 +50,21 @@ export function GuestDashboardView({ session }: GuestDashboardViewProps) {
           <div className="lg:col-span-4 space-y-12">
             <GuestSpending />
 
-            <Card className="p-10 bg-[#0c0c0c] border-white/[0.05] rounded-[40px] space-y-6">
+            <Card className="p-10 bg-card dark:bg-[#0c0c0c] border-border dark:border-white/[0.05] rounded-[40px] space-y-6 shadow-sm">
               <div className="space-y-1">
-                <p className="text-[10px] font-black text-white/20 uppercase tracking-widest">Resort Connection</p>
-                <h4 className="text-xl font-serif font-bold text-white">Your Butler</h4>
+                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Resort Connection</p>
+                <h4 className="text-xl font-serif font-bold text-foreground dark:text-white">Your Butler</h4>
               </div>
-              <div className="flex items-center gap-4 p-4 bg-white/5 rounded-3xl border border-white/5">
+              <div className="flex items-center gap-4 p-4 bg-muted/40 dark:bg-white/5 rounded-3xl border border-border dark:border-white/5">
                 <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
                   JD
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-white">Jeevan Perera</p>
-                  <p className="text-[10px] text-white/40 uppercase font-black">Level 5 Master Sommelier</p>
+                  <p className="text-sm font-bold text-foreground dark:text-white">Jeevan Perera</p>
+                  <p className="text-[10px] text-muted-foreground uppercase font-black">Level 5 Master Sommelier</p>
                 </div>
               </div>
-              <Button className="w-full h-14 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest">
+              <Button className="w-full h-14 bg-secondary/80 hover:bg-secondary text-foreground dark:bg-white/5 dark:hover:bg-white/10 dark:text-white border border-border dark:border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest">
                 Message Concierge
               </Button>
             </Card>
