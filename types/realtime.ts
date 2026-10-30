@@ -38,7 +38,7 @@ export const TaskEventSchema = RealtimeEventSchema.extend({
   type: z.enum(['task.updated', 'task.assigned']),
   taskId: z.string(),
   status: z.string(),
-  assignedTo: z.string().optional(),
+  assignedTo: z.string().nullish(),
 })
 
 export const KpiEventSchema = RealtimeEventSchema.extend({

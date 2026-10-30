@@ -142,6 +142,8 @@ model Stay {
   updatedAt    DateTime   @updatedAt
   booking      Booking    @relation(fields: [bookingId], references: [id], onDelete: Cascade)
   room         Room       @relation(fields: [roomId], references: [id])
+
+  @@index([roomId, status])
 }
 
 model Booking {
@@ -236,6 +238,7 @@ model RoomAssignment {
 
   @@index([bookingId])
   @@index([roomId])
+  @@index([roomId, startDate, endDate])
 }
 
 model StayEvent {

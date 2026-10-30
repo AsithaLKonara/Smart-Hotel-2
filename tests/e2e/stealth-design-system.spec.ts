@@ -1,11 +1,17 @@
 import { test, expect } from '@playwright/test';
+import { loginAs } from './utils/auth-helpers';
+import { enforceThermalGuard } from './utils/thermal-guard';
 
-test.describe('Stealth Industrial Cyber-Minimalism Design System Verification', () => {
-  test.use({ storageState: 'playwright/.auth/admin.json' });
-
+test.describe('Domain 11: UX/UI Stealth Design System & Accessibility Verification', () => {
   test.beforeEach(async ({ page }) => {
+    await enforceThermalGuard(82, 72);
     page.setDefaultNavigationTimeout(60000);
     page.setDefaultTimeout(30000);
+    await loginAs(page, 'SUPER_ADMIN');
+  });
+
+  test.afterEach(async () => {
+    await enforceThermalGuard(82, 72);
   });
 
   test('Task 1 & 2: Verify Root Shell, Stealth Top Header, and Sidebar Anatomy', async ({ page }) => {

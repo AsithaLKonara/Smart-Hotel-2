@@ -88,6 +88,7 @@ const PROTECTED_ROUTES: RouteRule[] = [
   { prefix: '/api/tape-chart', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'] },
   { prefix: '/api/integrations', roles: ['SUPER_ADMIN', 'MANAGER'] },
   { prefix: '/api/reservations', roles: ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'] },
+  { prefix: '/api/loyalty', roles: ['GUEST', 'SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'] },
 
   // 🟢 GUEST SUITE & FALLBACKS
   { prefix: '/dashboard', roles: ['GUEST', 'SUPER_ADMIN', 'MANAGER'] },
@@ -275,6 +276,8 @@ const PUBLIC_API_PREFIXES = [
   '/api/images',
   '/api/health',
   '/api/webhooks',
+  '/api/channels/webhook',
+  '/api/integrations/channel-manager',
   '/api/rooms',
   '/api/room-types',
   '/api/rooms/availability',

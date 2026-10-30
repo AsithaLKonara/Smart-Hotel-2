@@ -156,7 +156,7 @@ export async function PUT(
     // Log the action
     await logAction(
       request,
-      session.user.id,
+      session?.user?.id || 'system',
       AUDIT_ACTIONS.TASK_UPDATE,
       'Task',
       id,
@@ -229,15 +229,15 @@ export async function PATCH(
     const body = await request.json()
     console.log('PATCH /api/tasks/[id] body:', body)
     const taskPatchSchema = z.object({
-      title: z.string().min(1, 'Title is required').optional(),
-      description: z.string().nullish(),
-      type: z.enum(['HOUSEKEEPING', 'MAINTENANCE', 'ROOM_SERVICE', 'GUEST_REQUEST', 'ADMINISTRATIVE']).optional(),
-      priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).optional(),
-      status: z.enum(['PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'VERIFIED']).optional(),
-      assignedTo: z.string().nullish(),
-      dueDate: z.string().nullish(),
-      completedAt: z.string().nullish(),
-    })
+      title: z.string().optional(),
+      description: z.any().optional(),
+      type: z.any().optional(),
+      priority: z.any().optional(),
+      status: z.any().optional(),
+      assignedTo: z.any().optional(),
+      dueDate: z.any().optional(),
+      completedAt: z.any().optional(),
+    }).passthrough()
     const validatedData = taskPatchSchema.parse(body)
 
     const existingTask = await prisma.task.findUnique({

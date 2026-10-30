@@ -23,7 +23,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
           take: 5,
           include: {
             roomAssignments: {
-              include: { room: { select: { number: true, type: { select: { name: true } } } } }
+              include: { room: { select: { number: true, roomType: { select: { name: true } } } } }
             }
           }
         }

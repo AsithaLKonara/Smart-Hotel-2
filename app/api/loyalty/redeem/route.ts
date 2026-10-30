@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/db'
 import { z } from 'zod'
 import { handleZodError } from '@/lib/api-utils'
-
-const prisma = new PrismaClient()
 
 const RedeemSchema = z.object({
   userId: z.string().uuid(),
@@ -19,7 +17,7 @@ export async function POST(req: Request) {
     const body = await req.json()
     const validated = RedeemSchema.parse(body)
 
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx: any) => {
       const loyalty = await tx.loyaltyPoint.findUnique({
         where: { userId: validated.userId }
       })
@@ -38,7 +36,10 @@ export async function POST(req: Request) {
       // Deduct points
       await tx.loyaltyPoint.update({
         where: { userId: validated.userId },
-        data: { points: loyalty.points - validated.pointsToRedeem }
+        data: {
+          points: loyalty.points - validated.pointsToRedeem,
+          totalSpent: loyalty.totalSpent + validated.pointsToRedeem
+        }
       })
 
       // Add payment to folio
@@ -46,10 +47,11 @@ export async function POST(req: Request) {
       await tx.payment.create({
         data: {
           folioId: folio.id,
+          bookingId: folio.bookingId,
           userId: validated.userId,
           amount: creditAmount,
           paymentMethod: 'other',
-          paymentProvider: 'INTERNAL',
+          paymentProvider: 'LOYALTY_REDEMPTION',
           status: 'completed'
         }
       })
@@ -59,6 +61,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
+      creditAmount: result,
       message: `Successfully redeemed ${validated.pointsToRedeem} points for a $${result} credit.`
     })
   } catch (error: any) {

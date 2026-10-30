@@ -19,26 +19,31 @@ export async function GET(
         lineItems: {
           orderBy: { createdAt: 'desc' }
         },
-        company: true,
         routingRulesSource: true,
         routingRulesTarget: true
       },
       orderBy: { windowNumber: 'asc' }
     })
 
-    // If no folios exist for this booking, we should probably create the default one.
-    // In a real system, Folio 1 is created on booking creation. We'll lazy create here if missing for resilience.
+    // If no folios exist for this booking, lazy create default window 1
     if (folios.length === 0) {
+      const booking = await prisma.booking.findUnique({
+        where: { id }
+      })
+      if (!booking) {
+        return NextResponse.json({ error: 'Booking not found' }, { status: 404 })
+      }
+
       const defaultFolio = await prisma.folio.create({
         data: {
           bookingId: id,
+          propertyId: booking.propertyId,
           windowNumber: 1,
           type: 'GUEST',
           status: 'OPEN'
         },
         include: {
           lineItems: true,
-          company: true,
           routingRulesSource: true,
           routingRulesTarget: true
         }
@@ -74,6 +79,14 @@ export async function POST(
     }
     const { id } = await params
     const body = await request.json()
+
+    const booking = await prisma.booking.findUnique({
+      where: { id }
+    })
+    if (!booking) {
+      return NextResponse.json({ error: 'Booking not found' }, { status: 404 })
+    }
+
     const newFolio = await prisma.$transaction(async (tx: any) => {
       const folios = await tx.folio.findMany({ where: { bookingId: id } })
       const nextWindow = folios.length > 0 ? Math.max(...folios.map((f: any) => f.windowNumber)) + 1 : 1
@@ -81,14 +94,14 @@ export async function POST(
       return await tx.folio.create({
         data: {
           bookingId: id,
+          propertyId: booking.propertyId,
           windowNumber: nextWindow,
-          type: body.companyId ? 'ROUTING' : 'GUEST',
+          type: body.companyId ? `ROUTING_${nextWindow}` : `GUEST_WIN_${nextWindow}`,
           companyId: body.companyId || null,
           status: 'OPEN'
         },
         include: {
           lineItems: true,
-          company: true,
           routingRulesSource: true,
           routingRulesTarget: true
         }

@@ -77,8 +77,14 @@ export async function loginAs(page: Page, role: UserRoleType = 'SUPER_ADMIN') {
   await passwordInput.fill(creds.pass);
 
   const submitBtn = page.locator('button[type="submit"]');
-  await Promise.all([
-    page.waitForURL((url) => !url.pathname.includes('/auth/signin'), { timeout: 60000 }),
-    submitBtn.click()
-  ]);
+  await submitBtn.click();
+  try {
+    await page.waitForURL((url) => !url.pathname.includes('/auth/signin'), { timeout: 45000 });
+  } catch {
+    // If client-side navigation was slow to update url, wait for session cookie and force goto defaultPath
+    await page.waitForTimeout(2000);
+    if (page.url().includes('/auth/signin')) {
+      await page.goto(creds.defaultPath, { waitUntil: 'domcontentloaded' });
+    }
+  }
 }

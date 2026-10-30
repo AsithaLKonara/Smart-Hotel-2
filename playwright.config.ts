@@ -28,9 +28,9 @@ export default defineConfig({
   testMatch: '**/*.spec.ts',
   use: {
     baseURL: process.env.BASE_URL || 'http://localhost:3000',
-    trace: 'retain-on-failure',
+    trace: 'off',
     screenshot: 'only-on-failure',
-    video: 'retain-on-failure',
+    video: 'off',
     actionTimeout: 45000,
     navigationTimeout: 60000,
   },

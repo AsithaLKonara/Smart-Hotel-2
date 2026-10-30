@@ -63,7 +63,7 @@ export async function POST(req: Request) {
     const transaction = await prisma.loyaltyTransaction.create({
         data: {
             loyaltyPointId: data.accountId,
-            type: data.points > 0 ? 'EARN' : 'REDEEM',
+            type: data.points > 0 ? 'earned' : 'spent',
             points: parseInt(data.points),
             description: data.description,
         }

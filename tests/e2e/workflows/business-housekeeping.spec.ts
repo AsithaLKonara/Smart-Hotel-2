@@ -1,10 +1,15 @@
 import { test, expect } from '@playwright/test';
 import { prisma } from '@/lib/db';
 import { loginAs } from '../utils/auth-helpers';
+import { enforceThermalGuard } from '../utils/thermal-guard';
 
 test.describe.serial('Domain 4: Housekeeping & Maintenance (CMMS) Full Turnaround Workflow', () => {
   let testRoomId: string;
   let testRoomNumber: string;
+
+  test.beforeEach(async () => {
+    await enforceThermalGuard(82, 72);
+  });
 
   test.beforeAll(async () => {
     // Pick an operational room from Grand Ocean Resort
@@ -80,6 +85,7 @@ test.describe.serial('Domain 4: Housekeeping & Maintenance (CMMS) Full Turnaroun
     const updateRes = await page.request.patch(`/api/tasks/${taskId}`, {
       timeout: 45000,
       data: {
+        title: `AC Leak in Room ${testRoomNumber}`,
         status: 'COMPLETED'
       }
     });
