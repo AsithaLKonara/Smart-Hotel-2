@@ -159,34 +159,34 @@ export default function IncidentCommandRoom() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-slate-950">
+      <div className="flex items-center justify-center min-h-screen bg-background dark:bg-slate-950">
         <PremiumSpinner size="lg" text="Syncing Incident Command Center lifecycle engine..." />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[#090514] text-slate-100 p-6 font-sans flex flex-col h-screen overflow-hidden">
+    <div className="min-h-screen bg-background dark:bg-[#090514] text-foreground dark:text-slate-100 p-6 font-sans flex flex-col h-screen overflow-hidden">
       
       {/* Top Command Bar */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between border-b border-purple-950/40 pb-5 mb-5 shrink-0 gap-4">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between border-b border-border dark:border-purple-950/40 pb-5 mb-5 shrink-0 gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <Badge className="bg-rose-600/10 text-rose-400 border border-rose-500/20 text-xs tracking-wider uppercase font-bold py-1 px-3 flex items-center gap-1.5 animate-pulse">
+            <Badge className="bg-rose-600/10 text-rose-500 dark:text-rose-400 border border-rose-500/20 text-xs tracking-wider uppercase font-bold py-1 px-3 flex items-center gap-1.5 animate-pulse">
               <ShieldAlert className="w-3.5 h-3.5" /> SECURITY & SRE COMMAND CENTER
             </Badge>
-            <span className="text-xs text-slate-400 flex items-center gap-1"><Activity className="w-3.5 h-3.5 text-purple-400 animate-pulse" /> Incident Orchestrator Live</span>
+            <span className="text-xs text-muted-foreground dark:text-slate-400 flex items-center gap-1"><Activity className="w-3.5 h-3.5 text-purple-500 dark:text-purple-400 animate-pulse" /> Incident Orchestrator Live</span>
           </div>
-          <h1 className="text-3xl font-serif font-bold text-white mt-1.5">Enterprise Incident Control Room</h1>
+          <h1 className="text-3xl font-serif font-bold text-foreground dark:text-white mt-1.5">Enterprise Incident Control Room</h1>
         </div>
         <div className="flex items-center gap-3">
           <Button onClick={() => setShowCreateForm(prev => !prev)} className="bg-gradient-to-r from-rose-600 to-amber-600 hover:from-rose-500 hover:to-amber-500 text-white border-0 font-bold uppercase tracking-wider text-xs px-4">
             {showCreateForm ? "Cancel Form" : "File Critical Incident"}
           </Button>
-          <Button onClick={loadIncidents} variant="outline" size="sm" className="bg-white/5 border-purple-950/50 text-purple-300">
+          <Button onClick={loadIncidents} variant="outline" size="sm" className="bg-muted/40 hover:bg-muted dark:bg-white/5 border border-border dark:border-purple-950/50 text-foreground dark:text-purple-300">
             <RefreshCw className="w-4 h-4 mr-1.5" /> Reload Dashboard
           </Button>
-          <Button onClick={() => router.push('/admin/timeline')} variant="outline" size="sm" className="bg-white/5 border-purple-950/50 text-purple-300">
+          <Button onClick={() => router.push('/admin/timeline')} variant="outline" size="sm" className="bg-muted/40 hover:bg-muted dark:bg-white/5 border border-border dark:border-purple-950/50 text-foreground dark:text-purple-300">
             Unified Timeline
           </Button>
         </div>
@@ -195,19 +195,19 @@ export default function IncidentCommandRoom() {
       {/* 1. Department Pressure Heatmaps Panel */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 shrink-0">
         {departmentsPressure.map((dept, idx) => (
-          <Card key={idx} className="bg-white/[0.01] border border-purple-950/40 p-4 rounded-none">
+          <Card key={idx} className="bg-card dark:bg-white/[0.01] border border-border dark:border-purple-950/40 p-4 rounded-xl shadow-sm">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400 truncate">{dept.name}</span>
-              <span className="text-xs font-mono font-extrabold text-slate-200">{dept.index}% Load</span>
+              <span className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground dark:text-slate-400 truncate">{dept.name}</span>
+              <span className="text-xs font-mono font-extrabold text-foreground dark:text-slate-200">{dept.index}% Load</span>
             </div>
             
             {/* Visual Heatmap Indicator Bar */}
-            <div className="w-full h-1.5 bg-slate-950/50 rounded-full overflow-hidden mb-1.5">
+            <div className="w-full h-1.5 bg-muted dark:bg-slate-950/50 rounded-full overflow-hidden mb-1.5">
               <div className={`h-full ${dept.color}`} style={{ width: `${dept.index}%` }} />
             </div>
 
-            <div className="flex items-center gap-1.5 text-[9px] text-slate-500">
-              <Flame className="w-3 h-3 text-amber-500" /> State: <span className="text-slate-300 font-bold">{dept.workload}</span>
+            <div className="flex items-center gap-1.5 text-[9px] text-muted-foreground dark:text-slate-500">
+              <Flame className="w-3 h-3 text-amber-500" /> State: <span className="text-foreground dark:text-slate-300 font-bold">{dept.workload}</span>
             </div>
           </Card>
         ))}
@@ -220,40 +220,40 @@ export default function IncidentCommandRoom() {
           
           {/* Create Incident form overlay */}
           {showCreateForm ? (
-            <Card className="bg-white/[0.02] border border-rose-500/20 rounded-none shadow-2xl p-6 overflow-y-auto max-h-full">
-              <h3 className="text-sm uppercase tracking-widest font-extrabold text-rose-400 mb-4 flex items-center gap-2">
-                <ShieldAlert className="w-5 h-5 text-rose-400 animate-pulse" /> File New Operational Incident Ticket
+            <Card className="bg-card dark:bg-white/[0.02] border border-border dark:border-rose-500/20 rounded-xl shadow-2xl p-6 overflow-y-auto max-h-full">
+              <h3 className="text-sm uppercase tracking-widest font-extrabold text-rose-500 dark:text-rose-400 mb-4 flex items-center gap-2">
+                <ShieldAlert className="w-5 h-5 text-rose-500 dark:text-rose-400 animate-pulse" /> File New Operational Incident Ticket
               </h3>
               <form onSubmit={handleCreateIncident} className="space-y-4 text-xs">
                 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <label className="text-[10px] uppercase font-bold text-slate-400">Incident Title</label>
+                    <label className="text-[10px] uppercase font-bold text-muted-foreground dark:text-slate-400">Incident Title</label>
                     <input 
                       type="text" 
                       value={newTitle} 
                       onChange={e => setNewTitle(e.target.value)}
-                      className="w-full bg-slate-950 border border-purple-900/20 text-slate-200 p-2.5 rounded-none"
+                      className="w-full bg-background dark:bg-slate-950 border border-input dark:border-purple-900/20 text-foreground dark:text-slate-200 p-2.5 rounded-lg"
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[10px] uppercase font-bold text-slate-400">Owner Dispatcher</label>
+                    <label className="text-[10px] uppercase font-bold text-muted-foreground dark:text-slate-400">Owner Dispatcher</label>
                     <input 
                       type="text" 
                       value={newOwner} 
                       onChange={e => setNewOwner(e.target.value)}
-                      className="w-full bg-slate-950 border border-purple-900/20 text-slate-200 p-2.5 rounded-none"
+                      className="w-full bg-background dark:bg-slate-950 border border-input dark:border-purple-900/20 text-foreground dark:text-slate-200 p-2.5 rounded-lg"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <label className="text-[10px] uppercase font-bold text-slate-400">Category Division</label>
+                    <label className="text-[10px] uppercase font-bold text-muted-foreground dark:text-slate-400">Category Division</label>
                     <select 
                       value={newCategory} 
                       onChange={e => setNewCategory(e.target.value as any)}
-                      className="w-full bg-slate-950 border border-purple-900/20 p-2.5 focus:outline-none"
+                      className="w-full bg-background dark:bg-slate-950 border border-input dark:border-purple-900/20 text-foreground dark:text-slate-200 p-2.5 rounded-lg focus:outline-none"
                     >
                       <option value="RECEPTION">Reception</option>
                       <option value="HOUSEKEEPING">Housekeeping</option>
@@ -263,11 +263,11 @@ export default function IncidentCommandRoom() {
                     </select>
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[10px] uppercase font-bold text-slate-400">Severity Metric Level</label>
+                    <label className="text-[10px] uppercase font-bold text-muted-foreground dark:text-slate-400">Severity Metric Level</label>
                     <select 
                       value={newSeverity} 
                       onChange={e => setNewSeverity(e.target.value as any)}
-                      className="w-full bg-slate-950 border border-purple-900/20 p-2.5 focus:outline-none"
+                      className="w-full bg-background dark:bg-slate-950 border border-input dark:border-purple-900/20 text-foreground dark:text-slate-200 p-2.5 rounded-lg focus:outline-none"
                     >
                       <option value="INFO">INFO</option>
                       <option value="LOW">LOW</option>
@@ -280,12 +280,12 @@ export default function IncidentCommandRoom() {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[10px] uppercase font-bold text-slate-400">Diagnostic Message</label>
+                  <label className="text-[10px] uppercase font-bold text-muted-foreground dark:text-slate-400">Diagnostic Message</label>
                   <textarea 
                     value={newMessage} 
                     onChange={e => setNewMessage(e.target.value)}
                     rows={3}
-                    className="w-full bg-slate-950 border border-purple-900/20 text-slate-200 p-2.5 rounded-none"
+                    className="w-full bg-background dark:bg-slate-950 border border-input dark:border-purple-900/20 text-foreground dark:text-slate-200 p-2.5 rounded-lg"
                   />
                 </div>
 
@@ -299,17 +299,17 @@ export default function IncidentCommandRoom() {
               </form>
             </Card>
           ) : (
-            <Card className="bg-white/[0.01] border border-purple-900/10 rounded-none flex-1 flex flex-col min-h-0">
+            <Card className="bg-card dark:bg-white/[0.01] border border-border dark:border-purple-900/10 rounded-xl flex-1 flex flex-col min-h-0">
               
-              <div className="p-4 border-b border-purple-950/40 bg-slate-950/40 flex justify-between items-center shrink-0">
-                <span className="text-xs uppercase tracking-widest font-extrabold text-purple-400">Active Incident Lifecycle Tracks</span>
-                <Badge variant="outline" className="text-[9px] border-rose-500/30 text-rose-400 font-mono font-extrabold">{incidents.length} Registered Cases</Badge>
+              <div className="p-4 border-b border-border dark:border-purple-950/40 bg-muted/40 dark:bg-slate-950/40 flex justify-between items-center shrink-0">
+                <span className="text-xs uppercase tracking-widest font-extrabold text-purple-600 dark:text-purple-400">Active Incident Lifecycle Tracks</span>
+                <Badge variant="outline" className="text-[9px] border-rose-500/30 text-rose-500 dark:text-rose-400 font-mono font-extrabold">{incidents.length} Registered Cases</Badge>
               </div>
 
               {/* Incidents Table-styled list */}
               <div className="flex-1 overflow-y-auto p-4 space-y-3">
                 {incidents.length === 0 ? (
-                  <div className="text-slate-600 text-center py-20 text-xs">No active operational incidents. System is completely stable.</div>
+                  <div className="text-muted-foreground dark:text-slate-600 text-center py-20 text-xs">No active operational incidents. System is completely stable.</div>
                 ) : (
                   incidents.map((inc) => {
                     const isCritical = inc.severity === 'CRITICAL' || inc.severity === 'EMERGENCY'
@@ -323,30 +323,30 @@ export default function IncidentCommandRoom() {
                           setNotesDraft(inc.notes)
                           setOwnerDraft(inc.owner)
                         }}
-                        className={`w-full p-4 border rounded-none flex items-start justify-between gap-4 transition-all text-left bg-slate-950/30 hover:bg-white/[0.02] border-purple-950/30 ${activeIncident?.id === inc.id ? 'bg-purple-950/10 border-purple-500/40' : ''}`}
+                        className={`w-full p-4 border rounded-xl flex items-start justify-between gap-4 transition-all text-left bg-card hover:bg-muted/40 dark:bg-slate-950/30 dark:hover:bg-white/[0.02] border-border dark:border-purple-950/30 ${activeIncident?.id === inc.id ? 'bg-primary/5 dark:bg-purple-950/10 border-primary dark:border-purple-500/40' : ''}`}
                       >
                         <div className="space-y-1.5 flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <Badge className="bg-slate-950 hover:bg-slate-950 text-[8px] font-mono border-purple-500/20 text-purple-300">{inc.id}</Badge>
-                            <h4 className="text-xs font-extrabold text-slate-100 truncate block">{inc.title}</h4>
-                            <Badge className={`text-[7px] py-0 px-1 uppercase ${isCritical ? 'bg-rose-950 text-rose-400 border-rose-500/25 animate-pulse' : 'bg-amber-950 text-amber-400 border-amber-500/25'}`}>
+                            <Badge className="bg-muted dark:bg-slate-950 hover:bg-muted/80 text-[8px] font-mono border border-border dark:border-purple-500/20 text-foreground dark:text-purple-300">{inc.id}</Badge>
+                            <h4 className="text-xs font-extrabold text-foreground dark:text-slate-100 truncate block">{inc.title}</h4>
+                            <Badge className={`text-[7px] py-0 px-1 uppercase ${isCritical ? 'bg-rose-500/20 text-rose-600 dark:text-rose-400 border-rose-500/25 animate-pulse' : 'bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/25'}`}>
                               {inc.severity}
                             </Badge>
                           </div>
 
-                          <p className="text-[10px] text-slate-500 truncate leading-relaxed">{inc.message}</p>
+                          <p className="text-[10px] text-muted-foreground dark:text-slate-500 truncate leading-relaxed">{inc.message}</p>
 
-                          <div className="flex items-center gap-3.5 text-[9px] font-mono text-slate-500">
-                            <span className="flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-600" /> Owner: <strong className="text-slate-300">{inc.owner}</strong></span>
-                            <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5 text-slate-600" /> Filed: {new Date(inc.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                            <span className="flex items-center gap-1 uppercase font-bold text-slate-400"><Sliders className="w-3.5 h-3.5 text-slate-600" /> Status: <span className="text-purple-400 font-extrabold">{inc.status}</span></span>
+                          <div className="flex items-center gap-3.5 text-[9px] font-mono text-muted-foreground dark:text-slate-500">
+                            <span className="flex items-center gap-1"><User className="w-3.5 h-3.5 text-muted-foreground dark:text-slate-600" /> Owner: <strong className="text-foreground dark:text-slate-300">{inc.owner}</strong></span>
+                            <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5 text-muted-foreground dark:text-slate-600" /> Filed: {new Date(inc.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                            <span className="flex items-center gap-1 uppercase font-bold text-muted-foreground dark:text-slate-400"><Sliders className="w-3.5 h-3.5 text-muted-foreground dark:text-slate-600" /> Status: <span className="text-purple-600 dark:text-purple-400 font-extrabold">{inc.status}</span></span>
                           </div>
                         </div>
 
                         {/* SLA timer indicator widget */}
-                        <div className={`shrink-0 flex flex-col items-end text-right font-mono ${isSlaBreaching ? 'text-rose-500 font-bold' : 'text-slate-400'}`}>
-                          <span className="text-[8px] uppercase text-slate-500 font-extrabold">RESPONSE SLA</span>
-                          <span className="text-[11px] flex items-center gap-1 mt-0.5"><Timer className={`w-3.5 h-3.5 ${isSlaBreaching ? 'animate-bounce text-rose-500' : 'text-slate-500'}`} /> {inc.slaMinutesRemaining}m left</span>
+                        <div className={`shrink-0 flex flex-col items-end text-right font-mono ${isSlaBreaching ? 'text-rose-500 font-bold' : 'text-muted-foreground dark:text-slate-400'}`}>
+                          <span className="text-[8px] uppercase text-muted-foreground dark:text-slate-500 font-extrabold">RESPONSE SLA</span>
+                          <span className="text-[11px] flex items-center gap-1 mt-0.5"><Timer className={`w-3.5 h-3.5 ${isSlaBreaching ? 'animate-bounce text-rose-500' : 'text-muted-foreground dark:text-slate-500'}`} /> {inc.slaMinutesRemaining}m left</span>
                         </div>
 
                       </button>
@@ -364,36 +364,36 @@ export default function IncidentCommandRoom() {
         <div className="lg:col-span-4 flex flex-col h-full min-h-0">
           
           {activeIncident ? (
-            <Card className="bg-white/[0.02] border border-purple-500/20 rounded-none flex-1 flex flex-col min-h-0 shadow-2xl relative">
+            <Card className="bg-card dark:bg-white/[0.02] border border-border dark:border-purple-500/20 rounded-xl flex-1 flex flex-col min-h-0 shadow-2xl relative">
               
-              <div className="border-b border-purple-950/40 p-4 bg-purple-950/20 shrink-0 flex items-center justify-between">
+              <div className="border-b border-border dark:border-purple-950/40 p-4 bg-muted/40 dark:bg-purple-950/20 shrink-0 flex items-center justify-between">
                 <div>
-                  <Badge variant="outline" className="bg-slate-950 text-purple-400 text-[8px] uppercase font-mono font-extrabold tracking-wider px-2 py-0.5">{activeIncident.id} Lifecycle</Badge>
-                  <h3 className="text-xs uppercase tracking-widest font-extrabold text-slate-200 mt-1.5 truncate max-w-[200px]">{activeIncident.title}</h3>
+                  <Badge variant="outline" className="bg-muted dark:bg-slate-950 text-purple-600 dark:text-purple-400 border border-border dark:border-purple-500/20 text-[8px] uppercase font-mono font-extrabold tracking-wider px-2 py-0.5">{activeIncident.id} Lifecycle</Badge>
+                  <h3 className="text-xs uppercase tracking-widest font-extrabold text-foreground dark:text-slate-200 mt-1.5 truncate max-w-[200px]">{activeIncident.title}</h3>
                 </div>
-                <button onClick={() => setActiveIncident(null)} className="text-slate-500 hover:text-white text-xs">Dismiss</button>
+                <button onClick={() => setActiveIncident(null)} className="text-muted-foreground hover:text-foreground dark:text-slate-500 dark:hover:text-white text-xs">Dismiss</button>
               </div>
 
               <div className="flex-1 overflow-y-auto p-5 space-y-5 text-xs">
                 
                 <div className="space-y-1">
-                  <span className="text-[9px] uppercase text-slate-500 font-extrabold font-mono block">DIAGNOSTIC EVENT DATA</span>
-                  <div className="p-3 bg-slate-950 border border-purple-950/30 leading-relaxed text-slate-300 rounded-none">
+                  <span className="text-[9px] uppercase text-muted-foreground dark:text-slate-500 font-extrabold font-mono block">DIAGNOSTIC EVENT DATA</span>
+                  <div className="p-3 bg-muted/20 dark:bg-slate-950 border border-border dark:border-purple-950/30 leading-relaxed text-foreground dark:text-slate-300 rounded-lg">
                     {activeIncident.message}
                   </div>
                 </div>
 
                 {/* State timeline steps visual */}
                 <div className="space-y-1.5">
-                  <span className="text-[9px] uppercase text-slate-500 font-extrabold font-mono block">TRANSITION LIFE STATES</span>
-                  <div className="grid grid-cols-6 border border-purple-950/40 divide-x divide-purple-950/30 text-[7px] text-center font-bold font-mono">
+                  <span className="text-[9px] uppercase text-muted-foreground dark:text-slate-500 font-extrabold font-mono block">TRANSITION LIFE STATES</span>
+                  <div className="grid grid-cols-6 border border-border dark:border-purple-950/40 divide-x divide-border dark:divide-purple-950/30 text-[7px] text-center font-bold font-mono rounded-lg overflow-hidden">
                     {LIFECYCLE_STATES.map((st) => {
                       const isActive = activeIncident.status === st
                       return (
                         <button
                           key={st}
                           onClick={() => handleUpdateIncident(st)}
-                          className={`py-1.5 truncate ${isActive ? 'bg-purple-600/20 text-purple-300 font-extrabold border-purple-500/20' : 'bg-slate-950 text-slate-600 hover:text-slate-400'}`}
+                          className={`py-1.5 truncate transition-colors ${isActive ? 'bg-primary text-primary-foreground font-extrabold' : 'bg-muted/40 hover:bg-muted dark:bg-slate-950 text-muted-foreground dark:text-slate-600 hover:text-foreground dark:hover:text-slate-400'}`}
                         >
                           {st.substr(0, 5)}
                         </button>
@@ -406,23 +406,23 @@ export default function IncidentCommandRoom() {
                 <div className="space-y-3">
                   
                   <div className="space-y-1">
-                    <label className="text-[9px] uppercase text-slate-500 font-extrabold font-mono block">Owner Assignee</label>
+                    <label className="text-[9px] uppercase text-muted-foreground dark:text-slate-500 font-extrabold font-mono block">Owner Assignee</label>
                     <input 
                       type="text" 
                       value={ownerDraft} 
                       onChange={e => setOwnerDraft(e.target.value)}
-                      className="w-full bg-slate-950 border border-purple-900/20 text-slate-200 p-2.5 rounded-none font-sans"
+                      className="w-full bg-background dark:bg-slate-950 border border-input dark:border-purple-900/20 text-foreground dark:text-slate-200 p-2.5 rounded-lg font-sans"
                     />
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[9px] uppercase text-slate-500 font-extrabold font-mono block">Investigator Forensic Notes</label>
+                    <label className="text-[9px] uppercase text-muted-foreground dark:text-slate-500 font-extrabold font-mono block">Investigator Forensic Notes</label>
                     <textarea 
                       value={notesDraft} 
                       onChange={e => setNotesDraft(e.target.value)}
                       rows={4}
                       placeholder="e.g. Shutoff compressor, replaying logs."
-                      className="w-full bg-slate-950 border border-purple-900/20 text-slate-200 p-2.5 rounded-none font-sans leading-relaxed"
+                      className="w-full bg-background dark:bg-slate-950 border border-input dark:border-purple-900/20 text-foreground dark:text-slate-200 p-2.5 rounded-lg font-sans leading-relaxed"
                     />
                   </div>
 
@@ -439,10 +439,10 @@ export default function IncidentCommandRoom() {
 
             </Card>
           ) : (
-            <Card className="bg-white/[0.01] border border-purple-900/10 rounded-none flex-1 flex flex-col justify-center items-center p-6 text-center text-slate-600">
-              <Sparkles className="w-10 h-10 text-purple-950 animate-pulse mb-3" />
-              <h4 className="font-bold text-slate-400 text-xs">Incident Investigator Pane</h4>
-              <p className="text-[10px] mt-1 text-slate-500 leading-relaxed max-w-[200px]">Select any active incident ticket to review diagnostic details, record investigation notes, or transition operational states.</p>
+            <Card className="bg-card dark:bg-white/[0.01] border border-border dark:border-purple-900/10 rounded-xl flex-1 flex flex-col justify-center items-center p-6 text-center text-muted-foreground dark:text-slate-600">
+              <Sparkles className="w-10 h-10 text-muted-foreground/30 dark:text-purple-950 animate-pulse mb-3" />
+              <h4 className="font-bold text-foreground dark:text-slate-400 text-xs">Incident Investigator Pane</h4>
+              <p className="text-[10px] mt-1 text-muted-foreground dark:text-slate-500 leading-relaxed max-w-[200px]">Select any active incident ticket to review diagnostic details, record investigation notes, or transition operational states.</p>
             </Card>
           )}
 

@@ -44,10 +44,10 @@ function ModalShell({ open, onClose, title, children }: {
     <Dialog.Root open={open} onOpenChange={o => !o && onClose()}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50" />
-        <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-xl bg-[#0a0a0f] border border-white/10 rounded-2xl shadow-2xl p-6 z-50 max-h-[90vh] overflow-y-auto">
+        <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-xl bg-card dark:bg-[#0a0a0f] border border-border dark:border-white/10 rounded-2xl shadow-2xl p-6 z-50 max-h-[90vh] overflow-y-auto text-foreground dark:text-white">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold text-white">{title}</h2>
-            <button onClick={onClose} className="text-white/40 hover:text-white transition-colors">
+            <h2 className="text-xl font-bold text-foreground dark:text-white">{title}</h2>
+            <button onClick={onClose} className="text-muted-foreground hover:text-foreground dark:text-white/40 dark:hover:text-white transition-colors">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -61,7 +61,7 @@ function ModalShell({ open, onClose, title, children }: {
 function FormField({ label, children }: { label: string, children: React.ReactNode }) {
   return (
     <div>
-      <label className="text-xs font-bold text-white/60 uppercase tracking-wider mb-1.5 block">{label}</label>
+      <label className="text-xs font-bold text-muted-foreground dark:text-white/60 uppercase tracking-wider mb-1.5 block">{label}</label>
       {children}
     </div>
   )
@@ -147,15 +147,15 @@ function AvailabilityCalendar({ hallId, activePropertyId }: { hallId: string, ac
   const nextMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1))
 
   return (
-    <div className="bg-white/5 border border-white/10 rounded-xl p-5">
+    <div className="bg-card dark:bg-white/5 border border-border dark:border-white/10 rounded-xl p-5">
       <div className="flex items-center justify-between mb-4">
-        <button onClick={prevMonth} className="p-1.5 hover:bg-white/10 rounded-lg text-white/60 hover:text-white">
+        <button onClick={prevMonth} className="p-1.5 hover:bg-muted dark:hover:bg-white/10 rounded-lg text-muted-foreground hover:text-foreground dark:text-white/60 dark:hover:text-white">
           <ChevronLeft className="w-4 h-4" />
         </button>
-        <p className="font-bold text-white">
+        <p className="font-bold text-foreground dark:text-white">
           {currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
         </p>
-        <button onClick={nextMonth} className="p-1.5 hover:bg-white/10 rounded-lg text-white/60 hover:text-white">
+        <button onClick={nextMonth} className="p-1.5 hover:bg-muted dark:hover:bg-white/10 rounded-lg text-muted-foreground hover:text-foreground dark:text-white/60 dark:hover:text-white">
           <ChevronRight className="w-4 h-4" />
         </button>
       </div>
@@ -166,7 +166,7 @@ function AvailabilityCalendar({ hallId, activePropertyId }: { hallId: string, ac
         <>
           <div className="grid grid-cols-7 gap-1 mb-2">
             {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(d => (
-              <div key={d} className="text-center text-xs text-white/30 font-bold py-1">{d}</div>
+              <div key={d} className="text-center text-xs text-muted-foreground/60 dark:text-white/30 font-bold py-1">{d}</div>
             ))}
           </div>
           <div className="grid grid-cols-7 gap-1">
@@ -185,8 +185,8 @@ function AvailabilityCalendar({ hallId, activePropertyId }: { hallId: string, ac
                   key={day}
                   className={`text-center text-xs py-2 rounded-lg font-medium ${
                     booked
-                      ? 'bg-red-500/30 text-red-300 border border-red-500/40'
-                      : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                      ? 'bg-red-500/20 text-red-600 dark:text-red-300 border border-red-500/40'
+                      : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
                   } ${isToday ? 'ring-1 ring-primary ring-offset-1 ring-offset-transparent' : ''}`}
                   title={booked ? 'Booked' : 'Available'}
                 >
@@ -195,7 +195,7 @@ function AvailabilityCalendar({ hallId, activePropertyId }: { hallId: string, ac
               )
             })}
           </div>
-          <div className="flex gap-4 mt-4 text-xs text-white/50">
+          <div className="flex gap-4 mt-4 text-xs text-muted-foreground dark:text-white/50">
             <div className="flex items-center gap-1.5">
               <div className="w-3 h-3 rounded bg-emerald-500/30 border border-emerald-500/40" />
               Available
@@ -209,14 +209,14 @@ function AvailabilityCalendar({ hallId, activePropertyId }: { hallId: string, ac
       )}
 
       {bookedSlots.length > 0 && (
-        <div className="mt-4 pt-4 border-t border-white/10">
-          <p className="text-xs font-bold text-white/50 uppercase tracking-wider mb-3">Upcoming Bookings This Month</p>
+        <div className="mt-4 pt-4 border-t border-border dark:border-white/10">
+          <p className="text-xs font-bold text-muted-foreground dark:text-white/50 uppercase tracking-wider mb-3">Upcoming Bookings This Month</p>
           <div className="space-y-2">
             {bookedSlots.map(slot => (
-              <div key={slot.confirmationCode} className="flex justify-between items-center text-xs bg-[#1a1a24] p-2.5 rounded-lg border border-white/5">
+              <div key={slot.confirmationCode} className="flex justify-between items-center text-xs bg-muted/40 dark:bg-[#1a1a24] p-2.5 rounded-lg border border-border dark:border-white/5">
                 <div>
-                  <p className="text-white font-medium">{slot.contactName || slot.purpose || 'Booking'}</p>
-                  <p className="text-white/40 mt-0.5">
+                  <p className="text-foreground dark:text-white font-medium">{slot.contactName || slot.purpose || 'Booking'}</p>
+                  <p className="text-muted-foreground dark:text-white/40 mt-0.5">
                     {new Date(slot.startTime).toLocaleDateString()} – {new Date(slot.endTime).toLocaleDateString()}
                   </p>
                 </div>
@@ -418,7 +418,7 @@ export default function HallDetailPage({ params }: { params: Promise<{ id: strin
       {/* Breadcrumb Back */}
       <button
         onClick={() => router.push('/admin/halls')}
-        className="flex items-center gap-2 text-sm text-white/40 hover:text-white mb-6 transition-colors"
+        className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground dark:text-white/40 dark:hover:text-white mb-6 transition-colors"
       >
         <ChevronLeft className="w-4 h-4" /> Back to Halls
       </button>
@@ -439,26 +439,26 @@ export default function HallDetailPage({ params }: { params: Promise<{ id: strin
             </Badge>
           </div>
           <h1 className="text-2xl font-bold text-white">{hall.name}</h1>
-          {hall.description && <p className="text-white/60 text-sm mt-1">{hall.description}</p>}
+          {hall.description && <p className="text-white/80 text-sm mt-1">{hall.description}</p>}
         </div>
       </div>
 
       {/* Stats Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         {[
-          { label: 'Capacity', value: hall.capacity, icon: Users, color: 'text-violet-400' },
-          { label: 'Active Bookings', value: activeBookings.length, icon: CalendarDays, color: 'text-blue-400' },
-          { label: 'Total Revenue', value: `$${revenue.toFixed(0)}`, icon: DollarSign, color: 'text-emerald-400' },
-          { label: 'Total Bookings', value: hall._count.bookings, icon: CheckCircle, color: 'text-amber-400' },
+          { label: 'Capacity', value: hall.capacity, icon: Users, color: 'text-violet-500 dark:text-violet-400' },
+          { label: 'Active Bookings', value: activeBookings.length, icon: CalendarDays, color: 'text-blue-500 dark:text-blue-400' },
+          { label: 'Total Revenue', value: `$${revenue.toFixed(0)}`, icon: DollarSign, color: 'text-emerald-500 dark:text-emerald-400' },
+          { label: 'Total Bookings', value: hall._count.bookings, icon: CheckCircle, color: 'text-amber-500 dark:text-amber-400' },
         ].map(s => (
-          <Card key={s.label} className="bg-white/5 border-white/10">
+          <Card key={s.label} className="bg-card dark:bg-white/5 border border-border dark:border-white/10">
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="p-2 bg-white/5 rounded-lg">
+              <div className="p-2 bg-muted/60 dark:bg-white/5 rounded-lg">
                 <s.icon className={`w-5 h-5 ${s.color}`} />
               </div>
               <div>
-                <p className="text-xl font-bold text-white">{s.value}</p>
-                <p className="text-xs text-white/50">{s.label}</p>
+                <p className="text-xl font-bold text-foreground dark:text-white">{s.value}</p>
+                <p className="text-xs text-muted-foreground dark:text-white/50">{s.label}</p>
               </div>
             </CardContent>
           </Card>
@@ -466,12 +466,12 @@ export default function HallDetailPage({ params }: { params: Promise<{ id: strin
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 bg-white/5 p-1 rounded-xl mb-6 w-fit">
+      <div className="flex gap-2 bg-muted/40 dark:bg-white/5 p-1 rounded-xl mb-6 w-fit border border-border dark:border-white/10">
         {(['overview', 'bookings', 'availability'] as const).map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-5 py-2 rounded-lg text-sm font-bold capitalize transition-all ${activeTab === tab ? 'bg-primary text-black shadow-md' : 'text-slate-400 hover:text-white'}`}
+            className={`px-5 py-2 rounded-lg text-sm font-bold capitalize transition-all ${activeTab === tab ? 'bg-primary text-primary-foreground font-semibold shadow-sm' : 'text-muted-foreground hover:text-foreground dark:text-slate-400 dark:hover:text-white'}`}
           >
             {tab}
           </button>
@@ -481,19 +481,19 @@ export default function HallDetailPage({ params }: { params: Promise<{ id: strin
       {/* Overview Tab */}
       {activeTab === 'overview' && (
         <div className="grid md:grid-cols-2 gap-6">
-          <Card className="bg-white/5 border-white/10">
+          <Card className="bg-card dark:bg-white/5 border border-border dark:border-white/10">
             <CardContent className="p-5">
-              <h3 className="text-sm font-bold text-white/60 uppercase tracking-wider mb-4">Hall Details</h3>
+              <h3 className="text-sm font-bold text-muted-foreground dark:text-white/60 uppercase tracking-wider mb-4">Hall Details</h3>
               <div className="space-y-3 text-sm">
-                <div className="flex justify-between"><span className="text-white/50">Type</span><span className="text-white font-medium">{HALL_TYPE_LABELS[hall.type]}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground dark:text-white/50">Type</span><span className="text-foreground dark:text-white font-medium">{HALL_TYPE_LABELS[hall.type]}</span></div>
                 {hall.floorNumber != null && (
-                  <div className="flex justify-between"><span className="text-white/50">Floor</span><span className="text-white font-medium">{hall.floorNumber}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground dark:text-white/50">Floor</span><span className="text-foreground dark:text-white font-medium">{hall.floorNumber}</span></div>
                 )}
-                <div className="flex justify-between"><span className="text-white/50">Capacity</span><span className="text-white font-medium">{hall.capacity} persons</span></div>
-                <div className="flex justify-between"><span className="text-white/50">Hourly Rate</span><span className="text-emerald-400 font-bold">${Number(hall.hourlyRate).toFixed(2)}</span></div>
-                <div className="flex justify-between"><span className="text-white/50">Daily Rate</span><span className="text-emerald-400 font-bold">${Number(hall.dailyRate).toFixed(2)}</span></div>
-                <div className="flex justify-between"><span className="text-white/50">Status</span>
-                  <span className={hall.isActive ? 'text-emerald-400' : 'text-red-400'}>
+                <div className="flex justify-between"><span className="text-muted-foreground dark:text-white/50">Capacity</span><span className="text-foreground dark:text-white font-medium">{hall.capacity} persons</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground dark:text-white/50">Hourly Rate</span><span className="text-emerald-600 dark:text-emerald-400 font-bold">${Number(hall.hourlyRate).toFixed(2)}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground dark:text-white/50">Daily Rate</span><span className="text-emerald-600 dark:text-emerald-400 font-bold">${Number(hall.dailyRate).toFixed(2)}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground dark:text-white/50">Status</span>
+                  <span className={hall.isActive ? 'text-emerald-600 dark:text-emerald-400 font-medium' : 'text-red-600 dark:text-red-400 font-medium'}>
                     {hall.isActive ? 'Active' : 'Inactive'}
                   </span>
                 </div>
@@ -501,9 +501,9 @@ export default function HallDetailPage({ params }: { params: Promise<{ id: strin
             </CardContent>
           </Card>
 
-          <Card className="bg-white/5 border-white/10">
+          <Card className="bg-card dark:bg-white/5 border border-border dark:border-white/10">
             <CardContent className="p-5">
-              <h3 className="text-sm font-bold text-white/60 uppercase tracking-wider mb-4">Amenities</h3>
+              <h3 className="text-sm font-bold text-muted-foreground dark:text-white/60 uppercase tracking-wider mb-4">Amenities</h3>
               {hall.amenities?.length > 0 ? (
                 <div className="flex flex-wrap gap-2">
                   {hall.amenities.map(a => (
@@ -513,20 +513,20 @@ export default function HallDetailPage({ params }: { params: Promise<{ id: strin
                   ))}
                 </div>
               ) : (
-                <p className="text-white/30 text-sm">No amenities listed.</p>
+                <p className="text-muted-foreground/60 dark:text-white/30 text-sm">No amenities listed.</p>
               )}
             </CardContent>
           </Card>
 
           {hall.images?.length > 0 && (
             <div className="md:col-span-2">
-              <Card className="bg-white/5 border-white/10">
+              <Card className="bg-card dark:bg-white/5 border border-border dark:border-white/10">
                 <CardContent className="p-5">
-                  <h3 className="text-sm font-bold text-white/60 uppercase tracking-wider mb-4">Photos</h3>
+                  <h3 className="text-sm font-bold text-muted-foreground dark:text-white/60 uppercase tracking-wider mb-4">Photos</h3>
                   <div className="grid grid-cols-3 gap-3">
                     {hall.images.map((img, idx) => (
                       <img key={idx} src={img} alt={`${hall.name} ${idx + 1}`}
-                        className="w-full h-32 object-cover rounded-xl border border-white/10" />
+                        className="w-full h-32 object-cover rounded-xl border border-border dark:border-white/10" />
                     ))}
                   </div>
                 </CardContent>
@@ -540,19 +540,19 @@ export default function HallDetailPage({ params }: { params: Promise<{ id: strin
       {activeTab === 'bookings' && (
         <>
           <div className="flex justify-end mb-4">
-            <Button onClick={openCreateBooking} className="bg-primary text-black font-semibold">
+            <Button onClick={openCreateBooking} className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-sm">
               <Plus className="w-4 h-4 mr-2" /> New Booking
             </Button>
           </div>
 
           <div className="space-y-3">
             {bookings.length === 0 ? (
-              <div className="py-16 text-center border-2 border-dashed border-white/10 rounded-xl text-white/40">
+              <div className="py-16 text-center border-2 border-dashed border-border dark:border-white/10 rounded-xl text-muted-foreground dark:text-white/40">
                 <CalendarDays className="w-12 h-12 mx-auto mb-3 opacity-30" />
                 <p>No bookings yet. Create the first one!</p>
               </div>
             ) : bookings.map(booking => (
-              <Card key={booking.id} className="bg-white/5 border-white/10 hover:border-white/20 transition-all">
+              <Card key={booking.id} className="bg-card dark:bg-white/5 border border-border dark:border-white/10 hover:border-primary/40 dark:hover:border-white/20 transition-all">
                 <CardContent className="p-5">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="flex-1">
@@ -560,7 +560,7 @@ export default function HallDetailPage({ params }: { params: Promise<{ id: strin
                         <Badge className={`text-xs border ${STATUS_COLORS[booking.status]}`}>
                           {booking.status}
                         </Badge>
-                        <span className="text-xs text-white/30 font-mono">{booking.confirmationCode}</span>
+                        <span className="text-xs text-muted-foreground/60 dark:text-white/30 font-mono">{booking.confirmationCode}</span>
                         {booking.event && (
                           <span className="text-xs text-primary/70">Event: {booking.event.name}</span>
                         )}
@@ -568,42 +568,42 @@ export default function HallDetailPage({ params }: { params: Promise<{ id: strin
 
                       <div className="grid sm:grid-cols-2 gap-2 text-sm">
                         {booking.contactName && (
-                          <div className="flex items-center gap-2 text-white">
-                            <Users className="w-3.5 h-3.5 text-white/40" />
+                          <div className="flex items-center gap-2 text-foreground dark:text-white">
+                            <Users className="w-3.5 h-3.5 text-muted-foreground dark:text-white/40" />
                             {booking.contactName}
                           </div>
                         )}
                         {booking.purpose && (
-                          <div className="flex items-center gap-2 text-white/60">
-                            <Tag className="w-3.5 h-3.5 text-white/40" />
+                          <div className="flex items-center gap-2 text-muted-foreground dark:text-white/60">
+                            <Tag className="w-3.5 h-3.5 text-muted-foreground dark:text-white/40" />
                             {booking.purpose}
                           </div>
                         )}
                         {booking.contactEmail && (
-                          <div className="flex items-center gap-2 text-white/60">
-                            <Mail className="w-3.5 h-3.5 text-white/40" />
+                          <div className="flex items-center gap-2 text-muted-foreground dark:text-white/60">
+                            <Mail className="w-3.5 h-3.5 text-muted-foreground dark:text-white/40" />
                             {booking.contactEmail}
                           </div>
                         )}
                         {booking.contactPhone && (
-                          <div className="flex items-center gap-2 text-white/60">
-                            <Phone className="w-3.5 h-3.5 text-white/40" />
+                          <div className="flex items-center gap-2 text-muted-foreground dark:text-white/60">
+                            <Phone className="w-3.5 h-3.5 text-muted-foreground dark:text-white/40" />
                             {booking.contactPhone}
                           </div>
                         )}
-                        <div className="flex items-center gap-2 text-white/60">
-                          <Calendar className="w-3.5 h-3.5 text-white/40" />
+                        <div className="flex items-center gap-2 text-muted-foreground dark:text-white/60">
+                          <Calendar className="w-3.5 h-3.5 text-muted-foreground dark:text-white/40" />
                           {new Date(booking.startTime).toLocaleString()} → {new Date(booking.endTime).toLocaleString()}
                         </div>
-                        <div className="flex items-center gap-2 text-white/60">
-                          <Users className="w-3.5 h-3.5 text-white/40" />
+                        <div className="flex items-center gap-2 text-muted-foreground dark:text-white/60">
+                          <Users className="w-3.5 h-3.5 text-muted-foreground dark:text-white/40" />
                           {booking.guestCount} guests
                         </div>
                       </div>
                     </div>
 
                     <div className="flex flex-col items-end gap-2">
-                      <p className="text-xl font-bold text-white">${Number(booking.totalAmount).toFixed(2)}</p>
+                      <p className="text-xl font-bold text-foreground dark:text-white">${Number(booking.totalAmount).toFixed(2)}</p>
                       <p className={`text-xs font-bold ${PAYMENT_COLORS[booking.paymentStatus]}`}>
                         {booking.paymentStatus}
                       </p>
@@ -613,7 +613,7 @@ export default function HallDetailPage({ params }: { params: Promise<{ id: strin
                             <Button
                               size="sm"
                               variant="outline"
-                              className="text-amber-400 border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-xs"
+                              className="text-amber-500 dark:text-amber-400 border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-xs font-semibold"
                               onClick={() => {
                                 setFolioModalBooking(booking)
                                 setSelectedFolioBookingId(inHouseBookings[0]?.id || '')
@@ -624,7 +624,7 @@ export default function HallDetailPage({ params }: { params: Promise<{ id: strin
                             <Button
                               size="sm"
                               variant="outline"
-                              className="text-emerald-400 border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-xs"
+                              className="text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-xs font-semibold"
                               onClick={() => handleMarkPaid(booking.id)}
                             >
                               Mark Paid
@@ -634,7 +634,7 @@ export default function HallDetailPage({ params }: { params: Promise<{ id: strin
                         <Button
                           size="sm"
                           variant="outline"
-                          className="text-white/60 border-white/10 hover:bg-white/5 text-xs"
+                          className="text-muted-foreground hover:text-foreground dark:text-white/60 border-border dark:border-white/10 hover:bg-muted/40 dark:hover:bg-white/5 text-xs"
                           onClick={() => openEditBooking(booking)}
                         >
                           <Edit className="w-3 h-3 mr-1" /> Edit
@@ -643,7 +643,7 @@ export default function HallDetailPage({ params }: { params: Promise<{ id: strin
                           <Button
                             size="sm"
                             variant="outline"
-                            className="text-red-400 border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-xs"
+                            className="text-red-500 dark:text-red-400 border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-xs font-semibold"
                             onClick={() => handleCancelBooking(booking.id)}
                           >
                             Cancel
@@ -653,7 +653,7 @@ export default function HallDetailPage({ params }: { params: Promise<{ id: strin
                     </div>
                   </div>
                   {booking.notes && (
-                    <p className="mt-3 text-xs text-white/40 border-t border-white/10 pt-3 italic">
+                    <p className="mt-3 text-xs text-muted-foreground dark:text-white/40 border-t border-border dark:border-white/10 pt-3 italic">
                       Note: {booking.notes}
                     </p>
                   )}
@@ -685,7 +685,7 @@ export default function HallDetailPage({ params }: { params: Promise<{ id: strin
                 required
                 value={bookingForm.startTime}
                 onChange={e => setBookingForm({ ...bookingForm, startTime: e.target.value })}
-                className="bg-[#1a1a24] border-white/10 text-white"
+                className="bg-background dark:bg-[#1a1a24] border border-input dark:border-white/10 text-foreground dark:text-white"
               />
             </FormField>
             <FormField label="End Date & Time">
@@ -694,7 +694,7 @@ export default function HallDetailPage({ params }: { params: Promise<{ id: strin
                 required
                 value={bookingForm.endTime}
                 onChange={e => setBookingForm({ ...bookingForm, endTime: e.target.value })}
-                className="bg-[#1a1a24] border-white/10 text-white"
+                className="bg-background dark:bg-[#1a1a24] border border-input dark:border-white/10 text-foreground dark:text-white"
               />
             </FormField>
           </div>
@@ -704,7 +704,7 @@ export default function HallDetailPage({ params }: { params: Promise<{ id: strin
               required
               value={bookingForm.contactName}
               onChange={e => setBookingForm({ ...bookingForm, contactName: e.target.value })}
-              className="bg-[#1a1a24] border-white/10 text-white"
+              className="bg-background dark:bg-[#1a1a24] border border-input dark:border-white/10 text-foreground dark:text-white"
               placeholder="e.g. John Silva"
             />
           </FormField>
@@ -715,14 +715,14 @@ export default function HallDetailPage({ params }: { params: Promise<{ id: strin
                 type="email"
                 value={bookingForm.contactEmail}
                 onChange={e => setBookingForm({ ...bookingForm, contactEmail: e.target.value })}
-                className="bg-[#1a1a24] border-white/10 text-white"
+                className="bg-background dark:bg-[#1a1a24] border border-input dark:border-white/10 text-foreground dark:text-white"
               />
             </FormField>
             <FormField label="Phone">
               <Input
                 value={bookingForm.contactPhone}
                 onChange={e => setBookingForm({ ...bookingForm, contactPhone: e.target.value })}
-                className="bg-[#1a1a24] border-white/10 text-white"
+                className="bg-background dark:bg-[#1a1a24] border border-input dark:border-white/10 text-foreground dark:text-white"
               />
             </FormField>
           </div>
@@ -732,7 +732,7 @@ export default function HallDetailPage({ params }: { params: Promise<{ id: strin
               <Input
                 value={bookingForm.purpose}
                 onChange={e => setBookingForm({ ...bookingForm, purpose: e.target.value })}
-                className="bg-[#1a1a24] border-white/10 text-white"
+                className="bg-background dark:bg-[#1a1a24] border border-input dark:border-white/10 text-foreground dark:text-white"
                 placeholder="e.g. Wedding"
               />
             </FormField>
@@ -744,7 +744,7 @@ export default function HallDetailPage({ params }: { params: Promise<{ id: strin
                 required
                 value={bookingForm.guestCount}
                 onChange={e => setBookingForm({ ...bookingForm, guestCount: e.target.value })}
-                className="bg-[#1a1a24] border-white/10 text-white"
+                className="bg-background dark:bg-[#1a1a24] border border-input dark:border-white/10 text-foreground dark:text-white"
               />
             </FormField>
           </div>
@@ -757,14 +757,14 @@ export default function HallDetailPage({ params }: { params: Promise<{ id: strin
                 step="0.01"
                 value={bookingForm.totalAmount}
                 onChange={e => setBookingForm({ ...bookingForm, totalAmount: e.target.value })}
-                className="bg-[#1a1a24] border-white/10 text-white"
+                className="bg-background dark:bg-[#1a1a24] border border-input dark:border-white/10 text-foreground dark:text-white"
               />
             </FormField>
             <FormField label="Payment Status">
               <select
                 value={bookingForm.paymentStatus}
                 onChange={e => setBookingForm({ ...bookingForm, paymentStatus: e.target.value as any })}
-                className="w-full bg-[#1a1a24] border border-white/10 rounded-lg p-2.5 text-sm text-white"
+                className="w-full bg-background dark:bg-[#1a1a24] border border-input dark:border-white/10 rounded-lg p-2.5 text-sm text-foreground dark:text-white"
               >
                 <option value="UNPAID">Unpaid</option>
                 <option value="PARTIAL">Partial</option>
@@ -787,7 +787,7 @@ export default function HallDetailPage({ params }: { params: Promise<{ id: strin
                   paymentStatus: bId ? 'PAID' : bookingForm.paymentStatus
                 })
               }}
-              className="w-full bg-[#1a1a24] border border-white/10 rounded-lg p-2.5 text-sm text-white"
+              className="w-full bg-background dark:bg-[#1a1a24] border border-input dark:border-white/10 rounded-lg p-2.5 text-sm text-foreground dark:text-white"
             >
               <option value="">None (Standalone / Pay at Counter)</option>
               {inHouseBookings.map((b: any) => {
@@ -800,7 +800,7 @@ export default function HallDetailPage({ params }: { params: Promise<{ id: strin
               })}
             </select>
             {bookingForm.linkedBookingId && (
-              <p className="text-[11px] text-emerald-400 mt-1">
+              <p className="text-[11px] text-emerald-500 dark:text-emerald-400 mt-1">
                 ✓ Total amount will post directly as an &quot;EVENTS&quot; charge to the guest&apos;s open room folio.
               </p>
             )}
@@ -811,7 +811,7 @@ export default function HallDetailPage({ params }: { params: Promise<{ id: strin
               <select
                 value={bookingForm.status}
                 onChange={e => setBookingForm({ ...bookingForm, status: e.target.value as any })}
-                className="w-full bg-[#1a1a24] border border-white/10 rounded-lg p-2.5 text-sm text-white"
+                className="w-full bg-background dark:bg-[#1a1a24] border border-input dark:border-white/10 rounded-lg p-2.5 text-sm text-foreground dark:text-white"
               >
                 <option value="PENDING">Pending</option>
                 <option value="CONFIRMED">Confirmed</option>
@@ -825,7 +825,7 @@ export default function HallDetailPage({ params }: { params: Promise<{ id: strin
             <textarea
               value={bookingForm.notes}
               onChange={e => setBookingForm({ ...bookingForm, notes: e.target.value })}
-              className="w-full bg-[#1a1a24] border border-white/10 rounded-lg p-2.5 text-sm text-white resize-none"
+              className="w-full bg-background dark:bg-[#1a1a24] border border-input dark:border-white/10 rounded-lg p-2.5 text-sm text-foreground dark:text-white resize-none"
               rows={2}
               placeholder="Special requirements, setup notes..."
             />
@@ -843,12 +843,12 @@ export default function HallDetailPage({ params }: { params: Promise<{ id: strin
                 return (
                   <div className="grid grid-cols-2 gap-3 text-xs">
                     <div>
-                      <p className="text-white/50">{hrs.toFixed(1)}h × ${Number(hall.hourlyRate).toFixed(0)}/hr</p>
-                      <p className="text-white font-bold">${byHour.toFixed(2)}</p>
+                      <p className="text-muted-foreground dark:text-white/50">{hrs.toFixed(1)}h × ${Number(hall.hourlyRate).toFixed(0)}/hr</p>
+                      <p className="text-foreground dark:text-white font-bold">${byHour.toFixed(2)}</p>
                     </div>
                     <div>
-                      <p className="text-white/50">Daily Rate (proportional)</p>
-                      <p className="text-white font-bold">${byDay.toFixed(2)}</p>
+                      <p className="text-muted-foreground dark:text-white/50">Daily Rate (proportional)</p>
+                      <p className="text-foreground dark:text-white font-bold">${byDay.toFixed(2)}</p>
                     </div>
                   </div>
                 )
@@ -856,9 +856,9 @@ export default function HallDetailPage({ params }: { params: Promise<{ id: strin
             </div>
           )}
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+          <div className="flex justify-end gap-3 pt-4 border-t border-border dark:border-white/10">
             <Button type="button" variant="ghost" onClick={() => setShowBookingModal(false)} disabled={saving}>Cancel</Button>
-            <Button type="submit" className="bg-primary text-black font-semibold" disabled={saving}>
+            <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-sm" disabled={saving}>
               {saving ? 'Saving...' : editingBooking ? 'Update Booking' : 'Confirm Booking'}
             </Button>
           </div>
@@ -873,18 +873,18 @@ export default function HallDetailPage({ params }: { params: Promise<{ id: strin
       >
         {folioModalBooking && (
           <div className="space-y-4">
-            <div className="bg-white/5 border border-white/10 rounded-xl p-3.5 space-y-1.5 text-xs">
+            <div className="bg-muted/40 dark:bg-white/5 border border-border dark:border-white/10 rounded-xl p-3.5 space-y-1.5 text-xs">
               <div className="flex justify-between">
-                <span className="text-white/40">Hall Booking Code:</span>
+                <span className="text-muted-foreground dark:text-white/40">Hall Booking Code:</span>
                 <span className="font-mono text-primary font-bold">{folioModalBooking.confirmationCode}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-white/40">Amount to Charge:</span>
-                <span className="font-bold text-white">${Number(folioModalBooking.totalAmount).toFixed(2)}</span>
+                <span className="text-muted-foreground dark:text-white/40">Amount to Charge:</span>
+                <span className="font-bold text-foreground dark:text-white">${Number(folioModalBooking.totalAmount).toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-white/40">Purpose / Contact:</span>
-                <span className="text-white">{folioModalBooking.purpose || folioModalBooking.contactName || 'Venue Reservation'}</span>
+                <span className="text-muted-foreground dark:text-white/40">Purpose / Contact:</span>
+                <span className="text-foreground dark:text-white">{folioModalBooking.purpose || folioModalBooking.contactName || 'Venue Reservation'}</span>
               </div>
             </div>
 
@@ -892,7 +892,7 @@ export default function HallDetailPage({ params }: { params: Promise<{ id: strin
               <select
                 value={selectedFolioBookingId}
                 onChange={e => setSelectedFolioBookingId(e.target.value)}
-                className="w-full bg-[#1a1a24] border border-white/10 rounded-lg p-2.5 text-sm text-white"
+                className="w-full bg-background dark:bg-[#1a1a24] border border-input dark:border-white/10 rounded-lg p-2.5 text-sm text-foreground dark:text-white"
               >
                 {inHouseBookings.length === 0 ? (
                   <option value="">No currently checked-in guests found</option>
@@ -909,18 +909,18 @@ export default function HallDetailPage({ params }: { params: Promise<{ id: strin
               </select>
             </FormField>
 
-            <p className="text-[11px] text-white/50 leading-relaxed">
-              Posting this charge will create an <strong className="text-white">EVENTS</strong> line item on the customer&apos;s open room folio and record a double-entry debit against the Guest Ledger.
+            <p className="text-[11px] text-muted-foreground dark:text-white/50 leading-relaxed">
+              Posting this charge will create an <strong className="text-foreground dark:text-white">EVENTS</strong> line item on the customer&apos;s open room folio and record a double-entry debit against the Guest Ledger.
             </p>
 
-            <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+            <div className="flex justify-end gap-3 pt-4 border-t border-border dark:border-white/10">
               <Button type="button" variant="ghost" onClick={() => setFolioModalBooking(null)} disabled={postingFolio}>
                 Cancel
               </Button>
               <Button
                 onClick={handleChargeToFolio}
                 disabled={postingFolio || inHouseBookings.length === 0 || !selectedFolioBookingId}
-                className="bg-amber-500 hover:bg-amber-600 text-black font-bold"
+                className="bg-amber-500 hover:bg-amber-600 text-black font-bold shadow-sm"
               >
                 {postingFolio ? 'Posting to Folio...' : `Charge $${Number(folioModalBooking.totalAmount).toFixed(2)} to Room`}
               </Button>

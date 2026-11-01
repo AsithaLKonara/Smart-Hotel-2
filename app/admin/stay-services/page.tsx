@@ -264,7 +264,7 @@ export default function AdminStayServicesPage() {
 
   if (loading && services.length === 0) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#090A0C]">
+      <div className="flex items-center justify-center min-h-screen bg-background dark:bg-[#090A0C]">
         <PremiumSpinner size="lg" text="Loading Extra Services Studio..." />
       </div>
     )
@@ -277,7 +277,7 @@ export default function AdminStayServicesPage() {
       actions={
         <Button
           onClick={handleOpenCreate}
-          className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs font-mono uppercase tracking-wider h-9"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs font-mono uppercase tracking-wider h-9"
         >
           <Plus className="w-3.5 h-3.5 mr-1.5" />
           Add Extra Service
@@ -287,59 +287,59 @@ export default function AdminStayServicesPage() {
       <div className="space-y-6">
         {/* KPI Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="bg-[#121417] border border-[#1E2227] rounded-xl shadow-none">
+          <Card className="bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] rounded-xl shadow-sm dark:shadow-none">
             <CardContent className="p-4 flex items-center justify-between">
               <div>
-                <p className="text-[10px] uppercase tracking-wider font-mono text-zinc-500">Total Extras</p>
-                <p className="text-2xl font-bold font-mono text-white mt-1">{services.length}</p>
+                <p className="text-[10px] uppercase tracking-wider font-mono text-muted-foreground dark:text-zinc-500">Total Extras</p>
+                <p className="text-2xl font-bold font-mono text-foreground dark:text-white mt-1">{services.length}</p>
               </div>
-              <div className="w-9 h-9 rounded-lg bg-[#181A1D] border border-[#2B3037] flex items-center justify-center text-zinc-400">
+              <div className="w-9 h-9 rounded-lg bg-muted dark:bg-[#181A1D] border border-border dark:border-[#2B3037] flex items-center justify-center text-muted-foreground dark:text-zinc-400">
                 <Sparkles className="w-4 h-4" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-[#121417] border border-[#1E2227] rounded-xl shadow-none">
+          <Card className="bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] rounded-xl shadow-sm dark:shadow-none">
             <CardContent className="p-4 flex items-center justify-between">
               <div>
-                <p className="text-[10px] uppercase tracking-wider font-mono text-zinc-500">Active in Booking</p>
-                <p className="text-2xl font-bold font-mono text-emerald-400 mt-1">
+                <p className="text-[10px] uppercase tracking-wider font-mono text-muted-foreground dark:text-zinc-500">Active in Booking</p>
+                <p className="text-2xl font-bold font-mono text-emerald-500 dark:text-emerald-400 mt-1">
                   {services.filter(s => s.active).length}
                 </p>
               </div>
-              <div className="w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+              <div className="w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 dark:text-emerald-400">
                 <Check className="w-4 h-4" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-[#121417] border border-[#1E2227] rounded-xl shadow-none">
+          <Card className="bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] rounded-xl shadow-sm dark:shadow-none">
             <CardContent className="p-4 flex items-center justify-between">
               <div>
-                <p className="text-[10px] uppercase tracking-wider font-mono text-zinc-500">Global Portfolio Extras</p>
-                <p className="text-2xl font-bold font-mono text-white mt-1">
+                <p className="text-[10px] uppercase tracking-wider font-mono text-muted-foreground dark:text-zinc-500">Global Portfolio Extras</p>
+                <p className="text-2xl font-bold font-mono text-foreground dark:text-white mt-1">
                   {services.filter(s => !s.propertyId).length}
                 </p>
               </div>
-              <div className="w-9 h-9 rounded-lg bg-[#181A1D] border border-[#2B3037] flex items-center justify-center text-zinc-400">
+              <div className="w-9 h-9 rounded-lg bg-muted dark:bg-[#181A1D] border border-border dark:border-[#2B3037] flex items-center justify-center text-muted-foreground dark:text-zinc-400">
                 <Building2 className="w-4 h-4" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-[#121417] border border-[#1E2227] rounded-xl shadow-none">
+          <Card className="bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] rounded-xl shadow-sm dark:shadow-none">
             <CardContent className="p-4 flex items-center justify-between">
               <div>
-                <p className="text-[10px] uppercase tracking-wider font-mono text-zinc-500">Avg. Add-On Price</p>
-                <p className="text-2xl font-bold font-mono text-white mt-1">
+                <p className="text-[10px] uppercase tracking-wider font-mono text-muted-foreground dark:text-zinc-500">Avg. Add-On Price</p>
+                <p className="text-2xl font-bold font-mono text-foreground dark:text-white mt-1">
                   {formatPrice(
                     services.length > 0
-                      ? services.reduce((acc, s) => acc + Number(s.price), 0) / services.length
+                       ? services.reduce((acc, s) => acc + Number(s.price), 0) / services.length
                       : 0
                   )}
                 </p>
               </div>
-              <div className="w-9 h-9 rounded-lg bg-[#181A1D] border border-[#2B3037] flex items-center justify-center text-zinc-400">
+              <div className="w-9 h-9 rounded-lg bg-muted dark:bg-[#181A1D] border border-border dark:border-[#2B3037] flex items-center justify-center text-muted-foreground dark:text-zinc-400">
                 <DollarSign className="w-4 h-4" />
               </div>
             </CardContent>
@@ -347,15 +347,15 @@ export default function AdminStayServicesPage() {
         </div>
 
         {/* Filters */}
-        <div className="bg-[#121417] border border-[#1E2227] p-3 rounded-xl flex flex-col md:flex-row gap-3 items-center justify-between">
+        <div className="bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] p-3 rounded-xl flex flex-col md:flex-row gap-3 items-center justify-between">
           <div className="relative w-full md:w-80">
-            <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-3.5 h-3.5 text-muted-foreground dark:text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               placeholder="Search service name, code, description..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-[#181A1D] border border-[#2B3037] text-xs text-white pl-9 pr-3 py-2 rounded-lg font-mono placeholder:text-zinc-500 focus:outline-none focus:border-zinc-500"
+              className="w-full bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] text-xs text-foreground dark:text-white pl-9 pr-3 py-2 rounded-lg font-mono placeholder:text-muted-foreground dark:placeholder:text-zinc-500 focus:outline-none focus:border-ring"
             />
           </div>
 
@@ -363,7 +363,7 @@ export default function AdminStayServicesPage() {
             <select
               value={propertyFilter}
               onChange={(e) => setPropertyFilter(e.target.value)}
-              className="bg-[#181A1D] border border-[#2B3037] text-xs text-zinc-200 px-3 py-2 rounded-lg font-mono focus:outline-none focus:border-zinc-500"
+              className="bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] text-xs text-foreground dark:text-zinc-200 px-3 py-2 rounded-lg font-mono focus:outline-none focus:border-ring"
             >
               <option value="all">All Destinations</option>
               <option value="global">Global (All Resorts)</option>
@@ -375,7 +375,7 @@ export default function AdminStayServicesPage() {
             <select
               value={activeFilter}
               onChange={(e) => setActiveFilter(e.target.value)}
-              className="bg-[#181A1D] border border-[#2B3037] text-xs text-zinc-200 px-3 py-2 rounded-lg font-mono focus:outline-none focus:border-zinc-500"
+              className="bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] text-xs text-foreground dark:text-zinc-200 px-3 py-2 rounded-lg font-mono focus:outline-none focus:border-ring"
             >
               <option value="all">All Status</option>
               <option value="active">Active Only</option>
@@ -389,11 +389,11 @@ export default function AdminStayServicesPage() {
           {filteredServices.map((service) => (
             <Card 
               key={service.id} 
-              className="bg-[#121417] border border-[#1E2227] rounded-xl overflow-hidden flex flex-col justify-between hover:border-[#2B3037] transition-all group shadow-none"
+              className="bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] rounded-xl overflow-hidden flex flex-col justify-between hover:border-border/80 dark:hover:border-[#2B3037] transition-all group shadow-sm dark:shadow-none"
             >
               <div>
                 {/* Media Header */}
-                <div className="relative aspect-[16/9] w-full bg-[#090A0C] overflow-hidden">
+                <div className="relative aspect-[16/9] w-full bg-muted/30 dark:bg-[#090A0C] overflow-hidden">
                   {service.imageUrl ? (
                     <Image
                       src={service.imageUrl}
@@ -402,12 +402,12 @@ export default function AdminStayServicesPage() {
                       className="object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   ) : (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center text-zinc-600">
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground dark:text-zinc-600">
                       <span className="text-4xl mb-1">{service.icon || '✨'}</span>
-                      <span className="text-[10px] uppercase font-mono tracking-wider text-zinc-500">No Image Configured</span>
+                      <span className="text-[10px] uppercase font-mono tracking-wider text-muted-foreground dark:text-zinc-500">No Image Configured</span>
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#121417] via-transparent to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-card/80 dark:from-[#121417] via-transparent to-transparent" />
                   
                   {/* Floating Badges */}
                   <div className="absolute top-3 left-3 flex items-center gap-1.5">
@@ -450,31 +450,31 @@ export default function AdminStayServicesPage() {
 
                 {/* Service Info */}
                 <div className="p-4 space-y-1.5">
-                  <h3 className="text-sm font-semibold text-white font-mono group-hover:text-zinc-200 transition-colors">
+                  <h3 className="text-sm font-semibold text-foreground dark:text-white font-mono group-hover:text-foreground/80 dark:group-hover:text-zinc-200 transition-colors">
                     {service.name}
                   </h3>
-                  <p className="text-zinc-400 text-xs font-sans leading-relaxed line-clamp-3">
+                  <p className="text-muted-foreground dark:text-zinc-400 text-xs font-sans leading-relaxed line-clamp-3">
                     {service.description}
                   </p>
                 </div>
               </div>
 
               {/* Actions Footer */}
-              <div className="p-4 pt-0 border-t border-[#1E2227] mt-3 flex items-center gap-2">
+              <div className="p-4 pt-0 border-t border-border dark:border-[#1E2227] mt-3 flex items-center gap-2">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => handleOpenEdit(service)}
-                  className="flex-1 border-[#1E2227] bg-[#141619] hover:bg-[#181A1D] text-zinc-300 hover:text-white h-8 rounded-lg text-xs font-mono"
+                  className="flex-1 border-border dark:border-[#1E2227] bg-muted dark:bg-[#141619] hover:bg-muted/80 dark:hover:bg-[#181A1D] text-foreground dark:text-zinc-300 hover:text-foreground dark:hover:text-white h-8 rounded-lg text-xs font-mono"
                 >
-                  <Edit className="w-3 h-3 mr-1.5 text-zinc-400" />
+                  <Edit className="w-3 h-3 mr-1.5 text-muted-foreground dark:text-zinc-400" />
                   Edit
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => handleDelete(service)}
-                  className="border-rose-500/20 text-rose-400 hover:bg-rose-500/10 hover:border-rose-500/40 h-8 rounded-lg text-xs px-2.5"
+                  className="border-rose-500/20 text-rose-500 dark:text-rose-400 hover:bg-rose-500/10 hover:border-rose-500/40 h-8 rounded-lg text-xs px-2.5"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </Button>
@@ -484,15 +484,15 @@ export default function AdminStayServicesPage() {
         </div>
 
         {filteredServices.length === 0 && (
-          <div className="text-center py-16 bg-[#121417] border border-[#1E2227] rounded-xl space-y-3">
-            <Sparkles className="w-8 h-8 text-zinc-600 mx-auto" />
-            <h3 className="text-sm font-semibold text-white font-mono uppercase tracking-wider">No Extra Services Found</h3>
-            <p className="text-zinc-500 text-xs max-w-md mx-auto font-sans">
+          <div className="text-center py-16 bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] rounded-xl space-y-3">
+            <Sparkles className="w-8 h-8 text-muted-foreground dark:text-zinc-600 mx-auto" />
+            <h3 className="text-sm font-semibold text-foreground dark:text-white font-mono uppercase tracking-wider">No Extra Services Found</h3>
+            <p className="text-muted-foreground dark:text-zinc-500 text-xs max-w-md mx-auto font-sans">
               No stay extras matched your active search or destination filters. Try adjusting filters or create a new service.
             </p>
             <Button 
               onClick={handleOpenCreate} 
-              className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs font-mono uppercase tracking-wider h-8 px-4"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs font-mono uppercase tracking-wider h-8 px-4"
             >
               <Plus className="w-3.5 h-3.5 mr-1.5" /> Add Extra Service
             </Button>
@@ -502,13 +502,13 @@ export default function AdminStayServicesPage() {
 
       {/* Create / Edit Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="bg-[#121417] border border-[#1E2227] text-zinc-100 max-w-xl p-6 rounded-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader className="border-b border-[#1E2227] pb-3">
-            <DialogTitle className="text-base font-semibold text-white flex items-center gap-2 font-mono uppercase tracking-wider">
-              <Sparkles className="w-4 h-4 text-zinc-400" />
+        <DialogContent className="bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] text-card-foreground dark:text-zinc-100 max-w-xl p-6 rounded-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader className="border-b border-border dark:border-[#1E2227] pb-3">
+            <DialogTitle className="text-base font-semibold text-foreground dark:text-white flex items-center gap-2 font-mono uppercase tracking-wider">
+              <Sparkles className="w-4 h-4 text-muted-foreground dark:text-zinc-400" />
               {editingService ? 'Edit Stay Extra Service' : 'Create New Stay Extra Service'}
             </DialogTitle>
-            <DialogDescription className="text-zinc-500 text-xs">
+            <DialogDescription className="text-muted-foreground dark:text-zinc-500 text-xs">
               Configure ancillary stay add-ons, pricing models, and media displayed to guests.
             </DialogDescription>
           </DialogHeader>
@@ -516,45 +516,45 @@ export default function AdminStayServicesPage() {
           <form onSubmit={handleSubmit} className="space-y-4 pt-3">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="sm:col-span-2 space-y-1">
-                <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-400">Service Name *</label>
+                <label className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground dark:text-zinc-400">Service Name *</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Royal Champagne Breakfast"
                   value={formData.name}
                   onChange={e => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full bg-[#181A1D] border border-[#2B3037] rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-zinc-500"
+                  className="w-full bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] rounded-lg px-3 py-2 text-xs text-foreground dark:text-white font-mono focus:outline-none focus:border-ring"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-400">Code *</label>
+                <label className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground dark:text-zinc-400">Code *</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. BREAKFAST"
                   value={formData.code}
                   onChange={e => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
-                  className="w-full bg-[#181A1D] border border-[#2B3037] rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-zinc-500 uppercase"
+                  className="w-full bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] rounded-lg px-3 py-2 text-xs text-foreground dark:text-white font-mono focus:outline-none focus:border-ring uppercase"
                 />
               </div>
             </div>
 
             <div className="space-y-1">
-              <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-400">Description *</label>
+              <label className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground dark:text-zinc-400">Description *</label>
               <textarea
                 required
                 rows={3}
                 placeholder="Describe what the guest receives with this service..."
                 value={formData.description}
                 onChange={e => setFormData({ ...formData, description: e.target.value })}
-                className="w-full bg-[#181A1D] border border-[#2B3037] rounded-lg px-3 py-2 text-xs text-white font-sans focus:outline-none focus:border-zinc-500 resize-none"
+                className="w-full bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] rounded-lg px-3 py-2 text-xs text-foreground dark:text-white font-sans focus:outline-none focus:border-ring resize-none"
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="space-y-1">
-                <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-400">Price ($) *</label>
+                <label className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground dark:text-zinc-400">Price ($) *</label>
                 <input
                   type="number"
                   step="0.01"
@@ -562,16 +562,16 @@ export default function AdminStayServicesPage() {
                   placeholder="50.00"
                   value={formData.price}
                   onChange={e => setFormData({ ...formData, price: e.target.value })}
-                  className="w-full bg-[#181A1D] border border-[#2B3037] rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-zinc-500"
+                  className="w-full bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] rounded-lg px-3 py-2 text-xs text-foreground dark:text-white font-mono focus:outline-none focus:border-ring"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-400">Frequency</label>
+                <label className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground dark:text-zinc-400">Frequency</label>
                 <select
                   value={formData.priceType}
                   onChange={e => setFormData({ ...formData, priceType: e.target.value as any })}
-                  className="w-full bg-[#181A1D] border border-[#2B3037] rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-zinc-500"
+                  className="w-full bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] rounded-lg px-3 py-2 text-xs text-foreground dark:text-white font-mono focus:outline-none focus:border-ring"
                 >
                   <option value="PER_STAY">Per Stay (One-time)</option>
                   <option value="PER_NIGHT">Per Night</option>
@@ -580,24 +580,24 @@ export default function AdminStayServicesPage() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-400">Emoji / Icon</label>
+                <label className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground dark:text-zinc-400">Emoji / Icon</label>
                 <input
                   type="text"
                   placeholder="🥐"
                   value={formData.icon}
                   onChange={e => setFormData({ ...formData, icon: e.target.value })}
-                  className="w-full bg-[#181A1D] border border-[#2B3037] rounded-lg px-3 py-2 text-xs text-white text-center text-base focus:outline-none focus:border-zinc-500"
+                  className="w-full bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] rounded-lg px-3 py-2 text-xs text-foreground dark:text-white text-center text-base focus:outline-none focus:border-ring"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
-                <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-400">Property Scope</label>
+                <label className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground dark:text-zinc-400">Property Scope</label>
                 <select
                   value={formData.propertyId}
                   onChange={e => setFormData({ ...formData, propertyId: e.target.value })}
-                  className="w-full bg-[#181A1D] border border-[#2B3037] rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-zinc-500"
+                  className="w-full bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] rounded-lg px-3 py-2 text-xs text-foreground dark:text-white font-mono focus:outline-none focus:border-ring"
                 >
                   <option value="">Global (All Resorts)</option>
                   {properties.map(p => (
@@ -607,40 +607,40 @@ export default function AdminStayServicesPage() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-400">Display Order</label>
+                <label className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground dark:text-zinc-400">Display Order</label>
                 <input
                   type="number"
                   value={formData.order}
                   onChange={e => setFormData({ ...formData, order: parseInt(e.target.value) || 0 })}
-                  className="w-full bg-[#181A1D] border border-[#2B3037] rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-zinc-500"
+                  className="w-full bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] rounded-lg px-3 py-2 text-xs text-foreground dark:text-white font-mono focus:outline-none focus:border-ring"
                 />
               </div>
             </div>
 
             {/* Image Upload / URL */}
-            <div className="space-y-2 pt-2 border-t border-[#1E2227]">
-              <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 flex items-center justify-between">
+            <div className="space-y-2 pt-2 border-t border-border dark:border-[#1E2227]">
+              <label className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground dark:text-zinc-400 flex items-center justify-between">
                 <span>Service Image</span>
-                {uploadingImage && <span className="text-zinc-400 text-[10px] font-mono flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" /> Uploading...</span>}
+                {uploadingImage && <span className="text-muted-foreground dark:text-zinc-400 text-[10px] font-mono flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" /> Uploading...</span>}
               </label>
 
               <div className="flex gap-3 items-center">
-                <div className="relative w-20 h-20 rounded-lg border border-[#2B3037] bg-[#090A0C] overflow-hidden shrink-0 flex items-center justify-center">
+                <div className="relative w-20 h-20 rounded-lg border border-border dark:border-[#2B3037] bg-muted/30 dark:bg-[#090A0C] overflow-hidden shrink-0 flex items-center justify-center">
                   {formData.imageUrl ? (
                     <Image src={formData.imageUrl} alt="Preview" fill className="object-cover" />
                   ) : (
-                    <ImageIcon className="w-6 h-6 text-zinc-600" />
+                    <ImageIcon className="w-6 h-6 text-muted-foreground dark:text-zinc-600" />
                   )}
                 </div>
 
                 <div className="flex-1 space-y-2">
                   <div className="flex items-center gap-2">
-                    <label className="cursor-pointer bg-[#181A1D] hover:bg-[#20242A] border border-[#2B3037] rounded-lg px-3 py-1.5 text-xs font-mono text-white flex items-center gap-1.5 transition-all">
-                      <Upload className="w-3.5 h-3.5 text-zinc-400" />
+                    <label className="cursor-pointer bg-muted dark:bg-[#181A1D] hover:bg-muted/80 dark:hover:bg-[#20242A] border border-border dark:border-[#2B3037] rounded-lg px-3 py-1.5 text-xs font-mono text-foreground dark:text-white flex items-center gap-1.5 transition-all">
+                      <Upload className="w-3.5 h-3.5 text-muted-foreground dark:text-zinc-400" />
                       Upload File
                       <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
                     </label>
-                    <span className="text-[10px] text-zinc-500 font-mono">or enter direct URL</span>
+                    <span className="text-[10px] text-muted-foreground dark:text-zinc-500 font-mono">or enter direct URL</span>
                   </div>
 
                   <input
@@ -648,7 +648,7 @@ export default function AdminStayServicesPage() {
                     placeholder="https://images.unsplash.com/..."
                     value={formData.imageUrl}
                     onChange={e => setFormData({ ...formData, imageUrl: e.target.value })}
-                    className="w-full bg-[#181A1D] border border-[#2B3037] rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-zinc-500"
+                    className="w-full bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] rounded-lg px-3 py-2 text-xs text-foreground dark:text-white font-mono focus:outline-none focus:border-ring"
                   />
                 </div>
               </div>
@@ -660,26 +660,26 @@ export default function AdminStayServicesPage() {
                 id="activeToggle"
                 checked={formData.active}
                 onChange={e => setFormData({ ...formData, active: e.target.checked })}
-                className="w-4 h-4 rounded text-white border-[#2B3037] bg-[#181A1D] accent-white cursor-pointer"
+                className="w-4 h-4 rounded text-primary border-input dark:border-[#2B3037] bg-background dark:bg-[#181A1D] cursor-pointer"
               />
-              <label htmlFor="activeToggle" className="text-xs text-zinc-300 font-mono cursor-pointer">
+              <label htmlFor="activeToggle" className="text-xs text-foreground dark:text-zinc-300 font-mono cursor-pointer">
                 Active (Display immediately on booking flow for guest selection)
               </label>
             </div>
 
-            <DialogFooter className="pt-3 border-t border-[#1E2227] flex justify-end gap-2">
+            <DialogFooter className="pt-3 border-t border-border dark:border-[#1E2227] flex justify-end gap-2">
               <Button
                 type="button"
                 variant="ghost"
                 onClick={() => setIsModalOpen(false)}
-                className="text-xs text-zinc-400 hover:text-white font-mono h-8"
+                className="text-xs text-muted-foreground hover:text-foreground dark:text-zinc-400 dark:hover:text-white font-mono h-8"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs font-mono uppercase tracking-wider h-8 px-4"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs font-mono uppercase tracking-wider h-8 px-4"
               >
                 {isSubmitting ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" /> : null}
                 {editingService ? 'Save Changes' : 'Create Service'}

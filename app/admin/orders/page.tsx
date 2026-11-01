@@ -134,8 +134,8 @@ export default function AdminOrdersPage() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-[#090A0C]">
-        <Loader2 className="w-8 h-8 animate-spin text-zinc-500" />
+      <div className="flex items-center justify-center h-screen bg-background dark:bg-[#090A0C]">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground dark:text-zinc-500" />
       </div>
     )
   }
@@ -148,74 +148,74 @@ export default function AdminOrdersPage() {
       <div className="space-y-6">
         {/* Stats Cards */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-          <Card className="bg-[#121417] border border-[#1E2227] rounded-xl p-4 shadow-sm">
-            <p className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-medium">Total Orders</p>
-            <p className="text-xl font-mono font-bold text-zinc-100 mt-1">{statsData.total}</p>
+          <Card className="bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] rounded-xl p-4 shadow-sm">
+            <p className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground dark:text-zinc-400 font-medium">Total Orders</p>
+            <p className="text-xl font-mono font-bold text-foreground dark:text-zinc-100 mt-1">{statsData.total}</p>
           </Card>
 
-          <Card className="bg-[#121417] border border-[#1E2227] rounded-xl p-4 shadow-sm">
-            <p className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-medium">Pending</p>
-            <p className="text-xl font-mono font-bold text-amber-400 mt-1">{statsData.pending}</p>
+          <Card className="bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] rounded-xl p-4 shadow-sm">
+            <p className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground dark:text-zinc-400 font-medium">Pending</p>
+            <p className="text-xl font-mono font-bold text-amber-600 dark:text-amber-400 mt-1">{statsData.pending}</p>
           </Card>
 
-          <Card className="bg-[#121417] border border-[#1E2227] rounded-xl p-4 shadow-sm">
-            <p className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-medium">Preparing</p>
-            <p className="text-xl font-mono font-bold text-yellow-400 mt-1">{statsData.preparing}</p>
+          <Card className="bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] rounded-xl p-4 shadow-sm">
+            <p className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground dark:text-zinc-400 font-medium">Preparing</p>
+            <p className="text-xl font-mono font-bold text-yellow-600 dark:text-yellow-400 mt-1">{statsData.preparing}</p>
           </Card>
 
-          <Card className="bg-[#121417] border border-[#1E2227] rounded-xl p-4 shadow-sm">
-            <p className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-medium">Ready For Pickup</p>
-            <p className="text-xl font-mono font-bold text-emerald-400 mt-1">{statsData.ready}</p>
+          <Card className="bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] rounded-xl p-4 shadow-sm">
+            <p className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground dark:text-zinc-400 font-medium">Ready For Pickup</p>
+            <p className="text-xl font-mono font-bold text-emerald-600 dark:text-emerald-400 mt-1">{statsData.ready}</p>
           </Card>
 
-          <Card className="bg-[#121417] border border-[#1E2227] rounded-xl p-4 shadow-sm">
-            <p className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-medium">Delivered</p>
-            <p className="text-xl font-mono font-bold text-zinc-400 mt-1">{statsData.delivered}</p>
+          <Card className="bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] rounded-xl p-4 shadow-sm">
+            <p className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground dark:text-zinc-400 font-medium">Delivered</p>
+            <p className="text-xl font-mono font-bold text-muted-foreground dark:text-zinc-400 mt-1">{statsData.delivered}</p>
           </Card>
 
-          <Card className="bg-[#121417] border border-[#1E2227] rounded-xl p-4 shadow-sm">
-            <p className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-medium">Delivered Rev</p>
-            <p className="text-xl font-mono font-bold text-emerald-400 mt-1">${statsData.totalRevenue.toFixed(2)}</p>
+          <Card className="bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] rounded-xl p-4 shadow-sm">
+            <p className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground dark:text-zinc-400 font-medium">Delivered Rev</p>
+            <p className="text-xl font-mono font-bold text-emerald-600 dark:text-emerald-400 mt-1">${statsData.totalRevenue.toFixed(2)}</p>
           </Card>
         </div>
 
         {/* Filters */}
-        <div className="p-3 bg-[#121417] border border-[#1E2227] rounded-xl flex flex-col md:flex-row gap-3">
+        <div className="p-3 bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] rounded-xl flex flex-col md:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-zinc-500 w-3.5 h-3.5" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground dark:text-zinc-500 w-3.5 h-3.5" />
             <input
               type="text"
               placeholder="Search by room number or order ID..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-[#181A1D] border border-[#2B3037] text-xs text-zinc-100 placeholder:text-zinc-500 rounded-lg pl-9 pr-3.5 py-2 outline-none focus:border-zinc-400 transition-all font-mono"
+              className="w-full bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] text-xs text-foreground dark:text-zinc-100 placeholder:text-muted-foreground dark:placeholder:text-zinc-500 rounded-lg pl-9 pr-3.5 py-2 outline-none focus:border-zinc-400 transition-all font-mono"
             />
           </div>
 
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="bg-[#181A1D] border border-[#2B3037] text-xs text-zinc-100 rounded-lg px-3 py-2 outline-none focus:border-zinc-400 font-mono"
+            className="bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] text-xs text-foreground dark:text-zinc-100 rounded-lg px-3 py-2 outline-none focus:border-zinc-400 font-mono"
           >
-            <option value="all" className="bg-[#181A1D] text-zinc-100">All Statuses</option>
-            <option value="PENDING" className="bg-[#181A1D] text-zinc-100">Pending</option>
-            <option value="CONFIRMED" className="bg-[#181A1D] text-zinc-100">Confirmed</option>
-            <option value="PREPARING" className="bg-[#181A1D] text-zinc-100">Preparing</option>
-            <option value="READY" className="bg-[#181A1D] text-zinc-100">Ready</option>
-            <option value="DELIVERED" className="bg-[#181A1D] text-zinc-100">Delivered</option>
-            <option value="CANCELLED" className="bg-[#181A1D] text-zinc-100">Cancelled</option>
+            <option value="all">All Statuses</option>
+            <option value="PENDING">Pending</option>
+            <option value="CONFIRMED">Confirmed</option>
+            <option value="PREPARING">Preparing</option>
+            <option value="READY">Ready</option>
+            <option value="DELIVERED">Delivered</option>
+            <option value="CANCELLED">Cancelled</option>
           </select>
         </div>
 
         {/* Orders Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
           {filteredOrders.map((order) => (
-            <Card key={order.id} className="bg-[#121417] border border-[#1E2227] hover:border-[#2B3037] transition-all rounded-xl shadow-sm flex flex-col justify-between">
-              <CardHeader className="p-4 pb-3 border-b border-[#1E2227]">
+            <Card key={order.id} className="bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] hover:border-zinc-400 dark:hover:border-[#2B3037] transition-all rounded-xl shadow-sm flex flex-col justify-between">
+              <CardHeader className="p-4 pb-3 border-b border-border dark:border-[#1E2227]">
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle className="text-sm font-mono font-bold text-zinc-100">Room {order.roomNumber}</CardTitle>
-                    <p className="text-[11px] font-mono text-zinc-500">ORD-{order.id.slice(-8).toUpperCase()}</p>
+                    <CardTitle className="text-sm font-mono font-bold text-foreground dark:text-zinc-100">Room {order.roomNumber}</CardTitle>
+                    <p className="text-[11px] font-mono text-muted-foreground dark:text-zinc-500">ORD-{order.id.slice(-8).toUpperCase()}</p>
                   </div>
                   <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded ${getStatusBadgeClass(order.status)}`}>
                     {getStatusIcon(order.status)}
@@ -226,29 +226,29 @@ export default function AdminOrdersPage() {
               <CardContent className="p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs font-mono text-zinc-400">Items: {order.items?.length || 0}</p>
-                    <p className="font-mono font-bold text-base text-zinc-100">${Number(order.totalAmount || 0).toFixed(2)}</p>
+                    <p className="text-xs font-mono text-muted-foreground dark:text-zinc-400">Items: {order.items?.length || 0}</p>
+                    <p className="font-mono font-bold text-base text-foreground dark:text-zinc-100">${Number(order.totalAmount || 0).toFixed(2)}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-[11px] font-mono text-zinc-500">
+                    <p className="text-[11px] font-mono text-muted-foreground dark:text-zinc-500">
                       {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </p>
                   </div>
                 </div>
 
                 {order.specialRequests && (
-                  <div className="text-xs bg-[#181A1D] border border-amber-500/20 p-2.5 rounded-lg space-y-0.5">
-                    <p className="text-[10px] font-mono uppercase text-amber-400 font-semibold">Special Instructions:</p>
-                    <p className="text-xs text-zinc-300 font-mono">{order.specialRequests}</p>
+                  <div className="text-xs bg-amber-500/10 border border-amber-500/20 p-2.5 rounded-lg space-y-0.5">
+                    <p className="text-[10px] font-mono uppercase text-amber-600 dark:text-amber-400 font-semibold">Special Instructions:</p>
+                    <p className="text-xs text-foreground/80 dark:text-zinc-300 font-mono">{order.specialRequests}</p>
                   </div>
                 )}
 
-                <div className="flex gap-2 pt-2 border-t border-[#1E2227]">
+                <div className="flex gap-2 pt-2 border-t border-border dark:border-[#1E2227]">
                   {order.status === 'PENDING' && (
                     <Button
                       size="sm"
                       onClick={() => handleStatusUpdate(order.id, 'CONFIRMED')}
-                      className="flex-1 h-8 bg-white hover:bg-zinc-200 text-black font-semibold text-xs font-mono uppercase tracking-wider rounded-lg"
+                      className="flex-1 h-8 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs font-mono uppercase tracking-wider rounded-lg"
                     >
                       Confirm
                     </Button>
@@ -257,7 +257,7 @@ export default function AdminOrdersPage() {
                     <Button
                       size="sm"
                       onClick={() => handleStatusUpdate(order.id, 'PREPARING')}
-                      className="flex-1 h-8 bg-amber-400 hover:bg-amber-300 text-black font-semibold text-xs font-mono uppercase tracking-wider rounded-lg"
+                      className="flex-1 h-8 bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs font-mono uppercase tracking-wider rounded-lg"
                     >
                       Start Prep
                     </Button>
@@ -266,7 +266,7 @@ export default function AdminOrdersPage() {
                     <Button
                       size="sm"
                       onClick={() => handleStatusUpdate(order.id, 'READY')}
-                      className="flex-1 h-8 bg-emerald-400 hover:bg-emerald-300 text-black font-semibold text-xs font-mono uppercase tracking-wider rounded-lg"
+                      className="flex-1 h-8 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs font-mono uppercase tracking-wider rounded-lg"
                     >
                       Mark Ready
                     </Button>
@@ -275,7 +275,7 @@ export default function AdminOrdersPage() {
                     <Button
                       size="sm"
                       onClick={() => handleStatusUpdate(order.id, 'DELIVERED')}
-                      className="flex-1 h-8 bg-white hover:bg-zinc-200 text-black font-semibold text-xs font-mono uppercase tracking-wider rounded-lg"
+                      className="flex-1 h-8 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs font-mono uppercase tracking-wider rounded-lg"
                     >
                       Mark Delivered
                     </Button>
@@ -287,7 +287,7 @@ export default function AdminOrdersPage() {
                       setSelectedOrder(order)
                       setShowDetailsModal(true)
                     }}
-                    className="h-8 w-8 p-0 bg-[#181A1D] hover:bg-[#20242A] border-[#2B3037] text-zinc-300 rounded-lg"
+                    className="h-8 w-8 p-0 bg-muted dark:bg-[#181A1D] hover:bg-muted/80 dark:hover:bg-[#20242A] border-border dark:border-[#2B3037] text-muted-foreground dark:text-zinc-300 rounded-lg"
                   >
                     <Eye className="w-3.5 h-3.5" />
                   </Button>
@@ -298,10 +298,10 @@ export default function AdminOrdersPage() {
         </div>
 
         {filteredOrders.length === 0 && (
-          <Card className="bg-[#121417] border border-[#1E2227] p-12 text-center rounded-xl">
-            <Clock className="w-12 h-12 mx-auto text-zinc-600 mb-3" />
-            <h3 className="text-sm font-semibold text-zinc-200 mb-1">No orders dispatched</h3>
-            <p className="text-xs text-zinc-500 font-mono">
+          <Card className="bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] p-12 text-center rounded-xl">
+            <Clock className="w-12 h-12 mx-auto text-muted-foreground dark:text-zinc-600 mb-3" />
+            <h3 className="text-sm font-semibold text-foreground dark:text-zinc-200 mb-1">No orders dispatched</h3>
+            <p className="text-xs text-muted-foreground dark:text-zinc-500 font-mono">
               {searchTerm || filterStatus !== 'all'
                 ? 'Try adjusting your search criteria or status filter.'
                 : 'No active food or beverage tickets currently in queue.'}
@@ -312,13 +312,13 @@ export default function AdminOrdersPage() {
 
       {/* Order Details Modal */}
       {showDetailsModal && selectedOrder && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-xl max-h-[90vh] bg-[#121417] border border-[#1E2227] rounded-xl shadow-2xl overflow-y-auto">
-            <CardHeader className="px-6 py-4 border-b border-[#1E2227]">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <Card className="w-full max-w-xl max-h-[90vh] bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] rounded-xl shadow-2xl overflow-y-auto">
+            <CardHeader className="px-6 py-4 border-b border-border dark:border-[#1E2227]">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-sm font-semibold text-zinc-100">Ticket Details</CardTitle>
-                  <p className="text-xs text-zinc-400 font-mono mt-0.5">Room {selectedOrder.roomNumber} • ORD-{selectedOrder.id.slice(-8).toUpperCase()}</p>
+                  <CardTitle className="text-sm font-semibold text-foreground dark:text-zinc-100">Ticket Details</CardTitle>
+                  <p className="text-xs text-muted-foreground dark:text-zinc-400 font-mono mt-0.5">Room {selectedOrder.roomNumber} • ORD-{selectedOrder.id.slice(-8).toUpperCase()}</p>
                 </div>
                 <Button
                   variant="ghost"
@@ -327,7 +327,7 @@ export default function AdminOrdersPage() {
                     setShowDetailsModal(false)
                     setSelectedOrder(null)
                   }}
-                  className="h-8 w-8 p-0 text-zinc-400 hover:text-zinc-100 hover:bg-[#181A1D]"
+                  className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground dark:text-zinc-400 dark:hover:text-zinc-100 hover:bg-muted dark:hover:bg-[#181A1D]"
                 >
                   <XCircle className="w-4 h-4" />
                 </Button>
@@ -335,27 +335,27 @@ export default function AdminOrdersPage() {
             </CardHeader>
             <CardContent className="p-6 space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-400">Status</span>
+                <span className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground dark:text-zinc-400">Status</span>
                 <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded ${getStatusBadgeClass(selectedOrder.status)}`}>
                   {selectedOrder.status}
                 </span>
               </div>
 
               <div>
-                <p className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 mb-2">Order Line Items</p>
+                <p className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground dark:text-zinc-400 mb-2">Order Line Items</p>
                 <div className="space-y-2">
                   {selectedOrder.items.map((item) => (
-                    <div key={item.id} className="flex justify-between items-start p-3 bg-[#181A1D] border border-[#1E2227] rounded-lg">
+                    <div key={item.id} className="flex justify-between items-start p-3 bg-muted/40 dark:bg-[#181A1D] border border-border dark:border-[#1E2227] rounded-lg">
                       <div>
-                        <p className="text-xs font-medium text-zinc-200">{item.menu.name}</p>
-                        <p className="text-[10px] font-mono text-zinc-500 uppercase">{item.menu.category}</p>
+                        <p className="text-xs font-medium text-foreground dark:text-zinc-200">{item.menu.name}</p>
+                        <p className="text-[10px] font-mono text-muted-foreground dark:text-zinc-500 uppercase">{item.menu.category}</p>
                         {item.notes && (
-                          <p className="text-[11px] text-amber-400/90 font-mono mt-1">Note: {item.notes}</p>
+                          <p className="text-[11px] text-amber-600 dark:text-amber-400/90 font-mono mt-1">Note: {item.notes}</p>
                         )}
                       </div>
                       <div className="text-right">
-                        <p className="text-xs font-mono text-zinc-400">x{item.quantity}</p>
-                        <p className="text-xs font-mono font-bold text-zinc-100">${(item.unitPrice * item.quantity).toFixed(2)}</p>
+                        <p className="text-xs font-mono text-muted-foreground dark:text-zinc-400">x{item.quantity}</p>
+                        <p className="text-xs font-mono font-bold text-foreground dark:text-zinc-100">${(item.unitPrice * item.quantity).toFixed(2)}</p>
                       </div>
                     </div>
                   ))}
@@ -364,19 +364,19 @@ export default function AdminOrdersPage() {
 
               {selectedOrder.specialRequests && (
                 <div>
-                  <p className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 mb-1">Special Guest Requests</p>
-                  <p className="text-xs bg-[#181A1D] border border-amber-500/20 text-zinc-300 font-mono p-3 rounded-lg">
+                  <p className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground dark:text-zinc-400 mb-1">Special Guest Requests</p>
+                  <p className="text-xs bg-amber-500/10 border border-amber-500/20 text-foreground/80 dark:text-zinc-300 font-mono p-3 rounded-lg">
                     {selectedOrder.specialRequests}
                   </p>
                 </div>
               )}
 
-              <div className="flex justify-between items-center pt-3 border-t border-[#1E2227]">
-                <p className="text-xs font-mono uppercase tracking-wider text-zinc-400">Total Charged</p>
-                <p className="text-xl font-mono font-bold text-zinc-100">${Number(selectedOrder.totalAmount || 0).toFixed(2)}</p>
+              <div className="flex justify-between items-center pt-3 border-t border-border dark:border-[#1E2227]">
+                <p className="text-xs font-mono uppercase tracking-wider text-muted-foreground dark:text-zinc-400">Total Charged</p>
+                <p className="text-xl font-mono font-bold text-foreground dark:text-zinc-100">${Number(selectedOrder.totalAmount || 0).toFixed(2)}</p>
               </div>
 
-              <div className="text-[11px] font-mono text-zinc-500 pt-1">
+              <div className="text-[11px] font-mono text-muted-foreground dark:text-zinc-500 pt-1">
                 Placed At: {new Date(selectedOrder.createdAt).toLocaleString()}
               </div>
             </CardContent>

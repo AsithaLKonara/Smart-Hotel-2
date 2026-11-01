@@ -115,52 +115,52 @@ export default function PropertiesPage() {
   if (loading) return <div className="flex justify-center p-12"><Loader2 className="animate-spin w-8 h-8" /></div>
 
   return (
-    <div className="p-6 text-white max-w-6xl mx-auto">
+    <div className="p-6 text-foreground dark:text-white max-w-6xl mx-auto">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold font-serif">Global Property Manager</h1>
-          <p className="text-slate-400">Manage all hotel locations in the chain</p>
+          <h1 className="text-3xl font-bold font-serif text-foreground dark:text-white">Global Property Manager</h1>
+          <p className="text-muted-foreground dark:text-slate-400">Manage all hotel locations in the chain</p>
         </div>
-        <Button onClick={() => setShowForm(!showForm)}>
+        <Button onClick={() => setShowForm(!showForm)} className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-sm">
           <Plus className="w-4 h-4 mr-2" /> Add Property
         </Button>
       </div>
 
       {showForm && (
-        <Card className="mb-8 bg-[#1a1a1a] border-white/10 text-white">
+        <Card className="mb-8 bg-card dark:bg-[#1a1a1a] border border-border dark:border-white/10 text-foreground dark:text-white shadow-md">
           <CardHeader>
-            <CardTitle>Register New Hotel Location</CardTitle>
+            <CardTitle className="text-foreground dark:text-white">Register New Hotel Location</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs text-slate-400">Property Name</label>
-                  <input required value={formData.name} onChange={e=>setFormData({...formData, name: e.target.value})} className="w-full p-2 rounded bg-black/50 border border-white/10 mt-1" />
+                  <label className="text-xs text-muted-foreground dark:text-slate-400">Property Name</label>
+                  <input required value={formData.name} onChange={e=>setFormData({...formData, name: e.target.value})} className="w-full p-2 rounded bg-background dark:bg-black/50 border border-input dark:border-white/10 text-foreground dark:text-white mt-1 text-sm focus:outline-none focus:ring-1 focus:ring-primary" />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-400">Property Code (e.g. SH-NYC)</label>
-                  <input required value={formData.code} onChange={e=>setFormData({...formData, code: e.target.value})} className="w-full p-2 rounded bg-black/50 border border-white/10 mt-1" />
+                  <label className="text-xs text-muted-foreground dark:text-slate-400">Property Code (e.g. SH-NYC)</label>
+                  <input required value={formData.code} onChange={e=>setFormData({...formData, code: e.target.value})} className="w-full p-2 rounded bg-background dark:bg-black/50 border border-input dark:border-white/10 text-foreground dark:text-white mt-1 text-sm focus:outline-none focus:ring-1 focus:ring-primary" />
                 </div>
                 <div className="col-span-2">
-                  <label className="text-xs text-slate-400">Address</label>
-                  <input required value={formData.address} onChange={e=>setFormData({...formData, address: e.target.value})} className="w-full p-2 rounded bg-black/50 border border-white/10 mt-1" />
+                  <label className="text-xs text-muted-foreground dark:text-slate-400">Address</label>
+                  <input required value={formData.address} onChange={e=>setFormData({...formData, address: e.target.value})} className="w-full p-2 rounded bg-background dark:bg-black/50 border border-input dark:border-white/10 text-foreground dark:text-white mt-1 text-sm focus:outline-none focus:ring-1 focus:ring-primary" />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-400">City</label>
-                  <input required value={formData.city} onChange={e=>setFormData({...formData, city: e.target.value})} className="w-full p-2 rounded bg-black/50 border border-white/10 mt-1" />
+                  <label className="text-xs text-muted-foreground dark:text-slate-400">City</label>
+                  <input required value={formData.city} onChange={e=>setFormData({...formData, city: e.target.value})} className="w-full p-2 rounded bg-background dark:bg-black/50 border border-input dark:border-white/10 text-foreground dark:text-white mt-1 text-sm focus:outline-none focus:ring-1 focus:ring-primary" />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-400">Country</label>
-                  <input required value={formData.country} onChange={e=>setFormData({...formData, country: e.target.value})} className="w-full p-2 rounded bg-black/50 border border-white/10 mt-1" />
+                  <label className="text-xs text-muted-foreground dark:text-slate-400">Country</label>
+                  <input required value={formData.country} onChange={e=>setFormData({...formData, country: e.target.value})} className="w-full p-2 rounded bg-background dark:bg-black/50 border border-input dark:border-white/10 text-foreground dark:text-white mt-1 text-sm focus:outline-none focus:ring-1 focus:ring-primary" />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-400">Total Rooms</label>
-                  <input type="number" required value={formData.totalRooms} onChange={e=>setFormData({...formData, totalRooms: parseInt(e.target.value)})} className="w-full p-2 rounded bg-black/50 border border-white/10 mt-1" />
+                  <label className="text-xs text-muted-foreground dark:text-slate-400">Total Rooms</label>
+                  <input type="number" required value={formData.totalRooms} onChange={e=>setFormData({...formData, totalRooms: parseInt(e.target.value)})} className="w-full p-2 rounded bg-background dark:bg-black/50 border border-input dark:border-white/10 text-foreground dark:text-white mt-1 text-sm focus:outline-none focus:ring-1 focus:ring-primary" />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-400">Status</label>
-                  <select required value={formData.status} onChange={e=>setFormData({...formData, status: e.target.value})} className="w-full p-2 rounded bg-black/50 border border-white/10 mt-1">
+                  <label className="text-xs text-muted-foreground dark:text-slate-400">Status</label>
+                  <select required value={formData.status} onChange={e=>setFormData({...formData, status: e.target.value})} className="w-full p-2 rounded bg-background dark:bg-black/50 border border-input dark:border-white/10 text-foreground dark:text-white mt-1 text-sm focus:outline-none focus:ring-1 focus:ring-primary">
                     <option value="ACTIVE">Active / Open</option>
                     <option value="PRE_OPENING">Pre-Opening</option>
                     <option value="INACTIVE">Inactive / Closed</option>
@@ -169,7 +169,7 @@ export default function PropertiesPage() {
               </div>
               <div className="flex justify-end gap-2 mt-4">
                 <Button type="button" variant="ghost" onClick={handleCancel}>Cancel</Button>
-                <Button type="submit">{editingId ? 'Update Property' : 'Save Property'}</Button>
+                <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-sm">{editingId ? 'Update Property' : 'Save Property'}</Button>
               </div>
             </form>
           </CardContent>
@@ -178,40 +178,40 @@ export default function PropertiesPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {properties.map(prop => (
-          <Card key={prop.id} className="bg-[#1a1a1a] border-white/10 text-white relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 opacity-10">
+          <Card key={prop.id} className="bg-card dark:bg-[#1a1a1a] border border-border dark:border-white/10 text-foreground dark:text-white relative overflow-hidden shadow-md">
+            <div className="absolute top-0 right-0 p-4 opacity-5 dark:opacity-10 text-foreground dark:text-white">
                 <Globe className="w-24 h-24" />
             </div>
             <CardContent className="p-6 relative z-10">
               <div className="flex items-start gap-4 mb-6 relative">
-                <div className="w-12 h-12 rounded-xl bg-indigo-500/20 flex items-center justify-center shrink-0">
-                  <Building2 className="text-indigo-400 w-6 h-6" />
+                <div className="w-12 h-12 rounded-xl bg-indigo-500/10 dark:bg-indigo-500/20 flex items-center justify-center shrink-0">
+                  <Building2 className="text-indigo-600 dark:text-indigo-400 w-6 h-6" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-bold text-lg pr-4">{prop.name}</h3>
-                  <p className="text-xs font-mono text-slate-500">{prop.code}</p>
+                  <h3 className="font-bold text-lg pr-4 text-foreground dark:text-white">{prop.name}</h3>
+                  <p className="text-xs font-mono text-muted-foreground dark:text-slate-500">{prop.code}</p>
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
-                  <button onClick={() => handleEdit(prop)} className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded transition-colors" title="Edit Property">
+                  <button onClick={() => handleEdit(prop)} className="p-1.5 text-muted-foreground dark:text-slate-400 hover:text-foreground dark:hover:text-white hover:bg-muted dark:hover:bg-white/10 rounded transition-colors" title="Edit Property">
                     <Edit className="w-4 h-4" />
                   </button>
-                  <button onClick={() => handleDelete(prop.id)} className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded transition-colors" title="Delete Property">
+                  <button onClick={() => handleDelete(prop.id)} className="p-1.5 text-muted-foreground dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-500/10 rounded transition-colors" title="Delete Property">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               </div>
-              <div className="space-y-3 text-sm text-slate-300">
-                <div className="flex justify-between border-b border-white/5 pb-2">
-                    <span className="text-slate-500">Location</span>
-                    <span className="text-right">{prop.city}, {prop.country}</span>
+              <div className="space-y-3 text-sm text-foreground/80 dark:text-slate-300">
+                <div className="flex justify-between border-b border-border dark:border-white/5 pb-2">
+                    <span className="text-muted-foreground dark:text-slate-500">Location</span>
+                    <span className="text-right text-foreground dark:text-slate-200">{prop.city}, {prop.country}</span>
                 </div>
-                <div className="flex justify-between border-b border-white/5 pb-2">
-                    <span className="text-slate-500">Inventory</span>
-                    <span>{prop.totalRooms} Rooms</span>
+                <div className="flex justify-between border-b border-border dark:border-white/5 pb-2">
+                    <span className="text-muted-foreground dark:text-slate-500">Inventory</span>
+                    <span className="text-foreground dark:text-slate-200">{prop.totalRooms} Rooms</span>
                 </div>
                 <div className="flex justify-between pt-1">
-                    <span className="text-slate-500">Status</span>
-                    <span className={`font-bold ${prop.status === 'ACTIVE' ? 'text-emerald-400' : 'text-amber-400'}`}>
+                    <span className="text-muted-foreground dark:text-slate-500">Status</span>
+                    <span className={`font-bold ${prop.status === 'ACTIVE' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
                         {prop.status}
                     </span>
                 </div>
@@ -220,7 +220,7 @@ export default function PropertiesPage() {
           </Card>
         ))}
         {properties.length === 0 && !loading && (
-          <p className="text-slate-500 col-span-3 text-center py-12">No properties registered.</p>
+          <p className="text-muted-foreground dark:text-slate-500 col-span-3 text-center py-12">No properties registered.</p>
         )}
       </div>
     </div>

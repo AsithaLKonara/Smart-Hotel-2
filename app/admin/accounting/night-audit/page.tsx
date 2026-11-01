@@ -65,12 +65,12 @@ export default function NightAuditPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Main Execution Cockpit */}
           <div className="lg:col-span-8">
-            <Card className="bg-[#121417] border border-[#1E2227] rounded-xl p-8 shadow-sm flex flex-col items-center justify-center text-center">
-              <div className="w-16 h-16 bg-[#181A1D] border border-[#2B3037] rounded-2xl flex items-center justify-center mb-5 text-zinc-100 shadow-inner">
-                <Moon className="w-8 h-8 text-zinc-300" />
+            <Card className="bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] rounded-xl p-8 shadow-sm flex flex-col items-center justify-center text-center">
+              <div className="w-16 h-16 bg-muted dark:bg-[#181A1D] border border-border dark:border-[#2B3037] rounded-2xl flex items-center justify-center mb-5 text-foreground dark:text-zinc-100 shadow-inner">
+                <Moon className="w-8 h-8 text-muted-foreground dark:text-zinc-300" />
               </div>
-              <h2 className="text-xl font-mono font-bold text-zinc-100 mb-2">Automated End-Of-Day Audit</h2>
-              <p className="text-xs text-zinc-400 font-mono max-w-lg mb-6 leading-relaxed">
+              <h2 className="text-xl font-mono font-bold text-foreground dark:text-zinc-100 mb-2">Automated End-Of-Day Audit</h2>
+              <p className="text-xs text-muted-foreground dark:text-zinc-400 font-mono max-w-lg mb-6 leading-relaxed">
                 Initiating the night audit will calculate and post room, tax, and package charges to all active guest folios, balance general ledger debits and credits, generate daily financial summaries, and roll the system business date.
               </p>
               
@@ -78,7 +78,7 @@ export default function NightAuditPage() {
                 <Button 
                   onClick={runAudit} 
                   disabled={running}
-                  className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs font-mono uppercase tracking-wider rounded-lg h-10 px-8 shadow-sm transition-all"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs font-mono uppercase tracking-wider rounded-lg h-10 px-8 shadow-sm transition-all"
                 >
                   {running ? 'Processing Pipeline...' : 'Run Night Audit'}
                 </Button>
@@ -88,7 +88,7 @@ export default function NightAuditPage() {
                   size="sm"
                   disabled={rollingForward}
                   onClick={runAudit}
-                  className="bg-[#181A1D] hover:bg-[#20242A] border border-[#2B3037] text-amber-400 text-xs font-mono font-semibold h-10 px-4 rounded-lg"
+                  className="bg-muted dark:bg-[#181A1D] hover:bg-muted/80 dark:hover:bg-[#20242A] border border-border dark:border-[#2B3037] text-amber-500 dark:text-amber-400 text-xs font-mono font-semibold h-10 px-4 rounded-lg"
                 >
                   <SkipForward className="w-3.5 h-3.5 mr-1.5" />
                   {rollingForward ? 'Rolling...' : 'Force Date Roll-Forward'}
@@ -102,35 +102,35 @@ export default function NightAuditPage() {
                     const data = await res.json()
                     setHealthStatus(data)
                   }}
-                  className="bg-[#181A1D] hover:bg-[#20242A] border border-[#2B3037] text-blue-400 text-xs font-mono font-semibold h-10 px-4 rounded-lg"
+                  className="bg-muted dark:bg-[#181A1D] hover:bg-muted/80 dark:hover:bg-[#20242A] border border-border dark:border-[#2B3037] text-blue-500 dark:text-blue-400 text-xs font-mono font-semibold h-10 px-4 rounded-lg"
                 >
                   <Activity className="w-3.5 h-3.5 mr-1.5" /> Diagnostic Check
                 </Button>
               </div>
 
               {healthStatus && (
-                <div className="mt-6 w-full text-left bg-[#181A1D] border border-[#1E2227] rounded-xl p-4 text-xs font-mono">
-                  <div className="flex items-center gap-2 mb-2 pb-2 border-b border-[#1E2227]">
+                <div className="mt-6 w-full text-left bg-muted/40 dark:bg-[#181A1D] border border-border dark:border-[#1E2227] rounded-xl p-4 text-xs font-mono">
+                  <div className="flex items-center gap-2 mb-2 pb-2 border-b border-border dark:border-[#1E2227]">
                     <span className={`w-2 h-2 rounded-full ${healthStatus.status === 'healthy' ? 'bg-emerald-400' : 'bg-rose-400'}`} />
-                    <span className={`font-bold uppercase tracking-wider ${healthStatus.status === 'healthy' ? 'text-emerald-400' : 'text-rose-400'}`}>
+                    <span className={`font-bold uppercase tracking-wider ${healthStatus.status === 'healthy' ? 'text-emerald-500 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'}`}>
                       System State: {healthStatus.status}
                     </span>
-                    <span className="text-zinc-500 ml-auto text-[10px]">{healthStatus.timestamp}</span>
+                    <span className="text-muted-foreground dark:text-zinc-500 ml-auto text-[10px]">{healthStatus.timestamp}</span>
                   </div>
-                  <div className="grid grid-cols-2 gap-2 text-zinc-400">
+                  <div className="grid grid-cols-2 gap-2 text-muted-foreground dark:text-zinc-400">
                     <span>Database:</span>
-                    <span className={healthStatus.checks?.databaseConnection?.connected ? 'text-emerald-400' : 'text-rose-400'}>
+                    <span className={healthStatus.checks?.databaseConnection?.connected ? 'text-emerald-500 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'}>
                       {healthStatus.checks?.databaseConnection?.connected ? `ONLINE (${healthStatus.checks.databaseConnection.userCount} users)` : 'DISCONNECTED'}
                     </span>
                     <span>Active Environment:</span>
-                    <span className="text-zinc-200">{healthStatus.environment}</span>
+                    <span className="text-foreground dark:text-zinc-200">{healthStatus.environment}</span>
                     <span>Operational Checks:</span>
-                    <span className="text-zinc-200">{healthStatus.summary?.passedChecks}/{healthStatus.summary?.totalChecks} passed</span>
+                    <span className="text-foreground dark:text-zinc-200">{healthStatus.summary?.passedChecks}/{healthStatus.summary?.totalChecks} passed</span>
                   </div>
                   {healthStatus.errors?.length > 0 && (
-                    <div className="mt-2 pt-2 border-t border-[#1E2227]">
+                    <div className="mt-2 pt-2 border-t border-border dark:border-[#1E2227]">
                       {healthStatus.errors.map((e: string, i: number) => (
-                        <p key={i} className="text-rose-400">{e}</p>
+                        <p key={i} className="text-rose-500 dark:text-rose-400">{e}</p>
                       ))}
                     </div>
                   )}
@@ -141,32 +141,32 @@ export default function NightAuditPage() {
 
           {/* Instructions and Safeguards */}
           <div className="lg:col-span-4 space-y-4">
-            <Card className="bg-[#121417] border border-[#1E2227] border-l-2 border-l-amber-500 rounded-xl p-5 shadow-sm space-y-2">
-              <div className="flex items-center gap-2 text-amber-400">
+            <Card className="bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] border-l-2 border-l-amber-500 rounded-xl p-5 shadow-sm space-y-2">
+              <div className="flex items-center gap-2 text-amber-500 dark:text-amber-400">
                 <AlertTriangle className="w-4 h-4 flex-shrink-0" />
                 <h3 className="font-mono text-xs font-bold uppercase tracking-wider">Operational Window</h3>
               </div>
-              <p className="text-xs text-zinc-400 font-mono leading-relaxed">
+              <p className="text-xs text-muted-foreground dark:text-zinc-400 font-mono leading-relaxed">
                 Execute after late arrivals are checked in and daily food & beverage outlets are closed (ideally 02:00 - 04:00 AM).
               </p>
             </Card>
 
-            <Card className="bg-[#121417] border border-[#1E2227] border-l-2 border-l-blue-500 rounded-xl p-5 shadow-sm space-y-2">
-              <div className="flex items-center gap-2 text-blue-400">
+            <Card className="bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] border-l-2 border-l-blue-500 rounded-xl p-5 shadow-sm space-y-2">
+              <div className="flex items-center gap-2 text-blue-500 dark:text-blue-400">
                 <TrendingUp className="w-4 h-4 flex-shrink-0" />
                 <h3 className="font-mono text-xs font-bold uppercase tracking-wider">General Ledger Lock</h3>
               </div>
-              <p className="text-xs text-zinc-400 font-mono leading-relaxed">
+              <p className="text-xs text-muted-foreground dark:text-zinc-400 font-mono leading-relaxed">
                 Night audit serializes and seals today's journal batches. Postings after audit require managerial override.
               </p>
             </Card>
 
-            <Card className="bg-[#121417] border border-[#1E2227] border-l-2 border-l-emerald-500 rounded-xl p-5 shadow-sm space-y-2">
-              <div className="flex items-center gap-2 text-emerald-400">
+            <Card className="bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] border-l-2 border-l-emerald-500 rounded-xl p-5 shadow-sm space-y-2">
+              <div className="flex items-center gap-2 text-emerald-500 dark:text-emerald-400">
                 <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
                 <h3 className="font-mono text-xs font-bold uppercase tracking-wider">Channel Sync</h3>
               </div>
-              <p className="text-xs text-zinc-400 font-mono leading-relaxed">
+              <p className="text-xs text-muted-foreground dark:text-zinc-400 font-mono leading-relaxed">
                 Following closure, room inventories and stop-sell limits are automatically synchronized with connected OTA channels.
               </p>
             </Card>
@@ -175,11 +175,11 @@ export default function NightAuditPage() {
 
         {/* Recent Audit Logs Table */}
         <div className="space-y-3">
-          <h2 className="text-xs font-mono uppercase tracking-wider text-zinc-400 font-semibold">Historical Audit Execution Logs</h2>
-          <div className="bg-[#121417] border border-[#1E2227] rounded-xl overflow-hidden shadow-sm">
+          <h2 className="text-xs font-mono uppercase tracking-wider text-muted-foreground dark:text-zinc-400 font-semibold">Historical Audit Execution Logs</h2>
+          <div className="bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] rounded-xl overflow-hidden shadow-sm">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-[#141619] border-b border-[#1E2227] text-zinc-400 text-[11px] font-mono uppercase tracking-wider">
+                <thead className="bg-muted/40 dark:bg-[#141619] border-b border-border dark:border-[#1E2227] text-muted-foreground dark:text-zinc-400 text-[11px] font-mono uppercase tracking-wider">
                   <tr>
                     <th className="p-3.5">Execution Timestamp</th>
                     <th className="p-3.5">Business Date</th>
@@ -188,18 +188,18 @@ export default function NightAuditPage() {
                     <th className="p-3.5 text-right">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#1E2227]">
+                <tbody className="divide-y divide-border dark:divide-[#1E2227]">
                   {logs.map((log: any) => (
-                    <tr key={log.id} className="hover:bg-[#16181B] transition-colors">
-                      <td className="p-3.5 text-zinc-300 font-mono flex items-center gap-2">
-                        <Clock className="w-3.5 h-3.5 text-zinc-500" />
+                    <tr key={log.id} className="hover:bg-muted/30 dark:hover:bg-[#16181B] transition-colors">
+                      <td className="p-3.5 text-foreground dark:text-zinc-300 font-mono flex items-center gap-2">
+                        <Clock className="w-3.5 h-3.5 text-muted-foreground dark:text-zinc-500" />
                         {new Date(log.createdAt).toLocaleString()}
                       </td>
-                      <td className="p-3.5 font-mono text-zinc-200">{new Date(log.businessDate).toLocaleDateString()}</td>
-                      <td className="p-3.5 font-mono text-zinc-300">{log.roomsProcessed}</td>
-                      <td className="p-3.5 font-mono font-bold text-emerald-400">${Number(log.totalRevenue || 0).toFixed(2)}</td>
+                      <td className="p-3.5 font-mono text-foreground dark:text-zinc-200">{new Date(log.businessDate).toLocaleDateString()}</td>
+                      <td className="p-3.5 font-mono text-foreground dark:text-zinc-300">{log.roomsProcessed}</td>
+                      <td className="p-3.5 font-mono font-bold text-emerald-500 dark:text-emerald-400">${Number(log.totalRevenue || 0).toFixed(2)}</td>
                       <td className="p-3.5 text-right">
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 border border-emerald-500/20">
                           {log.status}
                         </span>
                       </td>
@@ -207,7 +207,7 @@ export default function NightAuditPage() {
                   ))}
                   {logs.length === 0 && (
                     <tr>
-                      <td colSpan={5} className="p-8 text-center text-zinc-500 font-mono">No night audit execution logs on record.</td>
+                      <td colSpan={5} className="p-8 text-center text-muted-foreground dark:text-zinc-500 font-mono">No night audit execution logs on record.</td>
                     </tr>
                   )}
                 </tbody>

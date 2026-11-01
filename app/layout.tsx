@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next"
-import { Inter } from "next/font/google"
 import Script from "next/script"
 import "./globals.css"
 import { Toaster } from "@/components/ui/toaster"
@@ -12,13 +11,6 @@ import { Providers } from "@/components/providers"
 import { WebVitalsTracker } from "@/components/web-vitals-tracker"
 import HotelSchema from "@/components/seo/hotel-schema"
 import { ServiceWorkerRegister } from "@/components/service-worker-register"
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  weight: ["300", "400", "500", "600", "700", "800"],
-  display: "swap",
-})
 
 export const metadata: Metadata = {
   title: "Grand Palace Hotel - Luxury 5-Star Accommodation",
@@ -114,7 +106,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={inter.variable} suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
         {/* Preconnect to external domains for performance */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />

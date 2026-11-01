@@ -62,7 +62,7 @@ export function KpiCard({
       return 'bg-rose-500/10 text-rose-400 border-rose-500/20'
     }
     if (delta === undefined) {
-      return 'bg-[#181A1D] text-zinc-400 border-[#2B3037]'
+      return 'bg-muted/50 dark:bg-[#181A1D] text-muted-foreground dark:text-zinc-400 border border-border dark:border-[#2B3037]'
     }
     if (delta > 0) {
       return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'

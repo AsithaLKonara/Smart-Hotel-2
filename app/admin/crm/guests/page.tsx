@@ -77,20 +77,20 @@ export default function GuestCRMPage() {
     <AdminPageShell title="Guest CRM & Profiles" subtitle="Manage guest relationships, loyalty tiers, restriction flags, and lifetime stay histories." onRefresh={fetchGuests}>
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-500" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground dark:text-zinc-500" />
           <input 
             placeholder="Search guests by name, email, or guest ID..." 
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-[#181A1D] border border-[#2B3037] text-xs text-zinc-100 placeholder:text-zinc-500 rounded-lg pl-9 pr-3.5 py-2 outline-none focus:border-zinc-400 font-mono transition-all"
+            className="w-full bg-card dark:bg-[#181A1D] border border-input dark:border-[#2B3037] text-xs text-foreground dark:text-zinc-100 placeholder:text-muted-foreground dark:placeholder:text-zinc-500 rounded-lg pl-9 pr-3.5 py-2 outline-none focus:border-ring dark:focus:border-zinc-400 font-mono transition-all shadow-sm"
           />
         </div>
         <button 
           onClick={() => setVipOnly(!vipOnly)}
           className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-mono transition-all ${
             vipOnly 
-              ? 'bg-white text-black font-semibold shadow-sm' 
-              : 'bg-[#181A1D] hover:bg-[#20242A] border border-[#2B3037] text-zinc-300'
+              ? 'bg-primary text-primary-foreground font-semibold shadow-sm' 
+              : 'bg-card dark:bg-[#181A1D] hover:bg-muted dark:hover:bg-[#20242A] border border-border dark:border-[#2B3037] text-foreground dark:text-zinc-300 shadow-sm'
           }`}
         >
           <Star className="w-3.5 h-3.5" /> VIP Only
@@ -100,10 +100,10 @@ export default function GuestCRMPage() {
       {loading ? (
         <div className="py-20 flex justify-center"><PremiumSpinner /></div>
       ) : (
-        <div className="bg-[#121417] border border-[#1E2227] rounded-xl overflow-hidden shadow-sm">
+        <div className="bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] rounded-xl overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-[#141619] border-b border-[#1E2227] text-zinc-400 text-[11px] font-mono uppercase tracking-wider">
+              <thead className="bg-muted/40 dark:bg-[#141619] border-b border-border dark:border-[#1E2227] text-muted-foreground dark:text-zinc-400 text-[11px] font-mono uppercase tracking-wider">
                 <tr>
                   <th className="p-3.5">Guest Profile</th>
                   <th className="p-3.5">Loyalty Tier</th>
@@ -112,35 +112,35 @@ export default function GuestCRMPage() {
                   <th className="p-3.5 text-right">Account Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#1E2227]">
+              <tbody className="divide-y divide-border dark:divide-[#1E2227]">
                 {guests.map((guest: any) => (
-                  <tr key={guest.id} onClick={() => openGuestProfile(guest)} className="hover:bg-[#16181B] cursor-pointer transition-colors group">
+                  <tr key={guest.id} onClick={() => openGuestProfile(guest)} className="hover:bg-muted/40 dark:hover:bg-[#16181B] cursor-pointer transition-colors group">
                     <td className="p-3.5">
-                      <p className="font-semibold text-zinc-100 group-hover:text-white transition-colors">{guest.name}</p>
-                      <p className="text-[11px] font-mono text-zinc-400">{guest.email}</p>
+                      <p className="font-semibold text-foreground dark:text-zinc-100 group-hover:text-primary dark:group-hover:text-white transition-colors">{guest.name}</p>
+                      <p className="text-[11px] font-mono text-muted-foreground dark:text-zinc-400">{guest.email}</p>
                     </td>
                     <td className="p-3.5">
                       <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-medium ${
                         guest.vipStatus !== 'STANDARD' 
-                          ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' 
-                          : 'bg-[#181A1D] text-zinc-400 border border-[#2B3037]'
+                          ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20' 
+                          : 'bg-muted dark:bg-[#181A1D] text-muted-foreground dark:text-zinc-400 border border-border dark:border-[#2B3037]'
                       }`}>
                         {guest.vipStatus}
                       </span>
                     </td>
-                    <td className="p-3.5 font-mono text-zinc-300">
+                    <td className="p-3.5 font-mono text-foreground dark:text-zinc-300">
                       {guest.guestHistory?.totalStays || 0} stays
                     </td>
-                    <td className="p-3.5 font-mono font-bold text-zinc-100">
+                    <td className="p-3.5 font-mono font-bold text-foreground dark:text-zinc-100">
                       ${(guest.guestHistory?.totalSpend || 0).toFixed(2)}
                     </td>
                     <td className="p-3.5 text-right">
                       {guest.blacklistStatus ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
                           <Ban className="w-3 h-3" /> BLACKLISTED
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                           <UserCheck className="w-3 h-3" /> ACTIVE
                         </span>
                       )}
@@ -148,7 +148,7 @@ export default function GuestCRMPage() {
                   </tr>
                 ))}
                 {guests.length === 0 && (
-                  <tr><td colSpan={5} className="p-12 text-center text-zinc-500 font-mono">No guests found matching search parameters.</td></tr>
+                  <tr><td colSpan={5} className="p-12 text-center text-muted-foreground dark:text-zinc-500 font-mono">No guests found matching search parameters.</td></tr>
                 )}
               </tbody>
             </table>
@@ -159,90 +159,90 @@ export default function GuestCRMPage() {
       {/* Guest Profile Dialog */}
       <Dialog.Root open={!!selectedGuest} onOpenChange={(open: boolean) => !open && setSelectedGuest(null)}>
         <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50" />
-          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl bg-[#121417] border border-[#1E2227] rounded-xl shadow-2xl p-6 z-50 max-h-[90vh] overflow-y-auto">
+          <Dialog.Overlay className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm z-50" />
+          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] rounded-xl shadow-2xl p-6 z-50 max-h-[90vh] overflow-y-auto">
             {selectedGuest && (
-              <div className="space-y-6 text-zinc-100">
-                <div className="flex justify-between items-start border-b border-[#1E2227] pb-4">
+              <div className="space-y-6 text-foreground dark:text-zinc-100">
+                <div className="flex justify-between items-start border-b border-border dark:border-[#1E2227] pb-4">
                   <div>
-                    <h2 className="text-base font-semibold text-zinc-100">{selectedGuest.name}</h2>
-                    <p className="text-xs font-mono text-zinc-400 mt-0.5">{selectedGuest.email} {selectedGuest.phone ? `• ${selectedGuest.phone}` : ''}</p>
+                    <h2 className="text-base font-semibold text-foreground dark:text-zinc-100">{selectedGuest.name}</h2>
+                    <p className="text-xs font-mono text-muted-foreground dark:text-zinc-400 mt-0.5">{selectedGuest.email} {selectedGuest.phone ? `• ${selectedGuest.phone}` : ''}</p>
                   </div>
                   <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-medium ${
                     selectedGuest.vipStatus !== 'STANDARD' 
-                      ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' 
-                      : 'bg-[#181A1D] text-zinc-400 border border-[#2B3037]'
+                      ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20' 
+                      : 'bg-muted dark:bg-[#181A1D] text-muted-foreground dark:text-zinc-400 border border-border dark:border-[#2B3037]'
                   }`}>
                     {selectedGuest.vipStatus}
                   </span>
                 </div>
 
                 <div className="grid grid-cols-3 gap-3">
-                  <div className="bg-[#181A1D] p-3.5 rounded-lg border border-[#1E2227]">
-                    <p className="text-[10px] font-mono uppercase text-zinc-400 mb-1 flex items-center"><CalendarDays className="w-3 h-3 mr-1" /> Total Stays</p>
-                    <p className="text-lg font-mono font-bold text-zinc-100">{selectedGuest.guestHistory?.totalStays || 0}</p>
+                  <div className="bg-muted/30 dark:bg-[#181A1D] p-3.5 rounded-lg border border-border dark:border-[#1E2227]">
+                    <p className="text-[10px] font-mono uppercase text-muted-foreground dark:text-zinc-400 mb-1 flex items-center"><CalendarDays className="w-3 h-3 mr-1" /> Total Stays</p>
+                    <p className="text-lg font-mono font-bold text-foreground dark:text-zinc-100">{selectedGuest.guestHistory?.totalStays || 0}</p>
                   </div>
-                  <div className="bg-[#181A1D] p-3.5 rounded-lg border border-[#1E2227]">
-                    <p className="text-[10px] font-mono uppercase text-zinc-400 mb-1 flex items-center"><Clock className="w-3 h-3 mr-1" /> Total Nights</p>
-                    <p className="text-lg font-mono font-bold text-zinc-100">{selectedGuest.guestHistory?.totalNights || 0}</p>
+                  <div className="bg-muted/30 dark:bg-[#181A1D] p-3.5 rounded-lg border border-border dark:border-[#1E2227]">
+                    <p className="text-[10px] font-mono uppercase text-muted-foreground dark:text-zinc-400 mb-1 flex items-center"><Clock className="w-3 h-3 mr-1" /> Total Nights</p>
+                    <p className="text-lg font-mono font-bold text-foreground dark:text-zinc-100">{selectedGuest.guestHistory?.totalNights || 0}</p>
                   </div>
-                  <div className="bg-[#181A1D] p-3.5 rounded-lg border border-[#1E2227]">
-                    <p className="text-[10px] font-mono uppercase text-zinc-400 mb-1 flex items-center"><DollarSign className="w-3 h-3 mr-1" /> Lifetime Value</p>
-                    <p className="text-lg font-mono font-bold text-emerald-400">${(selectedGuest.guestHistory?.totalSpend || 0).toFixed(2)}</p>
+                  <div className="bg-muted/30 dark:bg-[#181A1D] p-3.5 rounded-lg border border-border dark:border-[#1E2227]">
+                    <p className="text-[10px] font-mono uppercase text-muted-foreground dark:text-zinc-400 mb-1 flex items-center"><DollarSign className="w-3 h-3 mr-1" /> Lifetime Value</p>
+                    <p className="text-lg font-mono font-bold text-emerald-600 dark:text-emerald-400">${(selectedGuest.guestHistory?.totalSpend || 0).toFixed(2)}</p>
                   </div>
                 </div>
 
-                <div className="bg-[#181A1D] rounded-lg border border-[#1E2227] p-4 space-y-4">
-                   <h3 className="font-mono text-xs uppercase tracking-wider text-zinc-200 font-semibold flex items-center">
-                     <Edit className="w-3.5 h-3.5 mr-1.5 text-zinc-400" /> Operational Overrides & Controls
+                <div className="bg-muted/20 dark:bg-[#181A1D] rounded-lg border border-border dark:border-[#1E2227] p-4 space-y-4">
+                   <h3 className="font-mono text-xs uppercase tracking-wider text-foreground dark:text-zinc-200 font-semibold flex items-center">
+                     <Edit className="w-3.5 h-3.5 mr-1.5 text-muted-foreground dark:text-zinc-400" /> Operational Overrides & Controls
                    </h3>
                    
                    <div className="grid grid-cols-2 gap-4">
                      <div>
-                       <label className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 mb-1.5 block">Loyalty Tier</label>
+                       <label className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground dark:text-zinc-400 mb-1.5 block">Loyalty Tier</label>
                        <select 
-                         className="w-full bg-[#121417] border border-[#2B3037] rounded-lg px-3 py-2 text-xs text-zinc-100 outline-none focus:border-zinc-400 font-mono"
+                         className="w-full bg-card dark:bg-[#121417] border border-border dark:border-[#2B3037] rounded-lg px-3 py-2 text-xs text-foreground dark:text-zinc-100 outline-none focus:border-ring dark:focus:border-zinc-400 font-mono shadow-sm"
                          value={editVip}
                          onChange={(e) => setEditVip(e.target.value)}
                        >
-                         <option value="STANDARD" className="bg-[#121417] text-zinc-100">Standard</option>
-                         <option value="SILVER" className="bg-[#121417] text-zinc-100">Silver</option>
-                         <option value="GOLD" className="bg-[#121417] text-zinc-100">Gold</option>
-                         <option value="PLATINUM" className="bg-[#121417] text-zinc-100">Platinum</option>
-                         <option value="VIP" className="bg-[#121417] text-zinc-100">VIP</option>
+                         <option value="STANDARD" className="bg-card dark:bg-[#121417] text-foreground dark:text-zinc-100">Standard</option>
+                         <option value="SILVER" className="bg-card dark:bg-[#121417] text-foreground dark:text-zinc-100">Silver</option>
+                         <option value="GOLD" className="bg-card dark:bg-[#121417] text-foreground dark:text-zinc-100">Gold</option>
+                         <option value="PLATINUM" className="bg-card dark:bg-[#121417] text-foreground dark:text-zinc-100">Platinum</option>
+                         <option value="VIP" className="bg-card dark:bg-[#121417] text-foreground dark:text-zinc-100">VIP</option>
                        </select>
                      </div>
 
                      <div>
-                       <label className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 mb-1.5 block flex items-center">
-                         <ShieldAlert className="w-3 h-3 mr-1 text-rose-400" /> Restriction Flag
+                       <label className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground dark:text-zinc-400 mb-1.5 block flex items-center">
+                         <ShieldAlert className="w-3 h-3 mr-1 text-rose-500 dark:text-rose-400" /> Restriction Flag
                        </label>
-                       <label className="flex items-center gap-2 text-xs p-2.5 bg-[#121417] rounded-lg border border-[#2B3037] cursor-pointer">
+                       <label className="flex items-center gap-2 text-xs p-2.5 bg-card dark:bg-[#121417] rounded-lg border border-border dark:border-[#2B3037] cursor-pointer shadow-sm">
                          <input 
                            type="checkbox" 
                            checked={editBlacklist} 
                            onChange={(e) => setEditBlacklist(e.target.checked)}
-                           className="w-4 h-4 rounded bg-[#181A1D] border-[#2B3037] accent-rose-500"
+                           className="w-4 h-4 rounded bg-background dark:bg-[#181A1D] border-border dark:border-[#2B3037] accent-rose-500"
                          />
-                         <span className={`font-mono text-xs ${editBlacklist ? 'text-rose-400 font-bold' : 'text-zinc-300'}`}>Blacklist Guest Record</span>
+                         <span className={`font-mono text-xs ${editBlacklist ? 'text-rose-600 dark:text-rose-400 font-bold' : 'text-foreground dark:text-zinc-300'}`}>Blacklist Guest Record</span>
                        </label>
                      </div>
                    </div>
 
                    {editBlacklist && (
                      <div className="space-y-1.5 pt-1">
-                       <label className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 block">Incident Justification</label>
+                       <label className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground dark:text-zinc-400 block">Incident Justification</label>
                        <input 
                          value={editReason}
                          onChange={(e) => setEditReason(e.target.value)}
                          placeholder="e.g. Caused property damage / unauthorized disturbance during stay..."
-                         className="w-full bg-[#121417] border border-rose-500/30 text-zinc-100 text-xs rounded-lg px-3 py-2 outline-none focus:border-rose-500 font-mono"
+                         className="w-full bg-card dark:bg-[#121417] border border-rose-500/30 text-foreground dark:text-zinc-100 text-xs rounded-lg px-3 py-2 outline-none focus:border-rose-500 font-mono shadow-sm"
                        />
                      </div>
                    )}
 
-                   <div className="flex justify-end pt-3 border-t border-[#1E2227]">
-                     <Button onClick={saveGuestUpdates} className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs font-mono uppercase tracking-wider rounded-lg h-9 px-4 shadow-sm">
+                   <div className="flex justify-end pt-3 border-t border-border dark:border-[#1E2227]">
+                     <Button onClick={saveGuestUpdates} className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-xs font-mono uppercase tracking-wider rounded-lg h-9 px-4 shadow-sm">
                        Save Profile Updates
                      </Button>
                    </div>

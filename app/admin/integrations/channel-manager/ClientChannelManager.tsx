@@ -174,22 +174,22 @@ export default function ClientChannelManager({
         <div className="flex flex-wrap items-center gap-2">
           <Link 
             href="/admin/pricing"
-            className="flex items-center gap-1.5 border border-[#1E2227] bg-[#121417] text-zinc-300 hover:text-white hover:bg-[#181A1D] px-3 py-2 rounded-lg text-xs font-mono transition-colors h-9"
+            className="flex items-center gap-1.5 border border-border dark:border-[#1E2227] bg-card dark:bg-[#121417] text-foreground dark:text-zinc-300 hover:text-foreground dark:hover:text-white hover:bg-muted dark:hover:bg-[#181A1D] px-3 py-2 rounded-lg text-xs font-mono transition-colors h-9"
           >
-            <TrendingUp className="w-3.5 h-3.5 text-emerald-400" /> Rate Plans & Pricing <ArrowRight className="w-3 h-3 text-zinc-500" />
+            <TrendingUp className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400" /> Rate Plans & Pricing <ArrowRight className="w-3 h-3 text-muted-foreground dark:text-zinc-500" />
           </Link>
           <Button 
             onClick={handleForceSync}
             disabled={isSyncing}
             variant="outline"
-            className="border-[#1E2227] bg-[#121417] text-zinc-300 hover:text-white hover:bg-[#181A1D] text-xs font-mono h-9"
+            className="border-border dark:border-[#1E2227] bg-card dark:bg-[#121417] text-foreground dark:text-zinc-300 hover:text-foreground dark:hover:text-white hover:bg-muted dark:hover:bg-[#181A1D] text-xs font-mono h-9"
           >
-            <RefreshCw className={`w-3.5 h-3.5 mr-1.5 text-emerald-400 ${isSyncing ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 mr-1.5 text-emerald-500 dark:text-emerald-400 ${isSyncing ? 'animate-spin' : ''}`} />
             {isSyncing ? 'Syncing...' : 'Force Sync All'}
           </Button>
           <Button 
             onClick={() => setIsModalOpen(true)} 
-            className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs font-mono uppercase tracking-wider h-9"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs font-mono uppercase tracking-wider h-9"
           >
             <Plus className="w-3.5 h-3.5 mr-1.5" /> Add Connection
           </Button>
@@ -199,38 +199,38 @@ export default function ClientChannelManager({
       <div className="space-y-6">
         
         {/* View Switcher Tabs */}
-        <div className="flex items-center gap-2 border-b border-[#1E2227] pb-3">
+        <div className="flex items-center gap-2 border-b border-border dark:border-[#1E2227] pb-3">
           <button
             onClick={() => setActiveTab('CHANNELS')}
             className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-mono uppercase tracking-wider transition-all ${
               activeTab === 'CHANNELS'
-                ? 'bg-[#181A1D] border border-[#2B3037] text-white font-semibold'
-                : 'text-zinc-400 hover:text-white hover:bg-[#141619]'
+                ? 'bg-muted dark:bg-[#181A1D] border border-border dark:border-[#2B3037] text-foreground dark:text-white font-semibold'
+                : 'text-muted-foreground dark:text-zinc-400 hover:text-foreground dark:hover:text-white hover:bg-muted/40 dark:hover:bg-[#141619]'
             }`}
           >
-            <Globe2 className="w-4 h-4 text-zinc-400" />
+            <Globe2 className="w-4 h-4 text-muted-foreground dark:text-zinc-400" />
             Active Channels ({providers.length})
           </button>
           <button
             onClick={() => setActiveTab('MAPPING')}
             className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-mono uppercase tracking-wider transition-all ${
               activeTab === 'MAPPING'
-                ? 'bg-[#181A1D] border border-[#2B3037] text-white font-semibold'
-                : 'text-zinc-400 hover:text-white hover:bg-[#141619]'
+                ? 'bg-muted dark:bg-[#181A1D] border border-border dark:border-[#2B3037] text-foreground dark:text-white font-semibold'
+                : 'text-muted-foreground dark:text-zinc-400 hover:text-foreground dark:hover:text-white hover:bg-muted/40 dark:hover:bg-[#141619]'
             }`}
           >
-            <LinkIcon className="w-4 h-4 text-zinc-400" />
+            <LinkIcon className="w-4 h-4 text-muted-foreground dark:text-zinc-400" />
             Room Type Mappings
           </button>
           <button
             onClick={() => setActiveTab('LOGS')}
             className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-mono uppercase tracking-wider transition-all ${
               activeTab === 'LOGS'
-                ? 'bg-[#181A1D] border border-[#2B3037] text-white font-semibold'
-                : 'text-zinc-400 hover:text-white hover:bg-[#141619]'
+                ? 'bg-muted dark:bg-[#181A1D] border border-border dark:border-[#2B3037] text-foreground dark:text-white font-semibold'
+                : 'text-muted-foreground dark:text-zinc-400 hover:text-foreground dark:hover:text-white hover:bg-muted/40 dark:hover:bg-[#141619]'
             }`}
           >
-            <Activity className="w-4 h-4 text-zinc-400" />
+            <Activity className="w-4 h-4 text-muted-foreground dark:text-zinc-400" />
             Sync Events {logs.length > 0 && `(${logs.length})`}
           </button>
         </div>
@@ -239,17 +239,17 @@ export default function ClientChannelManager({
         {activeTab === 'CHANNELS' && (
           <div>
             {providers.length === 0 ? (
-              <div className="bg-[#121417] rounded-xl border border-[#1E2227] p-12 text-center">
-                <div className="w-12 h-12 bg-[#181A1D] rounded-full flex items-center justify-center mx-auto mb-3 border border-[#2B3037]">
-                  <Globe2 className="w-6 h-6 text-zinc-500" />
+              <div className="bg-card dark:bg-[#121417] rounded-xl border border-border dark:border-[#1E2227] p-12 text-center">
+                <div className="w-12 h-12 bg-muted dark:bg-[#181A1D] rounded-full flex items-center justify-center mx-auto mb-3 border border-border dark:border-[#2B3037]">
+                  <Globe2 className="w-6 h-6 text-muted-foreground dark:text-zinc-500" />
                 </div>
-                <h3 className="text-sm font-semibold text-white font-mono uppercase tracking-wider">No OTA Connections Configured</h3>
-                <p className="text-zinc-400 text-xs mt-1.5 max-w-md mx-auto">
+                <h3 className="text-sm font-semibold text-foreground dark:text-white font-mono uppercase tracking-wider">No OTA Connections Configured</h3>
+                <p className="text-muted-foreground dark:text-zinc-400 text-xs mt-1.5 max-w-md mx-auto">
                   Connect your first OTA channel (Booking.com, Airbnb, Expedia) to enable automatic 2-way sync of inventory and reservations.
                 </p>
                 <Button 
                   onClick={() => setIsModalOpen(true)} 
-                  className="mt-5 bg-white hover:bg-zinc-200 text-black font-semibold text-xs font-mono uppercase tracking-wider h-8"
+                  className="mt-5 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs font-mono uppercase tracking-wider h-8"
                 >
                   <Plus className="w-3.5 h-3.5 mr-1" /> Connect Channel
                 </Button>
@@ -257,19 +257,19 @@ export default function ClientChannelManager({
             ) : (
               <div className="space-y-4">
                 {providers.map((provider) => (
-                  <div key={provider.id} className="bg-[#121417] rounded-xl border border-[#1E2227] overflow-hidden">
-                    <div className="p-4 sm:p-5 border-b border-[#1E2227] flex items-center justify-between bg-[#141619]">
+                  <div key={provider.id} className="bg-card dark:bg-[#121417] rounded-xl border border-border dark:border-[#1E2227] overflow-hidden">
+                    <div className="p-4 sm:p-5 border-b border-border dark:border-[#1E2227] flex items-center justify-between bg-muted/40 dark:bg-[#141619]">
                       <div className="flex items-center gap-3.5">
-                        <div className="h-10 w-10 rounded-lg bg-[#181A1D] border border-[#2B3037] flex items-center justify-center font-bold font-mono text-white text-base">
+                        <div className="h-10 w-10 rounded-lg bg-muted dark:bg-[#181A1D] border border-border dark:border-[#2B3037] flex items-center justify-center font-bold font-mono text-foreground dark:text-white text-base">
                           {provider.code.charAt(0)}
                         </div>
                         <div>
-                          <h2 className="text-sm font-semibold text-white font-mono">{provider.name}</h2>
+                          <h2 className="text-sm font-semibold text-foreground dark:text-white font-mono">{provider.name}</h2>
                           <div className="flex items-center gap-2 mt-0.5">
-                            <span className="text-[10px] font-mono bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/20 uppercase font-semibold">
+                            <span className="text-[10px] font-mono bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/20 uppercase font-semibold">
                               Active Integration
                             </span>
-                            <span className="text-xs text-zinc-500 font-mono">
+                            <span className="text-xs text-muted-foreground dark:text-zinc-500 font-mono">
                               {provider.connections?.length || 0} Property Linked
                             </span>
                           </div>
@@ -281,46 +281,46 @@ export default function ClientChannelManager({
                         disabled={isSyncing}
                         variant="outline"
                         size="sm"
-                        className="border-[#1E2227] bg-[#121417] text-zinc-300 hover:text-white hover:bg-[#181A1D] text-xs font-mono h-8"
+                        className="border-border dark:border-[#1E2227] bg-card dark:bg-[#121417] text-foreground dark:text-zinc-300 hover:text-foreground dark:hover:text-white hover:bg-muted dark:hover:bg-[#181A1D] text-xs font-mono h-8"
                       >
-                        <RefreshCw className={`w-3 h-3 mr-1.5 text-emerald-400 ${isSyncing ? 'animate-spin' : ''}`} />
+                        <RefreshCw className={`w-3 h-3 mr-1.5 text-emerald-500 dark:text-emerald-400 ${isSyncing ? 'animate-spin' : ''}`} />
                         Sync Now
                       </Button>
                     </div>
                     
-                    <div className="divide-y divide-[#1E2227]">
+                    <div className="divide-y divide-border dark:divide-[#1E2227]">
                       {provider.connections?.map((conn: any) => (
-                        <div key={conn.id} className="p-5 hover:bg-[#141619]/50 transition-colors">
+                        <div key={conn.id} className="p-5 hover:bg-muted/30 dark:hover:bg-[#141619]/50 transition-colors">
                           <div className="flex flex-col lg:flex-row justify-between gap-4">
                             
                             <div className="flex-1 space-y-3">
                               <div className="flex items-center gap-2.5">
-                                <h3 className="font-semibold text-xs text-white font-mono">{conn.property.name}</h3>
+                                <h3 className="font-semibold text-xs text-foreground dark:text-white font-mono">{conn.property.name}</h3>
                                 <Badge className={`text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 border ${
-                                  conn.status === 'HEALTHY' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 
-                                  conn.status === 'WARNING' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
-                                  'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                                  conn.status === 'HEALTHY' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' : 
+                                  conn.status === 'WARNING' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20' :
+                                  'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20'
                                 }`}>
                                   {conn.status === 'HEALTHY' && <CheckCircle2 className="w-3 h-3 mr-1 inline" />}
                                   {conn.status === 'WARNING' && <Activity className="w-3 h-3 mr-1 inline" />}
                                   {conn.status === 'ERROR' && <AlertCircle className="w-3 h-3 mr-1 inline" />}
                                   {conn.status || 'CONNECTED'}
                                 </Badge>
-                                <span className="text-[10px] text-zinc-400 uppercase tracking-wider font-mono px-2 py-0.5 bg-[#181A1D] border border-[#2B3037] rounded">
+                                <span className="text-[10px] text-muted-foreground dark:text-zinc-400 uppercase tracking-wider font-mono px-2 py-0.5 bg-muted dark:bg-[#181A1D] border border-border dark:border-[#2B3037] rounded">
                                   {conn.environment || 'PRODUCTION'}
                                 </span>
                               </div>
 
                               <div className="flex gap-6 text-xs">
                                 <div>
-                                  <p className="text-zinc-500 text-[10px] uppercase tracking-wider font-mono mb-0.5">Last Sync</p>
-                                  <p className="font-semibold text-zinc-200 font-mono text-xs">
+                                  <p className="text-muted-foreground dark:text-zinc-500 text-[10px] uppercase tracking-wider font-mono mb-0.5">Last Sync</p>
+                                  <p className="font-semibold text-foreground dark:text-zinc-200 font-mono text-xs">
                                     {conn.lastSyncAt ? formatDistanceToNow(new Date(conn.lastSyncAt), { addSuffix: true }) : 'Just now'}
                                   </p>
                                 </div>
                                 <div>
-                                  <p className="text-zinc-500 text-[10px] uppercase tracking-wider font-mono mb-0.5">Status</p>
-                                  <p className="font-semibold text-emerald-400 font-mono text-xs flex items-center gap-1">
+                                  <p className="text-muted-foreground dark:text-zinc-500 text-[10px] uppercase tracking-wider font-mono mb-0.5">Status</p>
+                                  <p className="font-semibold text-emerald-600 dark:text-emerald-400 font-mono text-xs flex items-center gap-1">
                                     <Check className="w-3 h-3" /> 2-Way Live Sync Active
                                   </p>
                                 </div>
@@ -332,31 +332,31 @@ export default function ClientChannelManager({
                                 onClick={() => setActiveTab('MAPPING')}
                                 variant="outline"
                                 size="sm"
-                                className="border-[#1E2227] bg-[#141619] text-zinc-300 hover:text-white hover:bg-[#181A1D] text-xs font-mono h-8"
+                                className="border-border dark:border-[#1E2227] bg-muted/40 dark:bg-[#141619] text-foreground dark:text-zinc-300 hover:text-foreground dark:hover:text-white hover:bg-muted dark:hover:bg-[#181A1D] text-xs font-mono h-8"
                               >
-                                <LinkIcon className="w-3 h-3 mr-1.5 text-zinc-400" /> Map Rooms
+                                <LinkIcon className="w-3 h-3 mr-1.5 text-muted-foreground dark:text-zinc-400" /> Map Rooms
                               </Button>
                             </div>
                           </div>
 
                           {conn.syncEvents && conn.syncEvents.length > 0 && (
-                            <div className="mt-4 border border-[#1E2227] rounded-lg overflow-hidden bg-[#090A0C]">
-                              <div className="bg-[#141619] px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider text-zinc-500 border-b border-[#1E2227]">
+                            <div className="mt-4 border border-border dark:border-[#1E2227] rounded-lg overflow-hidden bg-muted/20 dark:bg-[#090A0C]">
+                              <div className="bg-muted/40 dark:bg-[#141619] px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider text-muted-foreground dark:text-zinc-500 border-b border-border dark:border-[#1E2227]">
                                 Recent Sync Events
                               </div>
-                              <div className="divide-y divide-[#1E2227]">
+                              <div className="divide-y divide-border dark:divide-[#1E2227]">
                                 {conn.syncEvents.map((evt: any) => (
                                   <div key={evt.id} className="px-3 py-1.5 flex items-center justify-between text-xs font-mono">
                                     <div className="flex items-center gap-2.5">
                                       <span className={`w-1.5 h-1.5 rounded-full ${
-                                        evt.status === 'SUCCESS' ? 'bg-emerald-400' :
-                                        evt.status === 'FAILED' ? 'bg-rose-400' : 'bg-amber-400'
+                                        evt.status === 'SUCCESS' ? 'bg-emerald-500 dark:bg-emerald-400' :
+                                        evt.status === 'FAILED' ? 'bg-rose-500 dark:bg-rose-400' : 'bg-amber-500 dark:bg-amber-400'
                                       }`} />
-                                      <span className="text-[11px] text-zinc-200">{evt.eventType}</span>
-                                      <span className="text-zinc-600 hidden sm:inline">→</span>
-                                      <span className="text-zinc-400 hidden sm:inline text-[11px]">{evt.entityType}</span>
+                                      <span className="text-[11px] text-foreground dark:text-zinc-200">{evt.eventType}</span>
+                                      <span className="text-muted-foreground dark:text-zinc-600 hidden sm:inline">→</span>
+                                      <span className="text-muted-foreground dark:text-zinc-400 hidden sm:inline text-[11px]">{evt.entityType}</span>
                                     </div>
-                                    <span className="text-[10px] text-zinc-500">
+                                    <span className="text-[10px] text-muted-foreground dark:text-zinc-500">
                                       {formatDistanceToNow(new Date(evt.createdAt), { addSuffix: true })}
                                     </span>
                                   </div>
@@ -369,8 +369,8 @@ export default function ClientChannelManager({
                       ))}
                       
                       {(!provider.connections || provider.connections.length === 0) && (
-                        <div className="p-6 text-center bg-[#141619]/30">
-                          <p className="text-xs text-zinc-500 font-mono">No properties connected to {provider.name}.</p>
+                        <div className="p-6 text-center bg-muted/20 dark:bg-[#141619]/30">
+                          <p className="text-xs text-muted-foreground dark:text-zinc-500 font-mono">No properties connected to {provider.name}.</p>
                         </div>
                       )}
                     </div>
@@ -383,13 +383,13 @@ export default function ClientChannelManager({
 
         {/* Tab 2: Room Type Mappings */}
         {activeTab === 'MAPPING' && (
-          <div className="bg-[#121417] rounded-xl border border-[#1E2227] overflow-hidden">
-            <div className="p-4 sm:p-5 border-b border-[#1E2227] flex items-center justify-between bg-[#141619]">
+          <div className="bg-card dark:bg-[#121417] rounded-xl border border-border dark:border-[#1E2227] overflow-hidden">
+            <div className="p-4 sm:p-5 border-b border-border dark:border-[#1E2227] flex items-center justify-between bg-muted/40 dark:bg-[#141619]">
               <div>
-                <h2 className="text-sm font-semibold text-white flex items-center gap-2 font-mono uppercase tracking-wider">
-                  <LinkIcon className="w-4 h-4 text-zinc-400" /> OTA Room Type Mappings
+                <h2 className="text-sm font-semibold text-foreground dark:text-white flex items-center gap-2 font-mono uppercase tracking-wider">
+                  <LinkIcon className="w-4 h-4 text-muted-foreground dark:text-zinc-400" /> OTA Room Type Mappings
                 </h2>
-                <p className="text-xs text-zinc-400 mt-0.5">
+                <p className="text-xs text-muted-foreground dark:text-zinc-400 mt-0.5">
                   Map internal PMS room types to OTA Channel Room IDs and Rate Plan IDs.
                 </p>
               </div>
@@ -397,20 +397,20 @@ export default function ClientChannelManager({
                 onClick={fetchMappings}
                 variant="outline"
                 size="sm"
-                className="border-[#1E2227] bg-[#121417] text-zinc-300 hover:text-white hover:bg-[#181A1D] text-xs font-mono h-8"
+                className="border-border dark:border-[#1E2227] bg-card dark:bg-[#121417] text-foreground dark:text-zinc-300 hover:text-foreground dark:hover:text-white hover:bg-muted dark:hover:bg-[#181A1D] text-xs font-mono h-8"
               >
                 <RefreshCw className={`w-3 h-3 mr-1.5 ${loadingMappings ? 'animate-spin' : ''}`} /> Refresh
               </Button>
             </div>
 
             {loadingMappings ? (
-              <div className="p-12 text-center text-zinc-500 text-xs font-mono">Loading room mappings...</div>
+              <div className="p-12 text-center text-muted-foreground dark:text-zinc-500 text-xs font-mono">Loading room mappings...</div>
             ) : roomTypes.length === 0 ? (
-              <div className="p-12 text-center text-zinc-500 text-xs font-mono">No room types found. Create room types first under Room Operations.</div>
+              <div className="p-12 text-center text-muted-foreground dark:text-zinc-500 text-xs font-mono">No room types found. Create room types first under Room Operations.</div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs text-zinc-200">
-                  <thead className="bg-[#141619] text-zinc-400 uppercase font-mono text-[10px] tracking-wider border-b border-[#1E2227]">
+                <table className="w-full text-left text-xs text-foreground dark:text-zinc-200">
+                  <thead className="bg-muted/40 dark:bg-[#141619] text-muted-foreground dark:text-zinc-400 uppercase font-mono text-[10px] tracking-wider border-b border-border dark:border-[#1E2227]">
                     <tr>
                       <th className="p-3.5">Internal Room Type</th>
                       <th className="p-3.5">OTA Room Type ID</th>
@@ -419,7 +419,7 @@ export default function ClientChannelManager({
                       <th className="p-3.5 text-right">Action</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#1E2227]">
+                  <tbody className="divide-y divide-border dark:divide-[#1E2227]">
                     {roomTypes.map(rt => {
                       const mapping = mappings.find(m => m.localRoomTypeId === rt.id) || {
                         localRoomTypeId: rt.id,
@@ -446,30 +446,30 @@ export default function ClientChannelManager({
 
         {/* Tab 3: Sync Events */}
         {activeTab === 'LOGS' && (
-          <div className="bg-[#121417] rounded-xl border border-[#1E2227] overflow-hidden">
-            <div className="p-4 sm:p-5 border-b border-[#1E2227] flex items-center justify-between bg-[#141619]">
+          <div className="bg-card dark:bg-[#121417] rounded-xl border border-border dark:border-[#1E2227] overflow-hidden">
+            <div className="p-4 sm:p-5 border-b border-border dark:border-[#1E2227] flex items-center justify-between bg-muted/40 dark:bg-[#141619]">
               <div>
-                <h2 className="text-sm font-semibold text-white font-mono uppercase tracking-wider">Channel Synchronization Logs</h2>
-                <p className="text-zinc-400 text-xs mt-0.5">Audit trail of inbound reservation pulls and outbound availability broadcasts.</p>
+                <h2 className="text-sm font-semibold text-foreground dark:text-white font-mono uppercase tracking-wider">Channel Synchronization Logs</h2>
+                <p className="text-muted-foreground dark:text-zinc-400 text-xs mt-0.5">Audit trail of inbound reservation pulls and outbound availability broadcasts.</p>
               </div>
               <Button 
                 onClick={fetchLogs}
                 disabled={loadingLogs}
                 variant="outline"
                 size="sm"
-                className="border-[#1E2227] bg-[#121417] text-zinc-300 hover:text-white hover:bg-[#181A1D] text-xs font-mono h-8"
+                className="border-border dark:border-[#1E2227] bg-card dark:bg-[#121417] text-foreground dark:text-zinc-300 hover:text-foreground dark:hover:text-white hover:bg-muted dark:hover:bg-[#181A1D] text-xs font-mono h-8"
               >
                 <RefreshCw className={`w-3 h-3 mr-1.5 ${loadingLogs ? 'animate-spin' : ''}`} /> Refresh
               </Button>
             </div>
             {loadingLogs ? (
-              <div className="p-12 text-center text-zinc-500 text-xs font-mono">Loading audit events...</div>
+              <div className="p-12 text-center text-muted-foreground dark:text-zinc-500 text-xs font-mono">Loading audit events...</div>
             ) : logs.length === 0 ? (
-              <div className="p-12 text-center text-zinc-500 text-xs font-mono">No sync events recorded yet. Click &quot;Force Sync All&quot; above to initiate a sync.</div>
+              <div className="p-12 text-center text-muted-foreground dark:text-zinc-500 text-xs font-mono">No sync events recorded yet. Click &quot;Force Sync All&quot; above to initiate a sync.</div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs text-zinc-200 font-mono">
-                  <thead className="bg-[#141619] text-zinc-400 uppercase text-[10px] tracking-wider border-b border-[#1E2227]">
+                <table className="w-full text-left text-xs text-foreground dark:text-zinc-200 font-mono">
+                  <thead className="bg-muted/40 dark:bg-[#141619] text-muted-foreground dark:text-zinc-400 uppercase text-[10px] tracking-wider border-b border-border dark:border-[#1E2227]">
                     <tr>
                       <th className="p-3.5">Time</th>
                       <th className="p-3.5">Channel</th>
@@ -479,31 +479,31 @@ export default function ClientChannelManager({
                       <th className="p-3.5">Notes / Error</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#1E2227]">
+                  <tbody className="divide-y divide-border dark:divide-[#1E2227]">
                     {logs.map((log: any) => (
-                      <tr key={log.id} className="hover:bg-[#141619]/50 transition-colors">
-                        <td className="p-3.5 text-zinc-400 text-[11px]">
+                      <tr key={log.id} className="hover:bg-muted/30 dark:hover:bg-[#141619]/50 transition-colors">
+                        <td className="p-3.5 text-muted-foreground dark:text-zinc-400 text-[11px]">
                           {new Date(log.createdAt).toLocaleTimeString()} ({formatDistanceToNow(new Date(log.createdAt), { addSuffix: true })})
                         </td>
-                        <td className="p-3.5 font-semibold text-white">{log.provider}</td>
-                        <td className="p-3.5 text-zinc-300">{log.eventType}</td>
+                        <td className="p-3.5 font-semibold text-foreground dark:text-white">{log.provider}</td>
+                        <td className="p-3.5 text-foreground/80 dark:text-zinc-300">{log.eventType}</td>
                         <td className="p-3.5">
                           <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-semibold ${
-                            log.direction === 'INBOUND' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'bg-purple-500/10 text-purple-400 border border-purple-500/20'
+                            log.direction === 'INBOUND' ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20' : 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20'
                           }`}>
                             {log.direction}
                           </span>
                         </td>
                         <td className="p-3.5">
                           <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-semibold ${
-                            log.status === 'SUCCESS' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
-                            log.status === 'QUARANTINED' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
-                            'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                            log.status === 'SUCCESS' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20' :
+                            log.status === 'QUARANTINED' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20' :
+                            'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20'
                           }`}>
                             {log.status}
                           </span>
                         </td>
-                        <td className="p-3.5 text-zinc-400 max-w-xs truncate text-[11px]">
+                        <td className="p-3.5 text-muted-foreground dark:text-zinc-400 max-w-xs truncate text-[11px]">
                           {log.errorMessage || 'Completed successfully'}
                         </td>
                       </tr>
@@ -520,16 +520,16 @@ export default function ClientChannelManager({
       {/* New Connection Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="bg-[#121417] border border-[#1E2227] rounded-2xl w-full max-w-md flex flex-col shadow-2xl overflow-hidden my-auto">
-            <div className="p-5 border-b border-[#1E2227] flex items-start justify-between">
+          <div className="bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] rounded-2xl w-full max-w-md flex flex-col shadow-2xl overflow-hidden my-auto">
+            <div className="p-5 border-b border-border dark:border-[#1E2227] flex items-start justify-between">
               <div>
-                <h3 className="text-sm font-semibold text-white font-mono uppercase tracking-wider">Connect New OTA Channel</h3>
-                <p className="text-xs text-zinc-400 mt-0.5 font-sans">Configure credentials for automated 2-way distribution.</p>
+                <h3 className="text-sm font-semibold text-foreground dark:text-white font-mono uppercase tracking-wider">Connect New OTA Channel</h3>
+                <p className="text-xs text-muted-foreground dark:text-zinc-400 mt-0.5 font-sans">Configure credentials for automated 2-way distribution.</p>
               </div>
               <button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-[#181A1D] transition-colors"
+                className="p-1.5 rounded-lg text-muted-foreground dark:text-zinc-400 hover:text-foreground dark:hover:text-white hover:bg-muted dark:hover:bg-[#181A1D] transition-colors"
                 aria-label="Close modal"
               >
                 <X className="w-4 h-4" />
@@ -538,11 +538,11 @@ export default function ClientChannelManager({
             <form onSubmit={handleAddConnection} className="flex flex-col flex-1">
               <div className="p-5 space-y-4">
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-400">OTA Provider</label>
+                  <label className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground dark:text-zinc-400">OTA Provider</label>
                   <select 
                     value={formData.providerCode} 
                     onChange={e => setFormData({...formData, providerCode: e.target.value})}
-                    className="w-full bg-[#181A1D] border border-[#2B3037] rounded-lg p-2.5 text-white text-xs font-mono focus:outline-none focus:border-zinc-500"
+                    className="w-full bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] rounded-lg p-2.5 text-foreground dark:text-white text-xs font-mono focus:outline-none focus:border-ring dark:focus:border-zinc-500"
                   >
                     <option value="BOOKING_COM">Booking.com</option>
                     <option value="EXPEDIA">Expedia</option>
@@ -551,11 +551,11 @@ export default function ClientChannelManager({
                   </select>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-400">Target Property</label>
+                  <label className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground dark:text-zinc-400">Target Property</label>
                   <select 
                     value={formData.propertyId} 
                     onChange={e => setFormData({...formData, propertyId: e.target.value})}
-                    className="w-full bg-[#181A1D] border border-[#2B3037] rounded-lg p-2.5 text-white text-xs font-mono focus:outline-none focus:border-zinc-500"
+                    className="w-full bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] rounded-lg p-2.5 text-foreground dark:text-white text-xs font-mono focus:outline-none focus:border-ring dark:focus:border-zinc-500"
                   >
                     {properties.map(p => (
                       <option key={p.id} value={p.id}>{p.name} ({p.code})</option>
@@ -563,7 +563,7 @@ export default function ClientChannelManager({
                   </select>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-400">
+                  <label className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground dark:text-zinc-400">
                     {formData.providerCode === 'AGODA' ? 'Agoda Client ID' : 'Client / Machine Account ID'}
                   </label>
                   <input 
@@ -572,22 +572,22 @@ export default function ClientChannelManager({
                     value={formData.clientId} 
                     onChange={e => setFormData({...formData, clientId: e.target.value})} 
                     placeholder={formData.providerCode === 'AGODA' ? 'e.g. agoda_client_id' : 'e.g. bcom_hotel_74829'} 
-                    className="w-full bg-[#181A1D] border border-[#2B3037] rounded-lg p-2.5 text-white text-xs font-mono focus:outline-none focus:border-zinc-500" 
+                    className="w-full bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] rounded-lg p-2.5 text-foreground dark:text-white text-xs font-mono focus:outline-none focus:border-ring dark:focus:border-zinc-500" 
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-400">Environment</label>
+                  <label className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground dark:text-zinc-400">Environment</label>
                   <select 
                     value={formData.environment} 
                     onChange={e => setFormData({...formData, environment: e.target.value})} 
-                    className="w-full bg-[#181A1D] border border-[#2B3037] rounded-lg p-2.5 text-white text-xs font-mono focus:outline-none focus:border-zinc-500" 
+                    className="w-full bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] rounded-lg p-2.5 text-foreground dark:text-white text-xs font-mono focus:outline-none focus:border-ring dark:focus:border-zinc-500" 
                   >
                     <option value="PRODUCTION">Production (Live Inventory & Bookings)</option>
                     <option value="TEST">Sandbox / Test (Demand API Sandbox)</option>
                   </select>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-400">
+                  <label className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground dark:text-zinc-400">
                     {formData.providerCode === 'AGODA' ? 'Agoda Hotel Code (Property ID)' : 'Affiliate / Partner ID (X-Affiliate-Id)'}
                   </label>
                   <input 
@@ -596,11 +596,11 @@ export default function ClientChannelManager({
                     value={formData.affiliateId} 
                     onChange={e => setFormData({...formData, affiliateId: e.target.value})} 
                     placeholder={formData.providerCode === 'AGODA' ? 'e.g. 61027' : 'e.g. 3849201'} 
-                    className="w-full bg-[#181A1D] border border-[#2B3037] rounded-lg p-2.5 text-white text-xs font-mono focus:outline-none focus:border-zinc-500" 
+                    className="w-full bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] rounded-lg p-2.5 text-foreground dark:text-white text-xs font-mono focus:outline-none focus:border-ring dark:focus:border-zinc-500" 
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-mono uppercase tracking-wider text-zinc-400">
+                  <label className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground dark:text-zinc-400">
                     {formData.providerCode === 'AGODA' ? 'Agoda Client Secret (OAuth 2.0)' : 'API Bearer Token / Secret'}
                   </label>
                   <input 
@@ -609,23 +609,23 @@ export default function ClientChannelManager({
                     value={formData.clientSecret} 
                     onChange={e => setFormData({...formData, clientSecret: e.target.value})} 
                     placeholder="••••••••••••" 
-                    className="w-full bg-[#181A1D] border border-[#2B3037] rounded-lg p-2.5 text-white text-xs font-mono focus:outline-none focus:border-zinc-500" 
+                    className="w-full bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] rounded-lg p-2.5 text-foreground dark:text-white text-xs font-mono focus:outline-none focus:border-ring dark:focus:border-zinc-500" 
                   />
                 </div>
               </div>
-              <div className="p-4 border-t border-[#1E2227] flex justify-end gap-2 bg-[#141619]">
+              <div className="p-4 border-t border-border dark:border-[#1E2227] flex justify-end gap-2 bg-muted/40 dark:bg-[#141619]">
                 <Button 
                   type="button" 
                   variant="ghost" 
                   onClick={() => setIsModalOpen(false)} 
-                  className="text-xs text-zinc-400 hover:text-white font-mono h-8" 
+                  className="text-xs text-muted-foreground dark:text-zinc-400 hover:text-foreground dark:hover:text-white font-mono h-8" 
                 >
                   Cancel
                 </Button>
                 <Button 
                   type="submit" 
                   disabled={isSubmitting} 
-                  className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs font-mono uppercase tracking-wider h-8" 
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs font-mono uppercase tracking-wider h-8" 
                 >
                   {isSubmitting ? 'Connecting...' : 'Connect OTA'}
                 </Button>
@@ -667,10 +667,10 @@ function RoomMappingRow({
   };
 
   return (
-    <tr className="hover:bg-[#141619]/50 transition-colors">
+    <tr className="hover:bg-muted/30 dark:hover:bg-[#141619]/50 transition-colors">
       <td className="p-3.5">
-        <p className="font-semibold text-white font-mono text-xs">{roomType.name}</p>
-        <p className="text-[10px] text-zinc-500 font-mono">ID: {roomType.id}</p>
+        <p className="font-semibold text-foreground dark:text-white font-mono text-xs">{roomType.name}</p>
+        <p className="text-[10px] text-muted-foreground dark:text-zinc-500 font-mono">ID: {roomType.id}</p>
       </td>
       <td className="p-3.5">
         <input 
@@ -680,7 +680,7 @@ function RoomMappingRow({
             setIsDirty(true);
           }} 
           placeholder="e.g. BCOM_DELUXE_01" 
-          className="bg-[#181A1D] border border-[#2B3037] rounded-lg px-2.5 py-1.5 text-xs text-white font-mono w-44 focus:outline-none focus:border-zinc-500" 
+          className="bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] rounded-lg px-2.5 py-1.5 text-xs text-foreground dark:text-white font-mono w-44 focus:outline-none focus:border-ring dark:focus:border-zinc-500" 
         />
       </td>
       <td className="p-3.5">
@@ -691,7 +691,7 @@ function RoomMappingRow({
             setIsDirty(true);
           }} 
           placeholder="e.g. BAR_RATE" 
-          className="bg-[#181A1D] border border-[#2B3037] rounded-lg px-2.5 py-1.5 text-xs text-white font-mono w-36 focus:outline-none focus:border-zinc-500" 
+          className="bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] rounded-lg px-2.5 py-1.5 text-xs text-foreground dark:text-white font-mono w-36 focus:outline-none focus:border-ring dark:focus:border-zinc-500" 
         />
       </td>
       <td className="p-3.5 text-center">
@@ -702,7 +702,7 @@ function RoomMappingRow({
             setSyncEnabled(e.target.checked);
             setIsDirty(true);
           }} 
-          className="w-4 h-4 rounded border-[#2B3037] bg-[#181A1D] text-white accent-white cursor-pointer" 
+          className="w-4 h-4 rounded border-input dark:border-[#2B3037] bg-background dark:bg-[#181A1D] text-primary accent-primary cursor-pointer" 
         />
       </td>
       <td className="p-3.5 text-right">
@@ -712,8 +712,8 @@ function RoomMappingRow({
           size="sm" 
           className={`h-7 px-2.5 text-xs font-mono uppercase tracking-wider transition-all ${
             isDirty 
-              ? 'bg-white hover:bg-zinc-200 text-black font-semibold' 
-              : 'bg-[#181A1D] text-zinc-600 border border-[#2B3037] cursor-not-allowed'
+              ? 'bg-primary hover:bg-primary/90 text-primary-foreground font-semibold' 
+              : 'bg-muted dark:bg-[#181A1D] text-muted-foreground dark:text-zinc-600 border border-border dark:border-[#2B3037] cursor-not-allowed'
           }`} 
         >
           <Save className="w-3 h-3 mr-1" />

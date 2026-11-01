@@ -192,15 +192,15 @@ export default function CorporateCRMPage() {
       
       <div className="flex flex-col md:flex-row gap-4 mb-8">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground dark:text-white/50" />
           <Input 
             placeholder="Search accounts by company or email..." 
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-10 bg-white/5 border-white/10 text-white w-full"
+            className="pl-10 bg-card dark:bg-white/5 border-border dark:border-white/10 text-foreground dark:text-white w-full shadow-sm"
           />
         </div>
-        <Button onClick={() => { resetForm(); setShowAddModal(true); }} className="bg-primary text-black font-semibold flex items-center gap-2">
+        <Button onClick={() => { resetForm(); setShowAddModal(true); }} className="bg-primary text-primary-foreground font-semibold flex items-center gap-2 shadow-sm">
             <Plus className="w-4 h-4" /> Add Account
         </Button>
       </div>
@@ -210,44 +210,44 @@ export default function CorporateCRMPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {filteredAccounts.map((account: any) => (
-            <Card key={account.id} className="bg-white/5 border-white/10 hover:border-white/20 transition-colors shadow-2xl flex flex-col group">
+            <Card key={account.id} className="bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] hover:border-border/80 dark:hover:border-white/20 transition-colors shadow-sm flex flex-col group">
               <CardContent className="p-6 flex flex-col gap-3 flex-1">
                 <div className="flex justify-between items-start">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
                       <Building2 className="w-5 h-5 text-primary" />
                     </div>
                     <div>
-                      <h3 className="font-bold text-white text-lg leading-none">{account.companyName}</h3>
-                      <p className="text-xs text-slate-400 mt-1 uppercase tracking-widest">{account.isActive ? 'Active' : 'Inactive'}</p>
+                      <h3 className="font-bold text-foreground dark:text-white text-lg leading-none">{account.companyName}</h3>
+                      <p className="text-xs text-muted-foreground dark:text-slate-400 mt-1 uppercase tracking-widest">{account.isActive ? 'Active' : 'Inactive'}</p>
                     </div>
                   </div>
                   {account.negotiatedRate && (
-                    <span className="bg-primary/20 text-primary border border-primary/30 px-3 py-1 rounded-full text-xs font-bold">
+                    <span className="bg-primary/10 text-primary border border-primary/20 px-3 py-1 rounded-full text-xs font-bold">
                         {account.negotiatedRate}% Off
                     </span>
                   )}
                 </div>
                 
-                <div className="mt-2 bg-[#1a1a24] rounded-xl p-4 border border-white/5">
-                  <p className="text-sm font-semibold text-white/90">{account.contactName}</p>
-                  <p className="text-xs text-white/50 mt-1">{account.contactEmail}</p>
-                  {account.contactPhone && <p className="text-xs text-white/50 mt-0.5">{account.contactPhone}</p>}
+                <div className="mt-2 bg-muted/40 dark:bg-[#1a1a24] rounded-xl p-4 border border-border dark:border-white/5">
+                  <p className="text-sm font-semibold text-foreground dark:text-white/90">{account.contactName}</p>
+                  <p className="text-xs text-muted-foreground dark:text-white/50 mt-1">{account.contactEmail}</p>
+                  {account.contactPhone && <p className="text-xs text-muted-foreground dark:text-white/50 mt-0.5">{account.contactPhone}</p>}
                 </div>
 
-                <div className="flex items-center justify-between mt-auto pt-4 border-t border-white/10">
+                <div className="flex items-center justify-between mt-auto pt-4 border-t border-border dark:border-white/10">
                   <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4 text-white/40" />
-                    <span className="text-sm text-white/70">{account._count?.users || 0} Registered Employees</span>
+                    <Users className="w-4 h-4 text-muted-foreground dark:text-white/40" />
+                    <span className="text-sm text-muted-foreground dark:text-white/70">{account._count?.users || 0} Registered Employees</span>
                   </div>
                   <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button variant="ghost" size="icon" onClick={() => openBilling(account)} className="w-8 h-8 rounded-full bg-sky-500/20 text-sky-400 hover:bg-sky-500/30" title="Generate Invoice">
+                    <Button variant="ghost" size="icon" onClick={() => openBilling(account)} className="w-8 h-8 rounded-full bg-sky-500/10 text-sky-600 dark:text-sky-400 hover:bg-sky-500/20" title="Generate Invoice">
                       <Receipt className="w-4 h-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => openEdit(account)} className="w-8 h-8 rounded-full bg-white/10 text-white hover:bg-white/20" title="Edit">
+                    <Button variant="ghost" size="icon" onClick={() => openEdit(account)} className="w-8 h-8 rounded-full bg-muted dark:bg-white/10 text-foreground dark:text-white hover:bg-muted/80 dark:hover:bg-white/20" title="Edit">
                       <Edit2 className="w-4 h-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => openDelete(account)} className="w-8 h-8 rounded-full bg-rose-500/20 text-rose-400 hover:bg-rose-500/30" title="Delete">
+                    <Button variant="ghost" size="icon" onClick={() => openDelete(account)} className="w-8 h-8 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20" title="Delete">
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
@@ -256,7 +256,7 @@ export default function CorporateCRMPage() {
             </Card>
           ))}
           {filteredAccounts.length === 0 && (
-            <div className="text-white/50 p-12 bg-white/5 rounded-xl border-2 border-dashed border-white/10 text-center col-span-full">
+            <div className="text-muted-foreground dark:text-white/50 p-12 bg-card dark:bg-white/5 rounded-xl border-2 border-dashed border-border dark:border-white/10 text-center col-span-full shadow-sm">
               No corporate accounts found.
             </div>
           )}
@@ -268,46 +268,46 @@ export default function CorporateCRMPage() {
          if (!open) { setShowAddModal(false); setShowEditModal(false); }
       }}>
         <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50" />
-          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-[#0a0a0f] border border-white/10 rounded-2xl shadow-2xl p-6 z-50">
-            <h2 className="text-2xl font-bold text-white mb-6">{showEditModal ? 'Edit Corporate Account' : 'Create Corporate Account'}</h2>
+          <Dialog.Overlay className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm z-50" />
+          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-card dark:bg-[#0a0a0f] border border-border dark:border-white/10 rounded-2xl shadow-2xl p-6 z-50">
+            <h2 className="text-2xl font-bold text-foreground dark:text-white mb-6">{showEditModal ? 'Edit Corporate Account' : 'Create Corporate Account'}</h2>
             <form onSubmit={showEditModal ? handleEdit : handleCreate} className="space-y-4">
               <div>
-                <label className="text-xs font-bold text-white/60 uppercase tracking-wider mb-2 block">Company Name</label>
-                <Input required value={formData.companyName} onChange={e=>setFormData({...formData, companyName: e.target.value})} className="bg-[#1a1a24] border-white/10 text-white" />
+                <label className="text-xs font-bold text-muted-foreground dark:text-white/60 uppercase tracking-wider mb-2 block">Company Name</label>
+                <Input required value={formData.companyName} onChange={e=>setFormData({...formData, companyName: e.target.value})} className="bg-background dark:bg-[#1a1a24] border-input dark:border-white/10 text-foreground dark:text-white" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-bold text-white/60 uppercase tracking-wider mb-2 block">Contact Name</label>
-                  <Input required value={formData.contactName} onChange={e=>setFormData({...formData, contactName: e.target.value})} className="bg-[#1a1a24] border-white/10 text-white" />
+                  <label className="text-xs font-bold text-muted-foreground dark:text-white/60 uppercase tracking-wider mb-2 block">Contact Name</label>
+                  <Input required value={formData.contactName} onChange={e=>setFormData({...formData, contactName: e.target.value})} className="bg-background dark:bg-[#1a1a24] border-input dark:border-white/10 text-foreground dark:text-white" />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-white/60 uppercase tracking-wider mb-2 block">Contact Phone</label>
-                  <Input value={formData.contactPhone} onChange={e=>setFormData({...formData, contactPhone: e.target.value})} className="bg-[#1a1a24] border-white/10 text-white" />
+                  <label className="text-xs font-bold text-muted-foreground dark:text-white/60 uppercase tracking-wider mb-2 block">Contact Phone</label>
+                  <Input value={formData.contactPhone} onChange={e=>setFormData({...formData, contactPhone: e.target.value})} className="bg-background dark:bg-[#1a1a24] border-input dark:border-white/10 text-foreground dark:text-white" />
                 </div>
               </div>
               <div>
-                <label className="text-xs font-bold text-white/60 uppercase tracking-wider mb-2 block">Contact Email</label>
-                <Input type="email" required value={formData.contactEmail} onChange={e=>setFormData({...formData, contactEmail: e.target.value})} className="bg-[#1a1a24] border-white/10 text-white" />
+                <label className="text-xs font-bold text-muted-foreground dark:text-white/60 uppercase tracking-wider mb-2 block">Contact Email</label>
+                <Input type="email" required value={formData.contactEmail} onChange={e=>setFormData({...formData, contactEmail: e.target.value})} className="bg-background dark:bg-[#1a1a24] border-input dark:border-white/10 text-foreground dark:text-white" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-bold text-white/60 uppercase tracking-wider mb-2 block">Negotiated Discount Rate (%)</label>
-                  <Input type="number" step="0.1" min="0" max="100" placeholder="e.g. 15 for 15%" value={formData.negotiatedRate} onChange={e=>setFormData({...formData, negotiatedRate: e.target.value})} className="bg-[#1a1a24] border-white/10 text-white" />
+                  <label className="text-xs font-bold text-muted-foreground dark:text-white/60 uppercase tracking-wider mb-2 block">Negotiated Discount Rate (%)</label>
+                  <Input type="number" step="0.1" min="0" max="100" placeholder="e.g. 15 for 15%" value={formData.negotiatedRate} onChange={e=>setFormData({...formData, negotiatedRate: e.target.value})} className="bg-background dark:bg-[#1a1a24] border-input dark:border-white/10 text-foreground dark:text-white" />
                 </div>
                 {showEditModal && (
                   <div>
-                    <label className="text-xs font-bold text-white/60 uppercase tracking-wider mb-2 block">Status</label>
+                    <label className="text-xs font-bold text-muted-foreground dark:text-white/60 uppercase tracking-wider mb-2 block">Status</label>
                     <div className="flex items-center gap-2 mt-2">
-                       <input type="checkbox" checked={formData.isActive} onChange={e=>setFormData({...formData, isActive: e.target.checked})} className="w-4 h-4 rounded border-white/20 bg-transparent text-primary" />
-                       <span className="text-sm text-white">Active</span>
+                       <input type="checkbox" checked={formData.isActive} onChange={e=>setFormData({...formData, isActive: e.target.checked})} className="w-4 h-4 rounded border-border dark:border-white/20 bg-transparent text-primary" />
+                       <span className="text-sm text-foreground dark:text-white">Active</span>
                     </div>
                   </div>
                 )}
               </div>
-              <div className="flex justify-end gap-3 pt-6 border-t border-white/10 mt-6">
+              <div className="flex justify-end gap-3 pt-6 border-t border-border dark:border-white/10 mt-6">
                 <Button type="button" variant="ghost" onClick={() => { setShowAddModal(false); setShowEditModal(false); }}>Cancel</Button>
-                <Button type="submit" className="bg-primary text-black font-semibold">{showEditModal ? 'Save Changes' : 'Create Account'}</Button>
+                <Button type="submit" className="bg-primary text-primary-foreground font-semibold">{showEditModal ? 'Save Changes' : 'Create Account'}</Button>
               </div>
             </form>
           </Dialog.Content>
@@ -317,10 +317,10 @@ export default function CorporateCRMPage() {
       {/* Delete Confirmation Modal */}
       <Dialog.Root open={showDeleteModal} onOpenChange={setShowDeleteModal}>
         <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50" />
-          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-[#0a0a0f] border border-rose-500/30 rounded-2xl shadow-2xl p-6 z-50">
-            <h2 className="text-xl font-bold text-white mb-2">Delete Corporate Account</h2>
-            <p className="text-sm text-white/70 mb-6">Are you sure you want to delete <strong>{selectedAccount?.companyName}</strong>? This action cannot be undone. If the account has registered employees, it will be deactivated instead.</p>
+          <Dialog.Overlay className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm z-50" />
+          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-card dark:bg-[#0a0a0f] border border-rose-500/30 rounded-2xl shadow-2xl p-6 z-50">
+            <h2 className="text-xl font-bold text-foreground dark:text-white mb-2">Delete Corporate Account</h2>
+            <p className="text-sm text-muted-foreground dark:text-white/70 mb-6">Are you sure you want to delete <strong>{selectedAccount?.companyName}</strong>? This action cannot be undone. If the account has registered employees, it will be deactivated instead.</p>
             <div className="flex justify-end gap-3">
               <Button variant="ghost" onClick={() => setShowDeleteModal(false)}>Cancel</Button>
               <Button onClick={handleDelete} className="bg-rose-500 text-white hover:bg-rose-600">Delete Account</Button>
@@ -332,17 +332,17 @@ export default function CorporateCRMPage() {
       {/* Billing Settlement Modal */}
       <Dialog.Root open={showBillingModal} onOpenChange={setShowBillingModal}>
         <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50" />
-          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-[#0a0a0f] border border-white/10 rounded-2xl shadow-2xl p-6 z-50">
-            <h2 className="text-2xl font-bold text-white mb-1">Billing Statement</h2>
-            <p className="text-sm text-slate-400 mb-6">Generate billing statement for <strong>{selectedAccount?.companyName}</strong>.</p>
+          <Dialog.Overlay className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm z-50" />
+          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-card dark:bg-[#0a0a0f] border border-border dark:border-white/10 rounded-2xl shadow-2xl p-6 z-50">
+            <h2 className="text-2xl font-bold text-foreground dark:text-white mb-1">Billing Statement</h2>
+            <p className="text-sm text-muted-foreground dark:text-slate-400 mb-6">Generate billing statement for <strong>{selectedAccount?.companyName}</strong>.</p>
             
             <form onSubmit={handleSettleBilling} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-bold text-white/60 uppercase tracking-wider mb-2 block">Month</label>
+                  <label className="text-xs font-bold text-muted-foreground dark:text-white/60 uppercase tracking-wider mb-2 block">Month</label>
                   <select 
-                    className="w-full bg-[#1a1a24] border border-white/10 rounded-lg p-2.5 text-sm text-white focus:ring-1 focus:ring-primary outline-none"
+                    className="w-full bg-background dark:bg-[#1a1a24] border border-input dark:border-white/10 rounded-lg p-2.5 text-sm text-foreground dark:text-white focus:ring-1 focus:ring-primary outline-none"
                     value={billingData.month}
                     onChange={(e) => setBillingData({...billingData, month: parseInt(e.target.value)})}
                   >
@@ -352,8 +352,8 @@ export default function CorporateCRMPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-white/60 uppercase tracking-wider mb-2 block">Year</label>
-                  <Input type="number" required value={billingData.year} onChange={e=>setBillingData({...billingData, year: parseInt(e.target.value)})} className="bg-[#1a1a24] border-white/10 text-white" />
+                  <label className="text-xs font-bold text-muted-foreground dark:text-white/60 uppercase tracking-wider mb-2 block">Year</label>
+                  <Input type="number" required value={billingData.year} onChange={e=>setBillingData({...billingData, year: parseInt(e.target.value)})} className="bg-background dark:bg-[#1a1a24] border-input dark:border-white/10 text-foreground dark:text-white" />
                 </div>
               </div>
               
@@ -363,36 +363,36 @@ export default function CorporateCRMPage() {
             </form>
 
             {billingData.settlementResult && (
-              <div className="mt-6 p-4 bg-[#1a1a24] border border-white/5 rounded-xl space-y-3">
+              <div className="mt-6 p-4 bg-muted/40 dark:bg-[#1a1a24] border border-border dark:border-white/5 rounded-xl space-y-3">
                  {billingData.settlementResult.data ? (
                     <>
-                      <h3 className="font-bold text-sky-400 text-lg border-b border-white/10 pb-2 mb-2">Statement Summary</h3>
+                      <h3 className="font-bold text-sky-500 dark:text-sky-400 text-lg border-b border-border dark:border-white/10 pb-2 mb-2">Statement Summary</h3>
                       <div className="flex justify-between text-sm">
-                        <span className="text-slate-400">Billable Stays</span>
-                        <span className="font-bold text-white">{billingData.settlementResult.data.bookingsCount}</span>
+                        <span className="text-muted-foreground dark:text-slate-400">Billable Stays</span>
+                        <span className="font-bold text-foreground dark:text-white">{billingData.settlementResult.data.bookingsCount}</span>
                       </div>
                       <div className="flex justify-between text-sm">
-                        <span className="text-slate-400">Gross Room Revenue</span>
-                        <span className="font-bold text-white">${billingData.settlementResult.data.totalRoomRevenue.toFixed(2)}</span>
+                        <span className="text-muted-foreground dark:text-slate-400">Gross Room Revenue</span>
+                        <span className="font-bold text-foreground dark:text-white">${billingData.settlementResult.data.totalRoomRevenue.toFixed(2)}</span>
                       </div>
                       {billingData.settlementResult.data.roomDiscount > 0 && (
-                        <div className="flex justify-between text-sm text-emerald-400">
+                        <div className="flex justify-between text-sm text-emerald-600 dark:text-emerald-400">
                           <span>Negotiated Discount (-{selectedAccount?.negotiatedRate}%)</span>
                           <span>-${billingData.settlementResult.data.roomDiscount.toFixed(2)}</span>
                         </div>
                       )}
                       <div className="flex justify-between text-sm">
-                        <span className="text-slate-400">Incidental/Other Charges</span>
-                        <span className="font-bold text-white">${billingData.settlementResult.data.totalOtherRevenue.toFixed(2)}</span>
+                        <span className="text-muted-foreground dark:text-slate-400">Incidental/Other Charges</span>
+                        <span className="font-bold text-foreground dark:text-white">${billingData.settlementResult.data.totalOtherRevenue.toFixed(2)}</span>
                       </div>
-                      <div className="flex justify-between text-sm mt-2 pt-2 border-t border-white/5">
-                        <span className="text-slate-400 font-bold uppercase tracking-wider text-xs">Total Amount Due</span>
-                        <span className="font-black text-sky-400">${billingData.settlementResult.data.totalBilled.toFixed(2)}</span>
+                      <div className="flex justify-between text-sm mt-2 pt-2 border-t border-border dark:border-white/5">
+                        <span className="text-muted-foreground dark:text-slate-400 font-bold uppercase tracking-wider text-xs">Total Amount Due</span>
+                        <span className="font-black text-sky-500 dark:text-sky-400">${billingData.settlementResult.data.totalBilled.toFixed(2)}</span>
                       </div>
-                      <p className="text-[10px] text-slate-500 text-center mt-2">This transaction has been logged in the system audit logs.</p>
+                      <p className="text-[10px] text-muted-foreground dark:text-slate-500 text-center mt-2">This transaction has been logged in the system audit logs.</p>
                     </>
                  ) : (
-                    <div className="text-center py-4 text-slate-400">
+                    <div className="text-center py-4 text-muted-foreground dark:text-slate-400">
                        {billingData.settlementResult.message || 'No data found.'}
                     </div>
                  )}

@@ -75,38 +75,38 @@ export default function GovernancePage() {
         
         {/* Left Column: Compliance Suites (8 cols) */}
         <div className="lg:col-span-8 space-y-4">
-          <h2 className="text-sm font-semibold text-zinc-100 font-mono uppercase tracking-wider">
+          <h2 className="text-sm font-semibold text-foreground dark:text-zinc-100 font-mono uppercase tracking-wider">
             Compliance Certification Suites
           </h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {certs.map((cert) => (
-              <Card key={cert.id} className="p-5 rounded-xl bg-[#121417] border border-[#1E2227] flex flex-col justify-between shadow-none hover:border-[#2B3037] transition-all">
+              <Card key={cert.id} className="p-5 rounded-xl bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] flex flex-col justify-between shadow-none hover:border-border/80 dark:hover:border-[#2B3037] transition-all">
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-[#181A1D] text-zinc-400 border border-[#2B3037]">
+                    <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-muted dark:bg-[#181A1D] text-muted-foreground dark:text-zinc-400 border border-border dark:border-[#2B3037]">
                       {cert.standard}
                     </span>
                     <Badge className={`px-2 py-0.5 rounded text-[10px] font-mono border ${
-                      cert.status === 'CERTIFIED' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                      cert.status === 'CERTIFIED' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20'
                     }`}>
                       {cert.status}
                     </Badge>
                   </div>
-                  <h3 className="text-xs font-semibold text-white font-mono leading-relaxed">{cert.title}</h3>
+                  <h3 className="text-xs font-semibold text-foreground dark:text-white font-mono leading-relaxed">{cert.title}</h3>
                 </div>
 
-                <div className="border-t border-[#1E2227] pt-3.5 mt-4 flex justify-between items-center">
+                <div className="border-t border-border dark:border-[#1E2227] pt-3.5 mt-4 flex justify-between items-center">
                   <div className="space-y-0.5">
-                    <span className="text-[10px] text-zinc-500 font-mono block">Compiled: {cert.lastEvaluated}</span>
-                    <span className="text-[10px] text-zinc-300 font-mono block">SHA-256: {cert.integritySignature}</span>
+                    <span className="text-[10px] text-muted-foreground dark:text-zinc-500 font-mono block">Compiled: {cert.lastEvaluated}</span>
+                    <span className="text-[10px] text-foreground/80 dark:text-zinc-300 font-mono block">SHA-256: {cert.integritySignature}</span>
                   </div>
                   <Button
                     onClick={() => handleCompileReport(cert.id)}
                     disabled={compilingId !== null}
                     variant="outline"
                     size="sm"
-                    className="h-7 px-2.5 text-[10px] font-mono uppercase tracking-wider border-[#1E2227] bg-[#141619] hover:bg-[#181A1D] text-zinc-300 hover:text-white"
+                    className="h-7 px-2.5 text-[10px] font-mono uppercase tracking-wider border-border dark:border-[#1E2227] bg-muted/40 dark:bg-[#141619] hover:bg-muted dark:hover:bg-[#181A1D] text-foreground dark:text-zinc-300 hover:text-foreground dark:hover:text-white"
                   >
                     {compilingId === cert.id ? (
                       <>
@@ -123,62 +123,62 @@ export default function GovernancePage() {
         </div>
 
         {/* Right Column: Deployment Gates (4 cols) */}
-        <div className="lg:col-span-4 bg-[#121417] border border-[#1E2227] rounded-xl p-5 space-y-4 shadow-none">
+        <div className="lg:col-span-4 bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] rounded-xl p-5 space-y-4 shadow-none">
           <div>
-            <h2 className="text-sm font-semibold text-white font-mono uppercase tracking-wider">Production Deploy Gates</h2>
-            <p className="text-xs text-zinc-500 font-sans mt-0.5">
+            <h2 className="text-sm font-semibold text-foreground dark:text-white font-mono uppercase tracking-wider">Production Deploy Gates</h2>
+            <p className="text-xs text-muted-foreground dark:text-zinc-500 font-sans mt-0.5">
               Mandatory operational checklist criteria verified prior to code compilation and cluster deployment.
             </p>
           </div>
 
           <div className="space-y-3 pt-1">
-            <label className="flex items-start space-x-3 cursor-pointer text-xs p-2.5 rounded-lg bg-[#141619] border border-[#1E2227] hover:border-[#2B3037] transition-colors">
+            <label className="flex items-start space-x-3 cursor-pointer text-xs p-2.5 rounded-lg bg-muted/20 dark:bg-[#141619] border border-border dark:border-[#1E2227] hover:border-border/80 dark:hover:border-[#2B3037] transition-colors">
               <input
                 type="checkbox"
                 checked={signOffStatus.auditApproved}
                 onChange={(e) => setSignOffStatus(prev => ({ ...prev, auditApproved: e.target.checked }))}
-                className="w-4 h-4 rounded border-[#2B3037] bg-[#181A1D] accent-white mt-0.5 cursor-pointer"
+                className="w-4 h-4 rounded border-border dark:border-[#2B3037] bg-background dark:bg-[#181A1D] accent-primary mt-0.5 cursor-pointer"
               />
               <div className="space-y-0.5">
-                <span className="font-semibold text-zinc-200 font-mono text-xs">Cryptographic Ledgers</span>
-                <p className="text-[11px] text-zinc-500">All balance transactions match cryptographic hashes.</p>
+                <span className="font-semibold text-foreground dark:text-zinc-200 font-mono text-xs">Cryptographic Ledgers</span>
+                <p className="text-[11px] text-muted-foreground dark:text-zinc-500">All balance transactions match cryptographic hashes.</p>
               </div>
             </label>
 
-            <label className="flex items-start space-x-3 cursor-pointer text-xs p-2.5 rounded-lg bg-[#141619] border border-[#1E2227] hover:border-[#2B3037] transition-colors">
+            <label className="flex items-start space-x-3 cursor-pointer text-xs p-2.5 rounded-lg bg-muted/20 dark:bg-[#141619] border border-border dark:border-[#1E2227] hover:border-border/80 dark:hover:border-[#2B3037] transition-colors">
               <input
                 type="checkbox"
                 checked={signOffStatus.drDrillPassed}
                 onChange={(e) => setSignOffStatus(prev => ({ ...prev, drDrillPassed: e.target.checked }))}
-                className="w-4 h-4 rounded border-[#2B3037] bg-[#181A1D] accent-white mt-0.5 cursor-pointer"
+                className="w-4 h-4 rounded border-border dark:border-[#2B3037] bg-background dark:bg-[#181A1D] accent-primary mt-0.5 cursor-pointer"
               />
               <div className="space-y-0.5">
-                <span className="font-semibold text-zinc-200 font-mono text-xs">DR Drill Completed</span>
-                <p className="text-[11px] text-zinc-500">Simulation verified multi-region replica redundancy.</p>
+                <span className="font-semibold text-foreground dark:text-zinc-200 font-mono text-xs">DR Drill Completed</span>
+                <p className="text-[11px] text-muted-foreground dark:text-zinc-500">Simulation verified multi-region replica redundancy.</p>
               </div>
             </label>
 
-            <label className="flex items-start space-x-3 cursor-pointer text-xs p-2.5 rounded-lg bg-[#141619] border border-[#1E2227] hover:border-[#2B3037] transition-colors">
+            <label className="flex items-start space-x-3 cursor-pointer text-xs p-2.5 rounded-lg bg-muted/20 dark:bg-[#141619] border border-border dark:border-[#1E2227] hover:border-border/80 dark:hover:border-[#2B3037] transition-colors">
               <input
                 type="checkbox"
                 checked={signOffStatus.securityHardened}
                 onChange={(e) => setSignOffStatus(prev => ({ ...prev, securityHardened: e.target.checked }))}
-                className="w-4 h-4 rounded border-[#2B3037] bg-[#181A1D] accent-white mt-0.5 cursor-pointer"
+                className="w-4 h-4 rounded border-border dark:border-[#2B3037] bg-background dark:bg-[#181A1D] accent-primary mt-0.5 cursor-pointer"
               />
               <div className="space-y-0.5">
-                <span className="font-semibold text-zinc-200 font-mono text-xs">Penetration Sweeps</span>
-                <p className="text-[11px] text-zinc-500">Intrusion models verified 0 token vulnerabilities.</p>
+                <span className="font-semibold text-foreground dark:text-zinc-200 font-mono text-xs">Penetration Sweeps</span>
+                <p className="text-[11px] text-muted-foreground dark:text-zinc-500">Intrusion models verified 0 token vulnerabilities.</p>
               </div>
             </label>
           </div>
 
-          <div className="border-t border-[#1E2227] pt-3 mt-3">
+          <div className="border-t border-border dark:border-[#1E2227] pt-3 mt-3">
             <Button
               disabled={!isReadyForProduction}
               className={`w-full text-xs font-mono font-semibold uppercase tracking-wider h-9 ${
                 isReadyForProduction
-                  ? 'bg-white hover:bg-zinc-200 text-black'
-                  : 'bg-[#181A1D] text-zinc-600 border border-[#2B3037] cursor-not-allowed'
+                  ? 'bg-primary hover:bg-primary/90 text-primary-foreground'
+                  : 'bg-muted dark:bg-[#181A1D] text-muted-foreground dark:text-zinc-600 border border-border dark:border-[#2B3037] cursor-not-allowed'
               }`}
             >
               PROCEED TO PRODUCTION ROLLOUT

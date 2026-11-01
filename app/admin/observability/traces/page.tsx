@@ -13,16 +13,16 @@ export default function TraceExplorerPage() {
       subtitle="Production telemetry, distributed span waterfalls, and exception profiling."
     >
       <div className="flex items-center justify-center py-16">
-        <Card className="max-w-xl text-center p-8 bg-[#121417] border border-[#1E2227] rounded-2xl shadow-none space-y-5">
-          <div className="w-12 h-12 rounded-xl bg-[#181A1D] border border-[#2B3037] flex items-center justify-center mx-auto text-emerald-400">
+        <Card className="max-w-xl text-center p-8 bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] rounded-2xl shadow-none space-y-5">
+          <div className="w-12 h-12 rounded-xl bg-muted dark:bg-[#181A1D] border border-border dark:border-[#2B3037] flex items-center justify-center mx-auto text-emerald-500 dark:text-emerald-400">
             <Activity className="w-6 h-6" />
           </div>
           
           <div className="space-y-2">
-            <h2 className="text-base font-semibold text-white font-mono uppercase tracking-wider">
+            <h2 className="text-base font-semibold text-foreground dark:text-white font-mono uppercase tracking-wider">
               Telemetry Migrated to Sentry APM
             </h2>
-            <p className="text-xs text-zinc-400 font-sans leading-relaxed max-w-md mx-auto">
+            <p className="text-xs text-muted-foreground dark:text-zinc-400 font-sans leading-relaxed max-w-md mx-auto">
               Simulated telemetry generators have been permanently deprecated. All distributed tracing, span waterfalls, and live performance metrics are routed to the central Sentry APM infrastructure.
             </p>
           </div>
@@ -30,7 +30,7 @@ export default function TraceExplorerPage() {
           <div className="pt-2">
             <Button
               asChild
-              className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs font-mono uppercase tracking-wider h-9 px-5 rounded-lg"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs font-mono uppercase tracking-wider h-9 px-5 rounded-lg"
             >
               <a 
                 href="https://sentry.io" 

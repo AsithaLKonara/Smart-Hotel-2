@@ -121,19 +121,19 @@ export default function AdvancedFolioPage({ params }: { params: Promise<{ id: st
   }
 
   return (
-    <div className="p-6 text-white min-h-screen bg-[#050309]">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between border-b border-white/5 pb-6 mb-8">
+    <div className="p-6 text-foreground dark:text-white min-h-screen bg-background dark:bg-[#050309]">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between border-b border-border dark:border-white/5 pb-6 mb-8">
         <div>
-          <h1 className="text-3xl font-serif font-bold">Folio & Billing</h1>
-          <p className="text-slate-400 text-sm mt-1">Manage guest folios, corporate routing, and line items.</p>
+          <h1 className="text-3xl font-serif font-bold text-foreground dark:text-white">Folio & Billing</h1>
+          <p className="text-muted-foreground dark:text-slate-400 text-sm mt-1">Manage guest folios, corporate routing, and line items.</p>
         </div>
         <div className="flex gap-2 mt-4 md:mt-0">
-          <Button variant="outline" className="bg-white/5 border-white/10 text-white hover:bg-white/10" 
+          <Button variant="outline" className="bg-background dark:bg-white/5 border-border dark:border-white/10 text-foreground dark:text-white hover:bg-muted dark:hover:bg-white/10" 
             onClick={() => addWindowMut.mutate({})}
           >
             <SplitSquareHorizontal className="w-4 h-4 mr-2" /> New Window
           </Button>
-          <Button className="bg-primary text-black font-semibold" onClick={() => setChargeModal(true)}>
+          <Button className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-sm" onClick={() => setChargeModal(true)}>
             <Plus className="w-4 h-4 mr-2" /> Post Charge
           </Button>
         </div>
@@ -144,26 +144,26 @@ export default function AdvancedFolioPage({ params }: { params: Promise<{ id: st
           const totalAmount = folio.lineItems?.reduce((sum: number, item: any) => sum + item.amount, 0) || 0
 
           return (
-            <Card key={folio.id} className="min-w-[400px] max-w-[450px] shrink-0 bg-[#0a0a0f] border-white/10 snap-center flex flex-col">
+            <Card key={folio.id} className="min-w-[400px] max-w-[450px] shrink-0 bg-card dark:bg-[#0a0a0f] border-border dark:border-white/10 snap-center flex flex-col shadow-sm">
               <CardContent className="p-0 flex-1 flex flex-col">
                 {/* Header */}
-                <div className="p-5 border-b border-white/5 flex justify-between items-start bg-white/[0.02]">
+                <div className="p-5 border-b border-border dark:border-white/5 flex justify-between items-start bg-muted/40 dark:bg-white/[0.02]">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <h2 className="text-lg font-bold text-white">Window {folio.windowNumber}</h2>
-                      {folio.type === 'ROUTING' && <Badge className="bg-purple-500/20 text-purple-400">Routed</Badge>}
+                      <h2 className="text-lg font-bold text-foreground dark:text-white">Window {folio.windowNumber}</h2>
+                      {folio.type === 'ROUTING' && <Badge className="bg-purple-500/20 text-purple-600 dark:text-purple-400">Routed</Badge>}
                     </div>
                     {folio.company ? (
-                      <p className="text-xs text-slate-400 flex items-center"><Building2 className="w-3 h-3 mr-1" /> {folio.company.name}</p>
+                      <p className="text-xs text-muted-foreground dark:text-slate-400 flex items-center"><Building2 className="w-3 h-3 mr-1" /> {folio.company.name}</p>
                     ) : (
-                      <p className="text-xs text-slate-400 flex items-center"><FileText className="w-3 h-3 mr-1" /> Guest Master</p>
+                      <p className="text-xs text-muted-foreground dark:text-slate-400 flex items-center"><FileText className="w-3 h-3 mr-1" /> Guest Master</p>
                     )}
                   </div>
                   <div className="text-right">
-                    <span className="text-xl font-bold text-emerald-400">${totalAmount.toFixed(2)}</span>
+                    <span className="text-xl font-bold text-emerald-600 dark:text-emerald-400">${totalAmount.toFixed(2)}</span>
                     <div className="flex items-center justify-end gap-2 mt-1">
-                      <span className="text-[10px] text-slate-500 block uppercase tracking-wider">Balance</span>
-                      <Button variant="ghost" size="sm" className="h-4 p-0 text-[10px] text-amber-400 hover:text-amber-300" onClick={() => setAdjModal(folio)}>
+                      <span className="text-[10px] text-muted-foreground dark:text-slate-500 block uppercase tracking-wider">Balance</span>
+                      <Button variant="ghost" size="sm" className="h-4 p-0 text-[10px] text-amber-600 hover:text-amber-500 dark:text-amber-400 dark:hover:text-amber-300" onClick={() => setAdjModal(folio)}>
                         Adjust
                       </Button>
                     </div>
@@ -172,10 +172,10 @@ export default function AdvancedFolioPage({ params }: { params: Promise<{ id: st
 
                 {/* Routing Rules */}
                 {folio.windowNumber === 1 && (
-                  <div className="px-5 py-3 border-b border-white/5 bg-blue-500/5">
+                  <div className="px-5 py-3 border-b border-border dark:border-white/5 bg-blue-500/10 dark:bg-blue-500/5">
                     <div className="flex justify-between items-center mb-2">
-                      <span className="text-xs font-bold text-blue-400 uppercase tracking-wider">Routing Instructions</span>
-                      <Button variant="ghost" size="sm" className="h-6 text-[10px] text-blue-400"
+                      <span className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Routing Instructions</span>
+                      <Button variant="ghost" size="sm" className="h-6 text-[10px] text-blue-600 dark:text-blue-400"
                         onClick={() => { setRoutingModal(folio); setRoutingForm({ category: 'ROOM_CHARGE', targetWindow: '2' }) }}
                       >
                         <PlusCircle className="w-3 h-3 mr-1" /> Add Rule
@@ -186,16 +186,16 @@ export default function AdvancedFolioPage({ params }: { params: Promise<{ id: st
                         {folio.routingRulesSource.map((rule: any) => {
                           const targetWindow = folios.find((f: any) => f.id === rule.targetFolioId)?.windowNumber
                           return (
-                            <div key={rule.id} className="text-xs flex items-center text-slate-300">
-                              <Badge variant="outline" className="text-[10px] py-0 border-white/10 mr-2">{rule.criteria.category}</Badge>
-                              <MoveRight className="w-3 h-3 mr-2 text-slate-500" />
+                            <div key={rule.id} className="text-xs flex items-center text-foreground dark:text-slate-300">
+                              <Badge variant="outline" className="text-[10px] py-0 border-border dark:border-white/10 mr-2">{rule.criteria.category}</Badge>
+                              <MoveRight className="w-3 h-3 mr-2 text-muted-foreground dark:text-slate-500" />
                               <span>Window {targetWindow}</span>
                             </div>
                           )
                         })}
                       </div>
                     ) : (
-                      <p className="text-xs text-slate-500">No routing applied.</p>
+                      <p className="text-xs text-muted-foreground dark:text-slate-500">No routing applied.</p>
                     )}
                   </div>
                 )}
@@ -203,14 +203,14 @@ export default function AdvancedFolioPage({ params }: { params: Promise<{ id: st
                 {/* Line Items */}
                 <div className="p-5 flex-1 overflow-y-auto">
                   {folio.lineItems?.length === 0 ? (
-                    <div className="h-32 flex flex-col items-center justify-center text-slate-500">
+                    <div className="h-32 flex flex-col items-center justify-center text-muted-foreground dark:text-slate-500">
                       <Receipt className="w-8 h-8 mb-2 opacity-20" />
                       <p className="text-sm">No charges posted.</p>
                     </div>
                   ) : (
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="text-left text-xs text-slate-500 border-b border-white/5">
+                        <tr className="text-left text-xs text-muted-foreground dark:text-slate-500 border-b border-border dark:border-white/5">
                           <th className="pb-2 font-medium">Date</th>
                           <th className="pb-2 font-medium">Description</th>
                           <th className="pb-2 font-medium text-right">Amount</th>
@@ -218,16 +218,16 @@ export default function AdvancedFolioPage({ params }: { params: Promise<{ id: st
                       </thead>
                       <tbody>
                         {folio.lineItems.map((item: any) => (
-                          <tr key={item.id} className="border-b border-white/5 last:border-0">
-                            <td className="py-3 text-slate-400 text-xs">
+                          <tr key={item.id} className="border-b border-border dark:border-white/5 last:border-0">
+                            <td className="py-3 text-muted-foreground dark:text-slate-400 text-xs">
                               {format(new Date(item.createdAt), 'MMM d, HH:mm')}
                             </td>
                             <td className="py-3">
-                              <div className="font-medium text-slate-200">{item.description}</div>
-                              <div className="text-[10px] text-slate-500">{item.category}</div>
-                              {item.isRouted && <span className="text-[10px] text-purple-400">Routed</span>}
+                              <div className="font-medium text-foreground dark:text-slate-200">{item.description}</div>
+                              <div className="text-[10px] text-muted-foreground dark:text-slate-500">{item.category}</div>
+                              {item.isRouted && <span className="text-[10px] text-purple-600 dark:text-purple-400 font-semibold">Routed</span>}
                             </td>
-                            <td className="py-3 text-right font-medium text-slate-200">
+                            <td className="py-3 text-right font-medium text-foreground dark:text-slate-200">
                               ${item.amount.toFixed(2)}
                             </td>
                           </tr>
@@ -247,10 +247,10 @@ export default function AdvancedFolioPage({ params }: { params: Promise<{ id: st
       <Dialog.Root open={chargeModal} onOpenChange={(o: boolean) => !o && setChargeModal(false)}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50" />
-          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-[#0a0a0f] border border-white/10 rounded-2xl shadow-2xl p-6 z-50">
+          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-card dark:bg-[#0a0a0f] border border-border dark:border-white/10 rounded-2xl shadow-2xl p-6 z-50">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-white">Post Charge</h2>
-              <button onClick={() => setChargeModal(false)} className="text-white/40 hover:text-white"><X className="w-5 h-5" /></button>
+              <h2 className="text-xl font-bold text-foreground dark:text-white">Post Charge</h2>
+              <button onClick={() => setChargeModal(false)} className="text-muted-foreground dark:text-white/40 hover:text-foreground dark:hover:text-white"><X className="w-5 h-5" /></button>
             </div>
             <form onSubmit={(e) => {
               e.preventDefault()
@@ -259,28 +259,28 @@ export default function AdvancedFolioPage({ params }: { params: Promise<{ id: st
               setChargeForm({ amount: '', category: 'MINIBAR', description: '' })
             }} className="space-y-4">
               <div>
-                <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-2 block">Amount ($)</label>
-                <Input type="number" step="0.01" required value={chargeForm.amount} onChange={e => setChargeForm({ ...chargeForm, amount: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white" />
+                <label className="text-xs text-muted-foreground dark:text-white/60 uppercase font-bold tracking-wider mb-2 block">Amount ($)</label>
+                <Input type="number" step="0.01" required value={chargeForm.amount} onChange={e => setChargeForm({ ...chargeForm, amount: e.target.value })} className="bg-background dark:bg-[#1a1a24] border-input dark:border-white/10 text-foreground dark:text-white" />
               </div>
               <div>
-                <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-2 block">Category</label>
-                <select value={chargeForm.category} onChange={e => setChargeForm({ ...chargeForm, category: e.target.value })} className="w-full bg-[#1a1a24] border border-white/10 rounded-lg p-2.5 text-sm text-white">
-                  <option value="MINIBAR">Minibar</option>
-                  <option value="ROOM_CHARGE">Room Charge</option>
-                  <option value="SPA">Spa</option>
-                  <option value="RESTAURANT">Restaurant</option>
-                  <option value="PHONE">Phone</option>
-                  <option value="LAUNDRY">Laundry</option>
-                  <option value="OTHER">Other</option>
+                <label className="text-xs text-muted-foreground dark:text-white/60 uppercase font-bold tracking-wider mb-2 block">Category</label>
+                <select value={chargeForm.category} onChange={e => setChargeForm({ ...chargeForm, category: e.target.value })} className="w-full bg-background dark:bg-[#1a1a24] border border-input dark:border-white/10 rounded-lg p-2.5 text-sm text-foreground dark:text-white">
+                  <option value="MINIBAR" className="bg-card dark:bg-[#1a1a1a] text-foreground dark:text-white">Minibar</option>
+                  <option value="ROOM_CHARGE" className="bg-card dark:bg-[#1a1a1a] text-foreground dark:text-white">Room Charge</option>
+                  <option value="SPA" className="bg-card dark:bg-[#1a1a1a] text-foreground dark:text-white">Spa</option>
+                  <option value="RESTAURANT" className="bg-card dark:bg-[#1a1a1a] text-foreground dark:text-white">Restaurant</option>
+                  <option value="PHONE" className="bg-card dark:bg-[#1a1a1a] text-foreground dark:text-white">Phone</option>
+                  <option value="LAUNDRY" className="bg-card dark:bg-[#1a1a1a] text-foreground dark:text-white">Laundry</option>
+                  <option value="OTHER" className="bg-card dark:bg-[#1a1a1a] text-foreground dark:text-white">Other</option>
                 </select>
               </div>
               <div>
-                <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-2 block">Description</label>
-                <Input required value={chargeForm.description} onChange={e => setChargeForm({ ...chargeForm, description: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white" placeholder="e.g. Minibar consumption" />
+                <label className="text-xs text-muted-foreground dark:text-white/60 uppercase font-bold tracking-wider mb-2 block">Description</label>
+                <Input required value={chargeForm.description} onChange={e => setChargeForm({ ...chargeForm, description: e.target.value })} className="bg-background dark:bg-[#1a1a24] border-input dark:border-white/10 text-foreground dark:text-white" placeholder="e.g. Minibar consumption" />
               </div>
-              <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
-                <Button type="button" variant="ghost" onClick={() => setChargeModal(false)}>Cancel</Button>
-                <Button type="submit" className="bg-primary text-black font-semibold"><Plus className="w-4 h-4 mr-2" /> Post Charge</Button>
+              <div className="flex justify-end gap-3 pt-4 border-t border-border dark:border-white/10">
+                <Button type="button" variant="outline" className="border-border dark:border-white/10 text-foreground dark:text-white" onClick={() => setChargeModal(false)}>Cancel</Button>
+                <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-sm"><Plus className="w-4 h-4 mr-2" /> Post Charge</Button>
               </div>
             </form>
           </Dialog.Content>
@@ -291,10 +291,10 @@ export default function AdvancedFolioPage({ params }: { params: Promise<{ id: st
       <Dialog.Root open={!!routingModal} onOpenChange={(o: boolean) => !o && setRoutingModal(null)}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50" />
-          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-[#0a0a0f] border border-white/10 rounded-2xl shadow-2xl p-6 z-50">
+          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-card dark:bg-[#0a0a0f] border border-border dark:border-white/10 rounded-2xl shadow-2xl p-6 z-50">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-white">Add Routing Rule</h2>
-              <button onClick={() => setRoutingModal(null)} className="text-white/40 hover:text-white"><X className="w-5 h-5" /></button>
+              <h2 className="text-xl font-bold text-foreground dark:text-white">Add Routing Rule</h2>
+              <button onClick={() => setRoutingModal(null)} className="text-muted-foreground dark:text-white/40 hover:text-foreground dark:hover:text-white"><X className="w-5 h-5" /></button>
             </div>
             <form onSubmit={(e) => {
               e.preventDefault()
@@ -304,22 +304,22 @@ export default function AdvancedFolioPage({ params }: { params: Promise<{ id: st
               setRoutingModal(null)
             }} className="space-y-4">
               <div>
-                <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-2 block">Charge Category to Route</label>
-                <select value={routingForm.category} onChange={e => setRoutingForm({ ...routingForm, category: e.target.value })} className="w-full bg-[#1a1a24] border border-white/10 rounded-lg p-2.5 text-sm text-white">
-                  <option value="ROOM_CHARGE">Room Charge</option>
-                  <option value="MINIBAR">Minibar</option>
-                  <option value="SPA">Spa</option>
-                  <option value="RESTAURANT">Restaurant</option>
-                  <option value="LAUNDRY">Laundry</option>
+                <label className="text-xs text-muted-foreground dark:text-white/60 uppercase font-bold tracking-wider mb-2 block">Charge Category to Route</label>
+                <select value={routingForm.category} onChange={e => setRoutingForm({ ...routingForm, category: e.target.value })} className="w-full bg-background dark:bg-[#1a1a24] border border-input dark:border-white/10 rounded-lg p-2.5 text-sm text-foreground dark:text-white">
+                  <option value="ROOM_CHARGE" className="bg-card dark:bg-[#1a1a1a] text-foreground dark:text-white">Room Charge</option>
+                  <option value="MINIBAR" className="bg-card dark:bg-[#1a1a1a] text-foreground dark:text-white">Minibar</option>
+                  <option value="SPA" className="bg-card dark:bg-[#1a1a1a] text-foreground dark:text-white">Spa</option>
+                  <option value="RESTAURANT" className="bg-card dark:bg-[#1a1a1a] text-foreground dark:text-white">Restaurant</option>
+                  <option value="LAUNDRY" className="bg-card dark:bg-[#1a1a1a] text-foreground dark:text-white">Laundry</option>
                 </select>
               </div>
               <div>
-                <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-2 block">Target Window Number</label>
-                <Input type="number" min="2" required value={routingForm.targetWindow} onChange={e => setRoutingForm({ ...routingForm, targetWindow: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white" />
+                <label className="text-xs text-muted-foreground dark:text-white/60 uppercase font-bold tracking-wider mb-2 block">Target Window Number</label>
+                <Input type="number" min="2" required value={routingForm.targetWindow} onChange={e => setRoutingForm({ ...routingForm, targetWindow: e.target.value })} className="bg-background dark:bg-[#1a1a24] border-input dark:border-white/10 text-foreground dark:text-white" />
               </div>
-              <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
-                <Button type="button" variant="ghost" onClick={() => setRoutingModal(null)}>Cancel</Button>
-                <Button type="submit" className="bg-primary text-black font-semibold"><MoveRight className="w-4 h-4 mr-2" /> Add Rule</Button>
+              <div className="flex justify-end gap-3 pt-4 border-t border-border dark:border-white/10">
+                <Button type="button" variant="outline" className="border-border dark:border-white/10 text-foreground dark:text-white" onClick={() => setRoutingModal(null)}>Cancel</Button>
+                <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-sm"><MoveRight className="w-4 h-4 mr-2" /> Add Rule</Button>
               </div>
             </form>
           </Dialog.Content>
@@ -330,13 +330,13 @@ export default function AdvancedFolioPage({ params }: { params: Promise<{ id: st
       <Dialog.Root open={!!adjModal} onOpenChange={(o: boolean) => !o && setAdjModal(null)}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50" />
-          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-[#0a0a0f] border border-amber-500/30 rounded-2xl shadow-2xl p-6 z-50">
+          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-card dark:bg-[#0a0a0f] border border-amber-500/30 rounded-2xl shadow-2xl p-6 z-50">
             <div className="flex justify-between items-center mb-6">
               <div>
-                <h2 className="text-xl font-bold text-amber-500">Financial Adjustment</h2>
-                <p className="text-xs text-amber-500/60 mt-1">Write-offs and discounts form an immutable audit trail.</p>
+                <h2 className="text-xl font-bold text-amber-600 dark:text-amber-500">Financial Adjustment</h2>
+                <p className="text-xs text-amber-600/70 dark:text-amber-500/60 mt-1">Write-offs and discounts form an immutable audit trail.</p>
               </div>
-              <button onClick={() => setAdjModal(null)} className="text-white/40 hover:text-white"><X className="w-5 h-5" /></button>
+              <button onClick={() => setAdjModal(null)} className="text-muted-foreground dark:text-white/40 hover:text-foreground dark:hover:text-white"><X className="w-5 h-5" /></button>
             </div>
             <form onSubmit={(e) => {
               e.preventDefault()
@@ -345,25 +345,25 @@ export default function AdvancedFolioPage({ params }: { params: Promise<{ id: st
               setAdjForm({ amount: '', type: 'DISCOUNT', reason: '' })
             }} className="space-y-4">
               <div>
-                <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-2 block">Amount to Deduct ($)</label>
-                <Input type="number" step="0.01" required value={adjForm.amount} onChange={e => setAdjForm({ ...adjForm, amount: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white" />
+                <label className="text-xs text-muted-foreground dark:text-white/60 uppercase font-bold tracking-wider mb-2 block">Amount to Deduct ($)</label>
+                <Input type="number" step="0.01" required value={adjForm.amount} onChange={e => setAdjForm({ ...adjForm, amount: e.target.value })} className="bg-background dark:bg-[#1a1a24] border-input dark:border-white/10 text-foreground dark:text-white" />
               </div>
               <div>
-                <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-2 block">Adjustment Type</label>
-                <select value={adjForm.type} onChange={e => setAdjForm({ ...adjForm, type: e.target.value })} className="w-full bg-[#1a1a24] border border-white/10 rounded-lg p-2.5 text-sm text-white">
-                  <option value="DISCOUNT">Discount</option>
-                  <option value="WRITE_OFF">Write-Off (Bad Debt)</option>
-                  <option value="REBATE">Service Rebate</option>
-                  <option value="LATE_FEE">Late Fee / Penalty (Negative adjustment)</option>
+                <label className="text-xs text-muted-foreground dark:text-white/60 uppercase font-bold tracking-wider mb-2 block">Adjustment Type</label>
+                <select value={adjForm.type} onChange={e => setAdjForm({ ...adjForm, type: e.target.value })} className="w-full bg-background dark:bg-[#1a1a24] border border-input dark:border-white/10 rounded-lg p-2.5 text-sm text-foreground dark:text-white">
+                  <option value="DISCOUNT" className="bg-card dark:bg-[#1a1a1a] text-foreground dark:text-white">Discount</option>
+                  <option value="WRITE_OFF" className="bg-card dark:bg-[#1a1a1a] text-foreground dark:text-white">Write-Off (Bad Debt)</option>
+                  <option value="REBATE" className="bg-card dark:bg-[#1a1a1a] text-foreground dark:text-white">Service Rebate</option>
+                  <option value="LATE_FEE" className="bg-card dark:bg-[#1a1a1a] text-foreground dark:text-white">Late Fee / Penalty (Negative adjustment)</option>
                 </select>
               </div>
               <div>
-                <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-2 block">Managerial Reason</label>
-                <Input required minLength={5} value={adjForm.reason} onChange={e => setAdjForm({ ...adjForm, reason: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white" placeholder="Reason for override..." />
+                <label className="text-xs text-muted-foreground dark:text-white/60 uppercase font-bold tracking-wider mb-2 block">Managerial Reason</label>
+                <Input required minLength={5} value={adjForm.reason} onChange={e => setAdjForm({ ...adjForm, reason: e.target.value })} className="bg-background dark:bg-[#1a1a24] border-input dark:border-white/10 text-foreground dark:text-white" placeholder="Reason for override..." />
               </div>
-              <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
-                <Button type="button" variant="ghost" onClick={() => setAdjModal(null)}>Cancel</Button>
-                <Button type="submit" className="bg-amber-600 text-white hover:bg-amber-500">Authorize Adjustment</Button>
+              <div className="flex justify-end gap-3 pt-4 border-t border-border dark:border-white/10">
+                <Button type="button" variant="outline" className="border-border dark:border-white/10 text-foreground dark:text-white" onClick={() => setAdjModal(null)}>Cancel</Button>
+                <Button type="submit" className="bg-amber-600 text-white hover:bg-amber-500 font-semibold shadow-sm">Authorize Adjustment</Button>
               </div>
             </form>
           </Dialog.Content>

@@ -130,40 +130,40 @@ export function BookingsClient({ initialBookings }: { initialBookings: Booking[]
     >
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-        <Card className="bg-[#0c0c0c] border-white/5 p-6 rounded-3xl shadow-2xl">
+        <Card className="bg-card dark:bg-[#0c0c0c] border border-border dark:border-white/5 p-6 rounded-3xl shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-[10px] text-white/20 uppercase font-black tracking-widest">Total Active</p>
-              <p className="text-2xl font-serif font-bold text-white mt-1">{statsData.total}</p>
+              <p className="text-[10px] text-muted-foreground dark:text-white/40 uppercase font-black tracking-widest">Total Active</p>
+              <p className="text-2xl font-serif font-bold text-foreground dark:text-white mt-1">{statsData.total}</p>
             </div>
             <Calendar className="w-8 h-8 text-primary" />
           </div>
         </Card>
 
-        <Card className="bg-[#0c0c0c] border-white/5 p-6 rounded-3xl shadow-2xl">
+        <Card className="bg-card dark:bg-[#0c0c0c] border border-border dark:border-white/5 p-6 rounded-3xl shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-[10px] text-white/20 uppercase font-black tracking-widest">Confirmed</p>
-              <p className="text-2xl font-serif font-bold text-emerald-500 mt-1">{statsData.confirmed}</p>
+              <p className="text-[10px] text-muted-foreground dark:text-white/40 uppercase font-black tracking-widest">Confirmed</p>
+              <p className="text-2xl font-serif font-bold text-emerald-600 dark:text-emerald-500 mt-1">{statsData.confirmed}</p>
             </div>
-            <CheckCircle className="w-8 h-8 text-emerald-500" />
+            <CheckCircle className="w-8 h-8 text-emerald-600 dark:text-emerald-500" />
           </div>
         </Card>
 
-        <Card className="bg-[#0c0c0c] border-white/5 p-6 rounded-3xl shadow-2xl">
+        <Card className="bg-card dark:bg-[#0c0c0c] border border-border dark:border-white/5 p-6 rounded-3xl shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-[10px] text-white/20 uppercase font-black tracking-widest">In Residence</p>
+              <p className="text-[10px] text-muted-foreground dark:text-white/40 uppercase font-black tracking-widest">In Residence</p>
               <p className="text-2xl font-serif font-bold text-primary mt-1">{statsData.checkedIn}</p>
             </div>
             <Bed className="w-8 h-8 text-primary" />
           </div>
         </Card>
 
-        <Card className="bg-[#0c0c0c] border-white/5 p-6 rounded-3xl shadow-2xl">
+        <Card className="bg-card dark:bg-[#0c0c0c] border border-border dark:border-white/5 p-6 rounded-3xl shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-[10px] text-white/20 uppercase font-black tracking-widest">Revenue</p>
+              <p className="text-[10px] text-muted-foreground dark:text-white/40 uppercase font-black tracking-widest">Revenue</p>
               <p className="text-2xl font-serif font-bold text-primary mt-1">
                 {formatPrice(statsData.totalRevenue)}
               </p>
@@ -176,38 +176,38 @@ export function BookingsClient({ initialBookings }: { initialBookings: Booking[]
       {/* Filters */}
       <div className="mb-8 flex flex-col md:flex-row gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/20 w-4 h-4" />
+          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground/60 dark:text-white/40 w-4 h-4" />
           <input
             type="text"
             placeholder="Search code, room, or guest name..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-12 pr-4 py-3 bg-[#0c0c0c] border border-white/5 rounded-2xl w-full text-white placeholder:text-white/20 focus:border-primary/50 transition-all outline-none"
+            className="pl-12 pr-4 py-3 bg-card dark:bg-[#0c0c0c] border border-border dark:border-white/5 rounded-2xl w-full text-foreground dark:text-white placeholder:text-muted-foreground dark:placeholder:text-white/20 focus:border-primary/50 transition-all outline-none"
           />
         </div>
 
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
-          className="px-4 py-3 bg-[#0c0c0c] border border-white/5 rounded-2xl text-white outline-none focus:border-primary/50 transition-all text-xs font-bold uppercase tracking-widest"
+          className="px-4 py-3 bg-card dark:bg-[#0c0c0c] border border-border dark:border-white/5 rounded-2xl text-foreground dark:text-white outline-none focus:border-primary/50 transition-all text-xs font-bold uppercase tracking-widest"
         >
-          <option value="all">All Status</option>
-          <option value="PENDING">Pending</option>
-          <option value="CONFIRMED">Confirmed</option>
-          <option value="CHECKED_IN">Checked In</option>
-          <option value="CHECKED_OUT">Checked Out</option>
-          <option value="CANCELLED">Cancelled</option>
+          <option value="all" className="bg-card dark:bg-[#1a1a1a] text-foreground dark:text-white">All Status</option>
+          <option value="PENDING" className="bg-card dark:bg-[#1a1a1a] text-foreground dark:text-white">Pending</option>
+          <option value="CONFIRMED" className="bg-card dark:bg-[#1a1a1a] text-foreground dark:text-white">Confirmed</option>
+          <option value="CHECKED_IN" className="bg-card dark:bg-[#1a1a1a] text-foreground dark:text-white">Checked In</option>
+          <option value="CHECKED_OUT" className="bg-card dark:bg-[#1a1a1a] text-foreground dark:text-white">Checked Out</option>
+          <option value="CANCELLED" className="bg-card dark:bg-[#1a1a1a] text-foreground dark:text-white">Cancelled</option>
         </select>
 
         <select
           value={filterPayment}
           onChange={(e) => setFilterPayment(e.target.value)}
-          className="px-4 py-3 bg-[#0c0c0c] border border-white/5 rounded-2xl text-white outline-none focus:border-primary/50 transition-all text-xs font-bold uppercase tracking-widest"
+          className="px-4 py-3 bg-card dark:bg-[#0c0c0c] border border-border dark:border-white/5 rounded-2xl text-foreground dark:text-white outline-none focus:border-primary/50 transition-all text-xs font-bold uppercase tracking-widest"
         >
-          <option value="all">All Payment</option>
-          <option value="PENDING">Pending</option>
-          <option value="PAID">Paid</option>
-          <option value="FAILED">Failed</option>
+          <option value="all" className="bg-card dark:bg-[#1a1a1a] text-foreground dark:text-white">All Payment</option>
+          <option value="PENDING" className="bg-card dark:bg-[#1a1a1a] text-foreground dark:text-white">Pending</option>
+          <option value="PAID" className="bg-card dark:bg-[#1a1a1a] text-foreground dark:text-white">Paid</option>
+          <option value="FAILED" className="bg-card dark:bg-[#1a1a1a] text-foreground dark:text-white">Failed</option>
         </select>
 
         <Button 
@@ -255,45 +255,45 @@ export function BookingsClient({ initialBookings }: { initialBookings: Booking[]
       </div>
 
       {/* Bookings Table */}
-      <Card className="bg-[#0c0c0c] border-white/5 rounded-3xl shadow-2xl overflow-hidden">
+      <Card className="bg-card dark:bg-[#0c0c0c] border border-border dark:border-white/5 rounded-3xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="bg-white/[0.02] border-b border-white/5">
-                <th className="px-8 py-4 text-left text-[10px] font-black text-white/20 uppercase tracking-widest">Booking</th>
-                <th className="px-8 py-4 text-left text-[10px] font-black text-white/20 uppercase tracking-widest">Guest</th>
-                <th className="px-8 py-4 text-left text-[10px] font-black text-white/20 uppercase tracking-widest">Room</th>
-                <th className="px-8 py-4 text-left text-[10px] font-black text-white/20 uppercase tracking-widest">Dates</th>
-                <th className="px-8 py-4 text-left text-[10px] font-black text-white/20 uppercase tracking-widest">Revenue</th>
-                <th className="px-8 py-4 text-left text-[10px] font-black text-white/20 uppercase tracking-widest">Status</th>
-                <th className="px-8 py-4 text-left text-[10px] font-black text-white/20 uppercase tracking-widest">Actions</th>
+              <tr className="bg-muted/40 dark:bg-white/[0.02] border-b border-border dark:border-white/5">
+                <th className="px-8 py-4 text-left text-[10px] font-black text-muted-foreground dark:text-white/40 uppercase tracking-widest">Booking</th>
+                <th className="px-8 py-4 text-left text-[10px] font-black text-muted-foreground dark:text-white/40 uppercase tracking-widest">Guest</th>
+                <th className="px-8 py-4 text-left text-[10px] font-black text-muted-foreground dark:text-white/40 uppercase tracking-widest">Room</th>
+                <th className="px-8 py-4 text-left text-[10px] font-black text-muted-foreground dark:text-white/40 uppercase tracking-widest">Dates</th>
+                <th className="px-8 py-4 text-left text-[10px] font-black text-muted-foreground dark:text-white/40 uppercase tracking-widest">Revenue</th>
+                <th className="px-8 py-4 text-left text-[10px] font-black text-muted-foreground dark:text-white/40 uppercase tracking-widest">Status</th>
+                <th className="px-8 py-4 text-left text-[10px] font-black text-muted-foreground dark:text-white/40 uppercase tracking-widest">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5">
+            <tbody className="divide-y divide-border/60 dark:divide-white/5">
               {filteredBookings.map((booking) => (
-                <tr key={booking.id} className="hover:bg-white/[0.02] transition-colors group">
+                <tr key={booking.id} className="hover:bg-muted/30 dark:hover:bg-white/[0.02] transition-colors group">
                   <td className="px-8 py-6">
-                    <div className="text-sm font-bold text-white group-hover:text-primary transition-colors">
+                    <div className="text-sm font-bold text-foreground dark:text-white group-hover:text-primary transition-colors">
                       {booking.confirmationCode || booking.id.slice(-8)}
                     </div>
-                    <div className="text-[10px] text-white/20 font-black uppercase tracking-tighter">
+                    <div className="text-[10px] text-muted-foreground dark:text-white/40 font-black uppercase tracking-tighter">
                       {booking.guests} GUEST{booking.guests > 1 ? 'S' : ''}
                     </div>
                   </td>
                   <td className="px-8 py-6">
-                    <div className="text-sm font-bold text-white">{booking.guest.name}</div>
-                    <div className="text-[10px] text-white/40">{booking.guest.email}</div>
+                    <div className="text-sm font-bold text-foreground dark:text-white">{booking.guest.name}</div>
+                    <div className="text-[10px] text-muted-foreground dark:text-white/40">{booking.guest.email}</div>
                   </td>
                   <td className="px-8 py-6">
-                    <div className="text-sm font-bold text-white">ROOM {booking.roomAssignments?.[0]?.room?.number || 'TBD'}</div>
-                    <div className="text-[10px] text-white/40 uppercase font-black">{booking.roomAssignments?.[0]?.room?.type || 'TBD'}</div>
+                    <div className="text-sm font-bold text-foreground dark:text-white">ROOM {booking.roomAssignments?.[0]?.room?.number || 'TBD'}</div>
+                    <div className="text-[10px] text-muted-foreground dark:text-white/40 uppercase font-black">{booking.roomAssignments?.[0]?.room?.type || 'TBD'}</div>
                   </td>
                   <td className="px-8 py-6">
-                    <div className="text-xs text-white">{formatDate(booking.checkIn)}</div>
-                    <div className="text-[10px] text-white/20">TO {formatDate(booking.checkOut)}</div>
+                    <div className="text-xs text-foreground dark:text-white">{formatDate(booking.checkIn)}</div>
+                    <div className="text-[10px] text-muted-foreground dark:text-white/40">TO {formatDate(booking.checkOut)}</div>
                   </td>
                   <td className="px-8 py-6">
-                    <div className="text-sm font-serif font-bold text-white">{formatPrice(booking.totalAmount)}</div>
+                    <div className="text-sm font-serif font-bold text-foreground dark:text-white">{formatPrice(booking.totalAmount)}</div>
                     <div className={cn("text-[10px] font-black uppercase", getPaymentStatusColor(booking.paymentStatus))}>
                       {booking.paymentStatus}
                     </div>
@@ -306,19 +306,19 @@ export function BookingsClient({ initialBookings }: { initialBookings: Booking[]
                   <td className="px-8 py-6">
                     <div className="flex gap-2">
                       {booking.status === 'PENDING' && (
-                        <Button size="sm" className="bg-primary hover:bg-primary/90 text-black rounded-xl text-[10px] font-black uppercase tracking-widest h-8 px-4" onClick={() => handleStatusUpdate(booking.id, 'CONFIRMED')}>
+                        <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl text-[10px] font-black uppercase tracking-widest h-8 px-4 font-semibold shadow-sm" onClick={() => handleStatusUpdate(booking.id, 'CONFIRMED')}>
                           Confirm
                         </Button>
                       )}
                       {booking.status === 'CONFIRMED' && (
-                        <Button size="sm" className="bg-primary hover:bg-primary/90 text-black rounded-xl text-[10px] font-black uppercase tracking-widest h-8 px-4" onClick={() => handleStatusUpdate(booking.id, 'CHECKED_IN')}>
+                        <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl text-[10px] font-black uppercase tracking-widest h-8 px-4 font-semibold shadow-sm" onClick={() => handleStatusUpdate(booking.id, 'CHECKED_IN')}>
                           Check In
                         </Button>
                       )}
                       {booking.status === 'CHECKED_IN' && (
                         <Button 
                           size="sm" 
-                          className="bg-primary hover:bg-primary/90 text-black rounded-xl text-[10px] font-black uppercase tracking-widest h-8 px-4" 
+                          className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl text-[10px] font-black uppercase tracking-widest h-8 px-4 font-semibold shadow-sm" 
                           onClick={() => {
                             const isPaid = booking.paymentStatus?.toLowerCase() === 'completed' || booking.paymentStatus?.toLowerCase() === 'paid'
                             if (!isPaid) {
@@ -342,9 +342,9 @@ export function BookingsClient({ initialBookings }: { initialBookings: Booking[]
 
         {filteredBookings.length === 0 && (
           <div className="p-20 text-center">
-            <Calendar className="w-16 h-16 mx-auto text-white/10 mb-6" />
-            <h3 className="text-xl font-serif font-bold text-white mb-2">No reservations found</h3>
-            <p className="text-white/40 text-sm max-w-xs mx-auto">
+            <Calendar className="w-16 h-16 mx-auto text-muted-foreground/30 dark:text-white/10 mb-6" />
+            <h3 className="text-xl font-serif font-bold text-foreground dark:text-white mb-2">No reservations found</h3>
+            <p className="text-muted-foreground dark:text-white/40 text-sm max-w-xs mx-auto">
               We couldn't find any bookings matching your current filters. Try broadening your search criteria.
             </p>
           </div>
@@ -353,17 +353,17 @@ export function BookingsClient({ initialBookings }: { initialBookings: Booking[]
 
       {/* Checkout Confirmation Dialog */}
       <Dialog open={checkoutDialog.isOpen} onOpenChange={(o) => setCheckoutDialog(prev => ({...prev, isOpen: o}))}>
-        <DialogContent className="bg-[#111] border-white/10 text-white">
+        <DialogContent className="bg-card dark:bg-[#111] border border-border dark:border-white/10 text-foreground dark:text-white shadow-2xl">
           <DialogHeader>
-            <DialogTitle>Confirm Checkout</DialogTitle>
-            <DialogDescription className="text-white/60">
+            <DialogTitle className="text-foreground dark:text-white">Confirm Checkout</DialogTitle>
+            <DialogDescription className="text-muted-foreground dark:text-white/60">
               Are you sure you want to checkout {checkoutDialog.booking?.guest?.name}? This will mark Room {checkoutDialog.booking?.roomAssignments?.[0]?.room?.number || 'TBD'} as needing cleaning.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-6 gap-3 sm:justify-start">
-            <Button variant="ghost" className="hover:bg-white/10" onClick={() => setCheckoutDialog({ isOpen: false, booking: null })}>Cancel</Button>
+            <Button variant="outline" className="border-border dark:border-white/10 text-foreground dark:text-white" onClick={() => setCheckoutDialog({ isOpen: false, booking: null })}>Cancel</Button>
             <Button 
-              className="bg-primary text-black" 
+              className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-sm" 
               onClick={() => {
                 if (checkoutDialog.booking) {
                   handleStatusUpdate(checkoutDialog.booking.id, 'CHECKED_OUT')

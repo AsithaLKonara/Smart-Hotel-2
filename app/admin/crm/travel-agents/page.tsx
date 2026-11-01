@@ -195,15 +195,15 @@ export default function TravelAgentCRMPage() {
       
       <div className="flex flex-col md:flex-row gap-4 mb-8">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground dark:text-white/50" />
           <Input 
             placeholder="Search agencies by name, email, or IATA..." 
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-10 bg-white/5 border-white/10 text-white w-full"
+            className="pl-10 bg-card dark:bg-white/5 border-border dark:border-white/10 text-foreground dark:text-white w-full shadow-sm"
           />
         </div>
-        <Button onClick={() => { resetForm(); setShowAddModal(true); }} className="bg-primary text-black font-semibold flex items-center gap-2">
+        <Button onClick={() => { resetForm(); setShowAddModal(true); }} className="bg-primary text-primary-foreground font-semibold flex items-center gap-2 shadow-sm">
             <Plus className="w-4 h-4" /> Add Agent
         </Button>
       </div>
@@ -213,47 +213,47 @@ export default function TravelAgentCRMPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {filteredAgents.map((agent: any) => (
-            <Card key={agent.id} className="bg-white/5 border-white/10 hover:border-white/20 transition-colors shadow-2xl flex flex-col group">
+            <Card key={agent.id} className="bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] hover:border-border/80 dark:hover:border-white/20 transition-colors shadow-sm flex flex-col group">
               <CardContent className="p-6 flex flex-col gap-3 flex-1">
                 <div className="flex justify-between items-start">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
                       <Plane className="w-5 h-5 text-primary" />
                     </div>
                     <div>
-                      <h3 className="font-bold text-white text-lg leading-none">{agent.agencyName}</h3>
-                      <p className="text-xs text-slate-400 mt-1 uppercase tracking-widest">{agent.isActive ? 'Active' : 'Inactive'}</p>
+                      <h3 className="font-bold text-foreground dark:text-white text-lg leading-none">{agent.agencyName}</h3>
+                      <p className="text-xs text-muted-foreground dark:text-slate-400 mt-1 uppercase tracking-widest">{agent.isActive ? 'Active' : 'Inactive'}</p>
                     </div>
                   </div>
                   {agent.commissionRate !== null && (
-                    <span className="bg-primary/20 text-primary border border-primary/30 px-3 py-1 rounded-full text-xs font-bold">
+                    <span className="bg-primary/10 text-primary border border-primary/20 px-3 py-1 rounded-full text-xs font-bold">
                         {agent.commissionRate}% Comm
                     </span>
                   )}
                 </div>
                 
-                <div className="mt-2 bg-[#1a1a24] rounded-xl p-4 border border-white/5">
+                <div className="mt-2 bg-muted/40 dark:bg-[#1a1a24] rounded-xl p-4 border border-border dark:border-white/5">
                   <div className="flex justify-between items-start mb-2">
-                    <p className="text-sm font-semibold text-white/90">{agent.contactName}</p>
-                    {agent.iataNumber && <span className="text-[10px] bg-white/10 text-white/70 px-2 py-0.5 rounded font-mono border border-white/10">IATA: {agent.iataNumber}</span>}
+                    <p className="text-sm font-semibold text-foreground dark:text-white/90">{agent.contactName}</p>
+                    {agent.iataNumber && <span className="text-[10px] bg-muted dark:bg-white/10 text-foreground dark:text-white/70 px-2 py-0.5 rounded font-mono border border-border dark:border-white/10">IATA: {agent.iataNumber}</span>}
                   </div>
-                  <p className="text-xs text-white/50">{agent.contactEmail}</p>
-                  {agent.contactPhone && <p className="text-xs text-white/50 mt-0.5">{agent.contactPhone}</p>}
+                  <p className="text-xs text-muted-foreground dark:text-white/50">{agent.contactEmail}</p>
+                  {agent.contactPhone && <p className="text-xs text-muted-foreground dark:text-white/50 mt-0.5">{agent.contactPhone}</p>}
                 </div>
 
-                <div className="flex items-center justify-between mt-auto pt-4 border-t border-white/10">
+                <div className="flex items-center justify-between mt-auto pt-4 border-t border-border dark:border-white/10">
                   <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4 text-white/40" />
-                    <span className="text-sm text-white/70">{agent._count?.users || 0} Sub-agents</span>
+                    <Users className="w-4 h-4 text-muted-foreground dark:text-white/40" />
+                    <span className="text-sm text-muted-foreground dark:text-white/70">{agent._count?.users || 0} Sub-agents</span>
                   </div>
                   <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button variant="ghost" size="icon" onClick={() => openCommission(agent)} className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30" title="Commissions">
+                    <Button variant="ghost" size="icon" onClick={() => openCommission(agent)} className="w-8 h-8 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20" title="Commissions">
                       <DollarSign className="w-4 h-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => openEdit(agent)} className="w-8 h-8 rounded-full bg-white/10 text-white hover:bg-white/20" title="Edit">
+                    <Button variant="ghost" size="icon" onClick={() => openEdit(agent)} className="w-8 h-8 rounded-full bg-muted dark:bg-white/10 text-foreground dark:text-white hover:bg-muted/80 dark:hover:bg-white/20" title="Edit">
                       <Edit2 className="w-4 h-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => openDelete(agent)} className="w-8 h-8 rounded-full bg-rose-500/20 text-rose-400 hover:bg-rose-500/30" title="Delete">
+                    <Button variant="ghost" size="icon" onClick={() => openDelete(agent)} className="w-8 h-8 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20" title="Delete">
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
@@ -262,7 +262,7 @@ export default function TravelAgentCRMPage() {
             </Card>
           ))}
           {filteredAgents.length === 0 && (
-            <div className="text-white/50 p-12 bg-white/5 rounded-xl border-2 border-dashed border-white/10 text-center col-span-full">
+            <div className="text-muted-foreground dark:text-white/50 p-12 bg-card dark:bg-white/5 rounded-xl border-2 border-dashed border-border dark:border-white/10 text-center col-span-full shadow-sm">
               No travel agents found.
             </div>
           )}
@@ -274,52 +274,52 @@ export default function TravelAgentCRMPage() {
          if (!open) { setShowAddModal(false); setShowEditModal(false); }
       }}>
         <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50" />
-          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-[#0a0a0f] border border-white/10 rounded-2xl shadow-2xl p-6 z-50">
-            <h2 className="text-2xl font-bold text-white mb-6">{showEditModal ? 'Edit Travel Agent' : 'Register Travel Agent'}</h2>
+          <Dialog.Overlay className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm z-50" />
+          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-card dark:bg-[#0a0a0f] border border-border dark:border-white/10 rounded-2xl shadow-2xl p-6 z-50">
+            <h2 className="text-2xl font-bold text-foreground dark:text-white mb-6">{showEditModal ? 'Edit Travel Agent' : 'Register Travel Agent'}</h2>
             <form onSubmit={showEditModal ? handleEdit : handleCreate} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-bold text-white/60 uppercase tracking-wider mb-2 block">Agency Name</label>
-                  <Input required value={formData.agencyName} onChange={e=>setFormData({...formData, agencyName: e.target.value})} className="bg-[#1a1a24] border-white/10 text-white" />
+                  <label className="text-xs font-bold text-muted-foreground dark:text-white/60 uppercase tracking-wider mb-2 block">Agency Name</label>
+                  <Input required value={formData.agencyName} onChange={e=>setFormData({...formData, agencyName: e.target.value})} className="bg-background dark:bg-[#1a1a24] border-input dark:border-white/10 text-foreground dark:text-white" />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-white/60 uppercase tracking-wider mb-2 block">IATA Number</label>
-                  <Input value={formData.iataNumber} onChange={e=>setFormData({...formData, iataNumber: e.target.value})} className="bg-[#1a1a24] border-white/10 text-white font-mono" placeholder="Optional" />
+                  <label className="text-xs font-bold text-muted-foreground dark:text-white/60 uppercase tracking-wider mb-2 block">IATA Number</label>
+                  <Input value={formData.iataNumber} onChange={e=>setFormData({...formData, iataNumber: e.target.value})} className="bg-background dark:bg-[#1a1a24] border-input dark:border-white/10 text-foreground dark:text-white font-mono" placeholder="Optional" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-bold text-white/60 uppercase tracking-wider mb-2 block">Contact Name</label>
-                  <Input required value={formData.contactName} onChange={e=>setFormData({...formData, contactName: e.target.value})} className="bg-[#1a1a24] border-white/10 text-white" />
+                  <label className="text-xs font-bold text-muted-foreground dark:text-white/60 uppercase tracking-wider mb-2 block">Contact Name</label>
+                  <Input required value={formData.contactName} onChange={e=>setFormData({...formData, contactName: e.target.value})} className="bg-background dark:bg-[#1a1a24] border-input dark:border-white/10 text-foreground dark:text-white" />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-white/60 uppercase tracking-wider mb-2 block">Contact Phone</label>
-                  <Input value={formData.contactPhone} onChange={e=>setFormData({...formData, contactPhone: e.target.value})} className="bg-[#1a1a24] border-white/10 text-white" />
+                  <label className="text-xs font-bold text-muted-foreground dark:text-white/60 uppercase tracking-wider mb-2 block">Contact Phone</label>
+                  <Input value={formData.contactPhone} onChange={e=>setFormData({...formData, contactPhone: e.target.value})} className="bg-background dark:bg-[#1a1a24] border-input dark:border-white/10 text-foreground dark:text-white" />
                 </div>
               </div>
               <div>
-                <label className="text-xs font-bold text-white/60 uppercase tracking-wider mb-2 block">Contact Email</label>
-                <Input type="email" required value={formData.contactEmail} onChange={e=>setFormData({...formData, contactEmail: e.target.value})} className="bg-[#1a1a24] border-white/10 text-white" />
+                <label className="text-xs font-bold text-muted-foreground dark:text-white/60 uppercase tracking-wider mb-2 block">Contact Email</label>
+                <Input type="email" required value={formData.contactEmail} onChange={e=>setFormData({...formData, contactEmail: e.target.value})} className="bg-background dark:bg-[#1a1a24] border-input dark:border-white/10 text-foreground dark:text-white" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-bold text-white/60 uppercase tracking-wider mb-2 block">Commission Rate (%)</label>
-                  <Input type="number" step="0.1" min="0" max="100" placeholder="e.g. 10.0" value={formData.commissionRate} onChange={e=>setFormData({...formData, commissionRate: e.target.value})} className="bg-[#1a1a24] border-white/10 text-white" />
+                  <label className="text-xs font-bold text-muted-foreground dark:text-white/60 uppercase tracking-wider mb-2 block">Commission Rate (%)</label>
+                  <Input type="number" step="0.1" min="0" max="100" placeholder="e.g. 10.0" value={formData.commissionRate} onChange={e=>setFormData({...formData, commissionRate: e.target.value})} className="bg-background dark:bg-[#1a1a24] border-input dark:border-white/10 text-foreground dark:text-white" />
                 </div>
                 {showEditModal && (
                   <div>
-                    <label className="text-xs font-bold text-white/60 uppercase tracking-wider mb-2 block">Status</label>
+                    <label className="text-xs font-bold text-muted-foreground dark:text-white/60 uppercase tracking-wider mb-2 block">Status</label>
                     <div className="flex items-center gap-2 mt-2">
-                       <input type="checkbox" checked={formData.isActive} onChange={e=>setFormData({...formData, isActive: e.target.checked})} className="w-4 h-4 rounded border-white/20 bg-transparent text-primary" />
-                       <span className="text-sm text-white">Active</span>
+                       <input type="checkbox" checked={formData.isActive} onChange={e=>setFormData({...formData, isActive: e.target.checked})} className="w-4 h-4 rounded border-border dark:border-white/20 bg-transparent text-primary" />
+                       <span className="text-sm text-foreground dark:text-white">Active</span>
                     </div>
                   </div>
                 )}
               </div>
-              <div className="flex justify-end gap-3 pt-6 border-t border-white/10 mt-6">
+              <div className="flex justify-end gap-3 pt-6 border-t border-border dark:border-white/10 mt-6">
                 <Button type="button" variant="ghost" onClick={() => { setShowAddModal(false); setShowEditModal(false); }}>Cancel</Button>
-                <Button type="submit" className="bg-primary text-black font-semibold">{showEditModal ? 'Save Changes' : 'Register Agent'}</Button>
+                <Button type="submit" className="bg-primary text-primary-foreground font-semibold">{showEditModal ? 'Save Changes' : 'Register Agent'}</Button>
               </div>
             </form>
           </Dialog.Content>
@@ -329,10 +329,10 @@ export default function TravelAgentCRMPage() {
       {/* Delete Confirmation Modal */}
       <Dialog.Root open={showDeleteModal} onOpenChange={setShowDeleteModal}>
         <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50" />
-          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-[#0a0a0f] border border-rose-500/30 rounded-2xl shadow-2xl p-6 z-50">
-            <h2 className="text-xl font-bold text-white mb-2">Delete Travel Agent</h2>
-            <p className="text-sm text-white/70 mb-6">Are you sure you want to delete <strong>{selectedAgent?.agencyName}</strong>? This action cannot be undone. If the agent has active users or bookings, they will be deactivated instead.</p>
+          <Dialog.Overlay className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm z-50" />
+          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-card dark:bg-[#0a0a0f] border border-rose-500/30 rounded-2xl shadow-2xl p-6 z-50">
+            <h2 className="text-xl font-bold text-foreground dark:text-white mb-2">Delete Travel Agent</h2>
+            <p className="text-sm text-muted-foreground dark:text-white/70 mb-6">Are you sure you want to delete <strong>{selectedAgent?.agencyName}</strong>? This action cannot be undone. If the agent has active users or bookings, they will be deactivated instead.</p>
             <div className="flex justify-end gap-3">
               <Button variant="ghost" onClick={() => setShowDeleteModal(false)}>Cancel</Button>
               <Button onClick={handleDelete} className="bg-rose-500 text-white hover:bg-rose-600">Delete Agent</Button>
@@ -344,17 +344,17 @@ export default function TravelAgentCRMPage() {
       {/* Commission Settlement Modal */}
       <Dialog.Root open={showCommissionModal} onOpenChange={setShowCommissionModal}>
         <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50" />
-          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-[#0a0a0f] border border-white/10 rounded-2xl shadow-2xl p-6 z-50">
-            <h2 className="text-2xl font-bold text-white mb-1">Commission Settlement</h2>
-            <p className="text-sm text-slate-400 mb-6">Calculate commissions for <strong>{selectedAgent?.agencyName}</strong> ({selectedAgent?.commissionRate}% rate).</p>
+          <Dialog.Overlay className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm z-50" />
+          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-card dark:bg-[#0a0a0f] border border-border dark:border-white/10 rounded-2xl shadow-2xl p-6 z-50">
+            <h2 className="text-2xl font-bold text-foreground dark:text-white mb-1">Commission Settlement</h2>
+            <p className="text-sm text-muted-foreground dark:text-slate-400 mb-6">Calculate commissions for <strong>{selectedAgent?.agencyName}</strong> ({selectedAgent?.commissionRate}% rate).</p>
             
             <form onSubmit={handleSettleCommission} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-bold text-white/60 uppercase tracking-wider mb-2 block">Month</label>
+                  <label className="text-xs font-bold text-muted-foreground dark:text-white/60 uppercase tracking-wider mb-2 block">Month</label>
                   <select 
-                    className="w-full bg-[#1a1a24] border border-white/10 rounded-lg p-2.5 text-sm text-white focus:ring-1 focus:ring-primary outline-none"
+                    className="w-full bg-background dark:bg-[#1a1a24] border border-input dark:border-white/10 rounded-lg p-2.5 text-sm text-foreground dark:text-white focus:ring-1 focus:ring-primary outline-none"
                     value={commissionData.month}
                     onChange={(e) => setCommissionData({...commissionData, month: parseInt(e.target.value)})}
                   >
@@ -364,8 +364,8 @@ export default function TravelAgentCRMPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-white/60 uppercase tracking-wider mb-2 block">Year</label>
-                  <Input type="number" required value={commissionData.year} onChange={e=>setCommissionData({...commissionData, year: parseInt(e.target.value)})} className="bg-[#1a1a24] border-white/10 text-white" />
+                  <label className="text-xs font-bold text-muted-foreground dark:text-white/60 uppercase tracking-wider mb-2 block">Year</label>
+                  <Input type="number" required value={commissionData.year} onChange={e=>setCommissionData({...commissionData, year: parseInt(e.target.value)})} className="bg-background dark:bg-[#1a1a24] border-input dark:border-white/10 text-foreground dark:text-white" />
                 </div>
               </div>
               
@@ -375,26 +375,26 @@ export default function TravelAgentCRMPage() {
             </form>
 
             {commissionData.settlementResult && (
-              <div className="mt-6 p-4 bg-[#1a1a24] border border-white/5 rounded-xl space-y-3">
+              <div className="mt-6 p-4 bg-muted/40 dark:bg-[#1a1a24] border border-border dark:border-white/5 rounded-xl space-y-3">
                  {commissionData.settlementResult.data ? (
                     <>
-                      <h3 className="font-bold text-emerald-400 text-lg border-b border-white/10 pb-2 mb-2">Settlement Summary</h3>
+                      <h3 className="font-bold text-emerald-600 dark:text-emerald-400 text-lg border-b border-border dark:border-white/10 pb-2 mb-2">Settlement Summary</h3>
                       <div className="flex justify-between text-sm">
-                        <span className="text-slate-400">Commissionable Bookings</span>
-                        <span className="font-bold text-white">{commissionData.settlementResult.data.bookingsCount}</span>
+                        <span className="text-muted-foreground dark:text-slate-400">Commissionable Bookings</span>
+                        <span className="font-bold text-foreground dark:text-white">{commissionData.settlementResult.data.bookingsCount}</span>
                       </div>
                       <div className="flex justify-between text-sm">
-                        <span className="text-slate-400">Total Room Revenue</span>
-                        <span className="font-bold text-white">${commissionData.settlementResult.data.totalRoomRevenue.toFixed(2)}</span>
+                        <span className="text-muted-foreground dark:text-slate-400">Total Room Revenue</span>
+                        <span className="font-bold text-foreground dark:text-white">${commissionData.settlementResult.data.totalRoomRevenue.toFixed(2)}</span>
                       </div>
-                      <div className="flex justify-between text-sm mt-2 pt-2 border-t border-white/5">
-                        <span className="text-slate-400 font-bold uppercase tracking-wider text-xs">Total Commission Payout</span>
-                        <span className="font-black text-emerald-400">${commissionData.settlementResult.data.totalCommission.toFixed(2)}</span>
+                      <div className="flex justify-between text-sm mt-2 pt-2 border-t border-border dark:border-white/5">
+                        <span className="text-muted-foreground dark:text-slate-400 font-bold uppercase tracking-wider text-xs">Total Commission Payout</span>
+                        <span className="font-black text-emerald-600 dark:text-emerald-400">${commissionData.settlementResult.data.totalCommission.toFixed(2)}</span>
                       </div>
-                      <p className="text-[10px] text-slate-500 text-center mt-2">This transaction has been logged in the system audit logs.</p>
+                      <p className="text-[10px] text-muted-foreground dark:text-slate-500 text-center mt-2">This transaction has been logged in the system audit logs.</p>
                     </>
                  ) : (
-                    <div className="text-center py-4 text-slate-400">
+                    <div className="text-center py-4 text-muted-foreground dark:text-slate-400">
                        {commissionData.settlementResult.message || 'No data found.'}
                     </div>
                  )}

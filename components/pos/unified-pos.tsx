@@ -306,37 +306,37 @@ export default function UnifiedPOS({ role }: { role: string }) {
   }
 
   return (
-    <div className="flex relative h-[calc(100vh-80px)] overflow-hidden bg-[#090A0C] text-zinc-100 print-container print:bg-white print:text-black">
+    <div className="flex relative h-[calc(100vh-80px)] overflow-hidden bg-background dark:bg-[#090A0C] text-foreground dark:text-zinc-100 print-container print:bg-white print:text-black">
       
       {/* Mobile Overlay for Guest Sidebar */}
       {showGuestSidebar && <div className="fixed inset-0 bg-black/80 z-40 lg:hidden" onClick={() => setShowGuestSidebar(false)} />}
       
       {/* 1. LEFT COLUMN: Active Guests */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-[300px] bg-[#090A0C] border-r border-[#1C2025] flex flex-col hide-on-print transition-transform duration-300 lg:static lg:translate-x-0 ${showGuestSidebar ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div className="p-4 border-b border-[#1C2025] bg-[#090A0C] flex justify-between items-center">
+      <div className={`fixed inset-y-0 left-0 z-50 w-[300px] bg-card dark:bg-[#090A0C] border-r border-border dark:border-[#1C2025] flex flex-col hide-on-print transition-transform duration-300 lg:static lg:translate-x-0 ${showGuestSidebar ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="p-4 border-b border-border dark:border-[#1C2025] bg-muted/40 dark:bg-[#090A0C] flex justify-between items-center">
           <div>
-            <h2 className="text-sm font-bold flex items-center gap-2 text-white">
-              <Bed className="w-4 h-4 text-zinc-400" /> Active Guests
+            <h2 className="text-sm font-bold flex items-center gap-2 text-foreground dark:text-white">
+              <Bed className="w-4 h-4 text-muted-foreground dark:text-zinc-400" /> Active Guests
             </h2>
-            <p className="text-[11px] text-zinc-500 mt-0.5 font-mono">{filteredBookings.length} rooms checked in</p>
+            <p className="text-[11px] text-muted-foreground dark:text-zinc-500 mt-0.5 font-mono">{filteredBookings.length} rooms checked in</p>
           </div>
-          <Button variant="ghost" size="icon" className="lg:hidden text-zinc-400 hover:text-white" onClick={() => setShowGuestSidebar(false)} aria-label="Close guest sidebar">
+          <Button variant="ghost" size="icon" className="lg:hidden text-muted-foreground dark:text-zinc-400 hover:text-foreground dark:hover:text-white" onClick={() => setShowGuestSidebar(false)} aria-label="Close guest sidebar">
             <X className="w-4 h-4" />
           </Button>
         </div>
-        <div className="p-3 border-b border-[#1C2025] space-y-2.5">
+        <div className="p-3 border-b border-border dark:border-[#1C2025] space-y-2.5">
           <div className="relative">
-            <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-zinc-500" />
+            <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-muted-foreground dark:text-zinc-500" />
             <input 
               placeholder="Search room or guest..." 
               value={searchGuest}
               onChange={(e) => setSearchGuest(e.target.value)}
-              className="pl-9 h-9 bg-[#181A1D] border border-[#2B3037] text-white text-xs placeholder-zinc-500 rounded-lg w-full focus:outline-none focus:border-zinc-500 transition-colors"
+              className="pl-9 h-9 bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] text-foreground dark:text-white text-xs placeholder:text-muted-foreground dark:placeholder-zinc-500 rounded-lg w-full focus:outline-none focus:border-ring dark:focus:border-zinc-500 transition-colors"
             />
           </div>
           <button 
             type="button"
-            className="w-full bg-[#141619] hover:bg-[#1A1D21] border border-[#2B3037] text-zinc-200 text-xs font-semibold py-2 rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-sm"
+            className="w-full bg-muted/40 hover:bg-muted dark:bg-[#141619] dark:hover:bg-[#1A1D21] border border-border dark:border-[#2B3037] text-foreground dark:text-zinc-200 text-xs font-semibold py-2 rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-sm"
             onClick={() => {
               setSelectedBooking(null)
               setActiveTab('cart')
@@ -347,9 +347,9 @@ export default function UnifiedPOS({ role }: { role: string }) {
         </div>
         <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-2.5 custom-scrollbar">
           {bookingsLoading ? (
-            <div className="text-center text-zinc-500 font-mono text-xs mt-6">Loading guests...</div>
+            <div className="text-center text-muted-foreground dark:text-zinc-500 font-mono text-xs mt-6">Loading guests...</div>
           ) : filteredBookings.length === 0 ? (
-            <div className="text-center text-zinc-500 font-mono text-xs mt-6">No matching guests.</div>
+            <div className="text-center text-muted-foreground dark:text-zinc-500 font-mono text-xs mt-6">No matching guests.</div>
           ) : (
             filteredBookings.map((booking: any) => {
               const assignment = booking.roomAssignments?.[0]
@@ -364,8 +364,8 @@ export default function UnifiedPOS({ role }: { role: string }) {
                   key={booking.id} 
                   className={`p-3.5 rounded-xl border transition-all cursor-pointer ${
                     isSelected 
-                      ? 'bg-[#181A1D] border-[#2B3037] shadow-sm' 
-                      : 'bg-[#121417] border-[#1E2227] hover:border-zinc-600 hover:bg-[#16181B]'
+                      ? 'bg-primary/10 border-primary text-foreground dark:bg-[#181A1D] dark:border-[#2B3037] shadow-sm' 
+                      : 'bg-card dark:bg-[#121417] border-border dark:border-[#1E2227] hover:border-border/80 dark:hover:border-zinc-600 hover:bg-muted/30 dark:hover:bg-[#16181B]'
                   }`}
                   onClick={() => {
                     setSelectedBooking(booking)
@@ -373,15 +373,15 @@ export default function UnifiedPOS({ role }: { role: string }) {
                   }}
                 >
                   <div className="flex justify-between items-center mb-1">
-                    <span className="font-bold text-sm text-white font-mono">Room {roomNumber}</span>
-                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[#181A1D] text-zinc-400 border border-[#2B3037]">{roomTypeName}</span>
+                    <span className="font-bold text-sm text-foreground dark:text-white font-mono">Room {roomNumber}</span>
+                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-muted dark:bg-[#181A1D] text-muted-foreground dark:text-zinc-400 border border-border dark:border-[#2B3037]">{roomTypeName}</span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-xs text-zinc-300">
-                    <User className="w-3 h-3 text-zinc-500" /> {booking.guest?.name || 'Guest'}
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground dark:text-zinc-300">
+                    <User className="w-3 h-3 text-muted-foreground dark:text-zinc-500" /> {booking.guest?.name || 'Guest'}
                   </div>
-                  <div className="flex justify-between items-center mt-2 pt-2 border-t border-[#1C2025] text-[11px]">
-                    <span className="text-zinc-500">Folio Balance:</span>
-                    <span className={`font-mono font-bold ${bBalance > 0 ? 'text-amber-400' : 'text-emerald-400'}`}>
+                  <div className="flex justify-between items-center mt-2 pt-2 border-t border-border dark:border-[#1C2025] text-[11px]">
+                    <span className="text-muted-foreground dark:text-zinc-500">Folio Balance:</span>
+                    <span className={`font-mono font-bold ${bBalance > 0 ? 'text-amber-500 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
                       ${bBalance.toFixed(2)}
                     </span>
                   </div>
@@ -394,30 +394,30 @@ export default function UnifiedPOS({ role }: { role: string }) {
       </div>
 
       {/* 2. MIDDLE COLUMN: POS Catalog / Items */}
-      <div className="flex-1 flex flex-col border-r border-[#1C2025] hide-on-print w-full lg:w-auto bg-[#090A0C]">
-        <div className="p-4 border-b border-[#1C2025] bg-[#090A0C]">
+      <div className="flex-1 flex flex-col border-r border-border dark:border-[#1C2025] hide-on-print w-full lg:w-auto bg-background dark:bg-[#090A0C]">
+        <div className="p-4 border-b border-border dark:border-[#1C2025] bg-muted/40 dark:bg-[#090A0C]">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 gap-3">
             <div className="flex justify-between items-center w-full sm:w-auto">
-              <h2 className="text-sm font-bold flex items-center gap-2 text-white">
-                <ShoppingCart className="w-4 h-4 text-zinc-400" /> {role === 'KITCHEN' ? 'Kitchen Catalog' : 'POS Catalog'}
+              <h2 className="text-sm font-bold flex items-center gap-2 text-foreground dark:text-white">
+                <ShoppingCart className="w-4 h-4 text-muted-foreground dark:text-zinc-400" /> {role === 'KITCHEN' ? 'Kitchen Catalog' : 'POS Catalog'}
               </h2>
               <div className="flex gap-2 lg:hidden">
-                <Button variant="outline" size="icon" onClick={() => setShowGuestSidebar(true)} className="bg-[#141619] border-[#2B3037] text-zinc-300" aria-label="Open guest list">
+                <Button variant="outline" size="icon" onClick={() => setShowGuestSidebar(true)} className="bg-muted dark:bg-[#141619] border-border dark:border-[#2B3037] text-foreground dark:text-zinc-300" aria-label="Open guest list">
                   <Bed className="w-4 h-4" />
                 </Button>
-                <Button variant="outline" size="icon" onClick={() => setShowCartSidebar(true)} className="bg-[#181A1D] border-[#2B3037] text-white relative" aria-label="Open cart">
+                <Button variant="outline" size="icon" onClick={() => setShowCartSidebar(true)} className="bg-card dark:bg-[#181A1D] border-border dark:border-[#2B3037] text-foreground dark:text-white relative" aria-label="Open cart">
                   <ShoppingCart className="w-4 h-4" />
-                  {posCart.length > 0 && <span className="absolute -top-1 -right-1 bg-white text-black font-bold text-[9px] rounded-full w-4 h-4 flex items-center justify-center">{posCart.length}</span>}
+                  {posCart.length > 0 && <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground font-bold text-[9px] rounded-full w-4 h-4 flex items-center justify-center">{posCart.length}</span>}
                 </Button>
               </div>
             </div>
             <div className="relative w-full sm:w-64">
-              <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-zinc-500" />
+              <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-muted-foreground dark:text-zinc-500" />
               <input 
                 placeholder="Search catalog items..." 
                 value={searchPos}
                 onChange={(e) => setSearchPos(e.target.value)}
-                className="pl-9 h-9 bg-[#181A1D] border border-[#2B3037] text-white text-xs placeholder-zinc-500 rounded-lg w-full focus:outline-none focus:border-zinc-500 transition-colors"
+                className="pl-9 h-9 bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] text-foreground dark:text-white text-xs placeholder:text-muted-foreground dark:placeholder-zinc-500 rounded-lg w-full focus:outline-none focus:border-ring dark:focus:border-zinc-500 transition-colors"
               />
             </div>
           </div>
@@ -433,8 +433,8 @@ export default function UnifiedPOS({ role }: { role: string }) {
                     onClick={() => setCategoryFilter(cat)}
                     className={`h-8 text-xs font-medium px-3 rounded-lg whitespace-nowrap flex-shrink-0 transition-colors border ${
                       isActive 
-                        ? 'bg-[#181A1D] text-white border-[#2B3037] shadow-sm font-semibold' 
-                        : 'bg-[#141619] hover:bg-[#181A1D] text-zinc-400 hover:text-zinc-200 border-[#1E2227]'
+                        ? 'bg-primary text-primary-foreground border-primary shadow-sm font-semibold' 
+                        : 'bg-muted/40 hover:bg-muted dark:bg-[#141619] dark:hover:bg-[#181A1D] text-muted-foreground hover:text-foreground dark:text-zinc-400 dark:hover:text-zinc-200 border-border dark:border-[#1E2227]'
                     }`}
                   >
                     {cat}
@@ -442,10 +442,6 @@ export default function UnifiedPOS({ role }: { role: string }) {
                 )
               })}
             </div>
-            <div
-              className="pointer-events-none absolute inset-y-0 right-0 w-16"
-              style={{ background: 'linear-gradient(to right, transparent, #090A0C)' }}
-            />
           </div>
 
         </div>
@@ -454,24 +450,24 @@ export default function UnifiedPOS({ role }: { role: string }) {
             {filteredItems.map((item: any) => (
               <div 
                 key={item.id} 
-                className="bg-[#121417] border border-[#1E2227] hover:border-zinc-600 rounded-xl overflow-hidden transition-all cursor-pointer group flex flex-col"
+                className="bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] hover:border-border/80 dark:hover:border-zinc-600 rounded-xl overflow-hidden transition-all cursor-pointer group flex flex-col"
                 onClick={() => {
                   addToCart(item)
                   setActiveTab('cart')
                 }}
               >
                 {((item.imageUrls && item.imageUrls.length > 0) || (item.images && item.images.length > 0)) ? (
-                  <div className="w-full h-24 relative overflow-hidden bg-[#141619]">
+                  <div className="w-full h-24 relative overflow-hidden bg-muted/40 dark:bg-[#141619]">
                     <Image src={item.imageUrls?.[0] || item.images?.[0]} alt={item.name} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
                   </div>
                 ) : (
-                  <div className="w-full h-24 flex items-center justify-center bg-[#141619] border-b border-[#1E2227]">
+                  <div className="w-full h-24 flex items-center justify-center bg-muted/40 dark:bg-[#141619] border-b border-border dark:border-[#1E2227]">
                     <span className="text-2xl opacity-60">{item.category === 'Food' ? '🍔' : item.category === 'Beverage' ? '🥤' : '🛍️'}</span>
                   </div>
                 )}
-                <div className="p-3 flex flex-col items-center justify-center text-center gap-1 bg-[#121417] flex-1">
-                  <p className="font-semibold text-xs leading-tight text-white line-clamp-1">{item.name}</p>
-                  <p className="text-emerald-400 font-mono font-bold text-xs">${Number(item.price || 0).toFixed(2)}</p>
+                <div className="p-3 flex flex-col items-center justify-center text-center gap-1 bg-card dark:bg-[#121417] flex-1">
+                  <p className="font-semibold text-xs leading-tight text-foreground dark:text-white line-clamp-1">{item.name}</p>
+                  <p className="text-emerald-600 dark:text-emerald-400 font-mono font-bold text-xs">${Number(item.price || 0).toFixed(2)}</p>
                 </div>
               </div>
             ))}
@@ -483,17 +479,17 @@ export default function UnifiedPOS({ role }: { role: string }) {
       {showCartSidebar && <div className="fixed inset-0 bg-black/80 z-40 lg:hidden" onClick={() => setShowCartSidebar(false)} />}
       
       {/* 3. RIGHT COLUMN: Unified Cart & Live Folio Statement Terminal */}
-      <div className={`fixed inset-y-0 right-0 z-50 w-full sm:w-[420px] bg-[#090A0C] border-l border-[#1C2025] flex flex-col min-h-0 print-section print:bg-white print:text-black transition-transform duration-300 lg:static lg:translate-x-0 ${showCartSidebar ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div className={`fixed inset-y-0 right-0 z-50 w-full sm:w-[420px] bg-card dark:bg-[#090A0C] border-l border-border dark:border-[#1C2025] flex flex-col min-h-0 print-section print:bg-white print:text-black transition-transform duration-300 lg:static lg:translate-x-0 ${showCartSidebar ? 'translate-x-0' : 'translate-x-full'}`}>
         {/* Terminal Header Tabs */}
-        <div className="p-3 border-b border-[#1C2025] bg-[#090A0C] flex justify-between items-center hide-on-print">
-          <div className="flex bg-[#121417] p-1 rounded-xl border border-[#1E2227]">
+        <div className="p-3 border-b border-border dark:border-[#1C2025] bg-muted/40 dark:bg-[#090A0C] flex justify-between items-center hide-on-print">
+          <div className="flex bg-muted dark:bg-[#121417] p-1 rounded-xl border border-border dark:border-[#1E2227]">
             <button
               type="button"
               onClick={() => setActiveTab('cart')}
               className={`px-3 py-1.5 rounded-lg text-xs transition-all flex items-center gap-1.5 ${
                 activeTab === 'cart' 
-                  ? 'bg-[#181A1D] text-white border border-[#2B3037] shadow-sm font-semibold' 
-                  : 'text-zinc-400 hover:text-zinc-200'
+                  ? 'bg-card text-foreground dark:bg-[#181A1D] dark:text-white border border-border dark:border-[#2B3037] shadow-sm font-semibold' 
+                  : 'text-muted-foreground hover:text-foreground dark:text-zinc-400 dark:hover:text-zinc-200'
               }`}
             >
               <ShoppingCart className="w-3.5 h-3.5" /> Cart ({posCart.reduce((sum, i) => sum + i.quantity, 0)})
@@ -503,8 +499,8 @@ export default function UnifiedPOS({ role }: { role: string }) {
               onClick={() => setActiveTab('folio')}
               className={`px-3 py-1.5 rounded-lg text-xs transition-all flex items-center gap-1.5 ${
                 activeTab === 'folio' 
-                  ? 'bg-[#181A1D] text-white border border-[#2B3037] shadow-sm font-semibold' 
-                  : 'text-zinc-400 hover:text-zinc-200'
+                  ? 'bg-card text-foreground dark:bg-[#181A1D] dark:text-white border border-border dark:border-[#2B3037] shadow-sm font-semibold' 
+                  : 'text-muted-foreground hover:text-foreground dark:text-zinc-400 dark:hover:text-zinc-200'
               }`}
             >
               <FileText className="w-3.5 h-3.5" /> Room Folio
@@ -517,7 +513,7 @@ export default function UnifiedPOS({ role }: { role: string }) {
               <button
                 type="button"
                 onClick={() => setPrintReceiptModal(true)}
-                className="hidden sm:flex items-center gap-1.5 text-amber-400 hover:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 rounded-lg text-[10px] font-mono font-bold px-2 h-7 transition-colors"
+                className="hidden sm:flex items-center gap-1.5 text-amber-500 dark:text-amber-400 hover:text-amber-600 dark:hover:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 rounded-lg text-[10px] font-mono font-bold px-2 h-7 transition-colors"
                 title="Reprint Last Receipt"
                 aria-label="Reprint last receipt"
               >
@@ -539,13 +535,13 @@ export default function UnifiedPOS({ role }: { role: string }) {
                 })
                 setPrintReceiptModal(true)
               }} 
-              className="p-1.5 rounded-lg bg-[#141619] hover:bg-[#1A1D21] border border-[#2B3037] text-zinc-300 hover:text-white transition-colors"
+              className="p-1.5 rounded-lg bg-muted/40 hover:bg-muted dark:bg-[#141619] dark:hover:bg-[#1A1D21] border border-border dark:border-[#2B3037] text-foreground dark:text-zinc-300 hover:text-foreground dark:hover:text-white transition-colors"
               title="Print Current View"
               aria-label="Print current view"
             >
               <Printer className="w-3.5 h-3.5" />
             </button>
-            <Button variant="ghost" size="icon" className="lg:hidden text-zinc-400 hover:text-white" onClick={() => setShowCartSidebar(false)} aria-label="Close cart sidebar">
+            <Button variant="ghost" size="icon" className="lg:hidden text-muted-foreground dark:text-zinc-400 hover:text-foreground dark:hover:text-white" onClick={() => setShowCartSidebar(false)} aria-label="Close cart sidebar">
               <X className="w-4 h-4" />
             </Button>
           </div>
@@ -553,15 +549,15 @@ export default function UnifiedPOS({ role }: { role: string }) {
         </div>
 
         {/* Selected Customer Header Banner */}
-        <div className="p-3.5 border-b border-[#1C2025] bg-[#121417]/40 flex justify-between items-center hide-on-print">
+        <div className="p-3.5 border-b border-border dark:border-[#1C2025] bg-muted/20 dark:bg-[#121417]/40 flex justify-between items-center hide-on-print">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Selected Customer</p>
-            <p className="font-bold text-xs text-white mt-0.5">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground dark:text-zinc-500">Selected Customer</p>
+            <p className="font-bold text-xs text-foreground dark:text-white mt-0.5">
               {activeBooking ? `${activeBooking.guest?.name || 'Guest'} (Room ${activeBooking.roomAssignments?.[0]?.room?.number || 'N/A'})` : 'Walk-in Customer'}
             </p>
           </div>
           {activeBooking && (
-            <span className="text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded font-bold uppercase">
+            <span className="text-[10px] font-mono bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded font-bold uppercase">
               CHECKED-IN
             </span>
           )}
@@ -572,14 +568,14 @@ export default function UnifiedPOS({ role }: { role: string }) {
           <div className="flex-1 flex flex-col min-h-0 hide-on-print">
             <div className="flex-1 overflow-y-auto p-4 space-y-2.5 custom-scrollbar">
               {posCart.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-zinc-500 p-6 text-center select-none">
+                <div className="flex flex-col items-center justify-center h-full text-muted-foreground dark:text-zinc-500 p-6 text-center select-none">
                   <div className="relative mb-3">
-                    <div className="w-14 h-14 rounded-2xl bg-[#121417] border border-[#1E2227] flex items-center justify-center">
-                      <ShoppingCart className="w-6 h-6 text-zinc-500" />
+                    <div className="w-14 h-14 rounded-2xl bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] flex items-center justify-center">
+                      <ShoppingCart className="w-6 h-6 text-muted-foreground dark:text-zinc-500" />
                     </div>
                   </div>
-                  <p className="text-xs font-semibold text-zinc-300">POS Cart is empty</p>
-                  <p className="text-[11px] text-zinc-500 mt-1 max-w-[180px] leading-relaxed">Select items from the catalog to build an order.</p>
+                  <p className="text-xs font-semibold text-foreground dark:text-zinc-300">POS Cart is empty</p>
+                  <p className="text-[11px] text-muted-foreground dark:text-zinc-500 mt-1 max-w-[180px] leading-relaxed">Select items from the catalog to build an order.</p>
                 </div>
 
               ) : (
@@ -587,9 +583,9 @@ export default function UnifiedPOS({ role }: { role: string }) {
                   const thumb = item.imageUrls?.[0] || item.images?.[0] || null
                   const emoji = item.category === 'Food' ? '🍔' : item.category === 'Beverage' ? '🥤' : '🛍️'
                   return (
-                    <div key={i} className="bg-[#121417] border border-[#1E2227] p-3 rounded-xl flex items-center gap-3">
+                    <div key={i} className="bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] p-3 rounded-xl flex items-center gap-3">
                       {/* Thumbnail */}
-                      <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 border border-[#1E2227] bg-[#141619] flex items-center justify-center">
+                      <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 border border-border dark:border-[#1E2227] bg-muted/40 dark:bg-[#141619] flex items-center justify-center">
                         {thumb ? (
                           <Image src={thumb} alt={item.name} width={40} height={40} className="object-cover w-full h-full" />
                         ) : (
@@ -598,21 +594,21 @@ export default function UnifiedPOS({ role }: { role: string }) {
                       </div>
                       {/* Name & Price */}
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-semibold text-white truncate">{item.name}</p>
-                        <p className="text-[11px] text-zinc-400 font-mono">${Number(item.price || 0).toFixed(2)} each</p>
+                        <p className="text-xs font-semibold text-foreground dark:text-white truncate">{item.name}</p>
+                        <p className="text-[11px] text-muted-foreground dark:text-zinc-400 font-mono">${Number(item.price || 0).toFixed(2)} each</p>
                       </div>
                       {/* Qty Controls & Subtotal */}
                       <div className="flex items-center gap-2.5 flex-shrink-0">
-                        <div className="flex items-center gap-1.5 bg-[#181A1D] px-2 py-1 rounded-lg border border-[#2B3037]">
-                          <button type="button" onClick={() => updateQuantity(item.id, -1)} className="text-zinc-400 hover:text-white" aria-label="Decrease quantity"><Minus className="w-3 h-3"/></button>
-                          <span className="text-xs font-mono font-bold px-1 text-white">{item.quantity}</span>
-                          <button type="button" onClick={() => updateQuantity(item.id, 1)} className="text-zinc-400 hover:text-white" aria-label="Increase quantity"><Plus className="w-3 h-3"/></button>
+                        <div className="flex items-center gap-1.5 bg-muted dark:bg-[#181A1D] px-2 py-1 rounded-lg border border-border dark:border-[#2B3037]">
+                          <button type="button" onClick={() => updateQuantity(item.id, -1)} className="text-muted-foreground dark:text-zinc-400 hover:text-foreground dark:hover:text-white" aria-label="Decrease quantity"><Minus className="w-3 h-3"/></button>
+                          <span className="text-xs font-mono font-bold px-1 text-foreground dark:text-white">{item.quantity}</span>
+                          <button type="button" onClick={() => updateQuantity(item.id, 1)} className="text-muted-foreground dark:text-zinc-400 hover:text-foreground dark:hover:text-white" aria-label="Increase quantity"><Plus className="w-3 h-3"/></button>
                         </div>
-                        <span className="text-xs font-bold text-emerald-400 font-mono">${(Number(item.price || 0) * item.quantity).toFixed(2)}</span>
+                        <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 font-mono">${(Number(item.price || 0) * item.quantity).toFixed(2)}</span>
                         <button 
                           type="button"
                           onClick={() => removeFromCart(item.id)}
-                          className="p-1.5 text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors"
+                          className="p-1.5 text-muted-foreground dark:text-zinc-500 hover:text-rose-500 dark:hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors"
                           aria-label="Remove item"
                           title="Remove item"
                         >
@@ -627,10 +623,10 @@ export default function UnifiedPOS({ role }: { role: string }) {
             </div>
 
             {/* Cart Footer Actions */}
-            <div className="p-4 border-t border-[#1C2025] bg-[#121417] space-y-3">
+            <div className="p-4 border-t border-border dark:border-[#1C2025] bg-muted/30 dark:bg-[#121417] space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-xs uppercase text-zinc-400 font-semibold tracking-wider">Cart Subtotal</span>
-                <span className="text-xl font-bold font-mono text-white">${cartSubtotal.toFixed(2)}</span>
+                <span className="text-xs uppercase text-muted-foreground dark:text-zinc-400 font-semibold tracking-wider">Cart Subtotal</span>
+                <span className="text-xl font-bold font-mono text-foreground dark:text-white">${cartSubtotal.toFixed(2)}</span>
               </div>
 
               <div className="space-y-2">
@@ -647,7 +643,7 @@ export default function UnifiedPOS({ role }: { role: string }) {
                         action: handleChargeToRoom
                       })
                     }}
-                    className="w-full bg-white hover:bg-zinc-200 text-black font-semibold text-xs h-10 rounded-lg transition-all shadow-sm disabled:opacity-50 flex items-center justify-center gap-1.5"
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs h-10 rounded-lg transition-all shadow-sm disabled:opacity-50 flex items-center justify-center gap-1.5"
                   >
                     {isSubmitting ? (
                       <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Processing...</>
@@ -670,7 +666,7 @@ export default function UnifiedPOS({ role }: { role: string }) {
                         action: () => handleDirectPOSPayment('CASH')
                       })
                     }}
-                    className="bg-[#141619] hover:bg-[#1A1D21] border border-[#2B3037] text-emerald-400 hover:text-emerald-300 text-xs font-semibold h-10 rounded-lg transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
+                    className="bg-muted/40 hover:bg-muted dark:bg-[#141619] dark:hover:bg-[#1A1D21] border border-border dark:border-[#2B3037] text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 text-xs font-semibold h-10 rounded-lg transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
                   >
                     {isSubmitting ? (
                       <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Processing...</>
@@ -690,7 +686,7 @@ export default function UnifiedPOS({ role }: { role: string }) {
                         action: () => handleDirectPOSPayment('CARD')
                       })
                     }}
-                    className="bg-[#141619] hover:bg-[#1A1D21] border border-[#2B3037] text-blue-400 hover:text-blue-300 text-xs font-semibold h-10 rounded-lg transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
+                    className="bg-muted/40 hover:bg-muted dark:bg-[#141619] dark:hover:bg-[#1A1D21] border border-border dark:border-[#2B3037] text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-xs font-semibold h-10 rounded-lg transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
                   >
                     {isSubmitting ? (
                       <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Processing...</>
@@ -708,55 +704,55 @@ export default function UnifiedPOS({ role }: { role: string }) {
         {activeTab === 'folio' && (
           <div className="flex-1 flex flex-col min-h-0 hide-on-print">
             {!activeBooking ? (
-              <div className="flex-1 flex flex-col items-center justify-center p-6 text-center text-zinc-500">
-                <Bed className="w-10 h-10 mb-3 opacity-30 text-zinc-400" />
-                <p className="text-xs font-bold text-zinc-300">No Room Selected</p>
-                <p className="text-[11px] text-zinc-500 mt-1 max-w-[200px] leading-relaxed">Select an active checked-in guest from the left sidebar to view their live folio statement.</p>
+              <div className="flex-1 flex flex-col items-center justify-center p-6 text-center text-muted-foreground dark:text-zinc-500">
+                <Bed className="w-10 h-10 mb-3 opacity-30 text-muted-foreground dark:text-zinc-400" />
+                <p className="text-xs font-bold text-foreground dark:text-zinc-300">No Room Selected</p>
+                <p className="text-[11px] text-muted-foreground dark:text-zinc-500 mt-1 max-w-[200px] leading-relaxed">Select an active checked-in guest from the left sidebar to view their live folio statement.</p>
               </div>
             ) : (
               <div className="flex-1 flex flex-col overflow-hidden">
                 {checkoutMode && (
-                  <div className="bg-amber-500/10 text-amber-400 border-b border-amber-500/20 px-4 py-2 flex items-center justify-center gap-2 text-[10px] font-mono font-bold uppercase tracking-wider">
+                  <div className="bg-amber-500/10 text-amber-500 dark:text-amber-400 border-b border-amber-500/20 px-4 py-2 flex items-center justify-center gap-2 text-[10px] font-mono font-bold uppercase tracking-wider">
                     <Sparkles className="w-3.5 h-3.5" /> Checkout Settlement Mode
                   </div>
                 )}
                 {/* Folio Summary Totals */}
-                <div className="p-3 bg-[#121417] border-b border-[#1E2227] grid grid-cols-3 gap-2 text-center">
-                  <div className="bg-[#141619] p-2 rounded-xl border border-[#1E2227]">
-                    <p className="text-[9px] uppercase font-bold text-zinc-500 tracking-wider">Charges</p>
-                    <p className="text-xs font-bold text-white font-mono mt-0.5">${folioTotalCharges.toFixed(2)}</p>
+                <div className="p-3 bg-card dark:bg-[#121417] border-b border-border dark:border-[#1E2227] grid grid-cols-3 gap-2 text-center">
+                  <div className="bg-muted/40 dark:bg-[#141619] p-2 rounded-xl border border-border dark:border-[#1E2227]">
+                    <p className="text-[9px] uppercase font-bold text-muted-foreground dark:text-zinc-500 tracking-wider">Charges</p>
+                    <p className="text-xs font-bold text-foreground dark:text-white font-mono mt-0.5">${folioTotalCharges.toFixed(2)}</p>
                   </div>
-                  <div className="bg-[#141619] p-2 rounded-xl border border-[#1E2227]">
-                    <p className="text-[9px] uppercase font-bold text-zinc-500 tracking-wider">Paid</p>
-                    <p className="text-xs font-bold text-emerald-400 font-mono mt-0.5">${folioTotalPayments.toFixed(2)}</p>
+                  <div className="bg-muted/40 dark:bg-[#141619] p-2 rounded-xl border border-border dark:border-[#1E2227]">
+                    <p className="text-[9px] uppercase font-bold text-muted-foreground dark:text-zinc-500 tracking-wider">Paid</p>
+                    <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 font-mono mt-0.5">${folioTotalPayments.toFixed(2)}</p>
                   </div>
-                  <div className="bg-[#141619] p-2 rounded-xl border border-[#1E2227]">
-                    <p className="text-[9px] uppercase font-bold text-zinc-500 tracking-wider">Outstanding</p>
-                    <p className="text-xs font-bold text-amber-400 font-mono mt-0.5">${folioOutstandingBalance.toFixed(2)}</p>
+                  <div className="bg-muted/40 dark:bg-[#141619] p-2 rounded-xl border border-border dark:border-[#1E2227]">
+                    <p className="text-[9px] uppercase font-bold text-muted-foreground dark:text-zinc-500 tracking-wider">Outstanding</p>
+                    <p className="text-xs font-bold text-amber-500 dark:text-amber-400 font-mono mt-0.5">${folioOutstandingBalance.toFixed(2)}</p>
                   </div>
                 </div>
 
                 {/* Line Items List */}
                 <div className="flex-1 overflow-y-auto p-4 space-y-2.5 custom-scrollbar">
-                  <h3 className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 flex items-center justify-between">
+                  <h3 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground dark:text-zinc-500 flex items-center justify-between">
                     <span>Itemized Folio Charges</span>
-                    <span className="text-[10px] text-zinc-400 font-mono">Folio #{activeFolio?.id?.substring(0,8).toUpperCase()}</span>
+                    <span className="text-[10px] text-muted-foreground dark:text-zinc-400 font-mono">Folio #{activeFolio?.id?.substring(0,8).toUpperCase()}</span>
                   </h3>
 
                   {folioLineItems.length === 0 ? (
-                    <div className="p-6 text-center border border-dashed border-[#1E2227] rounded-xl text-zinc-500 text-xs font-mono">
+                    <div className="p-6 text-center border border-dashed border-border dark:border-[#1E2227] rounded-xl text-muted-foreground dark:text-zinc-500 text-xs font-mono">
                       No folio line items recorded yet.
                     </div>
                   ) : (
                     folioLineItems.map((item: any) => (
-                      <div key={item.id} className="bg-[#121417] border border-[#1E2227] p-3 rounded-xl flex justify-between items-center">
+                      <div key={item.id} className="bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] p-3 rounded-xl flex justify-between items-center">
                         <div>
-                          <p className="text-xs font-semibold text-white">{item.description}</p>
-                          <span className="text-[9px] bg-[#181A1D] border border-[#2B3037] px-1.5 py-0.5 rounded text-zinc-400 uppercase font-mono mt-1 inline-block">
+                          <p className="text-xs font-semibold text-foreground dark:text-white">{item.description}</p>
+                          <span className="text-[9px] bg-muted dark:bg-[#181A1D] border border-border dark:border-[#2B3037] px-1.5 py-0.5 rounded text-muted-foreground dark:text-zinc-400 uppercase font-mono mt-1 inline-block">
                             {item.category}
                           </span>
                         </div>
-                        <span className={`font-mono font-bold text-xs ${Number(item.amount) < 0 ? 'text-emerald-400' : 'text-white'}`}>
+                        <span className={`font-mono font-bold text-xs ${Number(item.amount) < 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground dark:text-white'}`}>
                           {Number(item.amount) < 0 ? '-' : ''}${Math.abs(Number(item.amount || 0)).toFixed(2)}
                         </span>
                       </div>
@@ -765,9 +761,9 @@ export default function UnifiedPOS({ role }: { role: string }) {
                 </div>
 
                 {/* Folio Settlement Footer */}
-                <div className="p-4 border-t border-[#1C2025] bg-[#121417] space-y-3">
+                <div className="p-4 border-t border-border dark:border-[#1C2025] bg-muted/30 dark:bg-[#121417] space-y-3">
                   <div>
-                    <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-1">
+                    <label className="block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground dark:text-zinc-400 mb-1">
                       Payment Amount (Default: Full Balance)
                     </label>
                     <input
@@ -775,7 +771,7 @@ export default function UnifiedPOS({ role }: { role: string }) {
                       placeholder={`Full Balance: $${folioOutstandingBalance.toFixed(2)}`}
                       value={settleAmount}
                       onChange={(e) => setSettleAmount(e.target.value)}
-                      className="w-full bg-[#181A1D] border border-[#2B3037] text-white font-mono text-xs h-9 px-3 rounded-lg focus:outline-none focus:border-zinc-500"
+                      className="w-full bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] text-foreground dark:text-white font-mono text-xs h-9 px-3 rounded-lg focus:outline-none focus:border-ring dark:focus:border-zinc-500"
                     />
                   </div>
 
@@ -793,7 +789,7 @@ export default function UnifiedPOS({ role }: { role: string }) {
                           action: () => handleSettleFolioBalance('CASH')
                         })
                       }}
-                      className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 text-xs font-semibold h-10 rounded-lg transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
+                      className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-xs font-semibold h-10 rounded-lg transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
                     >
                       {isSubmitting ? (
                         <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Processing...</>
@@ -814,7 +810,7 @@ export default function UnifiedPOS({ role }: { role: string }) {
                           action: () => handleSettleFolioBalance('CARD')
                         })
                       }}
-                      className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs h-10 rounded-lg transition-all shadow-sm flex items-center justify-center gap-1.5 disabled:opacity-50"
+                      className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs h-10 rounded-lg transition-all shadow-sm flex items-center justify-center gap-1.5 disabled:opacity-50"
                     >
                       {isSubmitting ? (
                         <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Processing...</>
@@ -832,12 +828,12 @@ export default function UnifiedPOS({ role }: { role: string }) {
 
       {/* THERMAL RECEIPT PRINT MODAL */}
       <Dialog open={printReceiptModal} onOpenChange={setPrintReceiptModal}>
-        <DialogContent className="bg-[#121417] border border-[#2B3037] text-zinc-100 max-w-sm rounded-2xl p-6 shadow-2xl">
+        <DialogContent className="bg-card dark:bg-[#121417] border border-border dark:border-[#2B3037] text-foreground dark:text-zinc-100 max-w-sm rounded-2xl p-6 shadow-2xl">
           <DialogHeader className="mb-2">
-            <DialogTitle className="text-base font-bold flex items-center gap-2 text-white">
-              <Receipt className="w-4 h-4 text-emerald-400" /> Thermal Receipt Preview
+            <DialogTitle className="text-base font-bold flex items-center gap-2 text-foreground dark:text-white">
+              <Receipt className="w-4 h-4 text-emerald-500 dark:text-emerald-400" /> Thermal Receipt Preview
             </DialogTitle>
-            <DialogDescription className="text-zinc-400 text-xs">
+            <DialogDescription className="text-muted-foreground dark:text-zinc-400 text-xs">
               Formatted for 80mm / 58mm POS thermal printers.
             </DialogDescription>
           </DialogHeader>
@@ -895,14 +891,14 @@ export default function UnifiedPOS({ role }: { role: string }) {
             <button
               type="button"
               onClick={() => setPrintReceiptModal(false)}
-              className="bg-[#141619] hover:bg-[#1A1D21] border border-[#2B3037] text-zinc-300 text-xs font-medium px-4 py-2 rounded-lg transition-colors"
+              className="bg-muted/40 hover:bg-muted dark:bg-[#141619] dark:hover:bg-[#1A1D21] border border-border dark:border-[#2B3037] text-foreground dark:text-zinc-300 text-xs font-medium px-4 py-2 rounded-lg transition-colors"
             >
               Close
             </button>
             <button
               type="button"
               onClick={handleTriggerPrint}
-              className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs px-4 py-2 rounded-lg transition-all shadow-sm flex items-center justify-center gap-1.5"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs px-4 py-2 rounded-lg transition-all shadow-sm flex items-center justify-center gap-1.5"
             >
               <Printer className="w-3.5 h-3.5" /> Print Thermal Bill
             </button>
@@ -912,24 +908,24 @@ export default function UnifiedPOS({ role }: { role: string }) {
 
       {/* CONFIRMATION DIALOG */}
       <Dialog open={!!confirmPaymentDialog?.isOpen} onOpenChange={(open) => !open && setConfirmPaymentDialog(null)}>
-        <DialogContent className="bg-[#121417] border border-[#2B3037] text-zinc-100 max-w-sm rounded-2xl p-6 shadow-2xl">
+        <DialogContent className="bg-card dark:bg-[#121417] border border-border dark:border-[#2B3037] text-foreground dark:text-zinc-100 max-w-sm rounded-2xl p-6 shadow-2xl">
           <DialogHeader className="mb-2">
-            <DialogTitle className="text-base font-bold flex items-center gap-2 text-white">
+            <DialogTitle className="text-base font-bold flex items-center gap-2 text-foreground dark:text-white">
               {confirmPaymentDialog?.title}
             </DialogTitle>
-            <DialogDescription className="text-zinc-400 text-xs mt-1">
+            <DialogDescription className="text-muted-foreground dark:text-zinc-400 text-xs mt-1">
               {confirmPaymentDialog?.description}
             </DialogDescription>
           </DialogHeader>
-          <div className="bg-[#141619] border border-[#1E2227] rounded-xl p-4 text-center my-4">
-            <p className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider mb-1">Amount to Charge</p>
-            <p className="text-2xl font-mono text-white font-bold">${confirmPaymentDialog?.amount?.toFixed(2)}</p>
+          <div className="bg-muted/40 dark:bg-[#141619] border border-border dark:border-[#1E2227] rounded-xl p-4 text-center my-4">
+            <p className="text-[10px] text-muted-foreground dark:text-zinc-500 uppercase font-bold tracking-wider mb-1">Amount to Charge</p>
+            <p className="text-2xl font-mono text-foreground dark:text-white font-bold">${confirmPaymentDialog?.amount?.toFixed(2)}</p>
           </div>
           <DialogFooter className="gap-2 sm:gap-2">
             <button
               type="button"
               onClick={() => setConfirmPaymentDialog(null)}
-              className="bg-[#141619] hover:bg-[#1A1D21] border border-[#2B3037] text-zinc-300 text-xs font-medium px-3 py-2 rounded-lg flex-1 transition-colors"
+              className="bg-muted/40 hover:bg-muted dark:bg-[#141619] dark:hover:bg-[#1A1D21] border border-border dark:border-[#2B3037] text-foreground dark:text-zinc-300 text-xs font-medium px-3 py-2 rounded-lg flex-1 transition-colors"
             >
               Cancel
             </button>
@@ -942,7 +938,7 @@ export default function UnifiedPOS({ role }: { role: string }) {
                 }
                 setConfirmPaymentDialog(null)
               }} 
-              className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs px-3 py-2 rounded-lg flex-1 transition-all shadow-sm flex items-center justify-center gap-1"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs px-3 py-2 rounded-lg flex-1 transition-all shadow-sm flex items-center justify-center gap-1"
             >
               {isSubmitting ? (
                 <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Processing...</>

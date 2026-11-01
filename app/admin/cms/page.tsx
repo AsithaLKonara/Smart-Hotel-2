@@ -461,17 +461,17 @@ export default function AdminCmsStudioPage() {
       actions={
         <div className="flex flex-wrap items-center gap-2.5">
           {/* Property Selector */}
-          <div className="flex items-center gap-2 bg-[#121417] border border-[#1E2227] rounded-lg px-3 py-1.5">
-            <Filter className="w-3.5 h-3.5 text-zinc-400" />
-            <span className="text-xs font-mono text-zinc-500">Property:</span>
+          <div className="flex items-center gap-2 bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] rounded-lg px-3 py-1.5">
+            <Filter className="w-3.5 h-3.5 text-muted-foreground dark:text-zinc-400" />
+            <span className="text-xs font-mono text-muted-foreground dark:text-zinc-500">Property:</span>
             <select
               value={selectedPropertyFilter}
               onChange={(e) => setSelectedPropertyFilter(e.target.value)}
-              className="bg-transparent text-xs font-mono text-white focus:outline-none cursor-pointer"
+              className="bg-transparent text-xs font-mono text-foreground dark:text-white focus:outline-none cursor-pointer"
             >
-              <option value="all" className="bg-[#121417] text-white">All Properties</option>
+              <option value="all" className="bg-card dark:bg-[#121417] text-foreground dark:text-white">All Properties</option>
               {properties.map((p) => (
-                <option key={p.id} value={p.id} className="bg-[#121417] text-white">
+                <option key={p.id} value={p.id} className="bg-card dark:bg-[#121417] text-foreground dark:text-white">
                   {p.name} ({p.city})
                 </option>
               ))}
@@ -482,16 +482,16 @@ export default function AdminCmsStudioPage() {
             href="/"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 border border-[#1E2227] bg-[#121417] text-zinc-300 hover:text-white hover:bg-[#181A1D] rounded-lg text-xs font-mono uppercase tracking-wider transition-colors h-9"
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 border border-border dark:border-[#1E2227] bg-card dark:bg-[#121417] text-foreground dark:text-zinc-300 hover:text-foreground dark:hover:text-white hover:bg-muted dark:hover:bg-[#181A1D] rounded-lg text-xs font-mono uppercase tracking-wider transition-colors h-9"
           >
-            <Eye className="w-3.5 h-3.5 text-zinc-400" />
+            <Eye className="w-3.5 h-3.5 text-muted-foreground dark:text-zinc-400" />
             <span>Preview Site</span>
           </a>
         </div>
       }
     >
       {/* Tabs Navigation */}
-      <div className="flex items-center gap-2 border-b border-[#1E2227] pb-3 overflow-x-auto">
+      <div className="flex items-center gap-2 border-b border-border dark:border-[#1E2227] pb-3 overflow-x-auto">
         {[
           { id: 'properties', label: 'Properties & Map Pins', icon: MapPin, count: properties.length },
           { id: 'gallery', label: 'Gallery Hub', icon: ImageIcon, count: galleryItems.length },
@@ -506,14 +506,14 @@ export default function AdminCmsStudioPage() {
               onClick={() => setActiveTab(tab.id as CmsTab)}
               className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-mono uppercase tracking-wider transition-all whitespace-nowrap ${
                 isActive
-                  ? 'bg-[#181A1D] border border-[#2B3037] text-white font-semibold'
-                  : 'text-zinc-400 hover:text-white hover:bg-[#141619] border border-transparent'
+                  ? 'bg-muted dark:bg-[#181A1D] border border-border dark:border-[#2B3037] text-foreground dark:text-white font-semibold'
+                  : 'text-muted-foreground dark:text-zinc-400 hover:text-foreground dark:hover:text-white hover:bg-muted/40 dark:hover:bg-[#141619] border border-transparent'
               }`}
             >
               <Icon className="w-3.5 h-3.5" />
               <span>{tab.label}</span>
               <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
-                isActive ? 'bg-[#141619] border border-[#2B3037] text-white font-bold' : 'bg-[#141619] text-zinc-500'
+                isActive ? 'bg-background dark:bg-[#141619] border border-border dark:border-[#2B3037] text-foreground dark:text-white font-bold' : 'bg-muted/40 dark:bg-[#141619] text-muted-foreground dark:text-zinc-500'
               }`}>
                 {tab.count}
               </span>
@@ -537,8 +537,8 @@ export default function AdminCmsStudioPage() {
             <div className="space-y-6">
               <div className="flex justify-between items-center">
                 <div>
-                  <h3 className="text-xl font-serif font-bold">Property Profiles & Geolocation Pins</h3>
-                  <p className="text-xs text-white/50">Configure geographic coordinates (`lat`, `lng`), addresses, and hero photography for interactive website pinpoints.</p>
+                  <h3 className="text-xl font-serif font-bold text-foreground dark:text-white">Property Profiles & Geolocation Pins</h3>
+                  <p className="text-xs text-muted-foreground dark:text-white/50">Configure geographic coordinates (`lat`, `lng`), addresses, and hero photography for interactive website pinpoints.</p>
                 </div>
               </div>
 
@@ -546,7 +546,7 @@ export default function AdminCmsStudioPage() {
                 {properties.map((prop) => (
                   <div
                     key={prop.id}
-                    className="group bg-[#121118] border border-white/10 hover:border-primary/40 rounded-2xl overflow-hidden transition-all duration-300 flex flex-col justify-between"
+                    className="group bg-card dark:bg-[#121118] border border-border dark:border-white/10 hover:border-primary/40 rounded-2xl overflow-hidden transition-all duration-300 flex flex-col justify-between"
                   >
                     <div>
                       <div className="relative aspect-[16/9] w-full overflow-hidden bg-black/40">
@@ -576,42 +576,42 @@ export default function AdminCmsStudioPage() {
 
                       <div className="p-5 space-y-4">
                         <div>
-                          <h4 className="text-lg font-serif font-bold text-white group-hover:text-primary transition-colors">
+                          <h4 className="text-lg font-serif font-bold text-foreground dark:text-white group-hover:text-primary transition-colors">
                             {prop.name}
                           </h4>
-                          <p className="text-xs text-white/60 line-clamp-2 mt-1">
+                          <p className="text-xs text-muted-foreground dark:text-white/60 line-clamp-2 mt-1">
                             {prop.description || 'No description configured.'}
                           </p>
                         </div>
 
                         {/* Coordinates & Location Pin Box */}
-                        <div className="bg-white/5 border border-white/5 rounded-xl p-3 space-y-2 text-xs">
-                          <div className="flex items-center justify-between text-white/70">
+                        <div className="bg-muted/40 dark:bg-white/5 border border-border dark:border-white/5 rounded-xl p-3 space-y-2 text-xs">
+                          <div className="flex items-center justify-between text-muted-foreground dark:text-white/70">
                             <span className="flex items-center gap-1.5 text-primary font-bold">
                               <Navigation className="w-3.5 h-3.5" />
                               Coordinates:
                             </span>
-                            <span className="font-mono text-[11px] text-white">
+                            <span className="font-mono text-[11px] text-foreground dark:text-white">
                               {prop.latitude && prop.longitude ? `${prop.latitude.toFixed(4)}, ${prop.longitude.toFixed(4)}` : 'Not set'}
                             </span>
                           </div>
-                          <div className="text-[11px] text-white/50 truncate">
-                            <span className="text-white/70 font-medium">Address:</span> {prop.address}
+                          <div className="text-[11px] text-muted-foreground dark:text-white/50 truncate">
+                            <span className="text-foreground dark:text-white/70 font-medium">Address:</span> {prop.address}
                           </div>
                         </div>
 
                         {/* CMS Counts */}
-                        <div className="grid grid-cols-3 gap-2 text-center text-[10px] text-white/60 pt-1">
-                          <div className="bg-white/5 py-1.5 rounded-lg border border-white/5">
-                            <span className="block font-bold text-white text-xs">{prop._count?.galleries || 0}</span>
+                        <div className="grid grid-cols-3 gap-2 text-center text-[10px] text-muted-foreground dark:text-white/60 pt-1">
+                          <div className="bg-muted/40 dark:bg-white/5 py-1.5 rounded-lg border border-border dark:border-white/5">
+                            <span className="block font-bold text-foreground dark:text-white text-xs">{prop._count?.galleries || 0}</span>
                             <span>Photos</span>
                           </div>
-                          <div className="bg-white/5 py-1.5 rounded-lg border border-white/5">
-                            <span className="block font-bold text-white text-xs">{prop._count?.experiences || 0}</span>
+                          <div className="bg-muted/40 dark:bg-white/5 py-1.5 rounded-lg border border-border dark:border-white/5">
+                            <span className="block font-bold text-foreground dark:text-white text-xs">{prop._count?.experiences || 0}</span>
                             <span>Experiences</span>
                           </div>
-                          <div className="bg-white/5 py-1.5 rounded-lg border border-white/5">
-                            <span className="block font-bold text-white text-xs">{prop._count?.resortFacilities || 0}</span>
+                          <div className="bg-muted/40 dark:bg-white/5 py-1.5 rounded-lg border border-border dark:border-white/5">
+                            <span className="block font-bold text-foreground dark:text-white text-xs">{prop._count?.resortFacilities || 0}</span>
                             <span>Facilities</span>
                           </div>
                         </div>
@@ -631,7 +631,7 @@ export default function AdminCmsStudioPage() {
                           href={prop.googleMapsUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="px-3 h-9 flex items-center justify-center bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white/70 hover:text-white transition-colors"
+                          className="px-3 h-9 flex items-center justify-center bg-muted/40 hover:bg-muted dark:bg-white/5 dark:hover:bg-white/10 border border-border dark:border-white/10 rounded-xl text-muted-foreground dark:text-white/70 hover:text-foreground dark:hover:text-white transition-colors"
                           title="View on Google Maps"
                         >
                           <ExternalLink className="w-3.5 h-3.5" />
@@ -651,12 +651,12 @@ export default function AdminCmsStudioPage() {
             <div className="space-y-6">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                  <h3 className="text-sm font-semibold text-zinc-100 font-mono uppercase tracking-wider">Multi-Property Gallery Media</h3>
-                  <p className="text-xs text-zinc-500 font-sans">Manage high-resolution photography, categorized suites, lobbies, and wellness assets.</p>
+                  <h3 className="text-sm font-semibold text-foreground dark:text-zinc-100 font-mono uppercase tracking-wider">Multi-Property Gallery Media</h3>
+                  <p className="text-xs text-muted-foreground dark:text-zinc-500 font-sans">Manage high-resolution photography, categorized suites, lobbies, and wellness assets.</p>
                 </div>
                 <Button
                   onClick={() => handleOpenGalleryModal()}
-                  className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs font-mono uppercase tracking-wider h-9 px-4 rounded-lg"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs font-mono uppercase tracking-wider h-9 px-4 rounded-lg"
                 >
                   <Plus className="w-3.5 h-3.5 mr-1.5" />
                   Add Media
@@ -667,10 +667,10 @@ export default function AdminCmsStudioPage() {
                 {galleryItems.map((item) => (
                   <div
                     key={item.id}
-                    className="group relative bg-[#121417] border border-[#1E2227] hover:border-[#2B3037] rounded-xl overflow-hidden flex flex-col justify-between"
+                    className="group relative bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] hover:border-border/80 dark:hover:border-[#2B3037] rounded-xl overflow-hidden flex flex-col justify-between"
                   >
                     <div>
-                      <div className="relative aspect-square w-full overflow-hidden bg-[#090A0C]">
+                      <div className="relative aspect-square w-full overflow-hidden bg-muted/40 dark:bg-[#090A0C]">
                         <Image
                           src={item.imageUrl}
                           alt={item.title}
@@ -698,9 +698,9 @@ export default function AdminCmsStudioPage() {
                         </div>
                       </div>
 
-                      <div className="p-3 text-[11px] text-zinc-400 flex items-center justify-between font-mono">
-                        <span className="text-zinc-500">Property:</span>
-                        <span className="text-zinc-200 font-medium truncate max-w-[120px]">
+                      <div className="p-3 text-[11px] text-muted-foreground dark:text-zinc-400 flex items-center justify-between font-mono">
+                        <span className="text-muted-foreground dark:text-zinc-500">Property:</span>
+                        <span className="text-foreground dark:text-zinc-200 font-medium truncate max-w-[120px]">
                           {item.property?.name || 'Assigned'}
                         </span>
                       </div>
@@ -710,15 +710,15 @@ export default function AdminCmsStudioPage() {
                       <Button
                         onClick={() => handleOpenGalleryModal(item)}
                         variant="outline"
-                        className="flex-1 border-[#1E2227] bg-[#141619] hover:bg-[#181A1D] h-8 rounded-lg text-xs font-mono text-zinc-300 hover:text-white"
+                        className="flex-1 border-border dark:border-[#1E2227] bg-muted/40 dark:bg-[#141619] hover:bg-muted dark:hover:bg-[#181A1D] h-8 rounded-lg text-xs font-mono text-foreground dark:text-zinc-300 hover:text-foreground dark:hover:text-white"
                       >
-                        <Edit className="w-3 h-3 mr-1 text-zinc-400" />
+                        <Edit className="w-3 h-3 mr-1 text-muted-foreground dark:text-zinc-400" />
                         Edit
                       </Button>
                       <Button
                         onClick={() => handleDeleteGallery(item.id)}
                         variant="outline"
-                        className="border-rose-500/20 hover:bg-rose-500/10 text-rose-400 h-8 px-2.5 rounded-lg text-xs"
+                        className="border-rose-500/20 hover:bg-rose-500/10 text-rose-500 dark:text-rose-400 h-8 px-2.5 rounded-lg text-xs"
                       >
                         <Trash2 className="w-3 h-3" />
                       </Button>
@@ -736,12 +736,12 @@ export default function AdminCmsStudioPage() {
             <div className="space-y-6">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                  <h3 className="text-sm font-semibold text-zinc-100 font-mono uppercase tracking-wider">Signature Resort Experiences</h3>
-                  <p className="text-xs text-zinc-500 font-sans">Manage bespoke guest journeys, culinary tastings, wellness rituals, and yacht charters.</p>
+                  <h3 className="text-sm font-semibold text-foreground dark:text-zinc-100 font-mono uppercase tracking-wider">Signature Resort Experiences</h3>
+                  <p className="text-xs text-muted-foreground dark:text-zinc-500 font-sans">Manage bespoke guest journeys, culinary tastings, wellness rituals, and yacht charters.</p>
                 </div>
                 <Button
                   onClick={() => handleOpenExperienceModal()}
-                  className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs font-mono uppercase tracking-wider h-9 px-4 rounded-lg"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs font-mono uppercase tracking-wider h-9 px-4 rounded-lg"
                 >
                   <Plus className="w-3.5 h-3.5 mr-1.5" />
                   New Experience
@@ -752,7 +752,7 @@ export default function AdminCmsStudioPage() {
                 {experiences.map((exp) => (
                   <div
                     key={exp.id}
-                    className="group bg-[#121118] border border-white/10 hover:border-primary/40 rounded-2xl overflow-hidden transition-all duration-300 flex flex-col justify-between"
+                    className="group bg-card dark:bg-[#121118] border border-border dark:border-white/10 hover:border-primary/40 rounded-2xl overflow-hidden transition-all duration-300 flex flex-col justify-between"
                   >
                     <div>
                       <div className="relative aspect-[16/10] w-full overflow-hidden bg-black/40">
@@ -784,7 +784,7 @@ export default function AdminCmsStudioPage() {
                             <span className="text-[10px] text-primary uppercase tracking-widest font-bold">
                               {exp.subtitle || exp.property?.name}
                             </span>
-                            <h4 className="text-lg font-serif font-bold text-white group-hover:text-primary transition-colors leading-tight">
+                            <h4 className="text-lg font-serif font-bold text-foreground dark:text-white group-hover:text-primary transition-colors leading-tight">
                               {exp.title}
                             </h4>
                           </div>
@@ -797,11 +797,11 @@ export default function AdminCmsStudioPage() {
                       </div>
 
                       <div className="p-5 space-y-3">
-                        <p className="text-xs text-white/60 line-clamp-3 leading-relaxed">
+                        <p className="text-xs text-muted-foreground dark:text-white/60 line-clamp-3 leading-relaxed">
                           {exp.description}
                         </p>
 
-                        <div className="flex items-center justify-between text-xs text-white/50 pt-2 border-t border-white/5">
+                        <div className="flex items-center justify-between text-xs text-muted-foreground dark:text-white/50 pt-2 border-t border-border dark:border-white/5">
                           <span className="flex items-center gap-1.5">
                             <Clock className="w-3.5 h-3.5 text-primary" />
                             {exp.duration || 'Flexible'}
@@ -818,7 +818,7 @@ export default function AdminCmsStudioPage() {
                       <Button
                         onClick={() => handleOpenExperienceModal(exp)}
                         variant="outline"
-                        className="flex-1 border-white/10 hover:border-primary/40 h-9 rounded-xl text-xs text-white/80 hover:text-white"
+                        className="flex-1 border-border dark:border-white/10 hover:border-primary/40 bg-muted/40 dark:bg-transparent h-9 rounded-xl text-xs text-foreground dark:text-white/80 hover:text-foreground dark:hover:text-white"
                       >
                         <Edit className="w-3.5 h-3.5 mr-1.5" />
                         Edit
@@ -826,7 +826,7 @@ export default function AdminCmsStudioPage() {
                       <Button
                         onClick={() => handleDeleteExperience(exp.id)}
                         variant="outline"
-                        className="border-red-500/20 hover:bg-red-500/20 text-red-400 h-9 px-3 rounded-xl"
+                        className="border-red-500/20 hover:bg-red-500/20 text-red-500 dark:text-red-400 h-9 px-3 rounded-xl"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </Button>
@@ -844,12 +844,12 @@ export default function AdminCmsStudioPage() {
             <div className="space-y-6">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                  <h3 className="text-sm font-semibold text-zinc-100 font-mono uppercase tracking-wider">Resort Facilities & Amenities</h3>
-                  <p className="text-xs text-zinc-500 font-sans">Manage infinity pools, fitness suites, wellness spas, and business boardrooms.</p>
+                  <h3 className="text-sm font-semibold text-foreground dark:text-zinc-100 font-mono uppercase tracking-wider">Resort Facilities & Amenities</h3>
+                  <p className="text-xs text-muted-foreground dark:text-zinc-500 font-sans">Manage infinity pools, fitness suites, wellness spas, and business boardrooms.</p>
                 </div>
                 <Button
                   onClick={() => handleOpenFacilityModal()}
-                  className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs font-mono uppercase tracking-wider h-9 px-4 rounded-lg"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs font-mono uppercase tracking-wider h-9 px-4 rounded-lg"
                 >
                   <Plus className="w-3.5 h-3.5 mr-1.5" />
                   New Facility
@@ -862,7 +862,7 @@ export default function AdminCmsStudioPage() {
                   return (
                     <div
                       key={fac.id}
-                      className="group bg-[#121118] border border-white/10 hover:border-primary/40 rounded-2xl overflow-hidden transition-all duration-300 flex flex-col justify-between"
+                      className="group bg-card dark:bg-[#121118] border border-border dark:border-white/10 hover:border-primary/40 rounded-2xl overflow-hidden transition-all duration-300 flex flex-col justify-between"
                     >
                       <div>
                         <div className="relative aspect-[16/10] w-full overflow-hidden bg-black/40">
@@ -879,7 +879,7 @@ export default function AdminCmsStudioPage() {
                               {fac.type}
                             </Badge>
                             {fac.featured && (
-                              <Badge className="bg-primary text-black font-bold text-[9px] uppercase tracking-wider">
+                              <Badge className="bg-primary text-primary-foreground font-bold text-[9px] uppercase tracking-wider">
                                 Featured
                               </Badge>
                             )}
@@ -890,7 +890,7 @@ export default function AdminCmsStudioPage() {
                               <span className="text-[10px] text-primary uppercase tracking-widest font-bold">
                                 {fac.subtitle || fac.property?.name}
                               </span>
-                              <h4 className="text-lg font-serif font-bold text-white group-hover:text-primary transition-colors leading-tight">
+                              <h4 className="text-lg font-serif font-bold text-foreground dark:text-white group-hover:text-primary transition-colors leading-tight">
                                 {fac.name}
                               </h4>
                             </div>
@@ -901,11 +901,11 @@ export default function AdminCmsStudioPage() {
                         </div>
 
                         <div className="p-5 space-y-4">
-                          <p className="text-xs text-white/60 line-clamp-3 leading-relaxed">
+                          <p className="text-xs text-muted-foreground dark:text-white/60 line-clamp-3 leading-relaxed">
                             {fac.description || 'No detailed description.'}
                           </p>
 
-                          <div className="flex items-center gap-2 text-xs text-white/70 bg-white/5 px-3 py-1.5 rounded-lg border border-white/5">
+                          <div className="flex items-center gap-2 text-xs text-foreground dark:text-white/70 bg-muted/40 dark:bg-white/5 px-3 py-1.5 rounded-lg border border-border dark:border-white/5">
                             <Clock className="w-3.5 h-3.5 text-primary shrink-0" />
                             <span className="font-medium">Hours: {fac.operatingHours}</span>
                           </div>
@@ -915,7 +915,7 @@ export default function AdminCmsStudioPage() {
                               {featureList.slice(0, 3).map((feat: string, idx: number) => (
                                 <span
                                   key={idx}
-                                  className="text-[10px] bg-white/5 border border-white/5 text-white/70 px-2 py-0.5 rounded-md"
+                                  className="text-[10px] bg-muted/40 dark:bg-white/5 border border-border dark:border-white/5 text-foreground dark:text-white/70 px-2 py-0.5 rounded-md"
                                 >
                                   {feat}
                                 </span>
@@ -934,7 +934,7 @@ export default function AdminCmsStudioPage() {
                         <Button
                           onClick={() => handleOpenFacilityModal(fac)}
                           variant="outline"
-                          className="flex-1 border-white/10 hover:border-primary/40 h-9 rounded-xl text-xs text-white/80 hover:text-white"
+                          className="flex-1 border-border dark:border-white/10 hover:border-primary/40 bg-muted/40 dark:bg-transparent h-9 rounded-xl text-xs text-foreground dark:text-white/80 hover:text-foreground dark:hover:text-white"
                         >
                           <Edit className="w-3.5 h-3.5 mr-1.5" />
                           Edit
@@ -942,7 +942,7 @@ export default function AdminCmsStudioPage() {
                         <Button
                           onClick={() => handleDeleteFacility(fac.id)}
                           variant="outline"
-                          className="border-red-500/20 hover:bg-red-500/20 text-red-400 h-9 px-3 rounded-xl"
+                          className="border-red-500/20 hover:bg-red-500/20 text-red-500 dark:text-red-400 h-9 px-3 rounded-xl"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </Button>
@@ -960,34 +960,34 @@ export default function AdminCmsStudioPage() {
       {/* MODAL 1: EDIT PROPERTY & GEOLOCATION */}
       {/* ======================================================== */}
       <Dialog open={propertyModalOpen} onOpenChange={setPropertyModalOpen}>
-        <DialogContent className="bg-[#121118] border border-white/10 text-white max-w-xl max-h-[85vh] overflow-y-auto">
+        <DialogContent className="bg-card dark:bg-[#121118] border border-border dark:border-white/10 text-foreground dark:text-white max-w-xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-xl font-serif font-bold text-white">
+            <DialogTitle className="text-xl font-serif font-bold text-foreground dark:text-white">
               Edit Property Location & Coordinates
             </DialogTitle>
-            <DialogDescription className="text-xs text-white/50">
+            <DialogDescription className="text-xs text-muted-foreground dark:text-white/50">
               Configure coordinates and address details used for the website interactive location pin.
             </DialogDescription>
           </DialogHeader>
 
           <form onSubmit={handleSaveProperty} className="space-y-4 pt-2">
             <div>
-              <label className="text-xs text-white/70 font-medium">Property Name</label>
+              <label className="text-xs text-foreground dark:text-white/70 font-medium">Property Name</label>
               <Input
                 value={propertyForm.name}
                 onChange={(e) => setPropertyForm({ ...propertyForm, name: e.target.value })}
                 required
-                className="bg-black/40 border-white/10 text-white text-xs mt-1"
+                className="bg-background dark:bg-black/40 border border-input dark:border-white/10 text-foreground dark:text-white text-xs mt-1"
               />
             </div>
 
             <div>
-              <label className="text-xs text-white/70 font-medium">Hero Image URL</label>
+              <label className="text-xs text-foreground dark:text-white/70 font-medium">Hero Image URL</label>
               <Input
                 value={propertyForm.mainImage}
                 onChange={(e) => setPropertyForm({ ...propertyForm, mainImage: e.target.value })}
                 placeholder="https://..."
-                className="bg-black/40 border-white/10 text-white text-xs mt-1"
+                className="bg-background dark:bg-black/40 border border-input dark:border-white/10 text-foreground dark:text-white text-xs mt-1"
               />
             </div>
 
@@ -1000,7 +1000,7 @@ export default function AdminCmsStudioPage() {
                   value={propertyForm.latitude}
                   onChange={(e) => setPropertyForm({ ...propertyForm, latitude: e.target.value })}
                   placeholder="25.7617"
-                  className="bg-black/40 border-primary/30 text-white text-xs mt-1"
+                  className="bg-background dark:bg-black/40 border-primary/40 focus:border-primary text-foreground dark:text-white text-xs mt-1"
                 />
               </div>
               <div>
@@ -1011,59 +1011,59 @@ export default function AdminCmsStudioPage() {
                   value={propertyForm.longitude}
                   onChange={(e) => setPropertyForm({ ...propertyForm, longitude: e.target.value })}
                   placeholder="-80.1918"
-                  className="bg-black/40 border-primary/30 text-white text-xs mt-1"
+                  className="bg-background dark:bg-black/40 border-primary/40 focus:border-primary text-foreground dark:text-white text-xs mt-1"
                 />
               </div>
             </div>
 
             <div>
-              <label className="text-xs text-white/70 font-medium">Google Maps Navigation URL</label>
+              <label className="text-xs text-foreground dark:text-white/70 font-medium">Google Maps Navigation URL</label>
               <Input
                 value={propertyForm.googleMapsUrl}
                 onChange={(e) => setPropertyForm({ ...propertyForm, googleMapsUrl: e.target.value })}
                 placeholder="https://www.google.com/maps/..."
-                className="bg-black/40 border-white/10 text-white text-xs mt-1"
+                className="bg-background dark:bg-black/40 border border-input dark:border-white/10 text-foreground dark:text-white text-xs mt-1"
               />
             </div>
 
             <div>
-              <label className="text-xs text-white/70 font-medium">Address</label>
+              <label className="text-xs text-foreground dark:text-white/70 font-medium">Address</label>
               <Input
                 value={propertyForm.address}
                 onChange={(e) => setPropertyForm({ ...propertyForm, address: e.target.value })}
                 required
-                className="bg-black/40 border-white/10 text-white text-xs mt-1"
+                className="bg-background dark:bg-black/40 border border-input dark:border-white/10 text-foreground dark:text-white text-xs mt-1"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs text-white/70 font-medium">City</label>
+                <label className="text-xs text-foreground dark:text-white/70 font-medium">City</label>
                 <Input
                   value={propertyForm.city}
                   onChange={(e) => setPropertyForm({ ...propertyForm, city: e.target.value })}
                   required
-                  className="bg-black/40 border-white/10 text-white text-xs mt-1"
+                  className="bg-background dark:bg-black/40 border border-input dark:border-white/10 text-foreground dark:text-white text-xs mt-1"
                 />
               </div>
               <div>
-                <label className="text-xs text-white/70 font-medium">Country</label>
+                <label className="text-xs text-foreground dark:text-white/70 font-medium">Country</label>
                 <Input
                   value={propertyForm.country}
                   onChange={(e) => setPropertyForm({ ...propertyForm, country: e.target.value })}
                   required
-                  className="bg-black/40 border-white/10 text-white text-xs mt-1"
+                  className="bg-background dark:bg-black/40 border border-input dark:border-white/10 text-foreground dark:text-white text-xs mt-1"
                 />
               </div>
             </div>
 
             <div>
-              <label className="text-xs text-white/70 font-medium">Description</label>
+              <label className="text-xs text-foreground dark:text-white/70 font-medium">Description</label>
               <Textarea
                 rows={3}
                 value={propertyForm.description}
                 onChange={(e) => setPropertyForm({ ...propertyForm, description: e.target.value })}
-                className="bg-black/40 border-white/10 text-white text-xs mt-1"
+                className="bg-background dark:bg-black/40 border border-input dark:border-white/10 text-foreground dark:text-white text-xs mt-1"
               />
             </div>
 
@@ -1072,14 +1072,14 @@ export default function AdminCmsStudioPage() {
                 type="button"
                 variant="outline"
                 onClick={() => setPropertyModalOpen(false)}
-                className="border-[#1E2227] text-zinc-400 hover:text-white text-xs font-mono"
+                className="border-border dark:border-[#1E2227] text-muted-foreground dark:text-zinc-400 hover:text-foreground dark:hover:text-white text-xs font-mono"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={saving}
-                className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs font-mono uppercase tracking-wider h-8 px-4 rounded-lg"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs font-mono uppercase tracking-wider h-8 px-4 rounded-lg"
               >
                 {saving && <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />}
                 Save Changes
@@ -1093,46 +1093,46 @@ export default function AdminCmsStudioPage() {
       {/* MODAL 2: GALLERY ITEM MODAL */}
       {/* ======================================================== */}
       <Dialog open={galleryModalOpen} onOpenChange={setGalleryModalOpen}>
-        <DialogContent className="bg-[#121417] border border-[#1E2227] text-white max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogContent className="bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] text-foreground dark:text-white max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-base font-semibold font-mono uppercase tracking-wider text-white">
+            <DialogTitle className="text-base font-semibold font-mono uppercase tracking-wider text-foreground dark:text-white">
               {editingItem ? 'Edit Gallery Photo' : 'Add Media to Gallery'}
             </DialogTitle>
-            <DialogDescription className="text-xs text-white/50">
+            <DialogDescription className="text-xs text-muted-foreground dark:text-white/50">
               Upload or assign high-definition photography to property galleries.
             </DialogDescription>
           </DialogHeader>
 
           <form onSubmit={handleSaveGallery} className="space-y-4 pt-2">
             <div>
-              <label className="text-xs text-white/70 font-medium">Title</label>
+              <label className="text-xs text-foreground dark:text-white/70 font-medium">Title</label>
               <Input
                 value={galleryForm.title}
                 onChange={(e) => setGalleryForm({ ...galleryForm, title: e.target.value })}
                 placeholder="The Celestial Suite"
                 required
-                className="bg-black/40 border-white/10 text-white text-xs mt-1"
+                className="bg-background dark:bg-black/40 border border-input dark:border-white/10 text-foreground dark:text-white text-xs mt-1"
               />
             </div>
 
             <div>
-              <label className="text-xs text-white/70 font-medium">Image URL</label>
+              <label className="text-xs text-foreground dark:text-white/70 font-medium">Image URL</label>
               <Input
                 value={galleryForm.imageUrl}
                 onChange={(e) => setGalleryForm({ ...galleryForm, imageUrl: e.target.value })}
                 placeholder="https://images.unsplash.com/..."
                 required
-                className="bg-black/40 border-white/10 text-white text-xs mt-1"
+                className="bg-background dark:bg-black/40 border border-input dark:border-white/10 text-foreground dark:text-white text-xs mt-1"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs text-white/70 font-medium">Category</label>
+                <label className="text-xs text-foreground dark:text-white/70 font-medium">Category</label>
                 <select
                   value={galleryForm.category}
                   onChange={(e) => setGalleryForm({ ...galleryForm, category: e.target.value })}
-                  className="w-full h-9 bg-black/40 border border-white/10 rounded-md px-3 text-xs text-white mt-1"
+                  className="w-full h-9 bg-background dark:bg-black/40 border border-input dark:border-white/10 rounded-md px-3 text-xs text-foreground dark:text-white mt-1"
                 >
                   <option value="ROOMS">Rooms & Suites</option>
                   <option value="DINING">Dining & Bar</option>
@@ -1144,11 +1144,11 @@ export default function AdminCmsStudioPage() {
               </div>
 
               <div>
-                <label className="text-xs text-white/70 font-medium">Property</label>
+                <label className="text-xs text-foreground dark:text-white/70 font-medium">Property</label>
                 <select
                   value={galleryForm.propertyId}
                   onChange={(e) => setGalleryForm({ ...galleryForm, propertyId: e.target.value })}
-                  className="w-full h-9 bg-black/40 border border-white/10 rounded-md px-3 text-xs text-white mt-1"
+                  className="w-full h-9 bg-background dark:bg-black/40 border border-input dark:border-white/10 rounded-md px-3 text-xs text-foreground dark:text-white mt-1"
                   required
                 >
                   {properties.map((p) => (
@@ -1161,12 +1161,12 @@ export default function AdminCmsStudioPage() {
             </div>
 
             <div>
-              <label className="text-xs text-white/70 font-medium">Editorial Caption</label>
+              <label className="text-xs text-foreground dark:text-white/70 font-medium">Editorial Caption</label>
               <Input
                 value={galleryForm.caption}
                 onChange={(e) => setGalleryForm({ ...galleryForm, caption: e.target.value })}
                 placeholder="Panoramic views of the skyline..."
-                className="bg-black/40 border-white/10 text-white text-xs mt-1"
+                className="bg-background dark:bg-black/40 border border-input dark:border-white/10 text-foreground dark:text-white text-xs mt-1"
               />
             </div>
 
@@ -1176,9 +1176,9 @@ export default function AdminCmsStudioPage() {
                 id="featGallery"
                 checked={galleryForm.featured}
                 onChange={(e) => setGalleryForm({ ...galleryForm, featured: e.target.checked })}
-                className="w-4 h-4 rounded border-white/20 bg-black/40 text-primary cursor-pointer"
+                className="w-4 h-4 rounded border-input dark:border-white/20 bg-background dark:bg-black/40 text-primary cursor-pointer"
               />
-              <label htmlFor="featGallery" className="text-xs text-white cursor-pointer select-none">
+              <label htmlFor="featGallery" className="text-xs text-foreground dark:text-white cursor-pointer select-none">
                 Featured on Website Showcase
               </label>
             </div>
@@ -1188,14 +1188,14 @@ export default function AdminCmsStudioPage() {
                 type="button"
                 variant="outline"
                 onClick={() => setGalleryModalOpen(false)}
-                className="border-white/10 text-white text-xs"
+                className="border-border dark:border-white/10 text-muted-foreground dark:text-white hover:text-foreground text-xs"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={saving}
-                className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs font-mono uppercase tracking-wider h-8 px-4 rounded-lg"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs font-mono uppercase tracking-wider h-8 px-4 rounded-lg"
               >
                 {saving && <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />}
                 Save Media
@@ -1209,68 +1209,68 @@ export default function AdminCmsStudioPage() {
       {/* MODAL 3: EXPERIENCE MODAL */}
       {/* ======================================================== */}
       <Dialog open={experienceModalOpen} onOpenChange={setExperienceModalOpen}>
-        <DialogContent className="bg-[#121417] border border-[#1E2227] text-white max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogContent className="bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] text-foreground dark:text-white max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-base font-semibold font-mono uppercase tracking-wider text-white">
+            <DialogTitle className="text-base font-semibold font-mono uppercase tracking-wider text-foreground dark:text-white">
               {editingItem ? 'Edit Signature Experience' : 'New Signature Experience'}
             </DialogTitle>
-            <DialogDescription className="text-xs text-white/50">
+            <DialogDescription className="text-xs text-muted-foreground dark:text-white/50">
               Create curated luxury activities and guest packages.
             </DialogDescription>
           </DialogHeader>
 
           <form onSubmit={handleSaveExperience} className="space-y-4 pt-2">
             <div>
-              <label className="text-xs text-white/70 font-medium">Title</label>
+              <label className="text-xs text-foreground dark:text-white/70 font-medium">Title</label>
               <Input
                 value={experienceForm.title}
                 onChange={(e) => setExperienceForm({ ...experienceForm, title: e.target.value })}
                 placeholder="Michelin Culinary Journey"
                 required
-                className="bg-black/40 border-white/10 text-white text-xs mt-1"
+                className="bg-background dark:bg-black/40 border border-input dark:border-white/10 text-foreground dark:text-white text-xs mt-1"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs text-white/70 font-medium">Subtitle / Teaser</label>
+                <label className="text-xs text-foreground dark:text-white/70 font-medium">Subtitle / Teaser</label>
                 <Input
                   value={experienceForm.subtitle}
                   onChange={(e) => setExperienceForm({ ...experienceForm, subtitle: e.target.value })}
                   placeholder="Chef de Cuisine Table"
-                  className="bg-black/40 border-white/10 text-white text-xs mt-1"
+                  className="bg-background dark:bg-black/40 border border-input dark:border-white/10 text-foreground dark:text-white text-xs mt-1"
                 />
               </div>
 
               <div>
-                <label className="text-xs text-white/70 font-medium">Icon Emoji</label>
+                <label className="text-xs text-foreground dark:text-white/70 font-medium">Icon Emoji</label>
                 <Input
                   value={experienceForm.icon}
                   onChange={(e) => setExperienceForm({ ...experienceForm, icon: e.target.value })}
                   placeholder="🍷"
-                  className="bg-black/40 border-white/10 text-white text-xs mt-1"
+                  className="bg-background dark:bg-black/40 border border-input dark:border-white/10 text-foreground dark:text-white text-xs mt-1"
                 />
               </div>
             </div>
 
             <div>
-              <label className="text-xs text-white/70 font-medium">Photo URL</label>
+              <label className="text-xs text-foreground dark:text-white/70 font-medium">Photo URL</label>
               <Input
                 value={experienceForm.imageUrl}
                 onChange={(e) => setExperienceForm({ ...experienceForm, imageUrl: e.target.value })}
                 placeholder="https://images.unsplash.com/..."
                 required
-                className="bg-black/40 border-white/10 text-white text-xs mt-1"
+                className="bg-background dark:bg-black/40 border border-input dark:border-white/10 text-foreground dark:text-white text-xs mt-1"
               />
             </div>
 
             <div className="grid grid-cols-3 gap-3">
               <div>
-                <label className="text-xs text-white/70 font-medium">Category</label>
+                <label className="text-xs text-foreground dark:text-white/70 font-medium">Category</label>
                 <select
                   value={experienceForm.category}
                   onChange={(e) => setExperienceForm({ ...experienceForm, category: e.target.value })}
-                  className="w-full h-9 bg-black/40 border border-white/10 rounded-md px-3 text-xs text-white mt-1"
+                  className="w-full h-9 bg-background dark:bg-black/40 border border-input dark:border-white/10 rounded-md px-3 text-xs text-foreground dark:text-white mt-1"
                 >
                   <option value="DINING">Dining</option>
                   <option value="WELLNESS">Wellness</option>
@@ -1281,33 +1281,33 @@ export default function AdminCmsStudioPage() {
               </div>
 
               <div>
-                <label className="text-xs text-white/70 font-medium">Duration</label>
+                <label className="text-xs text-foreground dark:text-white/70 font-medium">Duration</label>
                 <Input
                   value={experienceForm.duration}
                   onChange={(e) => setExperienceForm({ ...experienceForm, duration: e.target.value })}
                   placeholder="3 Hours"
-                  className="bg-black/40 border-white/10 text-white text-xs mt-1"
+                  className="bg-background dark:bg-black/40 border border-input dark:border-white/10 text-foreground dark:text-white text-xs mt-1"
                 />
               </div>
 
               <div>
-                <label className="text-xs text-white/70 font-medium">Price ($ USD)</label>
+                <label className="text-xs text-foreground dark:text-white/70 font-medium">Price ($ USD)</label>
                 <Input
                   type="number"
                   value={experienceForm.price}
                   onChange={(e) => setExperienceForm({ ...experienceForm, price: e.target.value })}
                   placeholder="250"
-                  className="bg-black/40 border-white/10 text-white text-xs mt-1"
+                  className="bg-background dark:bg-black/40 border border-input dark:border-white/10 text-foreground dark:text-white text-xs mt-1"
                 />
               </div>
             </div>
 
             <div>
-              <label className="text-xs text-white/70 font-medium">Property</label>
+              <label className="text-xs text-foreground dark:text-white/70 font-medium">Property</label>
               <select
                 value={experienceForm.propertyId}
                 onChange={(e) => setExperienceForm({ ...experienceForm, propertyId: e.target.value })}
-                className="w-full h-9 bg-black/40 border border-white/10 rounded-md px-3 text-xs text-white mt-1"
+                className="w-full h-9 bg-background dark:bg-black/40 border border-input dark:border-white/10 rounded-md px-3 text-xs text-foreground dark:text-white mt-1"
                 required
               >
                 {properties.map((p) => (
@@ -1319,14 +1319,14 @@ export default function AdminCmsStudioPage() {
             </div>
 
             <div>
-              <label className="text-xs text-white/70 font-medium">Narrative Description</label>
+              <label className="text-xs text-foreground dark:text-white/70 font-medium">Narrative Description</label>
               <Textarea
                 rows={3}
                 value={experienceForm.description}
                 onChange={(e) => setExperienceForm({ ...experienceForm, description: e.target.value })}
                 required
                 placeholder="A bespoke 7-course degustation menu..."
-                className="bg-black/40 border-white/10 text-white text-xs mt-1"
+                className="bg-background dark:bg-black/40 border border-input dark:border-white/10 text-foreground dark:text-white text-xs mt-1"
               />
             </div>
 
@@ -1336,9 +1336,9 @@ export default function AdminCmsStudioPage() {
                 id="activeExp"
                 checked={experienceForm.active}
                 onChange={(e) => setExperienceForm({ ...experienceForm, active: e.target.checked })}
-                className="w-4 h-4 rounded border-white/20 bg-black/40 text-primary cursor-pointer"
+                className="w-4 h-4 rounded border-input dark:border-white/20 bg-background dark:bg-black/40 text-primary cursor-pointer"
               />
-              <label htmlFor="activeExp" className="text-xs text-white cursor-pointer select-none">
+              <label htmlFor="activeExp" className="text-xs text-foreground dark:text-white cursor-pointer select-none">
                 Active & Visible on Guest Website
               </label>
             </div>
@@ -1348,14 +1348,14 @@ export default function AdminCmsStudioPage() {
                 type="button"
                 variant="outline"
                 onClick={() => setExperienceModalOpen(false)}
-                className="border-white/10 text-white text-xs"
+                className="border-border dark:border-white/10 text-muted-foreground dark:text-white hover:text-foreground text-xs"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={saving}
-                className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs font-mono uppercase tracking-wider h-8 px-4 rounded-lg"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs font-mono uppercase tracking-wider h-8 px-4 rounded-lg"
               >
                 {saving && <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />}
                 Save Experience
@@ -1369,35 +1369,35 @@ export default function AdminCmsStudioPage() {
       {/* MODAL 4: FACILITY MODAL */}
       {/* ======================================================== */}
       <Dialog open={facilityModalOpen} onOpenChange={setFacilityModalOpen}>
-        <DialogContent className="bg-[#121417] border border-[#1E2227] text-white max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogContent className="bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] text-foreground dark:text-white max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-base font-semibold font-mono uppercase tracking-wider text-white">
+            <DialogTitle className="text-base font-semibold font-mono uppercase tracking-wider text-foreground dark:text-white">
               {editingItem ? 'Edit Facility' : 'New Resort Facility'}
             </DialogTitle>
-            <DialogDescription className="text-xs text-white/50">
+            <DialogDescription className="text-xs text-muted-foreground dark:text-white/50">
               Manage facilities, operational schedules, and luxury highlights.
             </DialogDescription>
           </DialogHeader>
 
           <form onSubmit={handleSaveFacility} className="space-y-4 pt-2">
             <div>
-              <label className="text-xs text-white/70 font-medium">Facility Name</label>
+              <label className="text-xs text-foreground dark:text-white/70 font-medium">Facility Name</label>
               <Input
                 value={facilityForm.name}
                 onChange={(e) => setFacilityForm({ ...facilityForm, name: e.target.value })}
                 placeholder="Celestial Infinity Pool"
                 required
-                className="bg-black/40 border-white/10 text-white text-xs mt-1"
+                className="bg-background dark:bg-black/40 border border-input dark:border-white/10 text-foreground dark:text-white text-xs mt-1"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs text-white/70 font-medium">Type</label>
+                <label className="text-xs text-foreground dark:text-white/70 font-medium">Type</label>
                 <select
                   value={facilityForm.type}
                   onChange={(e) => setFacilityForm({ ...facilityForm, type: e.target.value })}
-                  className="w-full h-9 bg-black/40 border border-white/10 rounded-md px-3 text-xs text-white mt-1"
+                  className="w-full h-9 bg-background dark:bg-black/40 border border-input dark:border-white/10 rounded-md px-3 text-xs text-foreground dark:text-white mt-1"
                 >
                   <option value="POOL">Pool</option>
                   <option value="SPA">Spa & Wellness</option>
@@ -1409,43 +1409,43 @@ export default function AdminCmsStudioPage() {
               </div>
 
               <div>
-                <label className="text-xs text-white/70 font-medium">Subtitle</label>
+                <label className="text-xs text-foreground dark:text-white/70 font-medium">Subtitle</label>
                 <Input
                   value={facilityForm.subtitle}
                   onChange={(e) => setFacilityForm({ ...facilityForm, subtitle: e.target.value })}
                   placeholder="Above the Clouds"
-                  className="bg-black/40 border-white/10 text-white text-xs mt-1"
+                  className="bg-background dark:bg-black/40 border border-input dark:border-white/10 text-foreground dark:text-white text-xs mt-1"
                 />
               </div>
             </div>
 
             <div>
-              <label className="text-xs text-white/70 font-medium">Showcase Image URL</label>
+              <label className="text-xs text-foreground dark:text-white/70 font-medium">Showcase Image URL</label>
               <Input
                 value={facilityForm.imageUrl}
                 onChange={(e) => setFacilityForm({ ...facilityForm, imageUrl: e.target.value })}
                 placeholder="https://images.unsplash.com/..."
-                className="bg-black/40 border-white/10 text-white text-xs mt-1"
+                className="bg-background dark:bg-black/40 border border-input dark:border-white/10 text-foreground dark:text-white text-xs mt-1"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs text-white/70 font-medium">Operating Hours</label>
+                <label className="text-xs text-foreground dark:text-white/70 font-medium">Operating Hours</label>
                 <Input
                   value={facilityForm.operatingHours}
                   onChange={(e) => setFacilityForm({ ...facilityForm, operatingHours: e.target.value })}
                   placeholder="06:00 - 22:00"
-                  className="bg-black/40 border-white/10 text-white text-xs mt-1"
+                  className="bg-background dark:bg-black/40 border border-input dark:border-white/10 text-foreground dark:text-white text-xs mt-1"
                 />
               </div>
 
               <div>
-                <label className="text-xs text-white/70 font-medium">Property</label>
+                <label className="text-xs text-foreground dark:text-white/70 font-medium">Property</label>
                 <select
                   value={facilityForm.propertyId}
                   onChange={(e) => setFacilityForm({ ...facilityForm, propertyId: e.target.value })}
-                  className="w-full h-9 bg-black/40 border border-white/10 rounded-md px-3 text-xs text-white mt-1"
+                  className="w-full h-9 bg-background dark:bg-black/40 border border-input dark:border-white/10 rounded-md px-3 text-xs text-foreground dark:text-white mt-1"
                   required
                 >
                   {properties.map((p) => (
@@ -1458,23 +1458,23 @@ export default function AdminCmsStudioPage() {
             </div>
 
             <div>
-              <label className="text-xs text-white/70 font-medium">Features (Comma separated)</label>
+              <label className="text-xs text-foreground dark:text-white/70 font-medium">Features (Comma separated)</label>
               <Input
                 value={facilityForm.features}
                 onChange={(e) => setFacilityForm({ ...facilityForm, features: e.target.value })}
                 placeholder="Temperature Controlled, Private Cabanas, Poolside Lounge"
-                className="bg-black/40 border-white/10 text-white text-xs mt-1"
+                className="bg-background dark:bg-black/40 border border-input dark:border-white/10 text-foreground dark:text-white text-xs mt-1"
               />
             </div>
 
             <div>
-              <label className="text-xs text-white/70 font-medium">Description</label>
+              <label className="text-xs text-foreground dark:text-white/70 font-medium">Description</label>
               <Textarea
                 rows={3}
                 value={facilityForm.description}
                 onChange={(e) => setFacilityForm({ ...facilityForm, description: e.target.value })}
                 placeholder="Our heated rooftop infinity pool offers a seamless blend of water and sky..."
-                className="bg-black/40 border-white/10 text-white text-xs mt-1"
+                className="bg-background dark:bg-black/40 border border-input dark:border-white/10 text-foreground dark:text-white text-xs mt-1"
               />
             </div>
 
@@ -1485,19 +1485,19 @@ export default function AdminCmsStudioPage() {
                   id="featFacility"
                   checked={facilityForm.featured}
                   onChange={(e) => setFacilityForm({ ...facilityForm, featured: e.target.checked })}
-                  className="w-4 h-4 rounded border-white/20 bg-black/40 text-primary cursor-pointer"
+                  className="w-4 h-4 rounded border-input dark:border-white/20 bg-background dark:bg-black/40 text-primary cursor-pointer"
                 />
-                <label htmlFor="featFacility" className="text-xs text-white cursor-pointer select-none">
+                <label htmlFor="featFacility" className="text-xs text-foreground dark:text-white cursor-pointer select-none">
                   Featured
                 </label>
               </div>
 
               <div className="flex items-center gap-2">
-                <label className="text-xs text-white/70">Status:</label>
+                <label className="text-xs text-foreground dark:text-white/70">Status:</label>
                 <select
                   value={facilityForm.status}
                   onChange={(e) => setFacilityForm({ ...facilityForm, status: e.target.value })}
-                  className="h-8 bg-black/40 border border-white/10 rounded px-2 text-xs text-white"
+                  className="h-8 bg-background dark:bg-black/40 border border-input dark:border-white/10 rounded px-2 text-xs text-foreground dark:text-white"
                 >
                   <option value="ACTIVE">ACTIVE</option>
                   <option value="MAINTENANCE">MAINTENANCE</option>
@@ -1511,14 +1511,14 @@ export default function AdminCmsStudioPage() {
                 type="button"
                 variant="outline"
                 onClick={() => setFacilityModalOpen(false)}
-                className="border-white/10 text-white text-xs"
+                className="border-border dark:border-white/10 text-muted-foreground dark:text-white hover:text-foreground text-xs"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={saving}
-                className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs font-mono uppercase tracking-wider h-8 px-4 rounded-lg"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs font-mono uppercase tracking-wider h-8 px-4 rounded-lg"
               >
                 {saving && <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />}
                 Save Facility

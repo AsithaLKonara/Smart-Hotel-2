@@ -89,7 +89,7 @@ export default function StaffCollaborationHub() {
 
   if (status === 'loading') {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-slate-950">
+      <div className="flex items-center justify-center min-h-screen bg-background dark:bg-slate-950">
         <PremiumSpinner size="lg" text="Syncing real-time collaboration gateway..." />
       </div>
     )
@@ -98,34 +98,34 @@ export default function StaffCollaborationHub() {
   const currentChannelInfo = CHANNELS.find(c => c.id === activeChannel)
 
   return (
-    <div className="min-h-screen bg-[#090514] text-slate-100 p-6 font-sans flex flex-col h-screen overflow-hidden">
+    <div className="min-h-screen bg-background dark:bg-[#090514] text-foreground dark:text-slate-100 p-6 font-sans flex flex-col h-screen overflow-hidden">
       
       {/* Top Banner Control Panel */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between border-b border-purple-950/40 pb-5 mb-5 shrink-0 gap-4">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between border-b border-border dark:border-purple-950/40 pb-5 mb-5 shrink-0 gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <Badge className="bg-purple-600/10 text-purple-400 border border-purple-500/30 text-xs tracking-wider uppercase font-bold py-1 px-3">
+            <Badge className="bg-purple-600/10 text-purple-600 dark:text-purple-400 border border-purple-500/30 text-xs tracking-wider uppercase font-bold py-1 px-3">
               LIVE STAFF DESK
             </Badge>
-            <div className="flex items-center gap-1.5 text-xs text-slate-400">
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground dark:text-slate-400">
               {isConnected ? (
-                <span className="flex items-center text-emerald-400 font-semibold gap-1">
+                <span className="flex items-center text-emerald-600 dark:text-emerald-400 font-semibold gap-1">
                   <Wifi className="w-3.5 h-3.5" /> WebSockets Engaged
                 </span>
               ) : (
-                <span className="flex items-center text-rose-400 font-semibold gap-1 animate-pulse">
+                <span className="flex items-center text-rose-600 dark:text-rose-400 font-semibold gap-1 animate-pulse">
                   <WifiOff className="w-3.5 h-3.5" /> Outage: Offline Recovery Caching
                 </span>
               )}
             </div>
           </div>
-          <h1 className="text-3xl font-serif font-bold text-white mt-1.5">Staff Collaboration & Communication Hub</h1>
+          <h1 className="text-3xl font-serif font-bold text-foreground dark:text-white mt-1.5">Staff Collaboration & Communication Hub</h1>
         </div>
         <div className="flex items-center gap-3">
-          <Button onClick={() => router.push('/admin/timeline')} variant="outline" size="sm" className="bg-white/5 border-purple-950/50 text-purple-300">
+          <Button onClick={() => router.push('/admin/timeline')} variant="outline" size="sm" className="bg-background dark:bg-white/5 border-border dark:border-purple-950/50 text-foreground dark:text-purple-300">
             Unified Timeline
           </Button>
-          <Button onClick={() => router.push('/admin/dashboard')} className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white border-0 font-semibold shadow-lg shadow-purple-950">
+          <Button onClick={() => router.push('/admin/dashboard')} className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white border-0 font-semibold shadow-lg shadow-purple-950/20">
             Master Dashboard
           </Button>
         </div>
@@ -135,9 +135,9 @@ export default function StaffCollaborationHub() {
         
         {/* Left Drawer: Category Channels List */}
         <div className="lg:col-span-3 flex flex-col gap-4 overflow-y-auto">
-          <Card className="bg-white/[0.02] border border-purple-900/10 rounded-none shadow-xl flex-1 flex flex-col">
-            <CardHeader className="border-b border-purple-950/40 p-4 shrink-0">
-              <CardTitle className="text-xs uppercase tracking-widest font-extrabold text-purple-400 flex items-center gap-2">
+          <Card className="bg-card dark:bg-white/[0.02] border border-border dark:border-purple-900/10 rounded-xl shadow-sm flex-1 flex flex-col">
+            <CardHeader className="border-b border-border dark:border-purple-950/40 p-4 shrink-0">
+              <CardTitle className="text-xs uppercase tracking-widest font-extrabold text-purple-600 dark:text-purple-400 flex items-center gap-2">
                 <MessageSquare className="w-4 h-4" /> Active Channels
               </CardTitle>
             </CardHeader>
@@ -146,12 +146,12 @@ export default function StaffCollaborationHub() {
                 <button
                   key={ch.id}
                   onClick={() => setActiveChannel(ch.id)}
-                  className={`w-full p-3 rounded-none flex items-start gap-3 transition-all text-left border ${activeChannel === ch.id ? 'bg-purple-950/30 border-purple-500/30 shadow' : 'bg-transparent border-transparent hover:bg-white/[0.01]'}`}
+                  className={`w-full p-3 rounded-lg flex items-start gap-3 transition-all text-left border ${activeChannel === ch.id ? 'bg-purple-500/10 dark:bg-purple-950/30 border-purple-500/30 shadow-sm' : 'bg-transparent border-transparent hover:bg-muted dark:hover:bg-white/[0.01]'}`}
                 >
                   <span className="text-xl mt-0.5">{ch.icon}</span>
                   <div className="min-w-0">
-                    <h4 className={`text-xs font-bold ${activeChannel === ch.id ? 'text-white' : 'text-slate-300'}`}>{ch.name}</h4>
-                    <p className="text-[10px] text-slate-500 truncate mt-0.5 leading-relaxed">{ch.desc}</p>
+                    <h4 className={`text-xs font-bold ${activeChannel === ch.id ? 'text-purple-700 dark:text-white' : 'text-foreground dark:text-slate-300'}`}>{ch.name}</h4>
+                    <p className="text-[10px] text-muted-foreground dark:text-slate-500 truncate mt-0.5 leading-relaxed">{ch.desc}</p>
                   </div>
                 </button>
               ))}
@@ -161,27 +161,27 @@ export default function StaffCollaborationHub() {
 
         {/* Center Canvas: Interactive Messenger Feed */}
         <div className="lg:col-span-6 flex flex-col h-full min-h-0">
-          <Card className="bg-white/[0.02] border border-purple-900/20 rounded-none shadow-2xl flex-1 flex flex-col min-h-0">
+          <Card className="bg-card dark:bg-white/[0.02] border border-border dark:border-purple-900/20 rounded-xl shadow-sm flex-1 flex flex-col min-h-0">
             
             {/* Active Channel Header */}
-            <div className="border-b border-purple-950/50 bg-slate-950/40 p-4 shrink-0 flex items-center justify-between gap-4">
+            <div className="border-b border-border dark:border-purple-950/50 bg-muted/40 dark:bg-slate-950/40 p-4 shrink-0 flex items-center justify-between gap-4">
               <div className="min-w-0">
-                <h2 className="text-sm uppercase tracking-widest font-extrabold text-white flex items-center gap-2">
+                <h2 className="text-sm uppercase tracking-widest font-extrabold text-foreground dark:text-white flex items-center gap-2">
                   <span className="text-lg">{currentChannelInfo?.icon}</span> {currentChannelInfo?.name}
                 </h2>
-                <p className="text-[10px] text-slate-500 truncate">{currentChannelInfo?.desc}</p>
+                <p className="text-[10px] text-muted-foreground dark:text-slate-500 truncate">{currentChannelInfo?.desc}</p>
               </div>
-              <div className="shrink-0 flex items-center gap-1.5 bg-purple-950/50 px-2 py-1 border border-purple-500/10 text-[9px] text-purple-300 uppercase font-mono">
-                <Users className="w-3 h-3 text-purple-400" /> Channels Sync
+              <div className="shrink-0 flex items-center gap-1.5 bg-muted dark:bg-purple-950/50 px-2 py-1 border border-border dark:border-purple-500/10 text-[9px] text-foreground dark:text-purple-300 uppercase font-mono rounded">
+                <Users className="w-3 h-3 text-purple-600 dark:text-purple-400" /> Channels Sync
               </div>
             </div>
 
             {/* Live Chat Messages list */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0 bg-slate-950/20">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0 bg-muted/10 dark:bg-slate-950/20">
               
               {messages.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center text-slate-600 gap-2">
-                  <Megaphone className="w-8 h-8 text-slate-700 animate-bounce" />
+                <div className="h-full flex flex-col items-center justify-center text-muted-foreground dark:text-slate-600 gap-2">
+                  <Megaphone className="w-8 h-8 text-muted-foreground/60 dark:text-slate-700 animate-bounce" />
                   <p className="text-xs">No active staff messages on this channel. Spark a discussion!</p>
                 </div>
               ) : (
@@ -195,24 +195,24 @@ export default function StaffCollaborationHub() {
                       className={`flex flex-col max-w-[85%] ${isOwn ? 'ml-auto items-end' : 'mr-auto items-start'}`}
                     >
                       {/* Sender details badge */}
-                      <div className="flex items-center gap-2 text-[9px] text-slate-500 mb-1 font-mono">
-                        <span className="font-bold text-slate-300">{msg.senderName}</span>
-                        <Badge variant="outline" className="text-[7px] py-0 px-1 border-purple-500/20 text-purple-400">{msg.senderRole}</Badge>
-                        <span className="text-slate-600 font-sans">{new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                      <div className="flex items-center gap-2 text-[9px] text-muted-foreground dark:text-slate-500 mb-1 font-mono">
+                        <span className="font-bold text-foreground dark:text-slate-300">{msg.senderName}</span>
+                        <Badge variant="outline" className="text-[7px] py-0 px-1 border-purple-500/20 text-purple-600 dark:text-purple-400">{msg.senderRole}</Badge>
+                        <span className="text-muted-foreground/60 dark:text-slate-600 font-sans">{new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                       </div>
 
                       {/* Chat text box */}
-                      <div className={`p-3 rounded-xs border text-xs leading-relaxed ${isOwn ? (isHigh ? 'bg-amber-950/20 border-amber-500/40 text-slate-100 shadow-md shadow-amber-950/10' : 'bg-purple-950/20 border-purple-500/20 text-slate-100') : (isHigh ? 'bg-rose-950/20 border-rose-500/40 text-slate-100 shadow-md shadow-rose-950/10' : 'bg-white/[0.01] border-slate-800 text-slate-300')} relative`}>
+                      <div className={`p-3 rounded-lg border text-xs leading-relaxed ${isOwn ? (isHigh ? 'bg-amber-500/10 border-amber-500/40 text-foreground dark:text-slate-100 shadow-md shadow-amber-950/10' : 'bg-purple-500/10 border-purple-500/20 text-foreground dark:text-slate-100') : (isHigh ? 'bg-rose-500/10 border-rose-500/40 text-foreground dark:text-slate-100 shadow-md shadow-rose-950/10' : 'bg-card dark:bg-white/[0.01] border-border dark:border-slate-800 text-foreground dark:text-slate-300')} relative`}>
                         {msg.isPending && (
-                          <Badge className="absolute -top-2.5 -right-2 bg-amber-950 text-amber-400 border border-amber-500/30 text-[7px] font-mono tracking-widest py-0 px-1 uppercase font-extrabold">Pending Sync</Badge>
+                          <Badge className="absolute -top-2.5 -right-2 bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/30 text-[7px] font-mono tracking-widest py-0 px-1 uppercase font-extrabold">Pending Sync</Badge>
                         )}
                         <p>{msg.text}</p>
                       </div>
 
                       {/* High-priority SLA timers */}
                       {isHigh && (
-                        <div className="flex items-center gap-1.5 mt-1 text-[8px] uppercase tracking-wider font-extrabold text-amber-500 font-mono animate-pulse">
-                          <Timer className="w-3 h-3 text-amber-500" /> Response SLA Target: 5:00 Unresolved
+                        <div className="flex items-center gap-1.5 mt-1 text-[8px] uppercase tracking-wider font-extrabold text-amber-600 dark:text-amber-500 font-mono animate-pulse">
+                          <Timer className="w-3 h-3 text-amber-600 dark:text-amber-500" /> Response SLA Target: 5:00 Unresolved
                         </div>
                       )}
 
@@ -225,7 +225,7 @@ export default function StaffCollaborationHub() {
 
             {/* Typing indicators */}
             {typingStaff.length > 0 && (
-              <div className="px-4 py-1.5 bg-slate-950/40 border-t border-purple-950/20 text-[10px] text-slate-500 italic flex items-center gap-2">
+              <div className="px-4 py-1.5 bg-muted/40 dark:bg-slate-950/40 border-t border-border dark:border-purple-950/20 text-[10px] text-muted-foreground dark:text-slate-500 italic flex items-center gap-2">
                 <span className="flex h-1.5 w-1.5 relative">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-purple-500"></span>
@@ -235,35 +235,35 @@ export default function StaffCollaborationHub() {
             )}
 
             {/* Input submission box */}
-            <form onSubmit={handleSendMessage} className="p-4 border-t border-purple-950/40 bg-slate-950/30 shrink-0 space-y-3">
+            <form onSubmit={handleSendMessage} className="p-4 border-t border-border dark:border-purple-950/40 bg-muted/20 dark:bg-slate-950/30 shrink-0 space-y-3">
               
-              <div className="flex items-center justify-between gap-4 text-xs font-mono text-slate-500">
+              <div className="flex items-center justify-between gap-4 text-xs font-mono text-muted-foreground dark:text-slate-500">
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] uppercase">Tag Priority:</span>
                   <button
                     type="button"
                     onClick={() => setMessagePriority('low')}
-                    className={`px-2 py-0.5 border rounded-xs text-[9px] ${messagePriority === 'low' ? 'bg-blue-950/30 border-blue-500/40 text-blue-400 font-bold' : 'bg-slate-950 border-slate-800 hover:border-slate-700 text-slate-400'}`}
+                    className={`px-2 py-0.5 border rounded text-[9px] ${messagePriority === 'low' ? 'bg-blue-500/10 border-blue-500/40 text-blue-600 dark:text-blue-400 font-bold' : 'bg-background dark:bg-slate-950 border-input dark:border-slate-800 hover:border-border text-muted-foreground dark:text-slate-400'}`}
                   >
                     Low
                   </button>
                   <button
                     type="button"
                     onClick={() => setMessagePriority('normal')}
-                    className={`px-2 py-0.5 border rounded-xs text-[9px] ${messagePriority === 'normal' ? 'bg-slate-950 border-slate-800 text-slate-400 font-bold' : 'bg-slate-950 border-slate-800 hover:border-slate-700 text-slate-400'}`}
+                    className={`px-2 py-0.5 border rounded text-[9px] ${messagePriority === 'normal' ? 'bg-muted border-border text-foreground dark:bg-slate-950 dark:border-slate-800 dark:text-slate-400 font-bold' : 'bg-background dark:bg-slate-950 border-input dark:border-slate-800 hover:border-border text-muted-foreground dark:text-slate-400'}`}
                   >
                     Normal
                   </button>
                   <button
                     type="button"
                     onClick={() => setMessagePriority('high')}
-                    className={`px-2 py-0.5 border rounded-xs text-[9px] ${messagePriority === 'high' ? 'bg-amber-950/30 border-amber-500/40 text-amber-400 font-bold' : 'bg-slate-950 border-slate-800 hover:border-slate-700 text-slate-400'}`}
+                    className={`px-2 py-0.5 border rounded text-[9px] ${messagePriority === 'high' ? 'bg-amber-500/10 border-amber-500/40 text-amber-600 dark:text-amber-400 font-bold' : 'bg-background dark:bg-slate-950 border-input dark:border-slate-800 hover:border-border text-muted-foreground dark:text-slate-400'}`}
                   >
                     High SLA
                   </button>
                 </div>
                 {!isConnected && (
-                  <span className="text-[9px] text-amber-500 flex items-center gap-1 uppercase font-bold animate-pulse"><AlertTriangle className="w-3.5 h-3.5" /> Queue Buffered</span>
+                  <span className="text-[9px] text-amber-600 dark:text-amber-500 flex items-center gap-1 uppercase font-bold animate-pulse"><AlertTriangle className="w-3.5 h-3.5" /> Queue Buffered</span>
                 )}
               </div>
 
@@ -274,11 +274,11 @@ export default function StaffCollaborationHub() {
                   onChange={handleInputChange}
                   onBlur={() => setLocalTyping(false)}
                   placeholder={`Compose staff dispatch to ${currentChannelInfo?.name}...`}
-                  className="flex-1 bg-slate-950 border border-purple-900/20 text-xs text-slate-200 p-3 rounded-none focus:outline-none focus:ring-1 focus:ring-purple-500"
+                  className="flex-1 bg-background dark:bg-slate-950 border border-input dark:border-purple-900/20 text-xs text-foreground dark:text-slate-200 p-3 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
                 />
                 <Button 
                   type="submit" 
-                  className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 border-0 text-white shrink-0 shadow-lg shadow-purple-950"
+                  className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 border-0 text-white shrink-0 shadow-lg shadow-purple-950/20"
                 >
                   <Send className="w-4 h-4" /> Send Dispatch
                 </Button>
@@ -292,38 +292,38 @@ export default function StaffCollaborationHub() {
         {/* Right Drawer: Online Staff Active Presence Roster */}
         <div className="lg:col-span-3 flex flex-col gap-4 overflow-y-auto">
           
-          <Card className="bg-white/[0.02] border border-purple-900/10 rounded-none shadow-xl flex-1 flex flex-col">
-            <CardHeader className="border-b border-purple-950/40 p-4 shrink-0 flex flex-row items-center justify-between">
+          <Card className="bg-card dark:bg-white/[0.02] border border-border dark:border-purple-900/10 rounded-xl shadow-sm flex-1 flex flex-col">
+            <CardHeader className="border-b border-border dark:border-purple-950/40 p-4 shrink-0 flex flex-row items-center justify-between">
               <div>
-                <CardTitle className="text-xs uppercase tracking-widest font-extrabold text-slate-300">Staff Presence</CardTitle>
-                <CardDescription className="text-[10px] text-slate-500">Connected operators on active shifts.</CardDescription>
+                <CardTitle className="text-xs uppercase tracking-widest font-extrabold text-foreground dark:text-slate-300">Staff Presence</CardTitle>
+                <CardDescription className="text-[10px] text-muted-foreground dark:text-slate-500">Connected operators on active shifts.</CardDescription>
               </div>
-              <Badge className="bg-emerald-950 text-emerald-300 border-emerald-500/20 text-[9px]">{onlineStaff.length} Connected</Badge>
+              <Badge className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 text-[9px]">{onlineStaff.length} Connected</Badge>
             </CardHeader>
             <CardContent className="p-3 flex-1 overflow-y-auto space-y-3">
               {onlineStaff.length === 0 ? (
-                <div className="text-slate-600 text-center py-8 text-xs">No online staff detected.</div>
+                <div className="text-muted-foreground dark:text-slate-600 text-center py-8 text-xs">No online staff detected.</div>
               ) : (
                 onlineStaff.map(staff => (
-                  <div key={staff.id} className="flex items-center justify-between gap-3 bg-slate-950/20 p-2.5 border border-purple-950/20">
+                  <div key={staff.id} className="flex items-center justify-between gap-3 bg-muted/40 dark:bg-slate-950/20 p-2.5 border border-border dark:border-purple-950/20 rounded-lg">
                     <div className="flex items-center gap-2.5 min-w-0">
                       
                       {/* Avatar placeholder with glow indicators */}
                       <div className="relative shrink-0">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-950 to-slate-950 border border-purple-900/30 flex items-center justify-center text-purple-400">
+                        <div className="w-8 h-8 rounded-full bg-muted dark:bg-gradient-to-tr dark:from-purple-950 dark:to-slate-950 border border-border dark:border-purple-900/30 flex items-center justify-center text-purple-600 dark:text-purple-400">
                           <User className="w-4 h-4" />
                         </div>
-                        <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-500 border-2 border-[#090514]" />
+                        <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-500 border-2 border-background dark:border-[#090514]" />
                       </div>
 
                       <div className="min-w-0 leading-tight">
-                        <strong className="text-slate-200 text-xs truncate block">{staff.name}</strong>
-                        <span className="text-[9px] text-slate-500 truncate block font-mono">{staff.email}</span>
+                        <strong className="text-foreground dark:text-slate-200 text-xs truncate block">{staff.name}</strong>
+                        <span className="text-[9px] text-muted-foreground dark:text-slate-500 truncate block font-mono">{staff.email}</span>
                       </div>
 
                     </div>
 
-                    <Badge variant="outline" className="text-[7px] border-emerald-500/20 text-emerald-400 uppercase font-mono shrink-0 py-0.5 px-1.5">{staff.role}</Badge>
+                    <Badge variant="outline" className="text-[7px] border-emerald-500/20 text-emerald-600 dark:text-emerald-400 uppercase font-mono shrink-0 py-0.5 px-1.5">{staff.role}</Badge>
                   </div>
                 ))
               )}
@@ -331,12 +331,12 @@ export default function StaffCollaborationHub() {
           </Card>
 
           {/* SLA Security Standard Notice */}
-          <Card className="bg-[#10072d]/20 border border-purple-950/20 rounded-none p-4">
-            <div className="flex items-center gap-2 text-purple-400 mb-1.5">
-              <ShieldCheck className="w-4 h-4 text-purple-400" />
-              <h4 className="font-extrabold text-[10px] uppercase tracking-widest text-slate-300">Staff SLA Governance</h4>
+          <Card className="bg-muted/30 dark:bg-[#10072d]/20 border border-border dark:border-purple-950/20 rounded-xl p-4">
+            <div className="flex items-center gap-2 text-purple-600 dark:text-purple-400 mb-1.5">
+              <ShieldCheck className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+              <h4 className="font-extrabold text-[10px] uppercase tracking-widest text-foreground dark:text-slate-300">Staff SLA Governance</h4>
             </div>
-            <p className="text-[10px] text-slate-500 leading-relaxed">
+            <p className="text-[10px] text-muted-foreground dark:text-slate-500 leading-relaxed">
               Every staff dispatch message is encrypted and immutable. All actions on high-priority channels automatically register onto the cryptographic timeline, allowing audits on communication pacing and team task-completion metrics.
             </p>
           </Card>

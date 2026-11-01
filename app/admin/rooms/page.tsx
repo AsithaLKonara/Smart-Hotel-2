@@ -410,14 +410,14 @@ export default function AdminRoomsPage() {
       actions={
         <div className="flex items-center gap-2">
           {/* Tab Switcher: [ Rooms | Room Types ] */}
-          <div className="flex items-center bg-[#121417] border border-[#1E2227] p-1 rounded-xl gap-1">
+          <div className="flex items-center bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] p-1 rounded-xl gap-1">
             <button
               onClick={() => setActiveTab('rooms')}
               className={cn(
                 "flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all",
                 activeTab === 'rooms'
-                  ? "bg-[#181A1D] text-white border border-[#2B3037] shadow-sm"
-                  : "text-zinc-400 hover:text-white hover:bg-[#16181B]"
+                  ? "bg-muted dark:bg-[#181A1D] text-foreground dark:text-white border border-border dark:border-[#2B3037] shadow-sm"
+                  : "text-muted-foreground dark:text-zinc-400 hover:text-foreground dark:hover:text-white hover:bg-muted/50 dark:hover:bg-[#16181B]"
               )}
             >
               <Bed className="w-3.5 h-3.5" />
@@ -429,8 +429,8 @@ export default function AdminRoomsPage() {
               className={cn(
                 "flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all",
                 activeTab === 'types'
-                  ? "bg-[#181A1D] text-white border border-[#2B3037] shadow-sm"
-                  : "text-zinc-400 hover:text-white hover:bg-[#16181B]"
+                  ? "bg-muted dark:bg-[#181A1D] text-foreground dark:text-white border border-border dark:border-[#2B3037] shadow-sm"
+                  : "text-muted-foreground dark:text-zinc-400 hover:text-foreground dark:hover:text-white hover:bg-muted/50 dark:hover:bg-[#16181B]"
               )}
             >
               <Layers className="w-3.5 h-3.5" />
@@ -447,93 +447,93 @@ export default function AdminRoomsPage() {
         <div className="space-y-6">
           {/* Stats Bar (Section 4.D) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="p-5 rounded-2xl bg-[#121417] border border-[#1E2227] flex flex-col justify-between hover:border-zinc-700 transition-colors">
+            <div className="p-5 rounded-2xl bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] flex flex-col justify-between hover:border-zinc-400 dark:hover:border-zinc-700 transition-colors">
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Total Rooms</span>
-                  <div className="w-7 h-7 rounded-lg bg-[#181A1D] border border-[#2B3037] flex items-center justify-center text-zinc-400">
+                  <span className="text-xs font-semibold text-muted-foreground dark:text-zinc-400 uppercase tracking-wider">Total Rooms</span>
+                  <div className="w-7 h-7 rounded-lg bg-muted dark:bg-[#181A1D] border border-border dark:border-[#2B3037] flex items-center justify-center text-muted-foreground dark:text-zinc-400">
                     <Bed className="w-3.5 h-3.5" />
                   </div>
                 </div>
-                <div className="text-2xl sm:text-3xl font-black text-white font-mono tracking-tight">
+                <div className="text-2xl sm:text-3xl font-black text-foreground dark:text-white font-mono tracking-tight">
                   {rooms.length}
                 </div>
               </div>
-              <div className="pt-2 mt-3 border-t border-[#1C2025] text-[11px] text-zinc-500 font-mono">
+              <div className="pt-2 mt-3 border-t border-border dark:border-[#1C2025] text-[11px] text-muted-foreground dark:text-zinc-500 font-mono">
                 Physical Inventory
               </div>
             </div>
 
-            <div className="p-5 rounded-2xl bg-[#121417] border border-[#1E2227] flex flex-col justify-between hover:border-zinc-700 transition-colors">
+            <div className="p-5 rounded-2xl bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] flex flex-col justify-between hover:border-zinc-400 dark:hover:border-zinc-700 transition-colors">
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Available Now</span>
-                  <div className="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                  <span className="text-xs font-semibold text-muted-foreground dark:text-zinc-400 uppercase tracking-wider">Available Now</span>
+                  <div className="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
                     <CheckCircle2 className="w-3.5 h-3.5" />
                   </div>
                 </div>
-                <div className="text-2xl sm:text-3xl font-black text-emerald-400 font-mono tracking-tight">
+                <div className="text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400 font-mono tracking-tight">
                   {rooms.filter(r => r.status === 'AVAILABLE').length}
                 </div>
               </div>
-              <div className="pt-2 mt-3 border-t border-[#1C2025] text-[11px] text-emerald-500/70 font-mono">
+              <div className="pt-2 mt-3 border-t border-border dark:border-[#1C2025] text-[11px] text-emerald-600/70 dark:text-emerald-500/70 font-mono">
                 Ready for check-in
               </div>
             </div>
 
-            <div className="p-5 rounded-2xl bg-[#121417] border border-[#1E2227] flex flex-col justify-between hover:border-zinc-700 transition-colors">
+            <div className="p-5 rounded-2xl bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] flex flex-col justify-between hover:border-zinc-400 dark:hover:border-zinc-700 transition-colors">
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Occupied</span>
-                  <div className="w-7 h-7 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+                  <span className="text-xs font-semibold text-muted-foreground dark:text-zinc-400 uppercase tracking-wider">Occupied</span>
+                  <div className="w-7 h-7 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400">
                     <Users className="w-3.5 h-3.5" />
                   </div>
                 </div>
-                <div className="text-2xl sm:text-3xl font-black text-blue-400 font-mono tracking-tight">
+                <div className="text-2xl sm:text-3xl font-black text-blue-600 dark:text-blue-400 font-mono tracking-tight">
                   {rooms.filter(r => r.status === 'OCCUPIED').length}
                 </div>
               </div>
-              <div className="pt-2 mt-3 border-t border-[#1C2025] text-[11px] text-blue-500/70 font-mono">
+              <div className="pt-2 mt-3 border-t border-border dark:border-[#1C2025] text-[11px] text-blue-600/70 dark:text-blue-500/70 font-mono">
                 Active in-house guests
               </div>
             </div>
 
-            <div className="p-5 rounded-2xl bg-[#121417] border border-[#1E2227] flex flex-col justify-between hover:border-zinc-700 transition-colors">
+            <div className="p-5 rounded-2xl bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] flex flex-col justify-between hover:border-zinc-400 dark:hover:border-zinc-700 transition-colors">
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Maintenance / Dirty</span>
-                  <div className="w-7 h-7 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+                  <span className="text-xs font-semibold text-muted-foreground dark:text-zinc-400 uppercase tracking-wider">Maintenance / Dirty</span>
+                  <div className="w-7 h-7 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-600 dark:text-amber-400">
                     <AlertCircle className="w-3.5 h-3.5" />
                   </div>
                 </div>
-                <div className="text-2xl sm:text-3xl font-black text-amber-400 font-mono tracking-tight">
+                <div className="text-2xl sm:text-3xl font-black text-amber-600 dark:text-amber-400 font-mono tracking-tight">
                   {rooms.filter(r => ['MAINTENANCE', 'DIRTY', 'OUT_OF_ORDER'].includes(r.status)).length}
                 </div>
               </div>
-              <div className="pt-2 mt-3 border-t border-[#1C2025] text-[11px] text-amber-500/70 font-mono">
+              <div className="pt-2 mt-3 border-t border-border dark:border-[#1C2025] text-[11px] text-amber-600/70 dark:text-amber-500/70 font-mono">
                 Service attention required
               </div>
             </div>
           </div>
 
           {/* Filters & Actions */}
-          <div className="bg-[#121417] border border-[#1E2227] p-3.5 rounded-2xl flex flex-col md:flex-row gap-3 items-center justify-between">
+          <div className="bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] p-3.5 rounded-2xl flex flex-col md:flex-row gap-3 items-center justify-between">
             <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto flex-1">
               <div className="relative w-full md:w-72">
-                <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                <Search className="w-3.5 h-3.5 text-muted-foreground dark:text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   placeholder="Search room number or suite..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full bg-[#181A1D] border border-[#2B3037] text-xs font-mono text-white pl-9 pr-3 py-2 rounded-xl placeholder:text-zinc-500 focus:outline-none focus:border-zinc-400"
+                  className="w-full bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] text-xs font-mono text-foreground dark:text-white pl-9 pr-3 py-2 rounded-xl placeholder:text-muted-foreground dark:placeholder:text-zinc-500 focus:outline-none focus:border-zinc-400"
                 />
               </div>
 
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="bg-[#181A1D] border border-[#2B3037] text-xs font-mono text-white px-3 py-2 rounded-xl focus:outline-none focus:border-zinc-400"
+                className="bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] text-xs font-mono text-foreground dark:text-white px-3 py-2 rounded-xl focus:outline-none focus:border-zinc-400"
               >
                 <option value="all">All Statuses</option>
                 <option value="AVAILABLE">Available</option>
@@ -546,7 +546,7 @@ export default function AdminRoomsPage() {
               <select
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value)}
-                className="bg-[#181A1D] border border-[#2B3037] text-xs font-mono text-white px-3 py-2 rounded-xl focus:outline-none focus:border-zinc-400"
+                className="bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] text-xs font-mono text-foreground dark:text-white px-3 py-2 rounded-xl focus:outline-none focus:border-zinc-400"
               >
                 <option value="all">All Room Types</option>
                 {roomTypes.map(rt => (
@@ -562,7 +562,7 @@ export default function AdminRoomsPage() {
                 fetchRoomTypes()
                 setShowModal(true)
               }}
-              className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs tracking-wider uppercase px-4 h-9 rounded-xl transition-all shadow-sm flex items-center gap-1.5 w-full md:w-auto justify-center"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs tracking-wider uppercase px-4 h-9 rounded-xl transition-all shadow-sm flex items-center gap-1.5 w-full md:w-auto justify-center"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Add Room</span>
@@ -580,11 +580,11 @@ export default function AdminRoomsPage() {
               return (
                 <div 
                   key={room.id} 
-                  className="rounded-2xl bg-[#121417] border border-[#1E2227] hover:border-zinc-700 transition-all duration-200 group overflow-hidden flex flex-col justify-between"
+                  className="rounded-2xl bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] hover:border-zinc-400 dark:hover:border-zinc-700 transition-all duration-200 group overflow-hidden flex flex-col justify-between"
                 >
                   <div>
                     {/* Room Thumbnail Photography */}
-                    <div className="relative aspect-[16/10] w-full bg-[#090A0C] overflow-hidden">
+                    <div className="relative aspect-[16/10] w-full bg-muted dark:bg-[#090A0C] overflow-hidden">
                       <Image
                         src={primaryImage}
                         alt={`Room ${room.number}`}
@@ -592,10 +592,10 @@ export default function AdminRoomsPage() {
                         unoptimized
                         className="object-cover group-hover:scale-105 transition-transform duration-500"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#121417] via-transparent to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
 
                       {/* Room Number Pill */}
-                      <div className="absolute top-2.5 left-2.5 bg-[#090A0C]/90 backdrop-blur-md px-2.5 py-1 rounded-lg border border-[#22262B]">
+                      <div className="absolute top-2.5 left-2.5 bg-black/75 dark:bg-[#090A0C]/90 backdrop-blur-md px-2.5 py-1 rounded-lg border border-white/10 dark:border-[#22262B]">
                         <span className="text-white font-mono font-bold text-xs">Room {room.number}</span>
                       </div>
 
@@ -611,14 +611,14 @@ export default function AdminRoomsPage() {
 
                       {/* Price Tag & Capacity */}
                       <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-end justify-between">
-                        <div className="bg-[#090A0C]/90 backdrop-blur-md px-2.5 py-1 rounded-lg border border-[#22262B]">
+                        <div className="bg-black/75 dark:bg-[#090A0C]/90 backdrop-blur-md px-2.5 py-1 rounded-lg border border-white/10 dark:border-[#22262B]">
                           <span className="text-emerald-400 font-mono font-bold text-xs">
                             {formatPrice(room.roomType?.baseRate || 0)}
                           </span>
-                          <span className="text-zinc-500 text-[10px] ml-1 font-mono">/night</span>
+                          <span className="text-zinc-400 text-[10px] ml-1 font-mono">/night</span>
                         </div>
 
-                        <div className="flex items-center gap-1 bg-[#090A0C]/90 backdrop-blur-md px-2 py-1 rounded-lg border border-[#22262B] text-[11px] text-zinc-300 font-mono">
+                        <div className="flex items-center gap-1 bg-black/75 dark:bg-[#090A0C]/90 backdrop-blur-md px-2 py-1 rounded-lg border border-white/10 dark:border-[#22262B] text-[11px] text-zinc-300 font-mono">
                           <Users className="w-3 h-3 text-zinc-400" />
                           <span>{room.roomType?.capacity || 2}</span>
                         </div>
@@ -627,11 +627,11 @@ export default function AdminRoomsPage() {
 
                     {/* Room Specs */}
                     <div className="p-4 space-y-1.5">
-                      <h3 className="text-sm font-semibold text-white group-hover:text-zinc-200 transition-colors truncate">
+                      <h3 className="text-sm font-semibold text-foreground dark:text-white group-hover:text-primary transition-colors truncate">
                         {room.roomType?.name || 'Standard Room'}
                       </h3>
                       
-                      <div className="flex items-center gap-2 text-xs text-zinc-400 font-mono">
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground dark:text-zinc-400 font-mono">
                         {room.floor !== undefined && room.floor !== null && (
                           <span>Floor {room.floor}</span>
                         )}
@@ -646,18 +646,18 @@ export default function AdminRoomsPage() {
                   </div>
 
                   {/* Actions: View Dossier, Edit, Delete */}
-                  <div className="p-3 pt-0 border-t border-[#1C2025] mt-2 flex items-center gap-2">
+                  <div className="p-3 pt-0 border-t border-border dark:border-[#1C2025] mt-2 flex items-center gap-2">
                     <button
                       onClick={() => setViewingRoom(room)}
-                      className="flex-1 bg-[#181A1D] hover:bg-[#20242A] border border-[#2B3037] text-zinc-200 text-xs font-mono h-8 rounded-lg flex items-center justify-center gap-1.5 transition-colors"
+                      className="flex-1 bg-muted/60 hover:bg-muted dark:bg-[#181A1D] dark:hover:bg-[#20242A] border border-border dark:border-[#2B3037] text-foreground dark:text-zinc-200 text-xs font-mono h-8 rounded-lg flex items-center justify-center gap-1.5 transition-colors"
                     >
-                      <Eye className="w-3.5 h-3.5 text-zinc-400" />
+                      <Eye className="w-3.5 h-3.5 text-muted-foreground dark:text-zinc-400" />
                       <span>Dossier</span>
                     </button>
 
                     <button
                       onClick={() => handleEdit(room)}
-                      className="w-8 h-8 flex items-center justify-center rounded-lg bg-[#181A1D] hover:bg-[#20242A] border border-[#2B3037] text-zinc-400 hover:text-white transition-colors"
+                      className="w-8 h-8 flex items-center justify-center rounded-lg bg-muted/60 hover:bg-muted dark:bg-[#181A1D] dark:hover:bg-[#20242A] border border-border dark:border-[#2B3037] text-muted-foreground dark:text-zinc-400 hover:text-foreground dark:hover:text-white transition-colors"
                       title="Edit Room"
                     >
                       <Edit className="w-3.5 h-3.5" />
@@ -665,7 +665,7 @@ export default function AdminRoomsPage() {
 
                     <button
                       onClick={() => handleDelete(room.id, room.number)}
-                      className="w-8 h-8 flex items-center justify-center rounded-lg bg-[#181A1D] hover:bg-rose-500/10 border border-rose-500/20 text-rose-400 hover:border-rose-500/40 transition-colors"
+                      className="w-8 h-8 flex items-center justify-center rounded-lg bg-muted/60 dark:bg-[#181A1D] hover:bg-rose-500/10 border border-border dark:border-rose-500/20 text-rose-600 dark:text-rose-400 hover:border-rose-500/40 transition-colors"
                       title="Delete Room"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -677,15 +677,15 @@ export default function AdminRoomsPage() {
           </div>
 
           {filteredRooms.length === 0 && (
-            <div className="p-16 text-center rounded-2xl bg-[#121417] border border-[#1E2227] space-y-4">
-              <Bed className="w-12 h-12 mx-auto text-zinc-600" />
-              <h3 className="text-lg font-semibold text-white">No Physical Rooms Found</h3>
-              <p className="text-zinc-400 text-xs max-w-sm mx-auto">
+            <div className="p-16 text-center rounded-2xl bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] space-y-4">
+              <Bed className="w-12 h-12 mx-auto text-muted-foreground dark:text-zinc-600" />
+              <h3 className="text-lg font-semibold text-foreground dark:text-white">No Physical Rooms Found</h3>
+              <p className="text-muted-foreground dark:text-zinc-400 text-xs max-w-sm mx-auto">
                 No rooms matched your active filters. Try adjusting your search query or add a new room.
               </p>
               <button 
                 onClick={() => setShowModal(true)} 
-                className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs uppercase px-5 h-9 rounded-xl inline-flex items-center gap-1.5"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs uppercase px-5 h-9 rounded-xl inline-flex items-center gap-1.5"
               >
                 <Plus className="w-3.5 h-3.5" /> Add First Room
               </button>
@@ -699,16 +699,16 @@ export default function AdminRoomsPage() {
       {/* ======================================================== */}
       {activeTab === 'types' && (
         <div className="space-y-6">
-          <div className="bg-[#121417] border border-[#1E2227] p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
             <div>
-              <h2 className="text-base font-semibold text-white">Suite & Room Type Catalog</h2>
-              <p className="text-zinc-400 text-xs mt-0.5">
+              <h2 className="text-base font-semibold text-foreground dark:text-white">Suite & Room Type Catalog</h2>
+              <p className="text-muted-foreground dark:text-zinc-400 text-xs mt-0.5">
                 Define master suite tiers, base rates, guest capacities, and luxury amenity offerings.
               </p>
             </div>
             <button
               onClick={handleOpenCreateType}
-              className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs tracking-wider uppercase px-4 h-9 rounded-xl transition-all shadow-sm flex items-center gap-1.5"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs tracking-wider uppercase px-4 h-9 rounded-xl transition-all shadow-sm flex items-center gap-1.5"
             >
               <Plus className="w-3.5 h-3.5" /> Create Suite Type
             </button>
@@ -718,22 +718,22 @@ export default function AdminRoomsPage() {
             {roomTypes.map((type) => (
               <div 
                 key={type.id} 
-                className="rounded-2xl bg-[#121417] border border-[#1E2227] hover:border-zinc-700 transition-all p-5 flex flex-col justify-between"
+                className="rounded-2xl bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] hover:border-zinc-400 dark:hover:border-zinc-700 transition-all p-5 flex flex-col justify-between"
               >
                 <div className="space-y-3">
                   <div className="flex items-start justify-between">
                     <div>
-                      <h3 className="text-base font-semibold text-white">{type.name}</h3>
-                      <p className="text-emerald-400 font-mono font-bold text-lg mt-0.5">
-                        {formatPrice(Number(type.baseRate))}<span className="text-xs text-zinc-500 font-mono">/night</span>
+                      <h3 className="text-base font-semibold text-foreground dark:text-white">{type.name}</h3>
+                      <p className="text-emerald-600 dark:text-emerald-400 font-mono font-bold text-lg mt-0.5">
+                        {formatPrice(Number(type.baseRate))}<span className="text-xs text-muted-foreground dark:text-zinc-500 font-mono">/night</span>
                       </p>
                     </div>
-                    <span className="text-[11px] font-mono text-zinc-300 bg-[#181A1D] border border-[#2B3037] px-2.5 py-0.5 rounded-full">
+                    <span className="text-[11px] font-mono text-foreground/80 dark:text-zinc-300 bg-muted dark:bg-[#181A1D] border border-border dark:border-[#2B3037] px-2.5 py-0.5 rounded-full">
                       Max {type.capacity || 2} Guests
                     </span>
                   </div>
 
-                  <p className="text-xs text-zinc-400 leading-relaxed line-clamp-3">
+                  <p className="text-xs text-muted-foreground dark:text-zinc-400 leading-relaxed line-clamp-3">
                     {type.description || 'No description provided.'}
                   </p>
 
@@ -741,12 +741,12 @@ export default function AdminRoomsPage() {
                   {Array.isArray(type.amenities) && type.amenities.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 pt-1">
                       {type.amenities.slice(0, 4).map((a, i) => (
-                        <span key={i} className="text-[10px] font-mono bg-[#181A1D] border border-[#2B3037] text-zinc-300 px-2 py-0.5 rounded-md">
+                        <span key={i} className="text-[10px] font-mono bg-muted dark:bg-[#181A1D] border border-border dark:border-[#2B3037] text-foreground/80 dark:text-zinc-300 px-2 py-0.5 rounded-md">
                           {a}
                         </span>
                       ))}
                       {type.amenities.length > 4 && (
-                        <span className="text-[10px] text-zinc-500 font-mono self-center">
+                        <span className="text-[10px] text-muted-foreground dark:text-zinc-500 font-mono self-center">
                           +{type.amenities.length - 4} more
                         </span>
                       )}
@@ -754,16 +754,16 @@ export default function AdminRoomsPage() {
                   )}
                 </div>
 
-                <div className="pt-4 border-t border-[#1C2025] mt-4 flex items-center gap-2">
+                <div className="pt-4 border-t border-border dark:border-[#1C2025] mt-4 flex items-center gap-2">
                   <button
                     onClick={() => handleOpenEditType(type)}
-                    className="flex-1 bg-[#181A1D] hover:bg-[#20242A] border border-[#2B3037] text-zinc-200 text-xs font-mono h-8 rounded-lg flex items-center justify-center gap-1.5 transition-colors"
+                    className="flex-1 bg-muted/60 hover:bg-muted dark:bg-[#181A1D] dark:hover:bg-[#20242A] border border-border dark:border-[#2B3037] text-foreground dark:text-zinc-200 text-xs font-mono h-8 rounded-lg flex items-center justify-center gap-1.5 transition-colors"
                   >
-                    <Edit className="w-3.5 h-3.5 text-zinc-400" /> Edit Suite
+                    <Edit className="w-3.5 h-3.5 text-muted-foreground dark:text-zinc-400" /> Edit Suite
                   </button>
                   <button
                     onClick={() => handleDeleteType(type)}
-                    className="w-8 h-8 flex items-center justify-center rounded-lg bg-[#181A1D] hover:bg-rose-500/10 border border-rose-500/20 text-rose-400 hover:border-rose-500/40 transition-colors"
+                    className="w-8 h-8 flex items-center justify-center rounded-lg bg-muted/60 dark:bg-[#181A1D] hover:bg-rose-500/10 border border-border dark:border-rose-500/20 text-rose-600 dark:text-rose-400 hover:border-rose-500/40 transition-colors"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
@@ -778,13 +778,13 @@ export default function AdminRoomsPage() {
       {/* ROOM DOSSIER MODAL (ALL DETAILS POPUP) */}
       {/* ======================================================== */}
       <Dialog open={!!viewingRoom} onOpenChange={(open) => !open && setViewingRoom(null)}>
-        <DialogContent className="max-w-2xl bg-[#121417] border border-[#2B3037] p-6 rounded-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl bg-card dark:bg-[#121417] border border-border dark:border-[#2B3037] p-6 rounded-2xl max-h-[90vh] overflow-y-auto">
           {viewingRoom && (
             <div className="space-y-5">
-              <DialogHeader className="border-b border-[#1E2227] pb-4">
+              <DialogHeader className="border-b border-border dark:border-[#1E2227] pb-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <span className="text-xl font-bold text-white font-mono">
+                    <span className="text-xl font-bold text-foreground dark:text-white font-mono">
                       Room {viewingRoom.number}
                     </span>
                     <span className={cn(
@@ -795,18 +795,18 @@ export default function AdminRoomsPage() {
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-1 text-zinc-400">
-                    <span className="text-xs font-mono text-zinc-400">Inventory Verified</span>
+                  <div className="flex items-center gap-1 text-muted-foreground dark:text-zinc-400">
+                    <span className="text-xs font-mono text-muted-foreground dark:text-zinc-400">Inventory Verified</span>
                   </div>
                 </div>
-                <DialogDescription className="text-zinc-400 text-xs mt-1 font-mono">
+                <DialogDescription className="text-muted-foreground dark:text-zinc-400 text-xs mt-1 font-mono">
                   {viewingRoom.roomType?.name} &bull; Floor {viewingRoom.floor ?? 1} &bull; {viewingRoom.size ?? 30} m²
                 </DialogDescription>
               </DialogHeader>
 
               {/* Photos Gallery */}
               <div className="grid grid-cols-3 gap-3">
-                <div className="col-span-2 relative aspect-[16/10] rounded-xl overflow-hidden bg-[#090A0C] border border-[#1E2227]">
+                <div className="col-span-2 relative aspect-[16/10] rounded-xl overflow-hidden bg-muted dark:bg-[#090A0C] border border-border dark:border-[#1E2227]">
                   <Image
                     src={viewingRoom.roomImages?.[0]?.imageUrl || viewingRoom.roomType?.images?.[0] || 'https://images.unsplash.com/photo-1590490359683-658d3d23f972?auto=format&fit=crop&q=80&w=1200'}
                     alt={`Room ${viewingRoom.number}`}
@@ -816,7 +816,7 @@ export default function AdminRoomsPage() {
                   />
                 </div>
                 <div className="flex flex-col gap-3">
-                  <div className="relative aspect-video flex-1 rounded-xl overflow-hidden bg-[#090A0C] border border-[#1E2227]">
+                  <div className="relative aspect-video flex-1 rounded-xl overflow-hidden bg-muted dark:bg-[#090A0C] border border-border dark:border-[#1E2227]">
                     <Image
                       src={viewingRoom.roomImages?.[1]?.imageUrl || 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&q=80&w=800'}
                       alt="Interior"
@@ -825,7 +825,7 @@ export default function AdminRoomsPage() {
                       className="object-cover"
                     />
                   </div>
-                  <div className="relative aspect-video flex-1 rounded-xl overflow-hidden bg-[#090A0C] border border-[#1E2227]">
+                  <div className="relative aspect-video flex-1 rounded-xl overflow-hidden bg-muted dark:bg-[#090A0C] border border-border dark:border-[#1E2227]">
                     <Image
                       src={viewingRoom.roomImages?.[2]?.imageUrl || 'https://images.unsplash.com/photo-1540518614846-7ede433c4ef4?auto=format&fit=crop&q=80&w=800'}
                       alt="Balcony"
@@ -841,18 +841,18 @@ export default function AdminRoomsPage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
                 <div className="md:col-span-2 space-y-3">
                   <div>
-                    <h4 className="text-xs uppercase tracking-wider font-semibold text-zinc-400">Suite Overview</h4>
-                    <p className="text-xs text-zinc-300 font-normal mt-1 leading-relaxed">
+                    <h4 className="text-xs uppercase tracking-wider font-semibold text-muted-foreground dark:text-zinc-400">Suite Overview</h4>
+                    <p className="text-xs text-foreground/80 dark:text-zinc-300 font-normal mt-1 leading-relaxed">
                       {viewingRoom.roomType?.description || 'Sophisticated accommodations featuring modern design, high-speed amenities, and ergonomic comfort.'}
                     </p>
                   </div>
 
                   <div>
-                    <h4 className="text-xs uppercase tracking-wider font-semibold text-zinc-400 mb-1.5">Amenities</h4>
+                    <h4 className="text-xs uppercase tracking-wider font-semibold text-muted-foreground dark:text-zinc-400 mb-1.5">Amenities</h4>
                     <div className="flex flex-wrap gap-1.5">
                       {(viewingRoom.roomType?.amenities || ['King Bed', 'Rain Shower', 'Private Balcony', 'High-Speed WiFi', 'Work Desk']).map((amenity, idx) => (
-                        <span key={idx} className="bg-[#181A1D] border border-[#2B3037] text-zinc-300 text-[11px] font-mono px-2.5 py-1 rounded-lg flex items-center gap-1.5">
-                          <Sparkles className="w-3 h-3 text-zinc-400" />
+                        <span key={idx} className="bg-muted dark:bg-[#181A1D] border border-border dark:border-[#2B3037] text-foreground/80 dark:text-zinc-300 text-[11px] font-mono px-2.5 py-1 rounded-lg flex items-center gap-1.5">
+                          <Sparkles className="w-3 h-3 text-muted-foreground dark:text-zinc-400" />
                           {amenity}
                         </span>
                       ))}
@@ -860,50 +860,50 @@ export default function AdminRoomsPage() {
                   </div>
                 </div>
 
-                <div className="bg-[#181A1D] border border-[#2B3037] rounded-xl p-3.5 space-y-2.5 h-fit font-mono">
-                  <h4 className="text-xs uppercase tracking-wider font-semibold text-zinc-400">Rate & Capacity</h4>
+                <div className="bg-muted/40 dark:bg-[#181A1D] border border-border dark:border-[#2B3037] rounded-xl p-3.5 space-y-2.5 h-fit font-mono">
+                  <h4 className="text-xs uppercase tracking-wider font-semibold text-muted-foreground dark:text-zinc-400">Rate & Capacity</h4>
                   <div>
-                    <span className="text-zinc-500 text-[10px]">Standard Rate:</span>
-                    <p className="text-lg font-bold text-emerald-400">
+                    <span className="text-muted-foreground dark:text-zinc-500 text-[10px]">Standard Rate:</span>
+                    <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
                       {formatPrice(viewingRoom.roomType?.baseRate || 0)}
                     </p>
                   </div>
 
-                  <div className="pt-2 border-t border-[#22262B] text-xs text-zinc-400 space-y-1">
+                  <div className="pt-2 border-t border-border dark:border-[#22262B] text-xs text-muted-foreground dark:text-zinc-400 space-y-1">
                     <div className="flex justify-between">
                       <span>Capacity:</span>
-                      <span className="text-zinc-200">{viewingRoom.roomType?.capacity || 2} Guests</span>
+                      <span className="text-foreground dark:text-zinc-200">{viewingRoom.roomType?.capacity || 2} Guests</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Floor:</span>
-                      <span className="text-zinc-200">Floor {viewingRoom.floor ?? 1}</span>
+                      <span className="text-foreground dark:text-zinc-200">Floor {viewingRoom.floor ?? 1}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Size:</span>
-                      <span className="text-zinc-200">{viewingRoom.size ?? 30} m²</span>
+                      <span className="text-foreground dark:text-zinc-200">{viewingRoom.size ?? 30} m²</span>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Recent & Upcoming Reservations */}
-              <div className="pt-3 border-t border-[#1E2227] space-y-2.5">
+              <div className="pt-3 border-t border-border dark:border-[#1E2227] space-y-2.5">
                 <div className="flex items-center justify-between">
-                  <h4 className="text-xs uppercase tracking-wider font-semibold text-zinc-400 flex items-center gap-1.5">
-                    <Calendar className="w-3.5 h-3.5 text-zinc-500" />
+                  <h4 className="text-xs uppercase tracking-wider font-semibold text-muted-foreground dark:text-zinc-400 flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5 text-muted-foreground dark:text-zinc-500" />
                     Reservations on this Room
                   </h4>
-                  {loadingBookings && <Loader2 className="w-3 h-3 animate-spin text-zinc-500" />}
+                  {loadingBookings && <Loader2 className="w-3 h-3 animate-spin text-muted-foreground dark:text-zinc-500" />}
                 </div>
 
                 {roomBookings.length === 0 ? (
-                  <p className="text-xs text-zinc-500 font-mono py-1">
+                  <p className="text-xs text-muted-foreground dark:text-zinc-500 font-mono py-1">
                     {loadingBookings ? 'Loading reservation records...' : 'No upcoming bookings recorded on this physical room.'}
                   </p>
                 ) : (
-                  <div className="border border-[#1E2227] rounded-xl overflow-hidden bg-[#181A1D]">
+                  <div className="border border-border dark:border-[#1E2227] rounded-xl overflow-hidden bg-card dark:bg-[#181A1D]">
                     <table className="w-full text-left text-xs font-mono">
-                      <thead className="bg-[#141619] border-b border-[#1E2227] text-zinc-400 uppercase text-[10px]">
+                      <thead className="bg-muted/40 dark:bg-[#141619] border-b border-border dark:border-[#1E2227] text-muted-foreground dark:text-zinc-400 uppercase text-[10px]">
                         <tr>
                           <th className="p-2.5">Guest</th>
                           <th className="p-2.5">Dates</th>
@@ -911,17 +911,17 @@ export default function AdminRoomsPage() {
                           <th className="p-2.5 text-right">Total</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-[#1C2025] text-zinc-300">
+                      <tbody className="divide-y divide-border dark:divide-[#1C2025] text-foreground/80 dark:text-zinc-300">
                         {roomBookings.map((b: any) => (
-                          <tr key={b.id} className="hover:bg-[#16181B]">
-                            <td className="p-2.5 font-medium text-white">{b.guest?.name || 'Guest'}</td>
-                            <td className="p-2.5 text-zinc-400">
+                          <tr key={b.id} className="hover:bg-muted/30 dark:hover:bg-[#16181B]">
+                            <td className="p-2.5 font-medium text-foreground dark:text-white">{b.guest?.name || 'Guest'}</td>
+                            <td className="p-2.5 text-muted-foreground dark:text-zinc-400">
                               {new Date(b.checkIn).toLocaleDateString()} &rarr; {new Date(b.checkOut).toLocaleDateString()}
                             </td>
                             <td className="p-2.5">
-                              <span className="text-[10px] font-semibold text-zinc-300 uppercase">{b.status}</span>
+                              <span className="text-[10px] font-semibold text-foreground/80 dark:text-zinc-300 uppercase">{b.status}</span>
                             </td>
-                            <td className="p-2.5 text-right font-mono text-emerald-400">
+                            <td className="p-2.5 text-right font-mono text-emerald-600 dark:text-emerald-400">
                               {formatPrice(Number(b.totalAmount))}
                             </td>
                           </tr>
@@ -932,11 +932,11 @@ export default function AdminRoomsPage() {
                 )}
               </div>
 
-              <DialogFooter className="pt-3 border-t border-[#1E2227] flex justify-end gap-2.5">
+              <DialogFooter className="pt-3 border-t border-border dark:border-[#1E2227] flex justify-end gap-2.5">
                 <button
                   type="button"
                   onClick={() => setViewingRoom(null)}
-                  className="px-4 py-2 rounded-xl bg-transparent border border-[#2B3037] text-zinc-300 hover:text-white text-xs font-mono transition-colors"
+                  className="px-4 py-2 rounded-xl bg-transparent border border-border dark:border-[#2B3037] text-muted-foreground hover:text-foreground dark:text-zinc-300 dark:hover:text-white text-xs font-mono transition-colors"
                 >
                   Close Dossier
                 </button>
@@ -947,7 +947,7 @@ export default function AdminRoomsPage() {
                     setViewingRoom(null)
                     handleEdit(toEdit)
                   }}
-                  className="px-4 py-2 rounded-xl bg-white hover:bg-zinc-200 text-black font-semibold text-xs uppercase tracking-wider transition-colors inline-flex items-center gap-1.5"
+                  className="px-4 py-2 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs uppercase tracking-wider transition-colors inline-flex items-center gap-1.5"
                 >
                   <Edit className="w-3.5 h-3.5" /> Edit Room Details
                 </button>
@@ -967,13 +967,13 @@ export default function AdminRoomsPage() {
           resetForm()
         }
       }}>
-        <DialogContent className="max-w-lg bg-[#121417] border border-[#2B3037] p-6 rounded-2xl">
-          <DialogHeader className="border-b border-[#1E2227] pb-4">
-            <DialogTitle className="text-lg font-bold text-white flex items-center gap-2">
-              <Bed className="w-4 h-4 text-zinc-400" />
+        <DialogContent className="max-w-lg bg-card dark:bg-[#121417] border border-border dark:border-[#2B3037] p-6 rounded-2xl">
+          <DialogHeader className="border-b border-border dark:border-[#1E2227] pb-4">
+            <DialogTitle className="text-lg font-bold text-foreground dark:text-white flex items-center gap-2">
+              <Bed className="w-4 h-4 text-muted-foreground dark:text-zinc-400" />
               {editingRoom ? `Edit Room ${editingRoom.number}` : 'Add New Physical Room'}
             </DialogTitle>
-            <DialogDescription className="text-zinc-400 text-xs">
+            <DialogDescription className="text-muted-foreground dark:text-zinc-400 text-xs">
               Configure room parameters, assigned suite tier, and photo media.
             </DialogDescription>
           </DialogHeader>
@@ -981,7 +981,7 @@ export default function AdminRoomsPage() {
           <form onSubmit={handleSubmit} className="space-y-4 pt-3">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider mb-1 block">
+                <label className="text-[11px] font-mono text-muted-foreground dark:text-zinc-400 uppercase tracking-wider mb-1 block">
                   Room Number *
                 </label>
                 <input
@@ -989,13 +989,13 @@ export default function AdminRoomsPage() {
                   value={formData.number || ''}
                   onChange={(e) => setFormData({ ...formData, number: e.target.value })}
                   placeholder="e.g. 101"
-                  className="w-full px-3 py-2 bg-[#181A1D] border border-[#2B3037] rounded-xl text-white font-mono text-xs placeholder:text-zinc-500 focus:outline-none focus:border-zinc-400"
+                  className="w-full px-3 py-2 bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] rounded-xl text-foreground dark:text-white font-mono text-xs placeholder:text-muted-foreground dark:placeholder:text-zinc-500 focus:outline-none focus:border-zinc-400"
                   required
                 />
               </div>
 
               <div>
-                <label className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider mb-1 block">
+                <label className="text-[11px] font-mono text-muted-foreground dark:text-zinc-400 uppercase tracking-wider mb-1 block">
                   Room Type *
                 </label>
                 <select
@@ -1009,7 +1009,7 @@ export default function AdminRoomsPage() {
                       price: selected?.baseRate != null ? selected.baseRate.toString() : (prev.price || '')
                     }))
                   }}
-                  className="w-full px-3 py-2 bg-[#181A1D] border border-[#2B3037] rounded-xl text-white font-mono text-xs focus:outline-none focus:border-zinc-400"
+                  className="w-full px-3 py-2 bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] rounded-xl text-foreground dark:text-white font-mono text-xs focus:outline-none focus:border-zinc-400"
                   required
                 >
                   <option value="">{roomTypes.length === 0 ? '-- No Types (Create First) --' : 'Select Type'}</option>
@@ -1023,7 +1023,7 @@ export default function AdminRoomsPage() {
             </div>
 
             <div>
-              <label className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider mb-1 block">
+              <label className="text-[11px] font-mono text-muted-foreground dark:text-zinc-400 uppercase tracking-wider mb-1 block">
                 Nightly Rate (LKR) *
               </label>
               <input
@@ -1033,31 +1033,31 @@ export default function AdminRoomsPage() {
                 placeholder="e.g. 15000"
                 value={formData.price || ''}
                 onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                className="w-full px-3 py-2 bg-[#181A1D] border border-[#2B3037] rounded-xl text-white font-mono text-xs focus:outline-none focus:border-zinc-400"
+                className="w-full px-3 py-2 bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] rounded-xl text-foreground dark:text-white font-mono text-xs focus:outline-none focus:border-zinc-400"
                 required
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider mb-1 block">Floor</label>
+                <label className="text-[11px] font-mono text-muted-foreground dark:text-zinc-400 uppercase tracking-wider mb-1 block">Floor</label>
                 <input
                   type="number"
                   value={formData.floor}
                   onChange={(e) => setFormData({ ...formData, floor: e.target.value })}
-                  className="w-full px-3 py-2 bg-[#181A1D] border border-[#2B3037] rounded-xl text-white font-mono text-xs placeholder:text-zinc-500 focus:outline-none focus:border-zinc-400"
+                  className="w-full px-3 py-2 bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] rounded-xl text-foreground dark:text-white font-mono text-xs placeholder:text-muted-foreground dark:placeholder:text-zinc-500 focus:outline-none focus:border-zinc-400"
                   placeholder="1"
                   min="0"
                 />
               </div>
 
               <div>
-                <label className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider mb-1 block">Size (m²)</label>
+                <label className="text-[11px] font-mono text-muted-foreground dark:text-zinc-400 uppercase tracking-wider mb-1 block">Size (m²)</label>
                 <input
                   type="number"
                   value={formData.size}
                   onChange={(e) => setFormData({ ...formData, size: e.target.value })}
-                  className="w-full px-3 py-2 bg-[#181A1D] border border-[#2B3037] rounded-xl text-white font-mono text-xs placeholder:text-zinc-500 focus:outline-none focus:border-zinc-400"
+                  className="w-full px-3 py-2 bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] rounded-xl text-foreground dark:text-white font-mono text-xs placeholder:text-muted-foreground dark:placeholder:text-zinc-500 focus:outline-none focus:border-zinc-400"
                   placeholder="30"
                   min="0"
                 />
@@ -1065,13 +1065,13 @@ export default function AdminRoomsPage() {
             </div>
 
             <div>
-              <label className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+              <label className="text-[11px] font-mono text-muted-foreground dark:text-zinc-400 uppercase tracking-wider mb-1.5 flex items-center justify-between">
                 <span>Room Photography</span>
-                {uploadingImages && <Loader2 className="w-3 h-3 animate-spin text-zinc-400" />}
+                {uploadingImages && <Loader2 className="w-3 h-3 animate-spin text-muted-foreground dark:text-zinc-400" />}
               </label>
               <div className="flex gap-2 flex-wrap mb-2">
                 {formData.images.map((url, idx) => (
-                  <div key={`existing-${idx}`} className="relative w-16 h-16 bg-[#090A0C] border border-[#2B3037] rounded-lg overflow-hidden group">
+                  <div key={`existing-${idx}`} className="relative w-16 h-16 bg-muted dark:bg-[#090A0C] border border-border dark:border-[#2B3037] rounded-lg overflow-hidden group">
                     <Image src={url} alt={`Preview ${idx}`} fill unoptimized className="object-cover" />
                     <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                       <button type="button" onClick={() => handleDeleteImage(idx)} className="text-rose-400 hover:text-rose-300">
@@ -1081,7 +1081,7 @@ export default function AdminRoomsPage() {
                   </div>
                 ))}
                 {pendingImageFiles.map((pf, idx) => (
-                  <div key={`pending-${idx}`} className="relative w-16 h-16 bg-[#090A0C] border border-[#2B3037] rounded-lg overflow-hidden group">
+                  <div key={`pending-${idx}`} className="relative w-16 h-16 bg-muted dark:bg-[#090A0C] border border-border dark:border-[#2B3037] rounded-lg overflow-hidden group">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={pf.preview} alt={`Pending Preview ${idx}`} className="w-full h-full object-cover" />
                     <div className="absolute top-1 right-1 bg-zinc-700 text-[8px] font-mono px-1 rounded uppercase font-bold text-white z-10">Queue</div>
@@ -1092,9 +1092,9 @@ export default function AdminRoomsPage() {
                     </div>
                   </div>
                 ))}
-                <label className="w-16 h-16 flex flex-col items-center justify-center border border-dashed border-[#2B3037] rounded-lg cursor-pointer hover:bg-[#181A1D] hover:border-zinc-500 transition-colors">
-                  <ImageIcon className="w-4 h-4 text-zinc-500 mb-0.5" />
-                  <span className="text-[9px] text-zinc-500 font-mono uppercase">Upload</span>
+                <label className="w-16 h-16 flex flex-col items-center justify-center border border-dashed border-border dark:border-[#2B3037] rounded-lg cursor-pointer hover:bg-muted dark:hover:bg-[#181A1D] hover:border-zinc-400 dark:hover:border-zinc-500 transition-colors">
+                  <ImageIcon className="w-4 h-4 text-muted-foreground dark:text-zinc-500 mb-0.5" />
+                  <span className="text-[9px] text-muted-foreground dark:text-zinc-500 font-mono uppercase">Upload</span>
                   <input 
                     type="file" 
                     accept="image/webp,image/jpeg,image/png,image/heic" 
@@ -1108,13 +1108,13 @@ export default function AdminRoomsPage() {
             </div>
 
             <div>
-              <label className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider mb-1 block">
+              <label className="text-[11px] font-mono text-muted-foreground dark:text-zinc-400 uppercase tracking-wider mb-1 block">
                 Status *
               </label>
               <select
                 value={formData.status || 'AVAILABLE'}
                 onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
-                className="w-full px-3 py-2 bg-[#181A1D] border border-[#2B3037] rounded-xl text-white font-mono text-xs focus:outline-none focus:border-zinc-400"
+                className="w-full px-3 py-2 bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] rounded-xl text-foreground dark:text-white font-mono text-xs focus:outline-none focus:border-zinc-400"
                 required
               >
                 <option value="AVAILABLE">Available</option>
@@ -1125,7 +1125,7 @@ export default function AdminRoomsPage() {
               </select>
             </div>
 
-            <DialogFooter className="pt-3 border-t border-[#1E2227] flex justify-end gap-2.5 mt-4">
+            <DialogFooter className="pt-3 border-t border-border dark:border-[#1E2227] flex justify-end gap-2.5 mt-4">
               <button
                 type="button"
                 onClick={() => {
@@ -1133,13 +1133,13 @@ export default function AdminRoomsPage() {
                   setEditingRoom(null)
                   resetForm()
                 }}
-                className="px-4 py-2 rounded-xl bg-transparent border border-[#2B3037] text-zinc-400 hover:text-white text-xs font-mono transition-colors"
+                className="px-4 py-2 rounded-xl bg-transparent border border-border dark:border-[#2B3037] text-muted-foreground hover:text-foreground dark:text-zinc-400 dark:hover:text-white text-xs font-mono transition-colors"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 rounded-xl bg-white hover:bg-zinc-200 text-black font-semibold text-xs font-mono uppercase tracking-wider transition-colors inline-flex items-center gap-1.5"
+                className="px-4 py-2 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs font-mono uppercase tracking-wider transition-colors inline-flex items-center gap-1.5"
               >
                 {editingRoom ? 'Update Room' : 'Create Room'}
               </button>
@@ -1152,33 +1152,33 @@ export default function AdminRoomsPage() {
       {/* CREATE / EDIT ROOM TYPE MODAL */}
       {/* ======================================================== */}
       <Dialog open={showTypeModal} onOpenChange={setShowTypeModal}>
-        <DialogContent className="max-w-lg bg-[#121417] border border-[#2B3037] p-6 rounded-2xl">
-          <DialogHeader className="border-b border-[#1E2227] pb-4">
-            <DialogTitle className="text-lg font-bold text-white flex items-center gap-2">
-              <Layers className="w-4 h-4 text-zinc-400" />
+        <DialogContent className="max-w-lg bg-card dark:bg-[#121417] border border-border dark:border-[#2B3037] p-6 rounded-2xl">
+          <DialogHeader className="border-b border-border dark:border-[#1E2227] pb-4">
+            <DialogTitle className="text-lg font-bold text-foreground dark:text-white flex items-center gap-2">
+              <Layers className="w-4 h-4 text-muted-foreground dark:text-zinc-400" />
               {editingType ? 'Edit Suite Type' : 'Create New Suite Type'}
             </DialogTitle>
-            <DialogDescription className="text-zinc-400 text-xs">
+            <DialogDescription className="text-muted-foreground dark:text-zinc-400 text-xs">
               Configure master suite tier rates, guest capacity, and amenities.
             </DialogDescription>
           </DialogHeader>
 
           <form onSubmit={handleTypeSubmit} className="space-y-4 pt-3">
             <div>
-              <label className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider mb-1 block">Suite Name *</label>
+              <label className="text-[11px] font-mono text-muted-foreground dark:text-zinc-400 uppercase tracking-wider mb-1 block">Suite Name *</label>
               <input
                 type="text"
                 required
                 placeholder="e.g. Deluxe Ocean Suite"
                 value={typeFormData.name}
                 onChange={e => setTypeFormData({ ...typeFormData, name: e.target.value })}
-                className="w-full bg-[#181A1D] border border-[#2B3037] rounded-xl px-3 py-2 text-xs font-mono text-white placeholder:text-zinc-500 focus:outline-none focus:border-zinc-400"
+                className="w-full bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] rounded-xl px-3 py-2 text-xs font-mono text-foreground dark:text-white placeholder:text-muted-foreground dark:placeholder:text-zinc-500 focus:outline-none focus:border-zinc-400"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider mb-1 block">Base Rate (LKR/night) *</label>
+                <label className="text-[11px] font-mono text-muted-foreground dark:text-zinc-400 uppercase tracking-wider mb-1 block">Base Rate (LKR/night) *</label>
                 <input
                   type="number"
                   step="0.01"
@@ -1186,57 +1186,57 @@ export default function AdminRoomsPage() {
                   placeholder="25000"
                   value={typeFormData.baseRate}
                   onChange={e => setTypeFormData({ ...typeFormData, baseRate: e.target.value })}
-                  className="w-full bg-[#181A1D] border border-[#2B3037] rounded-xl px-3 py-2 text-xs font-mono text-white placeholder:text-zinc-500 focus:outline-none focus:border-zinc-400"
+                  className="w-full bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] rounded-xl px-3 py-2 text-xs font-mono text-foreground dark:text-white placeholder:text-muted-foreground dark:placeholder:text-zinc-500 focus:outline-none focus:border-zinc-400"
                 />
               </div>
 
               <div>
-                <label className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider mb-1 block">Max Capacity *</label>
+                <label className="text-[11px] font-mono text-muted-foreground dark:text-zinc-400 uppercase tracking-wider mb-1 block">Max Capacity *</label>
                 <input
                   type="number"
                   min="1"
                   required
                   value={typeFormData.capacity}
                   onChange={e => setTypeFormData({ ...typeFormData, capacity: e.target.value })}
-                  className="w-full bg-[#181A1D] border border-[#2B3037] rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-zinc-400"
+                  className="w-full bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] rounded-xl px-3 py-2 text-xs font-mono text-foreground dark:text-white focus:outline-none focus:border-zinc-400"
                 />
               </div>
             </div>
 
             <div>
-              <label className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider mb-1 block">Description</label>
+              <label className="text-[11px] font-mono text-muted-foreground dark:text-zinc-400 uppercase tracking-wider mb-1 block">Description</label>
               <textarea
                 rows={3}
                 placeholder="Describe suite features, view, and architecture..."
                 value={typeFormData.description}
                 onChange={e => setTypeFormData({ ...typeFormData, description: e.target.value })}
-                className="w-full bg-[#181A1D] border border-[#2B3037] rounded-xl px-3 py-2 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-zinc-400 resize-none"
+                className="w-full bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] rounded-xl px-3 py-2 text-xs text-foreground dark:text-white placeholder:text-muted-foreground dark:placeholder:text-zinc-500 focus:outline-none focus:border-zinc-400 resize-none"
               />
             </div>
 
             <div>
-              <label className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider mb-1 block">Amenities (comma-separated)</label>
+              <label className="text-[11px] font-mono text-muted-foreground dark:text-zinc-400 uppercase tracking-wider mb-1 block">Amenities (comma-separated)</label>
               <input
                 type="text"
                 placeholder="King Bed, Ocean View, High-Speed WiFi, Mini Bar"
                 value={typeFormData.amenities}
                 onChange={e => setTypeFormData({ ...typeFormData, amenities: e.target.value })}
-                className="w-full bg-[#181A1D] border border-[#2B3037] rounded-xl px-3 py-2 text-xs font-mono text-white placeholder:text-zinc-500 focus:outline-none focus:border-zinc-400"
+                className="w-full bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] rounded-xl px-3 py-2 text-xs font-mono text-foreground dark:text-white placeholder:text-muted-foreground dark:placeholder:text-zinc-500 focus:outline-none focus:border-zinc-400"
               />
             </div>
 
-            <DialogFooter className="pt-3 border-t border-[#1E2227] flex justify-end gap-2.5">
+            <DialogFooter className="pt-3 border-t border-border dark:border-[#1E2227] flex justify-end gap-2.5">
               <button
                 type="button"
                 onClick={() => setShowTypeModal(false)}
-                className="px-4 py-2 rounded-xl bg-transparent border border-[#2B3037] text-zinc-400 hover:text-white text-xs font-mono transition-colors"
+                className="px-4 py-2 rounded-xl bg-transparent border border-border dark:border-[#2B3037] text-muted-foreground hover:text-foreground dark:text-zinc-400 dark:hover:text-white text-xs font-mono transition-colors"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={savingType}
-                className="px-4 py-2 rounded-xl bg-white hover:bg-zinc-200 text-black font-semibold text-xs font-mono uppercase tracking-wider transition-colors inline-flex items-center gap-1.5"
+                className="px-4 py-2 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs font-mono uppercase tracking-wider transition-colors inline-flex items-center gap-1.5"
               >
                 {savingType && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                 <span>{editingType ? 'Update Suite' : 'Create Suite'}</span>

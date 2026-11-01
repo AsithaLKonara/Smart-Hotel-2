@@ -62,11 +62,11 @@ function ModalShell({ open, onClose, title, children }: { open: boolean; onClose
   return (
     <Dialog.Root open={open} onOpenChange={(o: boolean) => !o && onClose()}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 animate-fade-in" />
-        <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl bg-[#121417] border border-[#2B3037] rounded-2xl shadow-2xl p-6 z-50 max-h-[90vh] overflow-y-auto">
+        <Dialog.Overlay className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm z-50 animate-fade-in" />
+        <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl bg-card dark:bg-[#121417] border border-border dark:border-[#2B3037] rounded-2xl shadow-2xl p-6 z-50 max-h-[90vh] overflow-y-auto text-card-foreground dark:text-white">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-lg font-bold text-white">{title}</h2>
-            <button onClick={onClose} className="text-zinc-500 hover:text-white transition-colors">
+            <h2 className="text-lg font-bold text-foreground dark:text-white">{title}</h2>
+            <button onClick={onClose} className="text-muted-foreground hover:text-foreground dark:text-zinc-500 dark:hover:text-white transition-colors">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -80,7 +80,7 @@ function ModalShell({ open, onClose, title, children }: { open: boolean; onClose
 export default function UnifiedInventoryPage() {
   return (
     <Suspense fallback={
-      <div className="flex items-center justify-center min-h-screen bg-[#0c0c0c]">
+      <div className="flex items-center justify-center min-h-screen bg-background dark:bg-[#0c0c0c]">
         <PremiumSpinner size="lg" text="Loading Inventory & Procurement..." />
       </div>
     }>
@@ -482,7 +482,7 @@ function UnifiedInventoryContent() {
           ) : (
             <Button
               onClick={() => setShowPoModal(true)}
-              className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs gap-1.5 px-3.5 py-2 rounded-lg transition-all shadow-sm"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs gap-1.5 px-3.5 py-2 rounded-lg transition-all shadow-sm"
             >
               <Plus className="w-4 h-4" /> Create Purchase Order
             </Button>
@@ -493,14 +493,14 @@ function UnifiedInventoryContent() {
       <div className="space-y-6">
 
         {/* View Switcher Tabs */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#1C2025] pb-4">
-          <div className="flex items-center gap-1.5 p-1 bg-[#121417] border border-[#1E2227] rounded-xl">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border dark:border-[#1C2025] pb-4">
+          <div className="flex items-center gap-1.5 p-1 bg-muted/50 dark:bg-[#121417] border border-border dark:border-[#1E2227] rounded-xl">
             <button
               onClick={() => setActiveTab('STOCK')}
               className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all ${
                 activeTab === 'STOCK'
-                  ? 'bg-[#181A1D] text-white border border-[#2B3037] shadow-sm'
-                  : 'text-zinc-400 hover:text-zinc-200 hover:bg-[#131518]'
+                  ? 'bg-card dark:bg-[#181A1D] text-foreground dark:text-white border border-border dark:border-[#2B3037] shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/40 dark:text-zinc-400 dark:hover:text-zinc-200 dark:hover:bg-[#131518]'
               }`}
             >
               <Package className="w-4 h-4" />
@@ -510,24 +510,24 @@ function UnifiedInventoryContent() {
               onClick={() => setActiveTab('ORDERS')}
               className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all ${
                 activeTab === 'ORDERS'
-                  ? 'bg-[#181A1D] text-white border border-[#2B3037] shadow-sm'
-                  : 'text-zinc-400 hover:text-zinc-200 hover:bg-[#131518]'
+                  ? 'bg-card dark:bg-[#181A1D] text-foreground dark:text-white border border-border dark:border-[#2B3037] shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/40 dark:text-zinc-400 dark:hover:text-zinc-200 dark:hover:bg-[#131518]'
               }`}
             >
               <ShoppingCart className="w-4 h-4" />
               Purchase Orders & Deliveries ({orders.length})
               {stats.pendingPos > 0 && (
-                <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] bg-amber-500/10 border border-amber-500/20 text-amber-400 font-mono font-bold">
+                <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] bg-amber-500/10 border border-amber-500/20 text-amber-500 dark:text-amber-400 font-mono font-bold">
                   {stats.pendingPos}
                 </span>
               )}
             </button>
           </div>
 
-          <div className="flex items-center gap-3 text-xs text-zinc-400">
+          <div className="flex items-center gap-3 text-xs text-muted-foreground dark:text-zinc-400">
             <Link 
               href="/admin/procurement/vendors" 
-              className="hover:text-white transition-colors flex items-center gap-1 font-medium"
+              className="hover:text-foreground dark:hover:text-white transition-colors flex items-center gap-1 font-medium"
             >
               <Building2 className="w-3.5 h-3.5" /> Manage Vendors <ArrowUpRight className="w-3 h-3" />
             </Link>
@@ -536,25 +536,25 @@ function UnifiedInventoryContent() {
 
         {/* Quick KPI Stat Strip */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3.5">
-          <div className="p-5 rounded-2xl bg-[#121417] border border-[#1E2227] flex flex-col justify-between hover:border-zinc-700 transition-colors group">
-            <span className="text-xs font-semibold text-zinc-400">Total Items</span>
-            <span className="text-2xl sm:text-3xl font-black font-mono text-white tracking-tight mt-1">{stats.total}</span>
+          <div className="p-5 rounded-2xl bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] flex flex-col justify-between hover:border-border/80 dark:hover:border-zinc-700 transition-colors group">
+            <span className="text-xs font-semibold text-muted-foreground dark:text-zinc-400">Total Items</span>
+            <span className="text-2xl sm:text-3xl font-black font-mono text-foreground dark:text-white tracking-tight mt-1">{stats.total}</span>
           </div>
-          <div className="p-5 rounded-2xl bg-[#121417] border border-[#1E2227] flex flex-col justify-between hover:border-zinc-700 transition-colors group">
-            <span className="text-xs font-semibold text-zinc-400">In Stock</span>
-            <span className="text-2xl sm:text-3xl font-black font-mono text-emerald-400 tracking-tight mt-1">{stats.inStock}</span>
+          <div className="p-5 rounded-2xl bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] flex flex-col justify-between hover:border-border/80 dark:hover:border-zinc-700 transition-colors group">
+            <span className="text-xs font-semibold text-muted-foreground dark:text-zinc-400">In Stock</span>
+            <span className="text-2xl sm:text-3xl font-black font-mono text-emerald-500 dark:text-emerald-400 tracking-tight mt-1">{stats.inStock}</span>
           </div>
-          <div className="p-5 rounded-2xl bg-[#121417] border border-[#1E2227] flex flex-col justify-between hover:border-zinc-700 transition-colors group">
-            <span className="text-xs font-semibold text-zinc-400">Low Stock Alert</span>
-            <span className="text-2xl sm:text-3xl font-black font-mono text-amber-400 tracking-tight mt-1">{stats.lowStock}</span>
+          <div className="p-5 rounded-2xl bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] flex flex-col justify-between hover:border-border/80 dark:hover:border-zinc-700 transition-colors group">
+            <span className="text-xs font-semibold text-muted-foreground dark:text-zinc-400">Low Stock Alert</span>
+            <span className="text-2xl sm:text-3xl font-black font-mono text-amber-500 dark:text-amber-400 tracking-tight mt-1">{stats.lowStock}</span>
           </div>
-          <div className="p-5 rounded-2xl bg-[#121417] border border-[#1E2227] flex flex-col justify-between hover:border-zinc-700 transition-colors group">
-            <span className="text-xs font-semibold text-zinc-400">Out of Stock</span>
-            <span className="text-2xl sm:text-3xl font-black font-mono text-rose-400 tracking-tight mt-1">{stats.outOfStock}</span>
+          <div className="p-5 rounded-2xl bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] flex flex-col justify-between hover:border-border/80 dark:hover:border-zinc-700 transition-colors group">
+            <span className="text-xs font-semibold text-muted-foreground dark:text-zinc-400">Out of Stock</span>
+            <span className="text-2xl sm:text-3xl font-black font-mono text-rose-500 dark:text-rose-400 tracking-tight mt-1">{stats.outOfStock}</span>
           </div>
-          <div className="p-5 rounded-2xl bg-[#121417] border border-[#1E2227] flex flex-col justify-between hover:border-zinc-700 transition-colors group">
-            <span className="text-xs font-semibold text-zinc-400">Pending POs</span>
-            <span className="text-2xl sm:text-3xl font-black font-mono text-blue-400 tracking-tight mt-1">{stats.pendingPos}</span>
+          <div className="p-5 rounded-2xl bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] flex flex-col justify-between hover:border-border/80 dark:hover:border-zinc-700 transition-colors group">
+            <span className="text-xs font-semibold text-muted-foreground dark:text-zinc-400">Pending POs</span>
+            <span className="text-2xl sm:text-3xl font-black font-mono text-blue-500 dark:text-blue-400 tracking-tight mt-1">{stats.pendingPos}</span>
           </div>
         </div>
 
@@ -567,12 +567,12 @@ function UnifiedInventoryContent() {
             {/* Search and Category Filters */}
             <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
               <div className="relative w-full sm:w-80">
-                <Search className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <Search className="w-4 h-4 text-muted-foreground dark:text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <Input
                   placeholder="Search item name or description..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 bg-[#181A1D] border-[#2B3037] text-white text-xs h-9 rounded-lg placeholder:text-zinc-500 focus-visible:border-zinc-400"
+                  className="pl-10 bg-background dark:bg-[#181A1D] border-input dark:border-[#2B3037] text-foreground dark:text-white text-xs h-9 rounded-lg placeholder:text-muted-foreground dark:placeholder:text-zinc-500 focus-visible:border-ring"
                 />
               </div>
 
@@ -580,7 +580,7 @@ function UnifiedInventoryContent() {
                 <select
                   value={filterCategory}
                   onChange={(e) => setFilterCategory(e.target.value)}
-                  className="bg-[#181A1D] border border-[#2B3037] rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-zinc-400"
+                  className="bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] rounded-lg px-3 py-1.5 text-xs text-foreground dark:text-white focus:outline-none focus:border-ring"
                 >
                   <option value="all">All Categories</option>
                   {categories.map(c => (
@@ -591,7 +591,7 @@ function UnifiedInventoryContent() {
                 <select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
-                  className="bg-[#181A1D] border border-[#2B3037] rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-zinc-400"
+                  className="bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] rounded-lg px-3 py-1.5 text-xs text-foreground dark:text-white focus:outline-none focus:border-ring"
                 >
                   <option value="all">All Status</option>
                   <option value="IN_STOCK">In Stock</option>
@@ -606,9 +606,9 @@ function UnifiedInventoryContent() {
             {loadingItems ? (
               <div className="py-20 flex justify-center"><PremiumSpinner /></div>
             ) : (
-              <div className="bg-[#121417] border border-[#1E2227] rounded-2xl overflow-hidden shadow-2xl">
-                <table className="w-full text-left text-sm text-zinc-100">
-                  <thead className="bg-[#141619] border-b border-[#1E2227] text-zinc-500 font-semibold uppercase tracking-wider text-[10px]">
+              <div className="bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] rounded-2xl overflow-hidden shadow-sm dark:shadow-2xl">
+                <table className="w-full text-left text-sm text-foreground dark:text-zinc-100">
+                  <thead className="bg-muted/40 dark:bg-[#141619] border-b border-border dark:border-[#1E2227] text-muted-foreground dark:text-zinc-500 font-semibold uppercase tracking-wider text-[10px]">
                     <tr>
                       <th className="p-4">Item Name</th>
                       <th className="p-4">Category</th>
@@ -618,34 +618,34 @@ function UnifiedInventoryContent() {
                       <th className="p-4 text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#1A1D21]">
+                  <tbody className="divide-y divide-border dark:divide-[#1A1D21]">
                     {filteredItems.map(item => {
                       const isLowOrOut = item.status === 'LOW_STOCK' || item.status === 'OUT_OF_STOCK'
                       return (
-                        <tr key={item.id} className="hover:bg-[#16181B] transition-colors">
+                        <tr key={item.id} className="hover:bg-muted/30 dark:hover:bg-[#16181B] transition-colors">
                           <td className="p-4">
-                            <p className="font-semibold text-white text-xs">{item.name}</p>
+                            <p className="font-semibold text-foreground dark:text-white text-xs">{item.name}</p>
                             {item.description && (
-                              <p className="text-[11px] text-zinc-500 line-clamp-1 mt-0.5">{item.description}</p>
+                              <p className="text-[11px] text-muted-foreground dark:text-zinc-500 line-clamp-1 mt-0.5">{item.description}</p>
                             )}
                           </td>
                           <td className="p-4">
-                            <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-[#181A1D] text-zinc-300 border border-[#2B3037]">
+                            <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-muted dark:bg-[#181A1D] text-muted-foreground dark:text-zinc-300 border border-border dark:border-[#2B3037]">
                               {item.category}
                             </span>
                           </td>
-                          <td className="p-4 font-mono font-bold text-white text-xs">
-                            {item.quantity} <span className="text-[11px] font-normal text-zinc-500">{item.unit}</span>
+                          <td className="p-4 font-mono font-bold text-foreground dark:text-white text-xs">
+                            {item.quantity} <span className="text-[11px] font-normal text-muted-foreground dark:text-zinc-500">{item.unit}</span>
                           </td>
-                          <td className="p-4 text-xs text-zinc-400 font-mono">
+                          <td className="p-4 text-xs text-muted-foreground dark:text-zinc-400 font-mono">
                             {item.minQuantity} {item.unit}
                           </td>
                           <td className="p-4">
                             <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[10px] font-bold font-mono uppercase tracking-wider border ${
-                              item.status === 'IN_STOCK' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-                              item.status === 'LOW_STOCK' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
-                              item.status === 'OUT_OF_STOCK' ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' :
-                              'bg-zinc-800 text-zinc-400 border-zinc-700'
+                              item.status === 'IN_STOCK' ? 'bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 border-emerald-500/20' :
+                              item.status === 'LOW_STOCK' ? 'bg-amber-500/10 text-amber-500 dark:text-amber-400 border-amber-500/20' :
+                              item.status === 'OUT_OF_STOCK' ? 'bg-rose-500/10 text-rose-500 dark:text-rose-400 border-rose-500/20' :
+                              'bg-muted text-muted-foreground dark:bg-zinc-800 dark:text-zinc-400 border-border dark:border-zinc-700'
                             }`}>
                               {item.status === 'IN_STOCK' && <CheckCircle className="w-3 h-3" />}
                               {item.status === 'LOW_STOCK' && <AlertTriangle className="w-3 h-3" />}
@@ -660,7 +660,7 @@ function UnifiedInventoryContent() {
                                 <button
                                   type="button"
                                   onClick={() => handleQuickReorder(item)}
-                                  className="h-7 text-[11px] font-semibold bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20 px-2 rounded-lg flex items-center gap-1 transition-colors"
+                                  className="h-7 text-[11px] font-semibold bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 dark:text-amber-400 border border-amber-500/20 px-2 rounded-lg flex items-center gap-1 transition-colors"
                                 >
                                   <ShoppingCart className="w-3 h-3" /> Reorder PO
                                 </button>
@@ -675,7 +675,7 @@ function UnifiedInventoryContent() {
                                     reason: 'Manual Count'
                                   })
                                 }}
-                                className="h-7 px-2 rounded-lg bg-[#1C2025] hover:bg-[#252B33] text-zinc-300 border border-[#2B3037] text-[11px] transition-colors"
+                                className="h-7 px-2 rounded-lg bg-muted dark:bg-[#1C2025] hover:bg-muted/80 dark:hover:bg-[#252B33] text-foreground dark:text-zinc-300 border border-border dark:border-[#2B3037] text-[11px] transition-colors"
                                 title="Adjust Stock"
                               >
                                 <SlidersHorizontal className="w-3.5 h-3.5" />
@@ -695,7 +695,7 @@ function UnifiedInventoryContent() {
                                   })
                                   setShowItemModal(true)
                                 }}
-                                className="h-7 px-2 rounded-lg bg-[#1C2025] hover:bg-[#252B33] text-zinc-300 border border-[#2B3037] text-[11px] transition-colors"
+                                className="h-7 px-2 rounded-lg bg-muted dark:bg-[#1C2025] hover:bg-muted/80 dark:hover:bg-[#252B33] text-foreground dark:text-zinc-300 border border-border dark:border-[#2B3037] text-[11px] transition-colors"
                                 title="Edit Item"
                               >
                                 <Edit className="w-3.5 h-3.5" />
@@ -703,7 +703,7 @@ function UnifiedInventoryContent() {
                               <button
                                 type="button"
                                 onClick={() => handleDeleteItem(item.id)}
-                                className="h-7 px-2 rounded-lg bg-[#1C2025] hover:bg-rose-950/40 text-rose-400 border border-[#2B3037] hover:border-rose-500/30 text-[11px] transition-colors"
+                                className="h-7 px-2 rounded-lg bg-muted dark:bg-[#1C2025] hover:bg-rose-500/10 dark:hover:bg-rose-950/40 text-rose-500 dark:text-rose-400 border border-border dark:border-[#2B3037] hover:border-rose-500/30 text-[11px] transition-colors"
                                 title="Delete Item"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
@@ -715,7 +715,7 @@ function UnifiedInventoryContent() {
                     })}
                     {filteredItems.length === 0 && (
                       <tr>
-                        <td colSpan={6} className="p-12 text-center text-zinc-500 font-mono text-xs">
+                        <td colSpan={6} className="p-12 text-center text-muted-foreground dark:text-zinc-500 font-mono text-xs">
                           No inventory items match your current filters.
                         </td>
                       </tr>
@@ -737,9 +737,9 @@ function UnifiedInventoryContent() {
             {loadingOrders ? (
               <div className="py-20 flex justify-center"><PremiumSpinner /></div>
             ) : (
-              <div className="bg-[#121417] border border-[#1E2227] rounded-2xl overflow-hidden shadow-2xl">
-                <table className="w-full text-left text-sm text-zinc-100">
-                  <thead className="bg-[#141619] border-b border-[#1E2227] text-zinc-500 font-semibold uppercase tracking-wider text-[10px]">
+              <div className="bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] rounded-2xl overflow-hidden shadow-sm dark:shadow-2xl">
+                <table className="w-full text-left text-sm text-foreground dark:text-zinc-100">
+                  <thead className="bg-muted/40 dark:bg-[#141619] border-b border-border dark:border-[#1E2227] text-muted-foreground dark:text-zinc-500 font-semibold uppercase tracking-wider text-[10px]">
                     <tr>
                       <th className="p-4">PO Number</th>
                       <th className="p-4">Supplier / Vendor</th>
@@ -750,28 +750,28 @@ function UnifiedInventoryContent() {
                       <th className="p-4 text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#1A1D21]">
+                  <tbody className="divide-y divide-border dark:divide-[#1A1D21]">
                     {orders.map(order => {
                       const st = PO_STATUS_CONFIG[order.status]
                       return (
-                        <tr key={order.id} className="hover:bg-[#16181B] transition-colors">
+                        <tr key={order.id} className="hover:bg-muted/30 dark:hover:bg-[#16181B] transition-colors">
                           <td className="p-4">
                             <div className="flex items-center gap-2">
-                              <FileText className="w-3.5 h-3.5 text-zinc-400" />
-                              <span className="font-mono font-bold text-xs text-white">{order.orderNumber}</span>
+                              <FileText className="w-3.5 h-3.5 text-muted-foreground dark:text-zinc-400" />
+                              <span className="font-mono font-bold text-xs text-foreground dark:text-white">{order.orderNumber}</span>
                             </div>
                           </td>
                           <td className="p-4">
-                            <p className="font-semibold text-white text-xs">{order.vendor?.name || 'Vendor'}</p>
-                            <p className="text-[11px] text-zinc-500">{order.vendor?.email || ''}</p>
+                            <p className="font-semibold text-foreground dark:text-white text-xs">{order.vendor?.name || 'Vendor'}</p>
+                            <p className="text-[11px] text-muted-foreground dark:text-zinc-500">{order.vendor?.email || ''}</p>
                           </td>
-                          <td className="p-4 text-xs text-zinc-400 font-mono">
+                          <td className="p-4 text-xs text-muted-foreground dark:text-zinc-400 font-mono">
                             {new Date(order.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
                           </td>
-                          <td className="p-4 text-xs text-zinc-400 font-mono">
+                          <td className="p-4 text-xs text-muted-foreground dark:text-zinc-400 font-mono">
                             {order.expectedDate ? new Date(order.expectedDate).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}
                           </td>
-                          <td className="p-4 font-mono font-bold text-right text-emerald-400 text-xs">
+                          <td className="p-4 font-mono font-bold text-right text-emerald-500 dark:text-emerald-400 text-xs">
                             ${Number(order.totalAmount || 0).toFixed(2)}
                           </td>
                           <td className="p-4">
@@ -780,7 +780,7 @@ function UnifiedInventoryContent() {
                                 {st.icon} {st.label}
                               </span>
                             ) : (
-                              <span className="text-zinc-500 text-xs font-mono">{order.status}</span>
+                              <span className="text-muted-foreground dark:text-zinc-500 text-xs font-mono">{order.status}</span>
                             )}
                           </td>
                           <td className="p-4 text-right">
@@ -790,14 +790,14 @@ function UnifiedInventoryContent() {
                                   <button
                                     type="button"
                                     onClick={() => handleUpdateOrderStatus(order.id, 'APPROVED')}
-                                    className="h-7 text-xs bg-white hover:bg-zinc-200 text-black font-semibold px-3 rounded-lg transition-colors"
+                                    className="h-7 text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-3 rounded-lg transition-colors"
                                   >
                                     Approve
                                   </button>
                                   <button
                                     type="button"
                                     onClick={() => handleUpdateOrderStatus(order.id, 'REJECTED')}
-                                    className="h-7 text-xs border border-rose-500/20 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 font-medium px-3 rounded-lg transition-colors"
+                                    className="h-7 text-xs border border-rose-500/20 bg-rose-500/10 text-rose-500 dark:text-rose-400 hover:bg-rose-500/20 font-medium px-3 rounded-lg transition-colors"
                                   >
                                     Reject
                                   </button>
@@ -808,7 +808,7 @@ function UnifiedInventoryContent() {
                                 <button
                                   type="button"
                                   onClick={() => setReceiveModal(order)}
-                                  className="h-7 text-xs bg-white hover:bg-zinc-200 text-black font-semibold gap-1 px-3 rounded-lg flex items-center transition-colors"
+                                  className="h-7 text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-semibold gap-1 px-3 rounded-lg flex items-center transition-colors"
                                 >
                                   <Package className="w-3.5 h-3.5" /> Receive Goods
                                 </button>
@@ -818,7 +818,7 @@ function UnifiedInventoryContent() {
                                 <button
                                   type="button"
                                   onClick={() => setInvoiceModal(order)}
-                                  className="h-7 text-xs bg-white hover:bg-zinc-200 text-black font-semibold gap-1 px-3 rounded-lg flex items-center transition-colors"
+                                  className="h-7 text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-semibold gap-1 px-3 rounded-lg flex items-center transition-colors"
                                 >
                                   <FileText className="w-3.5 h-3.5" /> Register Invoice
                                 </button>
@@ -830,7 +830,7 @@ function UnifiedInventoryContent() {
                     })}
                     {orders.length === 0 && (
                       <tr>
-                        <td colSpan={7} className="p-12 text-center text-zinc-500 font-mono text-xs">
+                        <td colSpan={7} className="p-12 text-center text-muted-foreground dark:text-zinc-500 font-mono text-xs">
                           No purchase orders recorded. Click "+ Create Purchase Order" to start your first replenishment.
                         </td>
                       </tr>
@@ -858,44 +858,44 @@ function UnifiedInventoryContent() {
       >
         <form onSubmit={handleItemSubmit} className="space-y-4">
           <div>
-            <label className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1 block">Item Name *</label>
+            <label className="text-[11px] font-semibold text-muted-foreground dark:text-zinc-400 uppercase tracking-wider mb-1 block">Item Name *</label>
             <Input
               required
               value={itemFormData.name}
               onChange={e => setItemFormData({ ...itemFormData, name: e.target.value })}
-              className="bg-[#181A1D] border-[#2B3037] text-white text-xs placeholder-zinc-500 focus:outline-none focus:border-zinc-500"
+              className="bg-background dark:bg-[#181A1D] border-input dark:border-[#2B3037] text-foreground dark:text-white text-xs placeholder:text-muted-foreground dark:placeholder:text-zinc-500 focus-visible:border-ring"
               placeholder="e.g. Luxury Egyptian Cotton Towel"
             />
           </div>
 
           <div>
-            <label className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1 block">Description</label>
+            <label className="text-[11px] font-semibold text-muted-foreground dark:text-zinc-400 uppercase tracking-wider mb-1 block">Description</label>
             <Input
               value={itemFormData.description}
               onChange={e => setItemFormData({ ...itemFormData, description: e.target.value })}
-              className="bg-[#181A1D] border-[#2B3037] text-white text-xs placeholder-zinc-500 focus:outline-none focus:border-zinc-500"
+              className="bg-background dark:bg-[#181A1D] border-input dark:border-[#2B3037] text-foreground dark:text-white text-xs placeholder:text-muted-foreground dark:placeholder:text-zinc-500 focus-visible:border-ring"
               placeholder="e.g. 800 GSM White Bath Towel"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1 block">Category *</label>
+              <label className="text-[11px] font-semibold text-muted-foreground dark:text-zinc-400 uppercase tracking-wider mb-1 block">Category *</label>
               <Input
                 required
                 value={itemFormData.category}
                 onChange={e => setItemFormData({ ...itemFormData, category: e.target.value })}
-                className="bg-[#181A1D] border-[#2B3037] text-white text-xs placeholder-zinc-500 focus:outline-none focus:border-zinc-500"
+                className="bg-background dark:bg-[#181A1D] border-input dark:border-[#2B3037] text-foreground dark:text-white text-xs placeholder:text-muted-foreground dark:placeholder:text-zinc-500 focus-visible:border-ring"
                 placeholder="e.g. Linens, Amenities, F&B"
               />
             </div>
             <div>
-              <label className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1 block">Unit of Measure *</label>
+              <label className="text-[11px] font-semibold text-muted-foreground dark:text-zinc-400 uppercase tracking-wider mb-1 block">Unit of Measure *</label>
               <Input
                 required
                 value={itemFormData.unit}
                 onChange={e => setItemFormData({ ...itemFormData, unit: e.target.value })}
-                className="bg-[#181A1D] border-[#2B3037] text-white text-xs placeholder-zinc-500 focus:outline-none focus:border-zinc-500"
+                className="bg-background dark:bg-[#181A1D] border-input dark:border-[#2B3037] text-foreground dark:text-white text-xs placeholder:text-muted-foreground dark:placeholder:text-zinc-500 focus-visible:border-ring"
                 placeholder="e.g. pcs, sets, kg, bottles"
               />
             </div>
@@ -903,7 +903,7 @@ function UnifiedInventoryContent() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1 block">Initial Quantity *</label>
+              <label className="text-[11px] font-semibold text-muted-foreground dark:text-zinc-400 uppercase tracking-wider mb-1 block">Initial Quantity *</label>
               <Input
                 type="number"
                 min="0"
@@ -911,36 +911,36 @@ function UnifiedInventoryContent() {
                 disabled={!!editingItem}
                 value={itemFormData.quantity}
                 onChange={e => setItemFormData({ ...itemFormData, quantity: e.target.value })}
-                className="bg-[#181A1D] border-[#2B3037] text-white text-xs font-mono disabled:opacity-50"
+                className="bg-background dark:bg-[#181A1D] border-input dark:border-[#2B3037] text-foreground dark:text-white text-xs font-mono disabled:opacity-50"
               />
             </div>
             <div>
-              <label className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1 block">Par Threshold (Min Qty) *</label>
+              <label className="text-[11px] font-semibold text-muted-foreground dark:text-zinc-400 uppercase tracking-wider mb-1 block">Par Threshold (Min Qty) *</label>
               <Input
                 type="number"
                 min="0"
                 required
                 value={itemFormData.minQuantity}
                 onChange={e => setItemFormData({ ...itemFormData, minQuantity: e.target.value })}
-                className="bg-[#181A1D] border-[#2B3037] text-white text-xs font-mono"
+                className="bg-background dark:bg-[#181A1D] border-input dark:border-[#2B3037] text-foreground dark:text-white text-xs font-mono"
               />
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-4 border-t border-[#1C2025]">
+          <div className="flex justify-end gap-2 pt-4 border-t border-border dark:border-[#1C2025]">
             <button
               type="button"
               onClick={() => {
                 setShowItemModal(false)
                 setEditingItem(null)
               }}
-              className="bg-[#141619] hover:bg-[#1A1D21] border border-[#2B3037] text-zinc-300 text-xs font-medium px-4 py-2 rounded-lg transition-colors"
+              className="bg-muted dark:bg-[#141619] hover:bg-muted/80 dark:hover:bg-[#1A1D21] border border-border dark:border-[#2B3037] text-foreground dark:text-zinc-300 text-xs font-medium px-4 py-2 rounded-lg transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs px-4 py-2 rounded-lg transition-all shadow-sm"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs px-4 py-2 rounded-lg transition-all shadow-sm"
             >
               {editingItem ? 'Save Changes' : 'Create Item'}
             </button>
@@ -993,7 +993,7 @@ function UnifiedInventoryContent() {
           className="space-y-4"
         >
           <div>
-            <label className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1 block">
+            <label className="text-[11px] font-semibold text-muted-foreground dark:text-zinc-400 uppercase tracking-wider mb-1 block">
               New Count ({adjustModal?.unit}) *
             </label>
             <Input
@@ -1002,44 +1002,44 @@ function UnifiedInventoryContent() {
               required
               value={adjustForm.newQuantity}
               onChange={e => setAdjustForm({ ...adjustForm, newQuantity: e.target.value })}
-              className="bg-[#181A1D] border-[#2B3037] text-white text-lg font-mono font-bold"
+              className="bg-background dark:bg-[#181A1D] border-input dark:border-[#2B3037] text-foreground dark:text-white text-lg font-mono font-bold"
             />
           </div>
 
           <div>
-            <label className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1 block">Storage Location *</label>
+            <label className="text-[11px] font-semibold text-muted-foreground dark:text-zinc-400 uppercase tracking-wider mb-1 block">Storage Location *</label>
             <Input
               required
               value={adjustForm.location}
               onChange={e => setAdjustForm({ ...adjustForm, location: e.target.value })}
-              className="bg-[#181A1D] border-[#2B3037] text-white text-xs placeholder-zinc-500"
+              className="bg-background dark:bg-[#181A1D] border-input dark:border-[#2B3037] text-foreground dark:text-white text-xs placeholder:text-muted-foreground dark:placeholder:text-zinc-500 focus-visible:border-ring"
               placeholder="e.g. Main Storage, Storeroom B"
             />
           </div>
 
           <div>
-            <label className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1 block">Adjustment Reason *</label>
+            <label className="text-[11px] font-semibold text-muted-foreground dark:text-zinc-400 uppercase tracking-wider mb-1 block">Adjustment Reason *</label>
             <Input
               required
               value={adjustForm.reason}
               onChange={e => setAdjustForm({ ...adjustForm, reason: e.target.value })}
-              className="bg-[#181A1D] border-[#2B3037] text-white text-xs placeholder-zinc-500"
+              className="bg-background dark:bg-[#181A1D] border-input dark:border-[#2B3037] text-foreground dark:text-white text-xs placeholder:text-muted-foreground dark:placeholder:text-zinc-500 focus-visible:border-ring"
               placeholder="e.g. Weekly Physical Audit, Breakage, Restock"
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-4 border-t border-[#1C2025]">
+          <div className="flex justify-end gap-2 pt-4 border-t border-border dark:border-[#1C2025]">
             <button
               type="button"
               onClick={() => setAdjustModal(null)}
-              className="bg-[#141619] hover:bg-[#1A1D21] border border-[#2B3037] text-zinc-300 text-xs font-medium px-4 py-2 rounded-lg transition-colors"
+              className="bg-muted dark:bg-[#141619] hover:bg-muted/80 dark:hover:bg-[#1A1D21] border border-border dark:border-[#2B3037] text-foreground dark:text-zinc-300 text-xs font-medium px-4 py-2 rounded-lg transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submittingAdjust}
-              className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs px-4 py-2 rounded-lg transition-all shadow-sm disabled:opacity-50"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs px-4 py-2 rounded-lg transition-all shadow-sm disabled:opacity-50"
             >
               {submittingAdjust ? 'Updating...' : 'Confirm Count'}
             </button>
@@ -1058,12 +1058,12 @@ function UnifiedInventoryContent() {
         <form onSubmit={handleCreatePo} className="space-y-5">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1 block">Supplier / Vendor *</label>
+              <label className="text-[11px] font-semibold text-muted-foreground dark:text-zinc-400 uppercase tracking-wider mb-1 block">Supplier / Vendor *</label>
               <select
                 required
                 value={poFormData.vendorId}
                 onChange={e => setPoFormData({ ...poFormData, vendorId: e.target.value })}
-                className="w-full bg-[#181A1D] border border-[#2B3037] rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-zinc-500"
+                className="w-full bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] rounded-lg p-2.5 text-xs text-foreground dark:text-white focus:outline-none focus:border-ring"
               >
                 <option value="">Select Vendor...</option>
                 {vendors.map(v => (
@@ -1073,36 +1073,36 @@ function UnifiedInventoryContent() {
             </div>
 
             <div>
-              <label className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1 block">Expected Delivery</label>
+              <label className="text-[11px] font-semibold text-muted-foreground dark:text-zinc-400 uppercase tracking-wider mb-1 block">Expected Delivery</label>
               <Input
                 type="date"
                 value={poFormData.expectedDate}
                 onChange={e => setPoFormData({ ...poFormData, expectedDate: e.target.value })}
-                className="bg-[#181A1D] border-[#2B3037] text-white text-xs h-9 font-mono"
+                className="bg-background dark:bg-[#181A1D] border-input dark:border-[#2B3037] text-foreground dark:text-white text-xs h-9 font-mono"
               />
             </div>
 
             <div className="col-span-2">
-              <label className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1 block">Order Notes</label>
+              <label className="text-[11px] font-semibold text-muted-foreground dark:text-zinc-400 uppercase tracking-wider mb-1 block">Order Notes</label>
               <Input
                 value={poFormData.notes}
                 onChange={e => setPoFormData({ ...poFormData, notes: e.target.value })}
-                className="bg-[#181A1D] border-[#2B3037] text-white text-xs h-9 placeholder-zinc-500"
+                className="bg-background dark:bg-[#181A1D] border-input dark:border-[#2B3037] text-foreground dark:text-white text-xs h-9 placeholder:text-muted-foreground dark:placeholder:text-zinc-500 focus-visible:border-ring"
                 placeholder="Special delivery instructions..."
               />
             </div>
           </div>
 
-          <div className="border border-[#1E2227] rounded-xl p-4 bg-[#141619] space-y-3">
+          <div className="border border-border dark:border-[#1E2227] rounded-xl p-4 bg-muted/30 dark:bg-[#141619] space-y-3">
             <div className="flex justify-between items-center">
-              <h4 className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">Order Line Items</h4>
+              <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground dark:text-zinc-400">Order Line Items</h4>
               <button
                 type="button"
                 onClick={() => setPoFormData({
                   ...poFormData,
                   orderItems: [...poFormData.orderItems, { itemId: '', quantity: 1, unitPrice: 0 }]
                 })}
-                className="h-7 text-xs border border-[#2B3037] bg-[#181A1D] hover:bg-[#20242A] text-zinc-200 px-2.5 rounded-lg flex items-center gap-1 transition-colors"
+                className="h-7 text-xs border border-border dark:border-[#2B3037] bg-card dark:bg-[#181A1D] hover:bg-muted dark:hover:bg-[#20242A] text-foreground dark:text-zinc-200 px-2.5 rounded-lg flex items-center gap-1 transition-colors"
               >
                 <Plus className="w-3 h-3" /> Add Line
               </button>
@@ -1115,7 +1115,7 @@ function UnifiedInventoryContent() {
                     required
                     value={line.itemId}
                     onChange={e => handlePoItemChange(idx, 'itemId', e.target.value)}
-                    className="w-full bg-[#181A1D] border border-[#2B3037] rounded-lg p-2 text-xs text-white focus:outline-none focus:border-zinc-500"
+                    className="w-full bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] rounded-lg p-2 text-xs text-foreground dark:text-white focus:outline-none focus:border-ring"
                   >
                     <option value="">Select Catalog Item...</option>
                     {procurementCatalog.map(catItem => (
@@ -1133,7 +1133,7 @@ function UnifiedInventoryContent() {
                     required
                     value={line.quantity}
                     onChange={e => handlePoItemChange(idx, 'quantity', e.target.value)}
-                    className="bg-[#181A1D] border-[#2B3037] text-white text-center text-xs h-9 font-mono"
+                    className="bg-background dark:bg-[#181A1D] border-input dark:border-[#2B3037] text-foreground dark:text-white text-center text-xs h-9 font-mono"
                     placeholder="Qty"
                   />
                 </div>
@@ -1145,7 +1145,7 @@ function UnifiedInventoryContent() {
                     required
                     value={line.unitPrice}
                     onChange={e => handlePoItemChange(idx, 'unitPrice', e.target.value)}
-                    className="bg-[#181A1D] border-[#2B3037] text-white font-mono text-xs h-9"
+                    className="bg-background dark:bg-[#181A1D] border-input dark:border-[#2B3037] text-foreground dark:text-white font-mono text-xs h-9"
                     placeholder="Unit $"
                   />
                 </div>
@@ -1157,7 +1157,7 @@ function UnifiedInventoryContent() {
                       ...poFormData,
                       orderItems: poFormData.orderItems.filter((_, i) => i !== idx)
                     })}
-                    className="text-zinc-500 hover:text-rose-400 p-1 transition-colors"
+                    className="text-muted-foreground hover:text-rose-500 dark:text-zinc-500 dark:hover:text-rose-400 p-1 transition-colors"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -1166,10 +1166,10 @@ function UnifiedInventoryContent() {
             ))}
           </div>
 
-          <div className="flex justify-between items-center pt-4 border-t border-[#1C2025]">
+          <div className="flex justify-between items-center pt-4 border-t border-border dark:border-[#1C2025]">
             <div>
-              <span className="text-zinc-500 text-[11px] uppercase tracking-wider block">Total Estimated Cost</span>
-              <span className="text-xl font-bold font-mono text-emerald-400">
+              <span className="text-muted-foreground dark:text-zinc-500 text-[11px] uppercase tracking-wider block">Total Estimated Cost</span>
+              <span className="text-xl font-bold font-mono text-emerald-500 dark:text-emerald-400">
                 ${poTotalAmount.toFixed(2)}
               </span>
             </div>
@@ -1177,13 +1177,13 @@ function UnifiedInventoryContent() {
               <button
                 type="button"
                 onClick={() => setShowPoModal(false)}
-                className="bg-[#141619] hover:bg-[#1A1D21] border border-[#2B3037] text-zinc-300 text-xs font-medium px-4 py-2 rounded-lg transition-colors"
+                className="bg-muted dark:bg-[#141619] hover:bg-muted/80 dark:hover:bg-[#1A1D21] border border-border dark:border-[#2B3037] text-foreground dark:text-zinc-300 text-xs font-medium px-4 py-2 rounded-lg transition-colors"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs px-4 py-2 rounded-lg transition-all shadow-sm"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs px-4 py-2 rounded-lg transition-all shadow-sm"
               >
                 Submit Purchase Order
               </button>
@@ -1202,12 +1202,12 @@ function UnifiedInventoryContent() {
       >
         <form onSubmit={handleReceiveGoods} className="space-y-4">
           <div>
-            <label className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1 block">Target Storeroom Location *</label>
+            <label className="text-[11px] font-semibold text-muted-foreground dark:text-zinc-400 uppercase tracking-wider mb-1 block">Target Storeroom Location *</label>
             <select
               required
               value={receiveForm.targetLocation}
               onChange={e => setReceiveForm({ ...receiveForm, targetLocation: e.target.value })}
-              className="w-full bg-[#181A1D] border border-[#2B3037] rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-zinc-500"
+              className="w-full bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] rounded-lg p-2.5 text-xs text-foreground dark:text-white focus:outline-none focus:border-ring"
             >
               <option value="MAIN_WAREHOUSE">Main Storeroom A</option>
               <option value="KITCHEN_STORE">Kitchen Store</option>
@@ -1217,26 +1217,26 @@ function UnifiedInventoryContent() {
           </div>
 
           <div>
-            <label className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1 block">Delivery Slip / Inspection Notes</label>
+            <label className="text-[11px] font-semibold text-muted-foreground dark:text-zinc-400 uppercase tracking-wider mb-1 block">Delivery Slip / Inspection Notes</label>
             <Input
               value={receiveForm.notes}
               onChange={e => setReceiveForm({ ...receiveForm, notes: e.target.value })}
-              className="bg-[#181A1D] border-[#2B3037] text-white text-xs placeholder-zinc-500"
+              className="bg-background dark:bg-[#181A1D] border-input dark:border-[#2B3037] text-foreground dark:text-white text-xs placeholder:text-muted-foreground dark:placeholder:text-zinc-500 focus-visible:border-ring"
               placeholder="e.g. Delivered in full, packaging in good condition."
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-4 border-t border-[#1C2025]">
+          <div className="flex justify-end gap-2 pt-4 border-t border-border dark:border-[#1C2025]">
             <button
               type="button"
               onClick={() => setReceiveModal(null)}
-              className="bg-[#141619] hover:bg-[#1A1D21] border border-[#2B3037] text-zinc-300 text-xs font-medium px-4 py-2 rounded-lg transition-colors"
+              className="bg-muted dark:bg-[#141619] hover:bg-muted/80 dark:hover:bg-[#1A1D21] border border-border dark:border-[#2B3037] text-foreground dark:text-zinc-300 text-xs font-medium px-4 py-2 rounded-lg transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs px-4 py-2 rounded-lg transition-all shadow-sm"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs px-4 py-2 rounded-lg transition-all shadow-sm"
             >
               Confirm Goods Receipt
             </button>
@@ -1254,40 +1254,40 @@ function UnifiedInventoryContent() {
       >
         <form onSubmit={handleRegisterInvoice} className="space-y-4">
           <div>
-            <label className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1 block">Invoice Reference Number *</label>
+            <label className="text-[11px] font-semibold text-muted-foreground dark:text-zinc-400 uppercase tracking-wider mb-1 block">Invoice Reference Number *</label>
             <Input
               required
               value={invoiceForm.invoiceNumber}
               onChange={e => setInvoiceForm({ ...invoiceForm, invoiceNumber: e.target.value })}
-              className="bg-[#181A1D] border-[#2B3037] text-white text-xs font-mono"
+              className="bg-background dark:bg-[#181A1D] border-input dark:border-[#2B3037] text-foreground dark:text-white text-xs font-mono"
               placeholder="e.g. INV-2026-9481"
             />
           </div>
 
           <div>
-            <label className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1 block">Billed Amount ($) *</label>
+            <label className="text-[11px] font-semibold text-muted-foreground dark:text-zinc-400 uppercase tracking-wider mb-1 block">Billed Amount ($) *</label>
             <Input
               type="number"
               step="0.01"
               required
               value={invoiceForm.amount}
               onChange={e => setInvoiceForm({ ...invoiceForm, amount: e.target.value })}
-              className="bg-[#181A1D] border-[#2B3037] text-white text-xs font-mono"
+              className="bg-background dark:bg-[#181A1D] border-input dark:border-[#2B3037] text-foreground dark:text-white text-xs font-mono"
               placeholder={invoiceModal?.totalAmount ? Number(invoiceModal.totalAmount).toFixed(2) : '0.00'}
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-4 border-t border-[#1C2025]">
+          <div className="flex justify-end gap-2 pt-4 border-t border-border dark:border-[#1C2025]">
             <button
               type="button"
               onClick={() => setInvoiceModal(null)}
-              className="bg-[#141619] hover:bg-[#1A1D21] border border-[#2B3037] text-zinc-300 text-xs font-medium px-4 py-2 rounded-lg transition-colors"
+              className="bg-muted dark:bg-[#141619] hover:bg-muted/80 dark:hover:bg-[#1A1D21] border border-border dark:border-[#2B3037] text-foreground dark:text-zinc-300 text-xs font-medium px-4 py-2 rounded-lg transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs px-4 py-2 rounded-lg transition-all shadow-sm"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs px-4 py-2 rounded-lg transition-all shadow-sm"
             >
               Record Invoice
             </button>

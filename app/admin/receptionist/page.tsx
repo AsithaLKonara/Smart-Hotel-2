@@ -501,14 +501,14 @@ function ReceptionistOperationsContent() {
       <div className="space-y-6">
         {/* Top View Selector & Fast Actions */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-1.5 p-1 bg-[#121417] border border-[#1E2227] rounded-xl">
+          <div className="flex items-center gap-1.5 p-1 bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] rounded-xl shadow-sm">
             <button
               onClick={() => setActiveView('COMMAND_DESK')}
               className={cn(
                 "px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all",
                 activeView === 'COMMAND_DESK'
-                  ? "bg-[#181A1D] text-white border border-[#2B3037] shadow-sm"
-                  : "text-zinc-400 hover:text-zinc-200 hover:bg-[#131518]"
+                  ? "bg-muted dark:bg-[#181A1D] text-foreground dark:text-white border border-border dark:border-[#2B3037] shadow-sm"
+                  : "text-muted-foreground dark:text-zinc-400 hover:text-foreground dark:hover:text-zinc-200 hover:bg-muted/50 dark:hover:bg-[#131518]"
               )}
             >
               <LayoutDashboard className="w-3.5 h-3.5" />
@@ -519,8 +519,8 @@ function ReceptionistOperationsContent() {
               className={cn(
                 "px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all",
                 activeView === 'TAPE_CHART'
-                  ? "bg-[#181A1D] text-white border border-[#2B3037] shadow-sm"
-                  : "text-zinc-400 hover:text-zinc-200 hover:bg-[#131518]"
+                  ? "bg-muted dark:bg-[#181A1D] text-foreground dark:text-white border border-border dark:border-[#2B3037] shadow-sm"
+                  : "text-muted-foreground dark:text-zinc-400 hover:text-foreground dark:hover:text-zinc-200 hover:bg-muted/50 dark:hover:bg-[#131518]"
               )}
             >
               <CalendarRange className="w-3.5 h-3.5" />
@@ -531,8 +531,8 @@ function ReceptionistOperationsContent() {
               className={cn(
                 "px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all",
                 activeView === 'BOOKINGS_LIST'
-                  ? "bg-[#181A1D] text-white border border-[#2B3037] shadow-sm"
-                  : "text-zinc-400 hover:text-zinc-200 hover:bg-[#131518]"
+                  ? "bg-muted dark:bg-[#181A1D] text-foreground dark:text-white border border-border dark:border-[#2B3037] shadow-sm"
+                  : "text-muted-foreground dark:text-zinc-400 hover:text-foreground dark:hover:text-zinc-200 hover:bg-muted/50 dark:hover:bg-[#131518]"
               )}
             >
               <CalendarDays className="w-3.5 h-3.5" />
@@ -543,14 +543,14 @@ function ReceptionistOperationsContent() {
           <div className="flex items-center gap-2">
             <Button
               onClick={() => setIsExpressModalOpen(true)}
-              className="bg-[#141619] hover:bg-[#1A1D21] border border-[#2B3037] text-zinc-200 text-xs font-medium h-9 rounded-lg px-3 transition-colors shadow-sm"
+              className="bg-card dark:bg-[#141619] hover:bg-muted dark:hover:bg-[#1A1D21] border border-border dark:border-[#2B3037] text-foreground dark:text-zinc-200 text-xs font-medium h-9 rounded-lg px-3 transition-colors shadow-sm"
             >
               ⚡ Express Walk-in
             </Button>
             <Button
               onClick={handleShiftClose}
               variant="destructive"
-              className="bg-rose-500/10 text-rose-400 border border-rose-500/20 hover:bg-rose-500/20 text-xs font-semibold h-9 rounded-lg px-3 transition-colors"
+              className="bg-rose-500/10 text-rose-500 dark:text-rose-400 border border-rose-500/20 hover:bg-rose-500/20 text-xs font-semibold h-9 rounded-lg px-3 transition-colors"
             >
               Close Shift
             </Button>
@@ -561,19 +561,19 @@ function ReceptionistOperationsContent() {
         {activeView === 'COMMAND_DESK' && (
           <div className="space-y-4">
             {/* 1 PERFECTLY STRUCTURED & SIZED COMMAND CARD */}
-            <div className="bg-[#121417] border border-[#1E2227] rounded-2xl p-4 shadow-sm space-y-3.5">
+            <div className="bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] rounded-2xl p-4 shadow-sm space-y-3.5">
               {/* Row 1: Search & Room Status Filters */}
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
                 {/* Search Bar + Filter Pills */}
                 <div className="flex flex-wrap items-center gap-3 flex-1 min-w-0">
                   <div className="relative w-full sm:w-80 shrink-0">
-                    <Search className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <Search className="w-4 h-4 text-muted-foreground dark:text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
                     <input
                       type="text"
                       placeholder="Search room, guest, booking..."
                       value={searchQuery}
                       onChange={e => setSearchQuery(e.target.value)}
-                      className="w-full bg-[#181A1D] border border-[#2B3037] text-xs text-white pl-10 pr-3.5 h-9 rounded-lg placeholder-zinc-500 focus:outline-none focus:border-zinc-400 transition-colors"
+                      className="w-full bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] text-xs text-foreground dark:text-white pl-10 pr-3.5 h-9 rounded-lg placeholder:text-muted-foreground dark:placeholder:text-zinc-500 focus:outline-none focus:border-ring dark:focus:border-zinc-400 transition-colors"
                     />
                   </div>
 
@@ -586,8 +586,8 @@ function ReceptionistOperationsContent() {
                         className={cn(
                           "text-[10px] uppercase tracking-wider font-semibold px-3 h-9 rounded-lg transition-all whitespace-nowrap flex items-center border",
                           statusFilter === st
-                            ? "bg-[#181A1D] text-white border-[#2B3037] shadow-sm"
-                            : "bg-[#141619] text-zinc-400 border-[#1E2227] hover:text-white hover:bg-[#16181B]"
+                            ? "bg-muted dark:bg-[#181A1D] text-foreground dark:text-white border-border dark:border-[#2B3037] shadow-sm"
+                            : "bg-card dark:bg-[#141619] text-muted-foreground dark:text-zinc-400 border-border dark:border-[#1E2227] hover:text-foreground dark:hover:text-white hover:bg-muted/50 dark:hover:bg-[#16181B]"
                         )}
                       >
                         {st === "ALL" ? "All" : st.replace('_', ' ')}
@@ -599,18 +599,18 @@ function ReceptionistOperationsContent() {
                 {/* Right: Temporal Status Indicator */}
                 <div className="flex items-center gap-2 self-start lg:self-center shrink-0">
                   {isToday(selectedDate) ? (
-                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[11px] font-medium font-mono h-9">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[11px] font-medium font-mono h-9">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                       <span>Live Real-Time</span>
                     </div>
                   ) : (
-                    <div className="flex items-center gap-2 bg-[#181A1D] border border-[#2B3037] text-zinc-300 px-3 h-9 rounded-lg text-xs font-mono">
+                    <div className="flex items-center gap-2 bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] text-foreground dark:text-zinc-300 px-3 h-9 rounded-lg text-xs font-mono">
                       <span>Projected: {format(selectedDate, 'MMM dd')}</span>
                       <Button
                         size="sm"
                         variant="ghost"
                         onClick={handleToday}
-                        className="h-6 px-2 text-[10px] text-zinc-400 hover:text-white hover:bg-white/5 rounded-md ml-1"
+                        className="h-6 px-2 text-[10px] text-muted-foreground dark:text-zinc-400 hover:text-foreground dark:hover:text-white hover:bg-muted dark:hover:bg-white/5 rounded-md ml-1"
                       >
                         Today
                       </Button>
@@ -620,27 +620,27 @@ function ReceptionistOperationsContent() {
               </div>
 
               {/* Row 2: Operational Controls & Temporal Grid Navigation */}
-              <div className="border-t border-[#1C2025] pt-3.5 grid grid-cols-1 xl:grid-cols-12 gap-3 items-center">
+              <div className="border-t border-border dark:border-[#1C2025] pt-3.5 grid grid-cols-1 xl:grid-cols-12 gap-3 items-center">
                 {/* Left (Col 1-7): Month Navigation & Focal Date Stats */}
                 <div className="xl:col-span-7 flex items-center gap-2.5 flex-wrap">
                   {/* Month Navigation Control */}
-                  <div className="flex items-center bg-[#181A1D] border border-[#2B3037] rounded-lg p-0.5 h-9 shrink-0">
+                  <div className="flex items-center bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] rounded-lg p-0.5 h-9 shrink-0">
                     <Button
                       onClick={handlePrevMonth}
                       variant="ghost"
                       size="icon"
-                      className="text-zinc-400 hover:text-white hover:bg-white/5 rounded-md h-7 w-7"
+                      className="text-muted-foreground dark:text-zinc-400 hover:text-foreground dark:hover:text-white hover:bg-muted dark:hover:bg-white/5 rounded-md h-7 w-7"
                     >
                       <ChevronLeft className="w-3.5 h-3.5" />
                     </Button>
-                    <div className="text-xs font-mono font-semibold text-white px-2.5 min-w-[105px] text-center tracking-wide">
+                    <div className="text-xs font-mono font-semibold text-foreground dark:text-white px-2.5 min-w-[105px] text-center tracking-wide">
                       {format(currentMonth, 'MMMM yyyy')}
                     </div>
                     <Button
                       onClick={handleNextMonth}
                       variant="ghost"
                       size="icon"
-                      className="text-zinc-400 hover:text-white hover:bg-white/5 rounded-md h-7 w-7"
+                      className="text-muted-foreground dark:text-zinc-400 hover:text-foreground dark:hover:text-white hover:bg-muted dark:hover:bg-white/5 rounded-md h-7 w-7"
                     >
                       <ChevronRight className="w-3.5 h-3.5" />
                     </Button>
@@ -648,32 +648,32 @@ function ReceptionistOperationsContent() {
                       onClick={handleToday}
                       variant="outline"
                       size="sm"
-                      className="bg-[#141619] border-[#2B3037] text-[10px] font-semibold text-zinc-300 hover:text-white hover:bg-white/5 rounded-md h-7 px-2 ml-1"
+                      className="bg-card dark:bg-[#141619] border-border dark:border-[#2B3037] text-[10px] font-semibold text-foreground dark:text-zinc-300 hover:text-foreground dark:hover:text-white hover:bg-muted dark:hover:bg-white/5 rounded-md h-7 px-2 ml-1"
                     >
                       Today
                     </Button>
                   </div>
 
                   {/* Focal Date Chip */}
-                  <div className="flex items-center gap-1.5 bg-[#181A1D] border border-[#2B3037] rounded-lg px-2.5 h-9 text-xs shrink-0 font-mono">
-                    <span className="font-bold text-white">{format(selectedDate, 'MMM dd')}</span>
+                  <div className="flex items-center gap-1.5 bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] rounded-lg px-2.5 h-9 text-xs shrink-0 font-mono">
+                    <span className="font-bold text-foreground dark:text-white">{format(selectedDate, 'MMM dd')}</span>
                     {isToday(selectedDate) ? (
-                      <span className="text-[9px] text-emerald-400 font-bold bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded">TODAY</span>
+                      <span className="text-[9px] text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded">TODAY</span>
                     ) : (
-                      <span className="text-[9px] text-amber-400 font-bold bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded">FOCAL</span>
+                      <span className="text-[9px] text-amber-600 dark:text-amber-400 font-bold bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded">FOCAL</span>
                     )}
                   </div>
 
                   {/* Operational KPI Group */}
-                  <div className="flex items-center gap-1.5 bg-[#181A1D] border border-[#2B3037] rounded-lg px-2.5 h-9 text-[11px] shrink-0 font-mono">
-                    <span className="text-zinc-500">Occ:</span>
-                    <span className="font-bold text-amber-400 mr-2">{selectedDayStats.occupancyRate}%</span>
-                    <span className="text-zinc-700">|</span>
-                    <span className="text-emerald-400/80 ml-1">Arr:</span>
-                    <span className="font-bold text-emerald-400 mr-2">{selectedDayStats.arrivals}</span>
-                    <span className="text-zinc-700">|</span>
-                    <span className="text-rose-400/80 ml-1">Dep:</span>
-                    <span className="font-bold text-rose-400">{selectedDayStats.departures}</span>
+                  <div className="flex items-center gap-1.5 bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] rounded-lg px-2.5 h-9 text-[11px] shrink-0 font-mono">
+                    <span className="text-muted-foreground dark:text-zinc-500">Occ:</span>
+                    <span className="font-bold text-amber-600 dark:text-amber-400 mr-2">{selectedDayStats.occupancyRate}%</span>
+                    <span className="text-border dark:text-zinc-700">|</span>
+                    <span className="text-emerald-600/80 dark:text-emerald-400/80 ml-1">Arr:</span>
+                    <span className="font-bold text-emerald-600 dark:text-emerald-400 mr-2">{selectedDayStats.arrivals}</span>
+                    <span className="text-border dark:text-zinc-700">|</span>
+                    <span className="text-rose-600/80 dark:text-rose-400/80 ml-1">Dep:</span>
+                    <span className="font-bold text-rose-600 dark:text-rose-400">{selectedDayStats.departures}</span>
                   </div>
 
                   {/* Day Roster Toggle */}
@@ -681,9 +681,9 @@ function ReceptionistOperationsContent() {
                     size="sm"
                     onClick={() => setIsDayRosterOpen(!isDayRosterOpen)}
                     variant="outline"
-                    className="text-xs bg-[#181A1D] border-[#2B3037] text-zinc-300 hover:text-white hover:bg-white/5 h-9 px-3 rounded-lg shrink-0 font-medium"
+                    className="text-xs bg-background dark:bg-[#181A1D] border-input dark:border-[#2B3037] text-foreground dark:text-zinc-300 hover:text-foreground dark:hover:text-white hover:bg-muted dark:hover:bg-white/5 h-9 px-3 rounded-lg shrink-0 font-medium"
                   >
-                    <Users className="w-3.5 h-3.5 mr-1.5 text-zinc-400" />
+                    <Users className="w-3.5 h-3.5 mr-1.5 text-muted-foreground dark:text-zinc-400" />
                     <span>{isDayRosterOpen ? 'Hide List' : 'Day Roster'}</span>
                   </Button>
                 </div>
@@ -691,44 +691,44 @@ function ReceptionistOperationsContent() {
                 {/* Right (Col 8-12): Quick Availability Checker + Split View Mode Switcher */}
                 <div className="xl:col-span-5 flex items-center justify-start xl:justify-end gap-2 flex-wrap">
                   {/* Availability Date Inputs */}
-                  <div className="flex items-center bg-[#181A1D] border border-[#2B3037] rounded-lg px-2.5 h-9 gap-1.5 text-xs shrink-0 font-mono">
-                    <span className="text-[10px] font-bold text-zinc-500 uppercase">In</span>
+                  <div className="flex items-center bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] rounded-lg px-2.5 h-9 gap-1.5 text-xs shrink-0 font-mono">
+                    <span className="text-[10px] font-bold text-muted-foreground dark:text-zinc-500 uppercase">In</span>
                     <input
                       type="date"
-                      className="bg-transparent text-white focus:outline-none cursor-pointer w-[110px]"
+                      className="bg-transparent text-foreground dark:text-white focus:outline-none cursor-pointer w-[110px]"
                       value={availabilityDates.checkIn}
                       onChange={e => setAvailabilityDates({...availabilityDates, checkIn: e.target.value})}
                     />
-                    <span className="text-zinc-600">→</span>
-                    <span className="text-[10px] font-bold text-zinc-500 uppercase">Out</span>
+                    <span className="text-muted-foreground dark:text-zinc-600">→</span>
+                    <span className="text-[10px] font-bold text-muted-foreground dark:text-zinc-500 uppercase">Out</span>
                     <input
                       type="date"
-                      className="bg-transparent text-white focus:outline-none cursor-pointer w-[110px]"
+                      className="bg-transparent text-foreground dark:text-white focus:outline-none cursor-pointer w-[110px]"
                       value={availabilityDates.checkOut}
                       onChange={e => setAvailabilityDates({...availabilityDates, checkOut: e.target.value})}
                     />
                   </div>
 
-                  <Button onClick={checkAvailability} size="sm" className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs h-9 px-3.5 rounded-lg transition-all shadow-sm shrink-0">
+                  <Button onClick={checkAvailability} size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-xs h-9 px-3.5 rounded-lg transition-all shadow-sm shrink-0">
                     <Search className="w-3.5 h-3.5 mr-1" />
                     Check
                   </Button>
 
                   {availableRoomsCount !== null && (
-                    <Badge variant="outline" className="border-emerald-500/20 text-emerald-400 bg-emerald-500/10 px-2.5 h-9 flex items-center text-xs font-mono font-bold rounded-lg shrink-0">
+                    <Badge variant="outline" className="border-emerald-500/20 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 h-9 flex items-center text-xs font-mono font-bold rounded-lg shrink-0">
                       {availableRoomsCount} Avail
                     </Badge>
                   )}
 
                   {/* Desktop Split Mode Controls */}
-                  <div className="hidden xl:flex items-center gap-1 bg-[#141619] border border-[#1E2227] p-1 rounded-lg h-9 shrink-0">
+                  <div className="hidden xl:flex items-center gap-1 bg-muted/50 dark:bg-[#141619] border border-border dark:border-[#1E2227] p-1 rounded-lg h-9 shrink-0">
                     <button
                       onClick={() => setSplitMode('calendar-focus')}
                       className={cn(
                         "text-[9px] font-mono font-semibold uppercase tracking-wider px-2 h-7 rounded transition-all flex items-center",
                         splitMode === 'calendar-focus'
-                          ? "bg-[#181A1D] text-white border border-[#2B3037] shadow-sm"
-                          : "text-zinc-400 hover:text-white"
+                          ? "bg-card dark:bg-[#181A1D] text-foreground dark:text-white border border-border dark:border-[#2B3037] shadow-sm"
+                          : "text-muted-foreground dark:text-zinc-400 hover:text-foreground dark:hover:text-white"
                       )}
                       title="Wider Calendar (60/40)"
                     >
@@ -739,8 +739,8 @@ function ReceptionistOperationsContent() {
                       className={cn(
                         "text-[9px] font-mono font-semibold uppercase tracking-wider px-2 h-7 rounded transition-all flex items-center",
                         splitMode === 'equal'
-                          ? "bg-[#181A1D] text-white border border-[#2B3037] shadow-sm"
-                          : "text-zinc-400 hover:text-white"
+                          ? "bg-card dark:bg-[#181A1D] text-foreground dark:text-white border border-border dark:border-[#2B3037] shadow-sm"
+                          : "text-muted-foreground dark:text-zinc-400 hover:text-foreground dark:hover:text-white"
                       )}
                       title="Equal Split (50/50)"
                     >
@@ -751,8 +751,8 @@ function ReceptionistOperationsContent() {
                       className={cn(
                         "text-[9px] font-mono font-semibold uppercase tracking-wider px-2 h-7 rounded transition-all flex items-center",
                         splitMode === 'matrix-focus'
-                          ? "bg-[#181A1D] text-white border border-[#2B3037] shadow-sm"
-                          : "text-zinc-400 hover:text-white"
+                          ? "bg-card dark:bg-[#181A1D] text-foreground dark:text-white border border-border dark:border-[#2B3037] shadow-sm"
+                          : "text-muted-foreground dark:text-zinc-400 hover:text-foreground dark:hover:text-white"
                       )}
                       title="Wider Room Matrix (40/60)"
                     >
@@ -821,11 +821,11 @@ function ReceptionistOperationsContent() {
 
         {/* View 2: 14-Day Tape Chart */}
         {activeView === 'TAPE_CHART' && (
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-md overflow-x-auto custom-scrollbar">
+          <div className="bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] rounded-2xl p-6 backdrop-blur-md overflow-x-auto custom-scrollbar shadow-sm">
             <div className="mb-4 flex items-center justify-between">
               <div>
-                <h3 className="text-base font-serif font-bold text-white">14-Day Tape Chart Grid</h3>
-                <p className="text-xs text-white/40">Real-time booking blocks across physical rooms.</p>
+                <h3 className="text-base font-serif font-bold text-foreground dark:text-white">14-Day Tape Chart Grid</h3>
+                <p className="text-xs text-muted-foreground dark:text-white/40">Real-time booking blocks across physical rooms.</p>
               </div>
             </div>
             <TapeChart initialStartDate={selectedDate} daysToShow={14} />
@@ -834,16 +834,16 @@ function ReceptionistOperationsContent() {
 
         {/* View 3: Live Reservations Table */}
         {activeView === 'BOOKINGS_LIST' && (
-          <div className="bg-[#121417] border border-[#1E2227] rounded-2xl p-5 space-y-4">
+          <div className="bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] rounded-2xl p-5 space-y-4 shadow-sm">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="relative w-full md:w-72">
-                <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                <Search className="w-3.5 h-3.5 text-muted-foreground dark:text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   placeholder="Search guest, email, code, room..."
                   value={rosterSearch}
-                  onChange={e => setRosterSearch(e.target.value)}
-                  className="w-full bg-[#181A1D] border border-[#2B3037] text-xs text-white pl-9 pr-3 py-2 rounded-lg placeholder-zinc-500 focus:outline-none focus:border-zinc-400 transition-colors"
+                  onChange={e => setSearchQuery(e.target.value)}
+                  className="w-full bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] text-xs text-foreground dark:text-white pl-9 pr-3 py-2 rounded-lg placeholder:text-muted-foreground dark:placeholder:text-zinc-500 focus:outline-none focus:border-ring dark:focus:border-zinc-400 transition-colors"
                 />
               </div>
 
@@ -855,8 +855,8 @@ function ReceptionistOperationsContent() {
                     className={cn(
                       "text-[10px] uppercase font-semibold px-3 py-1.5 rounded-lg transition-all border",
                       rosterStatusFilter === st
-                        ? "bg-[#181A1D] text-white border-[#2B3037] shadow-sm"
-                        : "bg-[#141619] text-zinc-400 border-[#1E2227] hover:text-white hover:bg-[#16181B]"
+                        ? "bg-muted dark:bg-[#181A1D] text-foreground dark:text-white border-border dark:border-[#2B3037] shadow-sm"
+                        : "bg-card dark:bg-[#141619] text-muted-foreground dark:text-zinc-400 border-border dark:border-[#1E2227] hover:text-foreground dark:hover:text-white hover:bg-muted/50 dark:hover:bg-[#16181B]"
                     )}
                   >
                     {st === "ALL" ? "All Status" : st.replace('_', ' ')}
@@ -865,9 +865,9 @@ function ReceptionistOperationsContent() {
               </div>
             </div>
 
-            <div className="border border-[#1E2227] rounded-xl overflow-hidden overflow-x-auto">
+            <div className="border border-border dark:border-[#1E2227] rounded-xl overflow-hidden overflow-x-auto shadow-sm">
               <table className="w-full text-left text-xs">
-                <thead className="bg-[#141619] text-zinc-500 uppercase text-[10px] font-semibold tracking-wider border-b border-[#1E2227]">
+                <thead className="bg-muted/40 dark:bg-[#141619] text-muted-foreground dark:text-zinc-500 uppercase text-[10px] font-semibold tracking-wider border-b border-border dark:border-[#1E2227]">
                   <tr>
                     <th className="py-3 px-4">Guest</th>
                     <th className="py-3 px-4">Room</th>
@@ -877,10 +877,10 @@ function ReceptionistOperationsContent() {
                     <th className="py-3 px-4 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#1A1D21] text-zinc-200">
+                <tbody className="divide-y divide-border dark:divide-[#1A1D21] text-foreground dark:text-zinc-200">
                   {filteredRosterBookings.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="py-12 text-center text-zinc-500">
+                      <td colSpan={6} className="py-12 text-center text-muted-foreground dark:text-zinc-500">
                         No reservations found matching search criteria.
                       </td>
                     </tr>
@@ -891,29 +891,29 @@ function ReceptionistOperationsContent() {
                       const isCheckedIn = b.status === 'CHECKED_IN'
 
                       return (
-                        <tr key={b.id} className="hover:bg-[#16181B] transition-colors">
+                        <tr key={b.id} className="hover:bg-muted/40 dark:hover:bg-[#16181B] transition-colors">
                           <td className="py-3 px-4">
-                            <div className="font-semibold text-white">{b.guest?.name || 'Guest'}</div>
-                            <div className="text-[10px] text-zinc-500">{b.guest?.email || 'No email'}</div>
+                            <div className="font-semibold text-foreground dark:text-white">{b.guest?.name || 'Guest'}</div>
+                            <div className="text-[10px] text-muted-foreground dark:text-zinc-500">{b.guest?.email || 'No email'}</div>
                           </td>
                           <td className="py-3 px-4">
                             {room ? (
-                              <Badge variant="outline" className="border-[#2B3037] bg-[#181A1D] text-white font-mono text-[11px]">
+                              <Badge variant="outline" className="border-border dark:border-[#2B3037] bg-muted dark:bg-[#181A1D] text-foreground dark:text-white font-mono text-[11px]">
                                 #{room.number}
                               </Badge>
                             ) : (
-                              <span className="text-zinc-600 italic">Unassigned</span>
+                              <span className="text-muted-foreground/60 dark:text-zinc-600 italic">Unassigned</span>
                             )}
                           </td>
                           <td className="py-3 px-4 font-mono">
-                            <div className="text-zinc-200 font-medium">
+                            <div className="text-foreground dark:text-zinc-200 font-medium">
                               {format(new Date(b.checkIn), 'MMM dd')} - {format(new Date(b.checkOut), 'MMM dd, yyyy')}
                             </div>
-                            <div className="text-[10px] text-zinc-500">
+                            <div className="text-[10px] text-muted-foreground dark:text-zinc-500">
                               {Math.max(1, Math.round((new Date(b.checkOut).getTime() - new Date(b.checkIn).getTime()) / 86400000))} nights
                             </div>
                           </td>
-                          <td className="py-3 px-4 font-mono text-xs text-blue-400">
+                          <td className="py-3 px-4 font-mono text-xs text-blue-600 dark:text-blue-400">
                             {b.confirmationCode || b.id.slice(0, 8)}
                           </td>
                           <td className="py-3 px-4">
@@ -921,10 +921,10 @@ function ReceptionistOperationsContent() {
                               variant="outline"
                               className={cn(
                                 "text-[10px] px-2 py-0.5 font-bold uppercase font-mono",
-                                b.status === 'CHECKED_IN' && "border-emerald-500/20 text-emerald-400 bg-emerald-500/10",
-                                b.status === 'CONFIRMED' && "border-blue-500/20 text-blue-400 bg-blue-500/10",
-                                b.status === 'CHECKED_OUT' && "border-zinc-700 text-zinc-400 bg-zinc-800/30",
-                                b.status === 'CANCELLED' && "border-rose-500/20 text-rose-400 bg-rose-500/10"
+                                b.status === 'CHECKED_IN' && "border-emerald-500/20 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10",
+                                b.status === 'CONFIRMED' && "border-blue-500/20 text-blue-600 dark:text-blue-400 bg-blue-500/10",
+                                b.status === 'CHECKED_OUT' && "border-border dark:border-zinc-700 text-muted-foreground dark:text-zinc-400 bg-muted/40 dark:bg-zinc-800/30",
+                                b.status === 'CANCELLED' && "border-rose-500/20 text-rose-600 dark:text-rose-400 bg-rose-500/10"
                               )}
                             >
                               {b.status.replace('_', ' ')}
@@ -934,7 +934,7 @@ function ReceptionistOperationsContent() {
                             <Button
                               size="sm"
                               onClick={() => setViewingBookingId(b.id)}
-                              className="h-7 px-2.5 text-[11px] bg-[#1C2025] hover:bg-[#252B33] text-zinc-300 border border-[#2B3037] rounded font-medium transition-colors"
+                              className="h-7 px-2.5 text-[11px] bg-card dark:bg-[#1C2025] hover:bg-muted dark:hover:bg-[#252B33] text-foreground dark:text-zinc-300 border border-border dark:border-[#2B3037] rounded font-medium transition-colors shadow-sm"
                             >
                               <Eye className="w-3 h-3 mr-1" />
                               View
@@ -946,7 +946,7 @@ function ReceptionistOperationsContent() {
                                   updateBookingMutation.mutate({ id: b.id, status: 'CHECKED_IN' })
                                   toast.success(`Checked in ${b.guest?.name || 'guest'}`)
                                 }}
-                                className="h-7 px-2.5 text-[11px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 rounded font-semibold transition-colors"
+                                className="h-7 px-2.5 text-[11px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 rounded font-semibold transition-colors"
                               >
                                 Check-in
                               </Button>
@@ -955,7 +955,7 @@ function ReceptionistOperationsContent() {
                               <Button
                                 size="sm"
                                 onClick={() => handleCheckOut(room.number)}
-                                className="h-7 px-2.5 text-[11px] bg-rose-500/10 text-rose-400 border border-rose-500/20 hover:bg-rose-500/20 rounded font-semibold transition-colors"
+                                className="h-7 px-2.5 text-[11px] bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 hover:bg-rose-500/20 rounded font-semibold transition-colors"
                               >
                                 Check-out
                               </Button>

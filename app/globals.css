@@ -40,6 +40,7 @@
     --midnight: 0 0% 100%;
     --gold: 38 92% 50%;
     --gold-muted: 38 92% 40%;
+    --font-inter: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
 
   .dark {

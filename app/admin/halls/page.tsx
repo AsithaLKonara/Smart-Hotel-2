@@ -65,10 +65,10 @@ function ModalShell({ open, onClose, title, children }: {
     <Dialog.Root open={open} onOpenChange={o => !o && onClose()}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50" />
-        <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl bg-[#0a0a0f] border border-white/10 rounded-2xl shadow-2xl p-6 z-50 max-h-[92vh] overflow-y-auto">
+        <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl bg-card dark:bg-[#0a0a0f] border border-border dark:border-white/10 rounded-2xl shadow-2xl p-6 z-50 max-h-[92vh] overflow-y-auto text-foreground dark:text-white">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold text-white">{title}</h2>
-            <button onClick={onClose} className="text-white/40 hover:text-white transition-colors">
+            <h2 className="text-xl font-bold text-foreground dark:text-white">{title}</h2>
+            <button onClick={onClose} className="text-muted-foreground hover:text-foreground dark:text-white/40 dark:hover:text-white transition-colors">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -82,9 +82,9 @@ function ModalShell({ open, onClose, title, children }: {
 function FormField({ label, children, hint }: { label: string, children: React.ReactNode, hint?: string }) {
   return (
     <div>
-      <label className="text-xs font-bold text-white/60 uppercase tracking-wider mb-1.5 block">{label}</label>
+      <label className="text-xs font-bold text-muted-foreground dark:text-white/60 uppercase tracking-wider mb-1.5 block">{label}</label>
       {children}
-      {hint && <p className="text-xs text-white/30 mt-1">{hint}</p>}
+      {hint && <p className="text-xs text-muted-foreground/70 dark:text-white/30 mt-1">{hint}</p>}
     </div>
   )
 }
@@ -261,19 +261,19 @@ export default function HallsPage() {
       {/* Stats Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         {[
-          { label: 'Total Venues', value: stats.total, icon: Building2, color: 'text-blue-400' },
-          { label: 'Active', value: stats.active, icon: CheckCircle, color: 'text-emerald-400' },
-          { label: 'Total Capacity', value: stats.totalCapacity.toLocaleString(), icon: Users, color: 'text-violet-400' },
-          { label: 'Venue Types', value: stats.types, icon: Star, color: 'text-amber-400' },
+          { label: 'Total Venues', value: stats.total, icon: Building2, color: 'text-blue-500 dark:text-blue-400' },
+          { label: 'Active', value: stats.active, icon: CheckCircle, color: 'text-emerald-500 dark:text-emerald-400' },
+          { label: 'Total Capacity', value: stats.totalCapacity.toLocaleString(), icon: Users, color: 'text-violet-500 dark:text-violet-400' },
+          { label: 'Venue Types', value: stats.types, icon: Star, color: 'text-amber-500 dark:text-amber-400' },
         ].map(stat => (
-          <Card key={stat.label} className="bg-white/5 border-white/10">
+          <Card key={stat.label} className="bg-card dark:bg-white/5 border border-border dark:border-white/10">
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="p-2 bg-white/5 rounded-lg">
+              <div className="p-2 bg-muted/60 dark:bg-white/5 rounded-lg">
                 <stat.icon className={`w-5 h-5 ${stat.color}`} />
               </div>
               <div>
-                <p className="text-2xl font-bold text-white">{stat.value}</p>
-                <p className="text-xs text-white/50">{stat.label}</p>
+                <p className="text-2xl font-bold text-foreground dark:text-white">{stat.value}</p>
+                <p className="text-xs text-muted-foreground dark:text-white/50">{stat.label}</p>
               </div>
             </CardContent>
           </Card>
@@ -284,29 +284,29 @@ export default function HallsPage() {
       <div className="flex flex-col sm:flex-row gap-3 mb-6 justify-between">
         <div className="flex gap-2 flex-wrap">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground dark:text-white/40" />
             <Input
               placeholder="Search halls..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="pl-9 bg-white/5 border-white/10 text-white w-56"
+              className="pl-9 bg-background dark:bg-white/5 border border-input dark:border-white/10 text-foreground dark:text-white w-56"
             />
           </div>
-          <div className="flex gap-1 bg-white/5 p-1 rounded-xl">
+          <div className="flex gap-1 bg-muted/40 dark:bg-white/5 p-1 rounded-xl border border-border dark:border-white/10">
             <button
               onClick={() => setFilterType('ALL')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${filterType === 'ALL' ? 'bg-primary text-black' : 'text-slate-400 hover:text-white'}`}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${filterType === 'ALL' ? 'bg-primary text-primary-foreground font-semibold shadow-sm' : 'text-muted-foreground hover:text-foreground dark:text-slate-400 dark:hover:text-white'}`}
             >All</button>
             {HALL_TYPES.map(t => (
               <button
                 key={t}
                 onClick={() => setFilterType(t)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${filterType === t ? 'bg-primary text-black' : 'text-slate-400 hover:text-white'}`}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${filterType === t ? 'bg-primary text-primary-foreground font-semibold shadow-sm' : 'text-muted-foreground hover:text-foreground dark:text-slate-400 dark:hover:text-white'}`}
               >{HALL_TYPE_LABELS[t]}</button>
             ))}
           </div>
         </div>
-        <Button onClick={openCreate} className="bg-primary text-black font-semibold">
+        <Button onClick={openCreate} className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-sm">
           <Plus className="w-4 h-4 mr-2" /> New Hall
         </Button>
       </div>
@@ -319,7 +319,7 @@ export default function HallsPage() {
           {filtered.map(hall => (
             <Card
               key={hall.id}
-              className={`bg-white/5 border-white/10 hover:border-white/20 transition-all shadow-xl group cursor-pointer ${!hall.isActive ? 'opacity-60' : ''}`}
+              className={`bg-card dark:bg-white/5 border border-border dark:border-white/10 hover:border-primary/40 dark:hover:border-white/20 transition-all shadow-md group cursor-pointer ${!hall.isActive ? 'opacity-60' : ''}`}
             >
               {/* Hall Image or Gradient Hero */}
               <div
@@ -330,7 +330,7 @@ export default function HallsPage() {
                   <img src={hall.images[0]} alt={hall.name} className="w-full h-full object-cover" />
                 ) : (
                   <div className="flex items-center justify-center h-full">
-                    <Building2 className="w-16 h-16 text-white/10" />
+                    <Building2 className="w-16 h-16 text-muted-foreground/30 dark:text-white/10" />
                   </div>
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -339,7 +339,7 @@ export default function HallsPage() {
                     {HALL_TYPE_LABELS[hall.type]}
                   </Badge>
                   {!hall.isActive && (
-                    <Badge className="text-xs px-2 py-0.5 bg-red-500/20 text-red-400 border-red-500/30 border">
+                    <Badge className="text-xs px-2 py-0.5 bg-red-500/20 text-red-500 dark:text-red-400 border-red-500/30 border">
                       Inactive
                     </Badge>
                   )}
@@ -347,13 +347,13 @@ export default function HallsPage() {
                 <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
                   <button
                     onClick={e => { e.stopPropagation(); openEdit(hall) }}
-                    className="p-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-colors"
+                    className="p-1.5 bg-background/80 dark:bg-white/10 hover:bg-background dark:hover:bg-white/20 rounded-lg text-foreground dark:text-white shadow-sm transition-colors"
                   >
                     <Edit className="w-3.5 h-3.5" />
                   </button>
                   <button
                     onClick={e => { e.stopPropagation(); handleDelete(hall) }}
-                    className="p-1.5 bg-red-500/20 hover:bg-red-500/30 rounded-lg text-red-400 transition-colors"
+                    className="p-1.5 bg-red-500/10 hover:bg-red-500/20 dark:bg-red-500/20 dark:hover:bg-red-500/30 rounded-lg text-red-600 dark:text-red-400 transition-colors"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
@@ -362,54 +362,54 @@ export default function HallsPage() {
 
               <CardContent className="p-5 flex flex-col gap-3">
                 <div>
-                  <h3 className="font-bold text-white text-lg leading-tight">{hall.name}</h3>
+                  <h3 className="font-bold text-foreground dark:text-white text-lg leading-tight">{hall.name}</h3>
                   {hall.floorNumber != null && (
-                    <p className="text-xs text-white/40 flex items-center gap-1 mt-0.5">
+                    <p className="text-xs text-muted-foreground dark:text-white/40 flex items-center gap-1 mt-0.5">
                       <MapPin className="w-3 h-3" /> Floor {hall.floorNumber}
                     </p>
                   )}
                   {hall.description && (
-                    <p className="text-xs text-white/50 mt-2 line-clamp-2">{hall.description}</p>
+                    <p className="text-xs text-muted-foreground dark:text-white/50 mt-2 line-clamp-2">{hall.description}</p>
                   )}
                 </div>
 
                 <div className="grid grid-cols-3 gap-2">
-                  <div className="bg-[#1a1a24] p-2.5 rounded-xl border border-white/5 text-center">
-                    <Users className="w-3.5 h-3.5 text-violet-400 mx-auto mb-1" />
-                    <p className="text-xs text-white/40">Capacity</p>
-                    <p className="font-bold text-white text-sm">{hall.capacity}</p>
+                  <div className="bg-muted/40 dark:bg-[#1a1a24] p-2.5 rounded-xl border border-border dark:border-white/5 text-center">
+                    <Users className="w-3.5 h-3.5 text-violet-500 dark:text-violet-400 mx-auto mb-1" />
+                    <p className="text-xs text-muted-foreground dark:text-white/40">Capacity</p>
+                    <p className="font-bold text-foreground dark:text-white text-sm">{hall.capacity}</p>
                   </div>
-                  <div className="bg-[#1a1a24] p-2.5 rounded-xl border border-white/5 text-center">
-                    <DollarSign className="w-3.5 h-3.5 text-emerald-400 mx-auto mb-1" />
-                    <p className="text-xs text-white/40">Hourly</p>
-                    <p className="font-bold text-emerald-400 text-sm">${Number(hall.hourlyRate).toFixed(0)}</p>
+                  <div className="bg-muted/40 dark:bg-[#1a1a24] p-2.5 rounded-xl border border-border dark:border-white/5 text-center">
+                    <DollarSign className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400 mx-auto mb-1" />
+                    <p className="text-xs text-muted-foreground dark:text-white/40">Hourly</p>
+                    <p className="font-bold text-emerald-600 dark:text-emerald-400 text-sm">${Number(hall.hourlyRate).toFixed(0)}</p>
                   </div>
-                  <div className="bg-[#1a1a24] p-2.5 rounded-xl border border-white/5 text-center">
-                    <CalendarDays className="w-3.5 h-3.5 text-amber-400 mx-auto mb-1" />
-                    <p className="text-xs text-white/40">Daily</p>
-                    <p className="font-bold text-amber-400 text-sm">${Number(hall.dailyRate).toFixed(0)}</p>
+                  <div className="bg-muted/40 dark:bg-[#1a1a24] p-2.5 rounded-xl border border-border dark:border-white/5 text-center">
+                    <CalendarDays className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400 mx-auto mb-1" />
+                    <p className="text-xs text-muted-foreground dark:text-white/40">Daily</p>
+                    <p className="font-bold text-amber-600 dark:text-amber-400 text-sm">${Number(hall.dailyRate).toFixed(0)}</p>
                   </div>
                 </div>
 
                 {hall.amenities?.length > 0 && (
                   <div className="flex flex-wrap gap-1">
                     {hall.amenities.slice(0, 4).map(a => (
-                      <span key={a} className="text-xs px-2 py-0.5 bg-white/5 text-white/50 rounded-full border border-white/10">
+                      <span key={a} className="text-xs px-2 py-0.5 bg-muted/60 dark:bg-white/5 text-muted-foreground dark:text-white/50 rounded-full border border-border dark:border-white/10">
                         {a}
                       </span>
                     ))}
                     {hall.amenities.length > 4 && (
-                      <span className="text-xs px-2 py-0.5 bg-white/5 text-white/30 rounded-full border border-white/10">
+                      <span className="text-xs px-2 py-0.5 bg-muted/60 dark:bg-white/5 text-muted-foreground/60 dark:text-white/30 rounded-full border border-border dark:border-white/10">
                         +{hall.amenities.length - 4} more
                       </span>
                     )}
                   </div>
                 )}
 
-                <div className="pt-3 border-t border-white/10 flex gap-2">
+                <div className="pt-3 border-t border-border dark:border-white/10 flex gap-2">
                   <Button
                     size="sm"
-                    className="flex-1 bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 text-xs"
+                    className="flex-1 bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 text-xs font-semibold"
                     onClick={() => router.push(`/admin/halls/${hall.id}`)}
                   >
                     <BookOpen className="w-3.5 h-3.5 mr-1" /> View & Book
@@ -418,8 +418,8 @@ export default function HallsPage() {
                     onClick={() => handleToggleActive(hall)}
                     className={`px-3 rounded-lg border text-xs font-bold transition-colors ${
                       hall.isActive
-                        ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-red-500/10 hover:border-red-500/30 hover:text-red-400'
-                        : 'bg-red-500/10 border-red-500/30 text-red-400 hover:bg-emerald-500/10 hover:border-emerald-500/30 hover:text-emerald-400'
+                        ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-red-500/10 hover:border-red-500/30 hover:text-red-500 dark:hover:text-red-400'
+                        : 'bg-red-500/10 border-red-500/30 text-red-600 dark:text-red-400 hover:bg-emerald-500/10 hover:border-emerald-500/30 hover:text-emerald-600 dark:hover:text-emerald-400'
                     }`}
                     title={hall.isActive ? 'Deactivate' : 'Activate'}
                   >
@@ -431,7 +431,7 @@ export default function HallsPage() {
           ))}
 
           {filtered.length === 0 && !loading && (
-            <div className="col-span-full py-16 text-center border-2 border-dashed border-white/10 rounded-xl text-white/40">
+            <div className="col-span-full py-16 text-center border-2 border-dashed border-border dark:border-white/10 rounded-xl text-muted-foreground dark:text-white/40">
               <Building2 className="w-12 h-12 mx-auto mb-3 opacity-30" />
               <p className="text-lg font-bold">No halls found</p>
               <p className="text-sm mt-1">Click "New Hall" to create your first venue.</p>
@@ -454,7 +454,7 @@ export default function HallsPage() {
                   required
                   value={form.name}
                   onChange={e => setForm({ ...form, name: e.target.value })}
-                  className="bg-[#1a1a24] border-white/10 text-white"
+                  className="bg-background dark:bg-[#1a1a24] border border-input dark:border-white/10 text-foreground dark:text-white"
                   placeholder="e.g. Grand Ballroom"
                 />
               </FormField>
@@ -464,7 +464,7 @@ export default function HallsPage() {
               <select
                 value={form.type}
                 onChange={e => setForm({ ...form, type: e.target.value as HallType })}
-                className="w-full bg-[#1a1a24] border border-white/10 rounded-lg p-2.5 text-sm text-white"
+                className="w-full bg-background dark:bg-[#1a1a24] border border-input dark:border-white/10 rounded-lg p-2.5 text-sm text-foreground dark:text-white"
               >
                 {HALL_TYPES.map(t => <option key={t} value={t}>{HALL_TYPE_LABELS[t]}</option>)}
               </select>
@@ -475,7 +475,7 @@ export default function HallsPage() {
                 type="number"
                 value={form.floorNumber}
                 onChange={e => setForm({ ...form, floorNumber: e.target.value })}
-                className="bg-[#1a1a24] border-white/10 text-white"
+                className="bg-background dark:bg-[#1a1a24] border border-input dark:border-white/10 text-foreground dark:text-white"
                 placeholder="e.g. 2"
               />
             </FormField>
@@ -487,7 +487,7 @@ export default function HallsPage() {
                 min="1"
                 value={form.capacity}
                 onChange={e => setForm({ ...form, capacity: e.target.value })}
-                className="bg-[#1a1a24] border-white/10 text-white"
+                className="bg-background dark:bg-[#1a1a24] border border-input dark:border-white/10 text-foreground dark:text-white"
               />
             </FormField>
 
@@ -499,7 +499,7 @@ export default function HallsPage() {
                 step="0.01"
                 value={form.hourlyRate}
                 onChange={e => setForm({ ...form, hourlyRate: e.target.value })}
-                className="bg-[#1a1a24] border-white/10 text-white"
+                className="bg-background dark:bg-[#1a1a24] border border-input dark:border-white/10 text-foreground dark:text-white"
               />
             </FormField>
 
@@ -511,7 +511,7 @@ export default function HallsPage() {
                 step="0.01"
                 value={form.dailyRate}
                 onChange={e => setForm({ ...form, dailyRate: e.target.value })}
-                className="bg-[#1a1a24] border-white/10 text-white"
+                className="bg-background dark:bg-[#1a1a24] border border-input dark:border-white/10 text-foreground dark:text-white"
               />
             </FormField>
 
@@ -520,7 +520,7 @@ export default function HallsPage() {
                 <textarea
                   value={form.description}
                   onChange={e => setForm({ ...form, description: e.target.value })}
-                  className="w-full bg-[#1a1a24] border border-white/10 rounded-lg p-2.5 text-sm text-white resize-none"
+                  className="w-full bg-background dark:bg-[#1a1a24] border border-input dark:border-white/10 rounded-lg p-2.5 text-sm text-foreground dark:text-white resize-none"
                   rows={3}
                   placeholder="Describe this venue..."
                 />
@@ -538,7 +538,7 @@ export default function HallsPage() {
                       className={`text-xs px-3 py-1.5 rounded-full border transition-all font-medium ${
                         form.amenities.includes(a)
                           ? 'bg-primary/20 border-primary/50 text-primary'
-                          : 'bg-white/5 border-white/10 text-white/50 hover:border-white/30 hover:text-white'
+                          : 'bg-muted/40 dark:bg-white/5 border border-border dark:border-white/10 text-muted-foreground dark:text-white/50 hover:border-primary/40 dark:hover:border-white/30 hover:text-foreground dark:hover:text-white'
                       }`}
                     >
                       {form.amenities.includes(a) && <CheckCircle className="w-3 h-3 inline mr-1" />}
@@ -554,7 +554,7 @@ export default function HallsPage() {
                 <textarea
                   value={form.images.join('\n')}
                   onChange={e => setForm({ ...form, images: e.target.value.split('\n').map(s => s.trim()).filter(Boolean) })}
-                  className="w-full bg-[#1a1a24] border border-white/10 rounded-lg p-2.5 text-sm text-white resize-none font-mono"
+                  className="w-full bg-background dark:bg-[#1a1a24] border border-input dark:border-white/10 rounded-lg p-2.5 text-sm text-foreground dark:text-white resize-none font-mono"
                   rows={2}
                   placeholder="https://example.com/hall.jpg"
                 />
@@ -562,9 +562,9 @@ export default function HallsPage() {
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+          <div className="flex justify-end gap-3 pt-4 border-t border-border dark:border-white/10">
             <Button type="button" variant="ghost" onClick={() => setShowModal(false)} disabled={saving}>Cancel</Button>
-            <Button type="submit" className="bg-primary text-black font-semibold" disabled={saving}>
+            <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-sm" disabled={saving}>
               {saving ? 'Saving...' : editingHall ? 'Update Hall' : 'Create Hall'}
             </Button>
           </div>

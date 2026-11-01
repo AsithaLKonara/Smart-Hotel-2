@@ -20,7 +20,7 @@ export default function AccountingIndexPage() {
   }, [session, status]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-slate-950">
+    <div className="flex items-center justify-center min-h-screen bg-background dark:bg-slate-950">
       <PremiumSpinner size="lg" text="Loading Accounting..." />
     </div>
   )

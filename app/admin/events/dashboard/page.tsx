@@ -36,17 +36,17 @@ function GuestSearch({ value, onChange }: { value: string, onChange: (id: string
   return (
     <div className="relative">
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground dark:text-white/40" />
         <Input 
           placeholder="Search guest by name or email..." 
           value={query} 
           onChange={e => { setQuery(e.target.value); setIsOpen(true) }} 
           onFocus={() => setIsOpen(true)}
-          className="bg-[#1a1a24] border-white/10 text-white pl-9" 
+          className="bg-background dark:bg-[#1a1a24] border-input dark:border-white/10 text-foreground dark:text-white pl-9" 
         />
       </div>
       {isOpen && results.length > 0 && (
-        <div className="absolute z-50 w-full mt-1 bg-[#1a1a24] border border-white/10 rounded-lg shadow-xl overflow-hidden">
+        <div className="absolute z-50 w-full mt-1 bg-card dark:bg-[#1a1a24] border border-border dark:border-white/10 rounded-lg shadow-xl overflow-hidden">
           {results.map(guest => (
             <button
               key={guest.id}
@@ -56,16 +56,16 @@ function GuestSearch({ value, onChange }: { value: string, onChange: (id: string
                 setQuery(guest.name)
                 setIsOpen(false)
               }}
-              className="w-full text-left px-4 py-3 hover:bg-white/5 border-b border-white/5 last:border-0"
+              className="w-full text-left px-4 py-3 hover:bg-muted/40 dark:hover:bg-white/5 border-b border-border dark:border-white/5 last:border-0"
             >
-              <div className="text-sm font-bold text-white">{guest.name}</div>
-              <div className="text-xs text-white/50">{guest.email}</div>
+              <div className="text-sm font-bold text-foreground dark:text-white">{guest.name}</div>
+              <div className="text-xs text-muted-foreground dark:text-white/50">{guest.email}</div>
             </button>
           ))}
         </div>
       )}
       {value && !isOpen && (
-        <div className="mt-2 text-xs text-emerald-400 flex items-center gap-1">
+        <div className="mt-2 text-xs text-emerald-500 dark:text-emerald-400 flex items-center gap-1">
           <CheckCircle className="w-3 h-3" /> Guest Selected
         </div>
       )}
@@ -79,10 +79,10 @@ function ModalShell({ open, onClose, title, children }: { open: boolean, onClose
     <Dialog.Root open={open} onOpenChange={(o: boolean) => !o && onClose()}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50" />
-        <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-[#0a0a0f] border border-white/10 rounded-2xl shadow-2xl p-6 z-50 max-h-[90vh] overflow-y-auto">
+        <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-card dark:bg-[#0a0a0f] border border-border dark:border-white/10 rounded-2xl shadow-2xl p-6 z-50 max-h-[90vh] overflow-y-auto text-foreground dark:text-white">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold text-white">{title}</h2>
-            <button onClick={onClose} className="text-white/40 hover:text-white transition-colors"><X className="w-5 h-5" /></button>
+            <h2 className="text-xl font-bold text-foreground dark:text-white">{title}</h2>
+            <button onClick={onClose} className="text-muted-foreground hover:text-foreground dark:text-white/40 dark:hover:text-white transition-colors"><X className="w-5 h-5" /></button>
           </div>
           {children}
         </Dialog.Content>
@@ -94,7 +94,7 @@ function ModalShell({ open, onClose, title, children }: { open: boolean, onClose
 function FormField({ label, children }: { label: string, children: React.ReactNode }) {
   return (
     <div>
-      <label className="text-xs font-bold text-white/60 uppercase tracking-wider mb-2 block">{label}</label>
+      <label className="text-xs font-bold text-muted-foreground dark:text-white/60 uppercase tracking-wider mb-2 block">{label}</label>
       {children}
     </div>
   )
@@ -325,38 +325,38 @@ export default function EventsDashboard() {
       
       {/* Tab Bar + Actions */}
       <div className="flex flex-col sm:flex-row gap-3 mb-8 justify-between">
-        <div className="flex gap-2 bg-white/5 p-1 rounded-xl">
+        <div className="flex gap-2 bg-muted/40 dark:bg-white/5 border border-border dark:border-white/10 p-1 rounded-xl">
           {['EVENTS', 'PACKAGES', 'SPACES', 'BLOCKS'].map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-5 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === tab ? 'bg-primary text-black shadow-md' : 'text-slate-400 hover:text-white'}`}
+              className={`px-5 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === tab ? 'bg-primary text-primary-foreground shadow-md' : 'text-muted-foreground hover:text-foreground'}`}
             >
               {tab}
             </button>
           ))}
         </div>
         <div className="flex gap-2 flex-wrap">
-          <Button variant="outline" onClick={() => setQuoteModal(true)} className="bg-white/5 border-white/10 text-white hover:bg-white/10">
+          <Button variant="outline" onClick={() => setQuoteModal(true)} className="bg-muted/40 hover:bg-muted dark:bg-white/5 border border-border dark:border-white/10 text-foreground dark:text-white">
             <Calculator className="w-4 h-4 mr-2" /> Price Quote
           </Button>
           {activeTab === 'EVENTS' && (
-            <Button onClick={() => setNewEventModal(true)} className="bg-primary text-black font-semibold">
+            <Button onClick={() => setNewEventModal(true)} className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold">
               <Plus className="w-4 h-4 mr-2" /> New Event
             </Button>
           )}
           {activeTab === 'SPACES' && (
-            <Button onClick={() => setNewSpaceModal(true)} className="bg-primary text-black font-semibold">
+            <Button onClick={() => setNewSpaceModal(true)} className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold">
               <Plus className="w-4 h-4 mr-2" /> New Space
             </Button>
           )}
           {activeTab === 'PACKAGES' && (
-            <Button onClick={() => setNewPackageModal(true)} className="bg-primary text-black font-semibold">
+            <Button onClick={() => setNewPackageModal(true)} className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold">
               <Plus className="w-4 h-4 mr-2" /> New Package
             </Button>
           )}
           {activeTab === 'BLOCKS' && (
-            <Button onClick={() => setNewBlockModal(true)} className="bg-primary text-black font-semibold">
+            <Button onClick={() => setNewBlockModal(true)} className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold">
               <Plus className="w-4 h-4 mr-2" /> New Block
             </Button>
           )}
@@ -371,34 +371,34 @@ export default function EventsDashboard() {
           {activeTab === 'EVENTS' && (
             <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
               {events.map((event: any) => (
-                <Card key={event.id} className="bg-white/5 border-white/10 hover:border-white/20 transition-all shadow-xl">
+                <Card key={event.id} className="bg-card dark:bg-white/5 border border-border dark:border-white/10 hover:border-primary/40 dark:hover:border-white/20 transition-all shadow-sm dark:shadow-xl">
                   <CardContent className="p-6 flex flex-col gap-4">
                     <div className="flex justify-between items-start">
                       <div>
-                        <h3 className="font-bold text-white text-lg">{event.name}</h3>
-                        <p className="text-xs text-white/50 uppercase tracking-wider mt-1">{event.type}</p>
+                        <h3 className="font-bold text-foreground dark:text-white text-lg">{event.name}</h3>
+                        <p className="text-xs text-muted-foreground dark:text-white/50 uppercase tracking-wider mt-1">{event.type}</p>
                       </div>
                       <Badge className={`text-xs px-2 py-1 rounded-full border ${
-                        event.status === 'DEFINITE' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' :
-                        event.status === 'TENTATIVE' ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' :
-                        'bg-slate-500/20 text-slate-400 border-slate-500/30'
+                        event.status === 'DEFINITE' ? 'bg-emerald-500/20 text-emerald-500 dark:text-emerald-400 border-emerald-500/30' :
+                        event.status === 'TENTATIVE' ? 'bg-amber-500/20 text-amber-500 dark:text-amber-400 border-amber-500/30' :
+                        'bg-slate-500/20 text-slate-500 dark:text-slate-400 border-slate-500/30'
                       }`}>
                         {event.status}
                       </Badge>
                     </div>
 
-                    <div className="flex flex-col gap-2 text-sm text-white/60 bg-[#1a1a24] p-4 rounded-xl border border-white/5">
-                      <div className="flex items-center gap-2">
-                        <CalendarDays className="w-4 h-4 text-primary/70" />
+                    <div className="flex flex-col gap-2 text-sm text-muted-foreground dark:text-white/60 bg-muted/30 dark:bg-[#1a1a24] p-4 rounded-xl border border-border dark:border-white/5">
+                      <div className="flex items-center gap-2 text-foreground dark:text-white">
+                        <CalendarDays className="w-4 h-4 text-primary" />
                         {new Date(event.startDate).toLocaleDateString()} → {new Date(event.endDate).toLocaleDateString()}
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Users className="w-4 h-4 text-primary/70" />
+                      <div className="flex items-center gap-2 text-foreground dark:text-white">
+                        <Users className="w-4 h-4 text-primary" />
                         {event.expectedAttendees} Expected Attendees
                       </div>
                       {event.spaceBookings?.length > 0 && (
-                        <div className="flex items-center gap-2">
-                          <MapPin className="w-4 h-4 text-primary/70" />
+                        <div className="flex items-center gap-2 text-foreground dark:text-white">
+                          <MapPin className="w-4 h-4 text-primary" />
                           {event.spaceBookings[0].space?.name}
                         </div>
                       )}
@@ -406,26 +406,26 @@ export default function EventsDashboard() {
 
                     {event.groupBlocks?.length > 0 && (
                       <div>
-                        <p className="text-xs text-white/40 mb-2 uppercase tracking-wider font-bold">Group Blocks</p>
+                        <p className="text-xs text-muted-foreground dark:text-white/40 mb-2 uppercase tracking-wider font-bold">Group Blocks</p>
                         {event.groupBlocks.map((block: any) => (
-                          <div key={block.id} className="flex justify-between items-center bg-white/5 p-3 rounded-lg text-sm mb-2 border border-white/5">
-                            <div className="flex items-center gap-2 text-white">
+                          <div key={block.id} className="flex justify-between items-center bg-muted/40 dark:bg-white/5 p-3 rounded-lg text-sm mb-2 border border-border dark:border-white/5">
+                            <div className="flex items-center gap-2 text-foreground dark:text-white">
                               <Hotel className="w-4 h-4 text-primary" /> {block.roomType?.name || 'Room'}
                             </div>
-                            <div className="flex items-center gap-4 text-white/60">
+                            <div className="flex items-center gap-4 text-muted-foreground dark:text-white/60">
                               <span>{block.blockedCount} rooms</span>
-                              <span className="text-emerald-400 font-bold">${block.contractedRate}</span>
+                              <span className="text-emerald-500 dark:text-emerald-400 font-bold">${block.contractedRate}</span>
                             </div>
                           </div>
                         ))}
                       </div>
                     )}
 
-                    <div className="mt-auto pt-4 border-t border-white/10 flex justify-end gap-2">
+                    <div className="mt-auto pt-4 border-t border-border dark:border-white/10 flex justify-end gap-2">
                       <Button
                         size="sm"
                         variant="outline"
-                        className="text-amber-400 border-amber-400/30 bg-amber-400/10 hover:bg-amber-400/20 text-xs"
+                        className="text-amber-500 dark:text-amber-400 border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-xs"
                         onClick={() => openBeoModal(event)}
                       >
                         <DollarSign className="w-3.5 h-3.5 mr-1" /> Manage BEO
@@ -443,7 +443,7 @@ export default function EventsDashboard() {
                 </Card>
               ))}
               {events.length === 0 && (
-                <div className="col-span-full p-12 text-center text-white/40 border-2 border-dashed border-white/10 rounded-xl">
+                <div className="col-span-full p-12 text-center text-muted-foreground dark:text-white/40 border-2 border-dashed border-border dark:border-white/10 rounded-xl">
                   No upcoming events. Click "New Event" to create one.
                 </div>
               )}
@@ -454,34 +454,34 @@ export default function EventsDashboard() {
           {activeTab === 'SPACES' && (
             <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
               {spaces.map((space: any) => (
-                <Card key={space.id} className="bg-white/5 border-white/10 hover:border-white/20 transition-all shadow-xl">
+                <Card key={space.id} className="bg-card dark:bg-white/5 border border-border dark:border-white/10 hover:border-primary/40 dark:hover:border-white/20 transition-all shadow-sm dark:shadow-xl">
                   <CardContent className="p-6">
                     <div className="flex justify-between items-start mb-4">
-                      <h3 className="font-bold text-xl text-white">{space.name}</h3>
-                      <Badge className={`text-xs ${space.isActive ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-slate-500/20 text-slate-400 border-slate-500/30'}`}>
+                      <h3 className="font-bold text-xl text-foreground dark:text-white">{space.name}</h3>
+                      <Badge className={`text-xs ${space.isActive ? 'bg-emerald-500/20 text-emerald-500 dark:text-emerald-400 border-emerald-500/30' : 'bg-slate-500/20 text-slate-500 dark:text-slate-400 border-slate-500/30'}`}>
                         {space.isActive ? 'Active' : 'Inactive'}
                       </Badge>
                     </div>
                     <div className="grid grid-cols-3 gap-3 text-center">
-                      <div className="bg-[#1a1a24] p-3 rounded-xl border border-white/5">
-                        <p className="text-xs text-white/40 mb-1 uppercase">Capacity</p>
-                        <p className="font-bold text-white">{space.capacity}</p>
+                      <div className="bg-muted/30 dark:bg-[#1a1a24] p-3 rounded-xl border border-border dark:border-white/5">
+                        <p className="text-xs text-muted-foreground dark:text-white/40 mb-1 uppercase">Capacity</p>
+                        <p className="font-bold text-foreground dark:text-white">{space.capacity}</p>
                       </div>
-                      <div className="bg-[#1a1a24] p-3 rounded-xl border border-white/5">
-                        <p className="text-xs text-white/40 mb-1 uppercase">Hourly</p>
+                      <div className="bg-muted/30 dark:bg-[#1a1a24] p-3 rounded-xl border border-border dark:border-white/5">
+                        <p className="text-xs text-muted-foreground dark:text-white/40 mb-1 uppercase">Hourly</p>
                         <p className="font-bold text-primary">${space.hourlyRate}</p>
                       </div>
-                      <div className="bg-[#1a1a24] p-3 rounded-xl border border-white/5">
-                        <p className="text-xs text-white/40 mb-1 uppercase">Daily</p>
+                      <div className="bg-muted/30 dark:bg-[#1a1a24] p-3 rounded-xl border border-border dark:border-white/5">
+                        <p className="text-xs text-muted-foreground dark:text-white/40 mb-1 uppercase">Daily</p>
                         <p className="font-bold text-primary">${space.dailyRate}</p>
                       </div>
                     </div>
-                    <div className="mt-4 pt-4 border-t border-white/10 flex justify-end">
+                    <div className="mt-4 pt-4 border-t border-border dark:border-white/10 flex justify-end">
                       <Button variant="ghost" size="sm" onClick={async () => {
                         const res = await fetch(`/api/admin/events/spaces/${space.id}`, { method: 'DELETE' })
                         if (res.ok) { toast.success('Space deleted'); fetchAll() }
                         else toast.error('Cannot delete space with active bookings')
-                      }} className="text-rose-400 hover:bg-rose-500/10 text-xs">
+                      }} className="text-rose-500 dark:text-rose-400 hover:bg-rose-500/10 text-xs">
                         Delete Space
                       </Button>
                     </div>
@@ -489,7 +489,7 @@ export default function EventsDashboard() {
                 </Card>
               ))}
               {spaces.length === 0 && (
-                <div className="col-span-full p-12 text-center text-white/40 border-2 border-dashed border-white/10 rounded-xl">
+                <div className="col-span-full p-12 text-center text-muted-foreground dark:text-white/40 border-2 border-dashed border-border dark:border-white/10 rounded-xl">
                   No event spaces found. Click "New Space" to create one.
                 </div>
               )}
@@ -500,31 +500,31 @@ export default function EventsDashboard() {
           {activeTab === 'PACKAGES' && (
             <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
               {packages.map((pkg: any) => (
-                <Card key={pkg.id} className="bg-white/5 border-white/10 hover:border-white/20 transition-all shadow-xl">
+                <Card key={pkg.id} className="bg-card dark:bg-white/5 border border-border dark:border-white/10 hover:border-primary/40 dark:hover:border-white/20 transition-all shadow-sm dark:shadow-xl">
                   <CardContent className="p-6 flex flex-col gap-4">
                     <div>
-                      <h3 className="font-bold text-white text-lg">{pkg.name}</h3>
-                      <p className="text-xs text-white/50 mt-1">{pkg.description || 'No description'}</p>
+                      <h3 className="font-bold text-foreground dark:text-white text-lg">{pkg.name}</h3>
+                      <p className="text-xs text-muted-foreground dark:text-white/50 mt-1">{pkg.description || 'No description'}</p>
                     </div>
                     <div className="grid grid-cols-2 gap-3 mt-2">
-                      <div className="bg-[#1a1a24] p-3 rounded-xl border border-white/5 text-center">
-                        <p className="text-xs text-white/40 mb-1 uppercase">Price / Plate</p>
+                      <div className="bg-muted/30 dark:bg-[#1a1a24] p-3 rounded-xl border border-border dark:border-white/5 text-center">
+                        <p className="text-xs text-muted-foreground dark:text-white/40 mb-1 uppercase">Price / Plate</p>
                         <p className="font-bold text-primary">${pkg.pricePerPax}</p>
                       </div>
-                      <div className="bg-[#1a1a24] p-3 rounded-xl border border-white/5 text-center">
-                        <p className="text-xs text-white/40 mb-1 uppercase">Flat Fee</p>
+                      <div className="bg-muted/30 dark:bg-[#1a1a24] p-3 rounded-xl border border-border dark:border-white/5 text-center">
+                        <p className="text-xs text-muted-foreground dark:text-white/40 mb-1 uppercase">Flat Fee</p>
                         <p className="font-bold text-primary">${pkg.flatFee}</p>
                       </div>
                     </div>
-                    <div className="text-xs text-white/60 space-y-1 mt-2">
-                      <p><span className="font-bold text-white/80">Includes Hall:</span> {pkg.space ? pkg.space.name : 'None'}</p>
-                      <p><span className="font-bold text-white/80">Includes Room:</span> {pkg.roomType ? pkg.roomType.name : 'None'}</p>
+                    <div className="text-xs text-muted-foreground dark:text-white/60 space-y-1 mt-2">
+                      <p><span className="font-bold text-foreground dark:text-white/80">Includes Hall:</span> {pkg.space ? pkg.space.name : 'None'}</p>
+                      <p><span className="font-bold text-foreground dark:text-white/80">Includes Room:</span> {pkg.roomType ? pkg.roomType.name : 'None'}</p>
                     </div>
                   </CardContent>
                 </Card>
               ))}
               {packages.length === 0 && (
-                <div className="col-span-full p-12 text-center text-white/40 border-2 border-dashed border-white/10 rounded-xl">
+                <div className="col-span-full p-12 text-center text-muted-foreground dark:text-white/40 border-2 border-dashed border-border dark:border-white/10 rounded-xl">
                   No packages found. Click "New Package" to create one.
                 </div>
               )}
@@ -533,41 +533,41 @@ export default function EventsDashboard() {
 
           {/* ---- BLOCKS TAB ---- */}
           {activeTab === 'BLOCKS' && (
-            <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
-              <table className="w-full text-left text-sm text-white">
-                <thead className="bg-white/5 border-b border-white/10">
+            <div className="bg-card dark:bg-white/5 border border-border dark:border-white/10 rounded-xl overflow-hidden">
+              <table className="w-full text-left text-sm text-foreground dark:text-white">
+                <thead className="bg-muted/40 dark:bg-white/5 border-b border-border dark:border-white/10">
                   <tr>
-                    <th className="p-4 text-white/50 text-xs uppercase">Event</th>
-                    <th className="p-4 text-white/50 text-xs uppercase">Room Type</th>
-                    <th className="p-4 text-white/50 text-xs uppercase">Blocked</th>
-                    <th className="p-4 text-white/50 text-xs uppercase">Picked Up</th>
-                    <th className="p-4 text-white/50 text-xs uppercase">Rate</th>
-                    <th className="p-4 text-right text-white/50 text-xs uppercase">Actions</th>
+                    <th className="p-4 text-muted-foreground dark:text-white/50 text-xs uppercase">Event</th>
+                    <th className="p-4 text-muted-foreground dark:text-white/50 text-xs uppercase">Room Type</th>
+                    <th className="p-4 text-muted-foreground dark:text-white/50 text-xs uppercase">Blocked</th>
+                    <th className="p-4 text-muted-foreground dark:text-white/50 text-xs uppercase">Picked Up</th>
+                    <th className="p-4 text-muted-foreground dark:text-white/50 text-xs uppercase">Rate</th>
+                    <th className="p-4 text-right text-muted-foreground dark:text-white/50 text-xs uppercase">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/10">
+                <tbody className="divide-y divide-border dark:divide-white/10">
                   {blocks.map((block: any) => (
-                    <tr key={block.id} className="hover:bg-white/5 transition-colors">
+                    <tr key={block.id} className="hover:bg-muted/30 dark:hover:bg-white/5 transition-colors">
                       <td className="p-4 font-medium">{block.event?.name}</td>
-                      <td className="p-4 text-white/70">{block.roomType?.name}</td>
-                      <td className="p-4 text-white/70">{block.blockedCount}</td>
+                      <td className="p-4 text-muted-foreground dark:text-white/70">{block.roomType?.name}</td>
+                      <td className="p-4 text-muted-foreground dark:text-white/70">{block.blockedCount}</td>
                       <td className="p-4">
-                        <span className={`font-bold ${block.pickedUpCount > 0 ? 'text-emerald-400' : 'text-white/40'}`}>{block.pickedUpCount}</span>
+                        <span className={`font-bold ${block.pickedUpCount > 0 ? 'text-emerald-500 dark:text-emerald-400' : 'text-muted-foreground dark:text-white/40'}`}>{block.pickedUpCount}</span>
                       </td>
-                      <td className="p-4 text-emerald-400 font-bold">${block.contractedRate}</td>
+                      <td className="p-4 text-emerald-500 dark:text-emerald-400 font-bold">${block.contractedRate}</td>
                       <td className="p-4 text-right">
                         <Button variant="ghost" size="sm" onClick={async () => {
                           const res = await fetch(`/api/admin/events/blocks/${block.id}`, { method: 'DELETE' })
                           if (res.ok) { toast.success('Block removed'); fetchAll() }
                           else toast.error('Failed to remove block')
-                        }} className="text-rose-400 hover:bg-rose-500/10 text-xs">
+                        }} className="text-rose-500 dark:text-rose-400 hover:bg-rose-500/10 text-xs">
                           Remove
                         </Button>
                       </td>
                     </tr>
                   ))}
                   {blocks.length === 0 && (
-                    <tr><td colSpan={6} className="p-12 text-center text-white/40">No group blocks found.</td></tr>
+                    <tr><td colSpan={6} className="p-12 text-center text-muted-foreground dark:text-white/40">No group blocks found.</td></tr>
                   )}
                 </tbody>
               </table>
@@ -580,32 +580,32 @@ export default function EventsDashboard() {
       <ModalShell open={quoteModal} onClose={() => { setQuoteModal(false); setQuoteResult(null) }} title="Generate Price Quote">
         <form onSubmit={handleGetQuote} className="space-y-4">
           <FormField label="Room Type">
-            <select required value={quoteForm.roomTypeId} onChange={e => setQuoteForm({ ...quoteForm, roomTypeId: e.target.value })} className="w-full bg-[#1a1a24] border border-white/10 rounded-lg p-2.5 text-sm text-white">
+            <select required value={quoteForm.roomTypeId} onChange={e => setQuoteForm({ ...quoteForm, roomTypeId: e.target.value })} className="w-full bg-background dark:bg-[#1a1a24] border border-input dark:border-white/10 rounded-lg p-2.5 text-sm text-foreground dark:text-white">
               <option value="">Select a room type...</option>
               {roomTypes.map((rt: any) => <option key={rt.id} value={rt.id}>{rt.name} (${rt.baseRate}/night)</option>)}
             </select>
           </FormField>
           <div className="grid grid-cols-2 gap-4">
             <FormField label="Check-In">
-              <Input type="date" required value={quoteForm.checkIn} onChange={e => setQuoteForm({ ...quoteForm, checkIn: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white" />
+              <Input type="date" required value={quoteForm.checkIn} onChange={e => setQuoteForm({ ...quoteForm, checkIn: e.target.value })} className="bg-background dark:bg-[#1a1a24] border-input dark:border-white/10 text-foreground dark:text-white" />
             </FormField>
             <FormField label="Check-Out">
-              <Input type="date" required value={quoteForm.checkOut} onChange={e => setQuoteForm({ ...quoteForm, checkOut: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white" />
+              <Input type="date" required value={quoteForm.checkOut} onChange={e => setQuoteForm({ ...quoteForm, checkOut: e.target.value })} className="bg-background dark:bg-[#1a1a24] border-input dark:border-white/10 text-foreground dark:text-white" />
             </FormField>
           </div>
           <FormField label="Number of Guests">
-            <Input type="number" min="1" required value={quoteForm.guests} onChange={e => setQuoteForm({ ...quoteForm, guests: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white" />
+            <Input type="number" min="1" required value={quoteForm.guests} onChange={e => setQuoteForm({ ...quoteForm, guests: e.target.value })} className="bg-background dark:bg-[#1a1a24] border-input dark:border-white/10 text-foreground dark:text-white" />
           </FormField>
-          <Button type="submit" className="w-full bg-primary text-black font-semibold mt-2"><Calculator className="w-4 h-4 mr-2" /> Get Quote</Button>
+          <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold mt-2"><Calculator className="w-4 h-4 mr-2" /> Get Quote</Button>
         </form>
         {quoteResult && (
-          <div className="mt-6 bg-primary/10 border border-primary/30 rounded-xl p-5 text-white">
+          <div className="mt-6 bg-primary/10 border border-primary/30 rounded-xl p-5 text-foreground dark:text-white">
             <p className="text-xs text-primary uppercase font-bold tracking-widest mb-3 flex items-center gap-2"><CheckCircle className="w-4 h-4" /> Quote Generated</p>
             <div className="grid grid-cols-2 gap-3 text-sm">
-              <div><p className="text-white/50 text-xs">Rate Plan</p><p className="font-bold">{quoteResult.ratePlanName}</p></div>
-              <div><p className="text-white/50 text-xs">Nights</p><p className="font-bold">{quoteResult.nights}</p></div>
-              <div><p className="text-white/50 text-xs">Rate/Night</p><p className="font-bold">${quoteResult.ratePerNight}</p></div>
-              <div><p className="text-white/50 text-xs">Total Amount</p><p className="font-bold text-primary text-xl">${quoteResult.totalAmount}</p></div>
+              <div><p className="text-muted-foreground dark:text-white/50 text-xs">Rate Plan</p><p className="font-bold">{quoteResult.ratePlanName}</p></div>
+              <div><p className="text-muted-foreground dark:text-white/50 text-xs">Nights</p><p className="font-bold">{quoteResult.nights}</p></div>
+              <div><p className="text-muted-foreground dark:text-white/50 text-xs">Rate/Night</p><p className="font-bold">${quoteResult.ratePerNight}</p></div>
+              <div><p className="text-muted-foreground dark:text-white/50 text-xs">Total Amount</p><p className="font-bold text-primary text-xl">${quoteResult.totalAmount}</p></div>
             </div>
           </div>
         )}
@@ -618,11 +618,11 @@ export default function EventsDashboard() {
             <GuestSearch value={attendanceForm.userId} onChange={id => setAttendanceForm({ ...attendanceForm, userId: id })} />
           </FormField>
           <FormField label="Number of Attendees">
-            <Input type="number" min="1" required value={attendanceForm.attendees} onChange={e => setAttendanceForm({ ...attendanceForm, attendees: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white" />
+            <Input type="number" min="1" required value={attendanceForm.attendees} onChange={e => setAttendanceForm({ ...attendanceForm, attendees: e.target.value })} className="bg-background dark:bg-[#1a1a24] border-input dark:border-white/10 text-foreground dark:text-white" />
           </FormField>
-          <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+          <div className="flex justify-end gap-3 pt-4 border-t border-border dark:border-white/10">
             <Button type="button" variant="ghost" onClick={() => setAttendanceModal(null)}>Cancel</Button>
-            <Button type="submit" className="bg-primary text-black font-semibold"><BookOpen className="w-4 h-4 mr-2" /> Confirm Booking</Button>
+            <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"><BookOpen className="w-4 h-4 mr-2" /> Confirm Booking</Button>
           </div>
         </form>
       </ModalShell>
@@ -631,22 +631,22 @@ export default function EventsDashboard() {
       <ModalShell open={newSpaceModal} onClose={() => setNewSpaceModal(false)} title="Create Event Space">
         <form onSubmit={handleCreateSpace} className="space-y-4">
           <FormField label="Space Name">
-            <Input required value={spaceForm.name} onChange={e => setSpaceForm({ ...spaceForm, name: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white" placeholder="e.g. Grand Ballroom" />
+            <Input required value={spaceForm.name} onChange={e => setSpaceForm({ ...spaceForm, name: e.target.value })} className="bg-background dark:bg-[#1a1a24] border-input dark:border-white/10 text-foreground dark:text-white" placeholder="e.g. Grand Ballroom" />
           </FormField>
           <FormField label="Capacity (persons)">
-            <Input type="number" min="1" required value={spaceForm.capacity} onChange={e => setSpaceForm({ ...spaceForm, capacity: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white" />
+            <Input type="number" min="1" required value={spaceForm.capacity} onChange={e => setSpaceForm({ ...spaceForm, capacity: e.target.value })} className="bg-background dark:bg-[#1a1a24] border-input dark:border-white/10 text-foreground dark:text-white" />
           </FormField>
           <div className="grid grid-cols-2 gap-4">
             <FormField label="Hourly Rate ($)">
-              <Input type="number" min="0" step="0.01" required value={spaceForm.hourlyRate} onChange={e => setSpaceForm({ ...spaceForm, hourlyRate: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white" />
+              <Input type="number" min="0" step="0.01" required value={spaceForm.hourlyRate} onChange={e => setSpaceForm({ ...spaceForm, hourlyRate: e.target.value })} className="bg-background dark:bg-[#1a1a24] border-input dark:border-white/10 text-foreground dark:text-white" />
             </FormField>
             <FormField label="Daily Rate ($)">
-              <Input type="number" min="0" step="0.01" required value={spaceForm.dailyRate} onChange={e => setSpaceForm({ ...spaceForm, dailyRate: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white" />
+              <Input type="number" min="0" step="0.01" required value={spaceForm.dailyRate} onChange={e => setSpaceForm({ ...spaceForm, dailyRate: e.target.value })} className="bg-background dark:bg-[#1a1a24] border-input dark:border-white/10 text-foreground dark:text-white" />
             </FormField>
           </div>
-          <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+          <div className="flex justify-end gap-3 pt-4 border-t border-border dark:border-white/10">
             <Button type="button" variant="ghost" onClick={() => setNewSpaceModal(false)}>Cancel</Button>
-            <Button type="submit" className="bg-primary text-black font-semibold">Create Space</Button>
+            <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold">Create Space</Button>
           </div>
         </form>
       </ModalShell>
@@ -655,28 +655,28 @@ export default function EventsDashboard() {
       <ModalShell open={newBlockModal} onClose={() => setNewBlockModal(false)} title="Create Group Block">
         <form onSubmit={handleCreateBlock} className="space-y-4">
           <FormField label="Event">
-            <select required value={blockForm.eventId} onChange={e => setBlockForm({ ...blockForm, eventId: e.target.value })} className="w-full bg-[#1a1a24] border border-white/10 rounded-lg p-2.5 text-sm text-white">
+            <select required value={blockForm.eventId} onChange={e => setBlockForm({ ...blockForm, eventId: e.target.value })} className="w-full bg-background dark:bg-[#1a1a24] border border-input dark:border-white/10 rounded-lg p-2.5 text-sm text-foreground dark:text-white">
               <option value="">Select an event...</option>
               {events.map((ev: any) => <option key={ev.id} value={ev.id}>{ev.name}</option>)}
             </select>
           </FormField>
           <FormField label="Room Type">
-            <select required value={blockForm.roomTypeId} onChange={e => setBlockForm({ ...blockForm, roomTypeId: e.target.value })} className="w-full bg-[#1a1a24] border border-white/10 rounded-lg p-2.5 text-sm text-white">
+            <select required value={blockForm.roomTypeId} onChange={e => setBlockForm({ ...blockForm, roomTypeId: e.target.value })} className="w-full bg-background dark:bg-[#1a1a24] border border-input dark:border-white/10 rounded-lg p-2.5 text-sm text-foreground dark:text-white">
               <option value="">Select a room type...</option>
               {roomTypes.map((rt: any) => <option key={rt.id} value={rt.id}>{rt.name}</option>)}
             </select>
           </FormField>
           <div className="grid grid-cols-2 gap-4">
             <FormField label="Rooms to Block">
-              <Input type="number" min="1" required value={blockForm.blockedCount} onChange={e => setBlockForm({ ...blockForm, blockedCount: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white" />
+              <Input type="number" min="1" required value={blockForm.blockedCount} onChange={e => setBlockForm({ ...blockForm, blockedCount: e.target.value })} className="bg-background dark:bg-[#1a1a24] border-input dark:border-white/10 text-foreground dark:text-white" />
             </FormField>
             <FormField label="Contracted Rate ($)">
-              <Input type="number" min="0" step="0.01" required value={blockForm.contractedRate} onChange={e => setBlockForm({ ...blockForm, contractedRate: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white" />
+              <Input type="number" min="0" step="0.01" required value={blockForm.contractedRate} onChange={e => setBlockForm({ ...blockForm, contractedRate: e.target.value })} className="bg-background dark:bg-[#1a1a24] border-input dark:border-white/10 text-foreground dark:text-white" />
             </FormField>
           </div>
-          <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+          <div className="flex justify-end gap-3 pt-4 border-t border-border dark:border-white/10">
             <Button type="button" variant="ghost" onClick={() => setNewBlockModal(false)}>Cancel</Button>
-            <Button type="submit" className="bg-primary text-black font-semibold">Create Block</Button>
+            <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold">Create Block</Button>
           </div>
         </form>
       </ModalShell>
@@ -685,11 +685,11 @@ export default function EventsDashboard() {
       <ModalShell open={newEventModal} onClose={() => setNewEventModal(false)} title="Create Banqueting Event">
         <form onSubmit={handleCreateEvent} className="space-y-4">
           <FormField label="Event Name">
-            <Input required value={eventForm.name} onChange={e => setEventForm({ ...eventForm, name: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white" placeholder="e.g. Annual Corporate Gala" />
+            <Input required value={eventForm.name} onChange={e => setEventForm({ ...eventForm, name: e.target.value })} className="bg-background dark:bg-[#1a1a24] border border-input dark:border-white/10 rounded-lg p-2.5 text-sm text-foreground dark:text-white" placeholder="e.g. Annual Corporate Gala" />
           </FormField>
           <div className="grid grid-cols-2 gap-4">
             <FormField label="Event Type">
-              <select value={eventForm.type} onChange={e => setEventForm({ ...eventForm, type: e.target.value })} className="w-full bg-[#1a1a24] border border-white/10 rounded-lg p-2.5 text-sm text-white">
+              <select value={eventForm.type} onChange={e => setEventForm({ ...eventForm, type: e.target.value })} className="w-full bg-background dark:bg-[#1a1a24] border border-input dark:border-white/10 rounded-lg p-2.5 text-sm text-foreground dark:text-white">
                 <option value="CONFERENCE">Conference</option>
                 <option value="WEDDING">Wedding</option>
                 <option value="GALA">Gala</option>
@@ -698,7 +698,7 @@ export default function EventsDashboard() {
               </select>
             </FormField>
             <FormField label="Status">
-              <select value={eventForm.status} onChange={e => setEventForm({ ...eventForm, status: e.target.value })} className="w-full bg-[#1a1a24] border border-white/10 rounded-lg p-2.5 text-sm text-white">
+              <select value={eventForm.status} onChange={e => setEventForm({ ...eventForm, status: e.target.value })} className="w-full bg-background dark:bg-[#1a1a24] border border-input dark:border-white/10 rounded-lg p-2.5 text-sm text-foreground dark:text-white">
                 <option value="PROSPECT">Prospect</option>
                 <option value="TENTATIVE">Tentative</option>
                 <option value="DEFINITE">Definite</option>
@@ -707,32 +707,32 @@ export default function EventsDashboard() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <FormField label="Start Date">
-              <Input type="datetime-local" required value={eventForm.startDate} onChange={e => setEventForm({ ...eventForm, startDate: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white" />
+              <Input type="datetime-local" required value={eventForm.startDate} onChange={e => setEventForm({ ...eventForm, startDate: e.target.value })} className="bg-background dark:bg-[#1a1a24] border-input dark:border-white/10 text-foreground dark:text-white" />
             </FormField>
             <FormField label="End Date">
-              <Input type="datetime-local" required value={eventForm.endDate} onChange={e => setEventForm({ ...eventForm, endDate: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white" />
+              <Input type="datetime-local" required value={eventForm.endDate} onChange={e => setEventForm({ ...eventForm, endDate: e.target.value })} className="bg-background dark:bg-[#1a1a24] border-input dark:border-white/10 text-foreground dark:text-white" />
             </FormField>
           </div>
           <FormField label="Expected Attendees">
-            <Input type="number" min="1" required value={eventForm.expectedAttendees} onChange={e => setEventForm({ ...eventForm, expectedAttendees: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white" />
+            <Input type="number" min="1" required value={eventForm.expectedAttendees} onChange={e => setEventForm({ ...eventForm, expectedAttendees: e.target.value })} className="bg-background dark:bg-[#1a1a24] border-input dark:border-white/10 text-foreground dark:text-white" />
           </FormField>
           <div className="grid grid-cols-2 gap-4">
             <FormField label="Organizer Name">
-              <Input required value={eventForm.organizerName} onChange={e => setEventForm({ ...eventForm, organizerName: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white" />
+              <Input required value={eventForm.organizerName} onChange={e => setEventForm({ ...eventForm, organizerName: e.target.value })} className="bg-background dark:bg-[#1a1a24] border-input dark:border-white/10 text-foreground dark:text-white" />
             </FormField>
             <FormField label="Organizer Email">
-              <Input type="email" value={eventForm.organizerEmail} onChange={e => setEventForm({ ...eventForm, organizerEmail: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white" />
+              <Input type="email" value={eventForm.organizerEmail} onChange={e => setEventForm({ ...eventForm, organizerEmail: e.target.value })} className="bg-background dark:bg-[#1a1a24] border-input dark:border-white/10 text-foreground dark:text-white" />
             </FormField>
           </div>
           <FormField label="Assign to Space (optional)">
-            <select value={eventForm.spaceId} onChange={e => setEventForm({ ...eventForm, spaceId: e.target.value })} className="w-full bg-[#1a1a24] border border-white/10 rounded-lg p-2.5 text-sm text-white">
+            <select value={eventForm.spaceId} onChange={e => setEventForm({ ...eventForm, spaceId: e.target.value })} className="w-full bg-background dark:bg-[#1a1a24] border border-input dark:border-white/10 rounded-lg p-2.5 text-sm text-foreground dark:text-white">
               <option value="">No space assigned</option>
               {spaces.map((sp: any) => <option key={sp.id} value={sp.id}>{sp.name} (cap. {sp.capacity})</option>)}
             </select>
           </FormField>
-          <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+          <div className="flex justify-end gap-3 pt-4 border-t border-border dark:border-white/10">
             <Button type="button" variant="ghost" onClick={() => setNewEventModal(false)}>Cancel</Button>
-            <Button type="submit" className="bg-primary text-black font-semibold">Create Event</Button>
+            <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold">Create Event</Button>
           </div>
         </form>
       </ModalShell>
@@ -741,34 +741,34 @@ export default function EventsDashboard() {
       <ModalShell open={newPackageModal} onClose={() => setNewPackageModal(false)} title="Create Event Package">
         <form onSubmit={handleCreatePackage} className="space-y-4">
           <FormField label="Package Name">
-            <Input required value={packageForm.name} onChange={e => setPackageForm({ ...packageForm, name: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white" placeholder="e.g. Platinum Wedding Package" />
+            <Input required value={packageForm.name} onChange={e => setPackageForm({ ...packageForm, name: e.target.value })} className="bg-background dark:bg-[#1a1a24] border border-input dark:border-white/10 rounded-lg p-2.5 text-sm text-foreground dark:text-white" placeholder="e.g. Platinum Wedding Package" />
           </FormField>
           <FormField label="Description">
-            <Input value={packageForm.description} onChange={e => setPackageForm({ ...packageForm, description: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white" />
+            <Input value={packageForm.description} onChange={e => setPackageForm({ ...packageForm, description: e.target.value })} className="bg-background dark:bg-[#1a1a24] border border-input dark:border-white/10 text-foreground dark:text-white" />
           </FormField>
           <div className="grid grid-cols-2 gap-4">
             <FormField label="Price per Plate ($)">
-              <Input type="number" min="0" step="0.01" required value={packageForm.pricePerPax} onChange={e => setPackageForm({ ...packageForm, pricePerPax: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white" />
+              <Input type="number" min="0" step="0.01" required value={packageForm.pricePerPax} onChange={e => setPackageForm({ ...packageForm, pricePerPax: e.target.value })} className="bg-background dark:bg-[#1a1a24] border-input dark:border-white/10 text-foreground dark:text-white" />
             </FormField>
             <FormField label="Flat Rental Fee ($)">
-              <Input type="number" min="0" step="0.01" required value={packageForm.flatFee} onChange={e => setPackageForm({ ...packageForm, flatFee: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white" />
+              <Input type="number" min="0" step="0.01" required value={packageForm.flatFee} onChange={e => setPackageForm({ ...packageForm, flatFee: e.target.value })} className="bg-background dark:bg-[#1a1a24] border-input dark:border-white/10 text-foreground dark:text-white" />
             </FormField>
           </div>
           <FormField label="Complimentary Hall (Optional)">
-            <select value={packageForm.includesSpaceId} onChange={e => setPackageForm({ ...packageForm, includesSpaceId: e.target.value })} className="w-full bg-[#1a1a24] border border-white/10 rounded-lg p-2.5 text-sm text-white">
+            <select value={packageForm.includesSpaceId} onChange={e => setPackageForm({ ...packageForm, includesSpaceId: e.target.value })} className="w-full bg-background dark:bg-[#1a1a24] border border-input dark:border-white/10 rounded-lg p-2.5 text-sm text-foreground dark:text-white">
               <option value="">None</option>
               {spaces.map((sp: any) => <option key={sp.id} value={sp.id}>{sp.name}</option>)}
             </select>
           </FormField>
           <FormField label="Complimentary Room (Optional)">
-            <select value={packageForm.includesRoomId} onChange={e => setPackageForm({ ...packageForm, includesRoomId: e.target.value })} className="w-full bg-[#1a1a24] border border-white/10 rounded-lg p-2.5 text-sm text-white">
+            <select value={packageForm.includesRoomId} onChange={e => setPackageForm({ ...packageForm, includesRoomId: e.target.value })} className="w-full bg-background dark:bg-[#1a1a24] border border-input dark:border-white/10 rounded-lg p-2.5 text-sm text-foreground dark:text-white">
               <option value="">None</option>
               {roomTypes.map((rt: any) => <option key={rt.id} value={rt.id}>{rt.name}</option>)}
             </select>
           </FormField>
-          <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+          <div className="flex justify-end gap-3 pt-4 border-t border-border dark:border-white/10">
             <Button type="button" variant="ghost" onClick={() => setNewPackageModal(false)}>Cancel</Button>
-            <Button type="submit" className="bg-primary text-black font-semibold">Create Package</Button>
+            <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold">Create Package</Button>
           </div>
         </form>
       </ModalShell>
@@ -784,7 +784,7 @@ export default function EventsDashboard() {
               if (pkg) {
                 setBeoForm(prev => ({ ...prev, agreedPricePerPax: pkg.pricePerPax, agreedHallFee: pkg.flatFee }))
               }
-            }} className="w-full bg-[#1a1a24] border border-white/10 rounded-lg p-2.5 text-sm text-white">
+            }} className="w-full bg-background dark:bg-[#1a1a24] border border-input dark:border-white/10 rounded-lg p-2.5 text-sm text-foreground dark:text-white">
               <option value="">No Package (Custom)</option>
               {packages.map((pkg: any) => <option key={pkg.id} value={pkg.id}>{pkg.name}</option>)}
             </select>
@@ -792,10 +792,10 @@ export default function EventsDashboard() {
           
           <div className="grid grid-cols-2 gap-4">
             <FormField label="Guaranteed Pax (Plates)">
-              <Input type="number" min="0" required value={beoForm.guaranteedPax} onChange={e => setBeoForm({ ...beoForm, guaranteedPax: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white" />
+              <Input type="number" min="0" required value={beoForm.guaranteedPax} onChange={e => setBeoForm({ ...beoForm, guaranteedPax: e.target.value })} className="bg-background dark:bg-[#1a1a24] border-input dark:border-white/10 text-foreground dark:text-white" />
             </FormField>
             <FormField label="Status">
-              <select required value={beoForm.status} onChange={e => setBeoForm({ ...beoForm, status: e.target.value })} className="w-full bg-[#1a1a24] border border-white/10 rounded-lg p-2.5 text-sm text-white">
+              <select required value={beoForm.status} onChange={e => setBeoForm({ ...beoForm, status: e.target.value })} className="w-full bg-background dark:bg-[#1a1a24] border border-input dark:border-white/10 rounded-lg p-2.5 text-sm text-foreground dark:text-white">
                 <option value="DRAFT">Draft</option>
                 <option value="SIGNED">Signed</option>
                 <option value="COMPLETED">Completed</option>
@@ -805,15 +805,15 @@ export default function EventsDashboard() {
 
           <div className="grid grid-cols-2 gap-4">
             <FormField label="Agreed Price per Plate ($)">
-              <Input type="number" min="0" step="0.01" required value={beoForm.agreedPricePerPax} onChange={e => setBeoForm({ ...beoForm, agreedPricePerPax: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white" />
+              <Input type="number" min="0" step="0.01" required value={beoForm.agreedPricePerPax} onChange={e => setBeoForm({ ...beoForm, agreedPricePerPax: e.target.value })} className="bg-background dark:bg-[#1a1a24] border-input dark:border-white/10 text-foreground dark:text-white" />
             </FormField>
             <FormField label="Agreed Hall Fee ($)">
-              <Input type="number" min="0" step="0.01" required value={beoForm.agreedHallFee} onChange={e => setBeoForm({ ...beoForm, agreedHallFee: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white" />
+              <Input type="number" min="0" step="0.01" required value={beoForm.agreedHallFee} onChange={e => setBeoForm({ ...beoForm, agreedHallFee: e.target.value })} className="bg-background dark:bg-[#1a1a24] border-input dark:border-white/10 text-foreground dark:text-white" />
             </FormField>
           </div>
 
           {beoForm.guaranteedPax && beoForm.agreedPricePerPax && (
-            <div className="mt-6 bg-primary/10 border border-primary/30 rounded-xl p-5 text-white">
+            <div className="mt-6 bg-primary/10 border border-primary/30 rounded-xl p-5 text-foreground dark:text-white">
               <p className="text-xs text-primary uppercase font-bold tracking-widest mb-2 flex items-center gap-2"><Calculator className="w-4 h-4" /> BEO Estimate</p>
               <p className="text-2xl font-bold text-primary">
                 ${((parseFloat(beoForm.guaranteedPax) * parseFloat(beoForm.agreedPricePerPax)) + parseFloat(beoForm.agreedHallFee || '0')).toFixed(2)}
@@ -821,9 +821,9 @@ export default function EventsDashboard() {
             </div>
           )}
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+          <div className="flex justify-end gap-3 pt-4 border-t border-border dark:border-white/10">
             <Button type="button" variant="ghost" onClick={() => setBeoModal(null)}>Cancel</Button>
-            <Button type="submit" className="bg-primary text-black font-semibold">Save BEO</Button>
+            <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold">Save BEO</Button>
           </div>
         </form>
       </ModalShell>

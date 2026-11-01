@@ -15,10 +15,10 @@ function ModalShell({ open, onClose, title, children }: { open: boolean, onClose
     <Dialog.Root open={open} onOpenChange={(o: boolean) => !o && onClose()}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50" />
-        <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-[#0a0a0f] border border-white/10 rounded-2xl shadow-2xl p-6 z-50">
+        <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-card dark:bg-[#0a0a0f] border border-border dark:border-white/10 rounded-2xl shadow-2xl p-6 z-50 text-foreground dark:text-white">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold text-white">{title}</h2>
-            <button onClick={onClose} className="text-white/40 hover:text-white transition-colors"><X className="w-5 h-5" /></button>
+            <h2 className="text-xl font-bold text-foreground dark:text-white">{title}</h2>
+            <button onClick={onClose} className="text-muted-foreground hover:text-foreground dark:text-white/40 dark:hover:text-white transition-colors"><X className="w-5 h-5" /></button>
           </div>
           {children}
         </Dialog.Content>
@@ -139,14 +139,14 @@ export default function ShiftsPage() {
 
       <div className="flex gap-3 justify-end mb-8">
         <Button variant="outline" onClick={() => setShowClockInModal(true)}
-          className="border-emerald-500/30 text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20">
+          className="border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 font-medium">
           <Clock className="w-4 h-4 mr-2" /> Manual Clock-In
         </Button>
         <Button variant="outline" onClick={() => setShowClockOutModal(true)}
-          className="border-rose-500/30 text-rose-400 bg-rose-500/10 hover:bg-rose-500/20">
+          className="border-rose-500/30 text-rose-600 dark:text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 font-medium">
           <AlertTriangle className="w-4 h-4 mr-2" /> Emergency Clock-Out
         </Button>
-        <Button onClick={() => setShowShiftModal(true)} className="bg-primary text-black font-semibold">
+        <Button onClick={() => setShowShiftModal(true)} className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-sm">
           <Plus className="w-4 h-4 mr-2" /> Assign Shift
         </Button>
       </div>
@@ -154,42 +154,42 @@ export default function ShiftsPage() {
       {loading ? (
         <div className="py-20 flex justify-center"><PremiumSpinner /></div>
       ) : (
-        <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
-          <table className="w-full text-left text-sm text-white">
-            <thead className="bg-white/5 border-b border-white/10">
+        <div className="bg-card dark:bg-white/5 border border-border dark:border-white/10 rounded-2xl overflow-hidden shadow-md">
+          <table className="w-full text-left text-sm text-foreground dark:text-white">
+            <thead className="bg-muted/60 dark:bg-white/5 border-b border-border dark:border-white/10">
               <tr>
-                <th className="p-4 text-white/50 text-xs uppercase">Employee</th>
-                <th className="p-4 text-white/50 text-xs uppercase">Date</th>
-                <th className="p-4 text-white/50 text-xs uppercase">Time</th>
-                <th className="p-4 text-white/50 text-xs uppercase">Role</th>
-                <th className="p-4 text-white/50 text-xs uppercase">Status</th>
+                <th className="p-4 text-muted-foreground dark:text-white/50 text-xs uppercase font-medium">Employee</th>
+                <th className="p-4 text-muted-foreground dark:text-white/50 text-xs uppercase font-medium">Date</th>
+                <th className="p-4 text-muted-foreground dark:text-white/50 text-xs uppercase font-medium">Time</th>
+                <th className="p-4 text-muted-foreground dark:text-white/50 text-xs uppercase font-medium">Role</th>
+                <th className="p-4 text-muted-foreground dark:text-white/50 text-xs uppercase font-medium">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/10">
+            <tbody className="divide-y divide-border dark:divide-white/10">
               {shifts.map(shift => (
-                <tr key={shift.id} className="hover:bg-white/5 transition-colors">
+                <tr key={shift.id} className="hover:bg-muted/30 dark:hover:bg-white/5 transition-colors">
                   <td className="p-4 font-medium">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs flex-shrink-0">
                         {shift.employee?.firstName?.[0]}{shift.employee?.lastName?.[0]}
                       </div>
-                      <span>{shift.employee?.firstName} {shift.employee?.lastName}</span>
+                      <span className="text-foreground dark:text-white font-medium">{shift.employee?.firstName} {shift.employee?.lastName}</span>
                     </div>
                   </td>
-                  <td className="p-4 text-white/70">
-                    <div className="flex items-center gap-2"><CalendarIcon className="w-4 h-4 text-white/30" />
+                  <td className="p-4 text-foreground/80 dark:text-white/70">
+                    <div className="flex items-center gap-2"><CalendarIcon className="w-4 h-4 text-muted-foreground dark:text-white/30" />
                       {new Date(shift.startTime).toLocaleDateString()}
                     </div>
                   </td>
-                  <td className="p-4 text-white/70 font-mono text-xs">
+                  <td className="p-4 text-foreground/80 dark:text-white/70 font-mono text-xs">
                     {new Date(shift.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} – {new Date(shift.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </td>
-                  <td className="p-4 text-white/60">{shift.role || shift.employee?.position}</td>
+                  <td className="p-4 text-muted-foreground dark:text-white/60">{shift.role || shift.employee?.position}</td>
                   <td className="p-4">
                     <span className={`px-2 py-1 rounded text-[10px] font-bold ${
-                      shift.status === 'COMPLETED' ? 'bg-emerald-500/20 text-emerald-400' : 
-                      shift.status === 'IN_PROGRESS' ? 'bg-blue-500/20 text-blue-400' : 
-                      'bg-slate-500/20 text-slate-400'
+                      shift.status === 'COMPLETED' ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400' : 
+                      shift.status === 'IN_PROGRESS' ? 'bg-blue-500/20 text-blue-600 dark:text-blue-400' : 
+                      'bg-slate-500/20 text-slate-600 dark:text-slate-400'
                     }`}>
                       {shift.status.replace('_', ' ')}
                     </span>
@@ -197,7 +197,7 @@ export default function ShiftsPage() {
                 </tr>
               ))}
               {shifts.length === 0 && (
-                <tr><td colSpan={5} className="p-12 text-center text-white/40">No shifts scheduled.</td></tr>
+                <tr><td colSpan={5} className="p-12 text-center text-muted-foreground dark:text-white/40">No shifts scheduled.</td></tr>
               )}
             </tbody>
           </table>
@@ -208,9 +208,9 @@ export default function ShiftsPage() {
       <ModalShell open={showShiftModal} onClose={() => setShowShiftModal(false)} title="Schedule New Shift">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-2 block">Employee</label>
+            <label className="text-xs text-muted-foreground dark:text-white/60 uppercase font-bold tracking-wider mb-2 block">Employee</label>
             <select required value={formData.employeeId} onChange={e => setFormData({ ...formData, employeeId: e.target.value })}
-              className="w-full bg-[#1a1a24] border border-white/10 rounded-lg p-2.5 text-sm text-white">
+              className="w-full bg-background dark:bg-[#1a1a24] border border-input dark:border-white/10 rounded-lg p-2.5 text-sm text-foreground dark:text-white">
               <option value="">Select employee...</option>
               {employees.map(emp => (
                 <option key={emp.id} value={emp.id}>{emp.firstName} {emp.lastName} ({emp.department})</option>
@@ -219,25 +219,25 @@ export default function ShiftsPage() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-2 block">Start Time</label>
-              <Input type="datetime-local" required value={formData.startTime} onChange={e => setFormData({ ...formData, startTime: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white" />
+              <label className="text-xs text-muted-foreground dark:text-white/60 uppercase font-bold tracking-wider mb-2 block">Start Time</label>
+              <Input type="datetime-local" required value={formData.startTime} onChange={e => setFormData({ ...formData, startTime: e.target.value })} className="bg-background dark:bg-[#1a1a24] border border-input dark:border-white/10 text-foreground dark:text-white" />
             </div>
             <div>
-              <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-2 block">End Time</label>
-              <Input type="datetime-local" required value={formData.endTime} onChange={e => setFormData({ ...formData, endTime: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white" />
+              <label className="text-xs text-muted-foreground dark:text-white/60 uppercase font-bold tracking-wider mb-2 block">End Time</label>
+              <Input type="datetime-local" required value={formData.endTime} onChange={e => setFormData({ ...formData, endTime: e.target.value })} className="bg-background dark:bg-[#1a1a24] border border-input dark:border-white/10 text-foreground dark:text-white" />
             </div>
           </div>
           <div>
-            <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-2 block">Role Override (Optional)</label>
-            <Input value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value })} placeholder="e.g. Night Manager" className="bg-[#1a1a24] border-white/10 text-white" />
+            <label className="text-xs text-muted-foreground dark:text-white/60 uppercase font-bold tracking-wider mb-2 block">Role Override (Optional)</label>
+            <Input value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value })} placeholder="e.g. Night Manager" className="bg-background dark:bg-[#1a1a24] border border-input dark:border-white/10 text-foreground dark:text-white" />
           </div>
           <div>
-            <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-2 block">Notes</label>
-            <Input value={formData.notes} onChange={e => setFormData({ ...formData, notes: e.target.value })} className="bg-[#1a1a24] border-white/10 text-white" />
+            <label className="text-xs text-muted-foreground dark:text-white/60 uppercase font-bold tracking-wider mb-2 block">Notes</label>
+            <Input value={formData.notes} onChange={e => setFormData({ ...formData, notes: e.target.value })} className="bg-background dark:bg-[#1a1a24] border border-input dark:border-white/10 text-foreground dark:text-white" />
           </div>
-          <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+          <div className="flex justify-end gap-3 pt-4 border-t border-border dark:border-white/10">
             <Button type="button" variant="ghost" onClick={() => setShowShiftModal(false)}>Cancel</Button>
-            <Button type="submit" className="bg-primary text-black font-semibold">Schedule Shift</Button>
+            <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-sm">Schedule Shift</Button>
           </div>
         </form>
       </ModalShell>
@@ -245,14 +245,14 @@ export default function ShiftsPage() {
       {/* Emergency Clock-Out Modal */}
       <ModalShell open={showClockOutModal} onClose={() => setShowClockOutModal(false)} title="Emergency Clock-Out">
         <div className="flex items-start gap-3 p-4 bg-rose-500/10 border border-rose-500/20 rounded-xl mb-5">
-          <AlertTriangle className="w-5 h-5 text-rose-400 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-rose-300">This will force clock-out an attendance record immediately using the current server time. Use only in emergencies.</p>
+          <AlertTriangle className="w-5 h-5 text-rose-500 dark:text-rose-400 flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-rose-600 dark:text-rose-300">This will force clock-out an attendance record immediately using the current server time. Use only in emergencies.</p>
         </div>
         <form onSubmit={handleForceClockOut} className="space-y-4">
           <div>
-            <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-2 block">Select Employee to Clock-Out</label>
+            <label className="text-xs text-muted-foreground dark:text-white/60 uppercase font-bold tracking-wider mb-2 block">Select Employee to Clock-Out</label>
             <select required value={clockOutAttId} onChange={e => setClockOutAttId(e.target.value)}
-              className="w-full bg-[#1a1a24] border border-white/10 rounded-lg p-2.5 text-sm text-white">
+              className="w-full bg-background dark:bg-[#1a1a24] border border-input dark:border-white/10 rounded-lg p-2.5 text-sm text-foreground dark:text-white">
               <option value="" disabled>
                 {activeAttendances.length === 0 ? "No employees currently clocked in" : "Select an active shift..."}
               </option>
@@ -263,9 +263,9 @@ export default function ShiftsPage() {
               ))}
             </select>
           </div>
-          <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+          <div className="flex justify-end gap-3 pt-4 border-t border-border dark:border-white/10">
             <Button type="button" variant="ghost" onClick={() => setShowClockOutModal(false)}>Cancel</Button>
-            <Button type="submit" disabled={clockingOut} className="bg-rose-600 hover:bg-rose-500 text-white">
+            <Button type="submit" disabled={clockingOut} className="bg-rose-600 hover:bg-rose-500 text-white font-semibold shadow-sm">
               {clockingOut ? 'Processing...' : 'Force Clock-Out'}
             </Button>
           </div>
@@ -275,14 +275,14 @@ export default function ShiftsPage() {
       {/* Manual Clock-In Modal */}
       <ModalShell open={showClockInModal} onClose={() => setShowClockInModal(false)} title="Manual Clock-In">
         <div className="flex items-start gap-3 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl mb-5">
-          <Clock className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-emerald-300">Manually clock-in an employee who forgot to punch in. This will bypass normal restrictions.</p>
+          <Clock className="w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-emerald-600 dark:text-emerald-300">Manually clock-in an employee who forgot to punch in. This will bypass normal restrictions.</p>
         </div>
         <form onSubmit={handleManualClockIn} className="space-y-4">
           <div>
-            <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-2 block">Employee</label>
+            <label className="text-xs text-muted-foreground dark:text-white/60 uppercase font-bold tracking-wider mb-2 block">Employee</label>
             <select required value={clockInEmpId} onChange={e => setClockInEmpId(e.target.value)}
-              className="w-full bg-[#1a1a24] border border-white/10 rounded-lg p-2.5 text-sm text-white">
+              className="w-full bg-background dark:bg-[#1a1a24] border border-input dark:border-white/10 rounded-lg p-2.5 text-sm text-foreground dark:text-white">
               <option value="">Select an employee...</option>
               {employees.filter(emp => !activeAttendances.some(att => att.employeeId === emp.id)).map(emp => (
                 <option key={emp.id} value={emp.id}>
@@ -292,12 +292,12 @@ export default function ShiftsPage() {
             </select>
           </div>
           <div>
-            <label className="text-xs text-white/60 uppercase font-bold tracking-wider mb-2 block">Clock-In Time</label>
-            <Input type="datetime-local" required value={clockInTime} onChange={e => setClockInTime(e.target.value)} className="bg-[#1a1a24] border-white/10 text-white" />
+            <label className="text-xs text-muted-foreground dark:text-white/60 uppercase font-bold tracking-wider mb-2 block">Clock-In Time</label>
+            <Input type="datetime-local" required value={clockInTime} onChange={e => setClockInTime(e.target.value)} className="bg-background dark:bg-[#1a1a24] border border-input dark:border-white/10 text-foreground dark:text-white" />
           </div>
-          <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+          <div className="flex justify-end gap-3 pt-4 border-t border-border dark:border-white/10">
             <Button type="button" variant="ghost" onClick={() => setShowClockInModal(false)}>Cancel</Button>
-            <Button type="submit" disabled={clockingIn} className="bg-emerald-600 hover:bg-emerald-500 text-white">
+            <Button type="submit" disabled={clockingIn} className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold shadow-sm">
               {clockingIn ? 'Processing...' : 'Clock In Manually'}
             </Button>
           </div>

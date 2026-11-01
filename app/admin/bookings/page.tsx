@@ -98,23 +98,23 @@ export default function AdminBookingsPage() {
       onRefresh={fetchBookings}
     >
       {/* Filters Bar */}
-      <div className="bg-[#121417] border border-[#1E2227] p-3.5 rounded-2xl flex flex-col md:flex-row gap-3 items-center justify-between mb-6">
+      <div className="bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] p-3.5 rounded-2xl flex flex-col md:flex-row gap-3 items-center justify-between mb-6 shadow-sm">
         <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto flex-1">
           <div className="relative w-full md:w-80">
-            <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-3.5 h-3.5 text-muted-foreground dark:text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               placeholder="Search guest, email, code, room..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-[#181A1D] border border-[#2B3037] text-xs font-mono text-white pl-9 pr-3 py-2 rounded-xl placeholder:text-zinc-500 focus:outline-none focus:border-zinc-400"
+              className="w-full bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] text-xs font-mono text-foreground dark:text-white pl-9 pr-3 py-2 rounded-xl placeholder:text-muted-foreground dark:placeholder:text-zinc-500 focus:outline-none focus:border-ring dark:focus:border-zinc-400"
             />
           </div>
 
           <select
             value={propertyFilter}
             onChange={(e) => setPropertyFilter(e.target.value)}
-            className="bg-[#181A1D] border border-[#2B3037] text-xs font-mono text-white px-3 py-2 rounded-xl focus:outline-none focus:border-zinc-400"
+            className="bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] text-xs font-mono text-foreground dark:text-white px-3 py-2 rounded-xl focus:outline-none focus:border-ring dark:focus:border-zinc-400"
           >
             <option value="all">All Destinations</option>
             {properties.map(p => (
@@ -124,7 +124,7 @@ export default function AdminBookingsPage() {
         </div>
 
         {/* Status Filter Pills */}
-        <div className="flex items-center gap-1 bg-[#090A0C] border border-[#1E2227] p-1 rounded-xl w-full md:w-auto overflow-x-auto">
+        <div className="flex items-center gap-1 bg-muted/60 dark:bg-[#090A0C] border border-border dark:border-[#1E2227] p-1 rounded-xl w-full md:w-auto overflow-x-auto">
           {['ALL', 'CONFIRMED', 'CHECKED_IN', 'CHECKED_OUT', 'CANCELLED'].map(st => (
             <button
               key={st}
@@ -132,8 +132,8 @@ export default function AdminBookingsPage() {
               className={cn(
                 "text-[10px] font-mono uppercase tracking-wider px-3 py-1.5 rounded-lg transition-all whitespace-nowrap",
                 statusFilter === st
-                  ? "bg-[#181A1D] border border-[#2B3037] text-white font-semibold shadow-sm"
-                  : "text-zinc-400 hover:text-white"
+                  ? "bg-card dark:bg-[#181A1D] border border-border dark:border-[#2B3037] text-foreground dark:text-white font-semibold shadow-sm"
+                  : "text-muted-foreground dark:text-zinc-400 hover:text-foreground dark:hover:text-white"
               )}
             >
               {st === 'ALL' ? 'All' : st.replace('_', ' ')}
@@ -143,10 +143,10 @@ export default function AdminBookingsPage() {
       </div>
 
       {/* Bookings Table (Section 4.C) */}
-      <div className="rounded-2xl bg-[#121417] border border-[#1E2227] overflow-hidden">
+      <div className="rounded-2xl bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs font-mono">
-            <thead className="bg-[#141619] border-b border-[#1E2227] text-zinc-400 uppercase text-[10px] font-semibold tracking-wider">
+            <thead className="bg-muted/40 dark:bg-[#141619] border-b border-border dark:border-[#1E2227] text-muted-foreground dark:text-zinc-400 uppercase text-[10px] font-semibold tracking-wider">
               <tr>
                 <th className="py-3 px-4">Confirmation</th>
                 <th className="py-3 px-4 font-sans">Guest Profile</th>
@@ -157,10 +157,10 @@ export default function AdminBookingsPage() {
                 <th className="py-3 px-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#1A1D21] text-zinc-300">
+            <tbody className="divide-y divide-border dark:divide-[#1A1D21] text-foreground dark:text-zinc-300">
               {filteredBookings.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-16 text-center text-zinc-500 font-mono italic">
+                  <td colSpan={7} className="py-16 text-center text-muted-foreground dark:text-zinc-500 font-mono italic">
                     No reservations found matching the active criteria.
                   </td>
                 </tr>
@@ -173,41 +173,41 @@ export default function AdminBookingsPage() {
                     : 1
 
                   return (
-                    <tr key={b.id} className="hover:bg-[#16181B] transition-colors">
-                      <td className="py-3 px-4 font-mono font-bold text-zinc-100">
+                    <tr key={b.id} className="hover:bg-muted/40 dark:hover:bg-[#16181B] transition-colors">
+                      <td className="py-3 px-4 font-mono font-bold text-foreground dark:text-zinc-100">
                         {b.confirmationCode || b.id.slice(0, 8)}
                       </td>
 
                       <td className="py-3 px-4 font-sans">
-                        <div className="font-semibold text-white text-xs">{guest?.name || 'Guest'}</div>
-                        <div className="text-[11px] text-zinc-400 font-mono">{guest?.email || 'No email registered'}</div>
+                        <div className="font-semibold text-foreground dark:text-white text-xs">{guest?.name || 'Guest'}</div>
+                        <div className="text-[11px] text-muted-foreground dark:text-zinc-400 font-mono">{guest?.email || 'No email registered'}</div>
                       </td>
 
                       <td className="py-3 px-4">
                         {room ? (
                           <div className="flex items-center gap-2">
-                            <span className="bg-[#181A1D] border border-[#2B3037] text-zinc-200 font-mono text-xs px-2 py-0.5 rounded-md">
+                            <span className="bg-muted dark:bg-[#181A1D] border border-border dark:border-[#2B3037] text-foreground dark:text-zinc-200 font-mono text-xs px-2 py-0.5 rounded-md">
                               #{room.number}
                             </span>
-                            <span className="text-zinc-400 text-xs font-sans truncate max-w-[140px]">
+                            <span className="text-muted-foreground dark:text-zinc-400 text-xs font-sans truncate max-w-[140px]">
                               {room.roomType?.name || room.type || 'Standard'}
                             </span>
                           </div>
                         ) : (
-                          <span className="text-zinc-500 font-mono italic">Unassigned</span>
+                          <span className="text-muted-foreground/70 dark:text-zinc-500 font-mono italic">Unassigned</span>
                         )}
                       </td>
 
                       <td className="py-3 px-4">
-                        <div className="font-medium text-zinc-200">
+                        <div className="font-medium text-foreground dark:text-zinc-200">
                           {new Date(b.checkIn).toLocaleDateString()} &rarr; {new Date(b.checkOut).toLocaleDateString()}
                         </div>
-                        <div className="text-[10px] text-zinc-500">{nights} Nights &bull; {b.guests || 2} Guests</div>
+                        <div className="text-[10px] text-muted-foreground dark:text-zinc-500">{nights} Nights &bull; {b.guests || 2} Guests</div>
                       </td>
 
                       <td className="py-3 px-4 font-mono">
-                        <div className="text-emerald-400 font-bold">{formatPrice(Number(b.totalAmount))}</div>
-                        <div className="text-[10px] text-zinc-500 uppercase">{b.paymentStatus || 'UNPAID'}</div>
+                        <div className="text-emerald-600 dark:text-emerald-400 font-bold">{formatPrice(Number(b.totalAmount))}</div>
+                        <div className="text-[10px] text-muted-foreground dark:text-zinc-500 uppercase">{b.paymentStatus || 'UNPAID'}</div>
                       </td>
 
                       <td className="py-3 px-4">
@@ -222,9 +222,9 @@ export default function AdminBookingsPage() {
                       <td className="py-3 px-4 text-right">
                         <button
                           onClick={() => setViewingBookingId(b.id)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#181A1D] hover:bg-[#20242A] border border-[#2B3037] text-zinc-200 text-xs font-mono transition-colors"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-card dark:bg-[#181A1D] hover:bg-muted dark:hover:bg-[#20242A] border border-border dark:border-[#2B3037] text-foreground dark:text-zinc-200 text-xs font-mono transition-colors shadow-sm"
                         >
-                          <Eye className="w-3.5 h-3.5 text-zinc-400" />
+                          <Eye className="w-3.5 h-3.5 text-muted-foreground dark:text-zinc-400" />
                           <span>Dossier</span>
                         </button>
                       </td>

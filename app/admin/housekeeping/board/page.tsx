@@ -59,7 +59,7 @@ export default function MobileHousekeepingBoard() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#050309]">
+      <div className="flex items-center justify-center min-h-screen bg-background dark:bg-[#050309]">
         <PremiumSpinner size="lg" text="Loading Tasks..." />
       </div>
     )
@@ -70,13 +70,13 @@ export default function MobileHousekeepingBoard() {
   const completedTasks = tasksData?.filter((t: any) => t.status === 'COMPLETED') || []
 
   return (
-    <div className="p-4 bg-[#050309] min-h-screen flex flex-col font-sans">
+    <div className="p-4 bg-background dark:bg-[#050309] text-foreground dark:text-white min-h-screen flex flex-col font-sans">
       <div className="flex justify-between items-center mb-6 pt-2">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">My Tasks</h1>
-          <p className="text-white/60 text-xs mt-1">Mobile Housekeeping View</p>
+          <h1 className="text-2xl font-bold text-foreground dark:text-white tracking-tight">My Tasks</h1>
+          <p className="text-muted-foreground dark:text-white/60 text-xs mt-1">Mobile Housekeeping View</p>
         </div>
-        <button onClick={() => queryClient.invalidateQueries({ queryKey: ['attendant-tasks'] })} className="p-3 bg-white/5 rounded-full text-white hover:bg-white/10 active:scale-95 transition-all">
+        <button onClick={() => queryClient.invalidateQueries({ queryKey: ['attendant-tasks'] })} className="p-3 bg-muted dark:bg-white/5 rounded-full text-foreground dark:text-white hover:bg-muted/80 dark:hover:bg-white/10 active:scale-95 transition-all">
           <RefreshCw className="w-5 h-5" />
         </button>
       </div>
@@ -86,16 +86,16 @@ export default function MobileHousekeepingBoard() {
         {/* IN PROGRESS */}
         {inProgressTasks.length > 0 && (
           <section>
-            <h2 className="text-xs font-bold uppercase tracking-widest text-blue-400 mb-3 flex items-center gap-2">
+            <h2 className="text-xs font-bold uppercase tracking-widest text-blue-600 dark:text-blue-400 mb-3 flex items-center gap-2">
               <Play className="w-4 h-4" /> Currently Cleaning ({inProgressTasks.length})
             </h2>
             <div className="space-y-4">
               {inProgressTasks.map((task: any) => (
-                <Card key={task.id} className="bg-blue-900/10 border-blue-500/30 shadow-lg">
+                <Card key={task.id} className="bg-blue-500/10 border-blue-500/30 shadow-sm">
                   <CardContent className="p-5">
                     <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-3xl font-black text-white">Room {task.room?.number || '??'}</h3>
-                      <Badge className="bg-blue-500/20 text-blue-400">In Progress</Badge>
+                      <h3 className="text-3xl font-black text-foreground dark:text-white">Room {task.room?.number || '??'}</h3>
+                      <Badge className="bg-blue-500/20 text-blue-600 dark:text-blue-400">In Progress</Badge>
                     </div>
                     <div className="flex gap-3">
                       <button 
@@ -130,25 +130,25 @@ export default function MobileHousekeepingBoard() {
 
         {/* PENDING TASKS */}
         <section>
-          <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3 flex items-center gap-2">
+          <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground dark:text-slate-400 mb-3 flex items-center gap-2">
             <Brush className="w-4 h-4" /> To Do ({pendingTasks.length})
           </h2>
           {pendingTasks.length === 0 ? (
-            <div className="p-8 text-center bg-white/[0.02] border border-white/5 rounded-2xl">
-              <p className="text-white/40 text-sm">No pending tasks.</p>
+            <div className="p-8 text-center bg-card dark:bg-white/[0.02] border border-border dark:border-white/5 rounded-2xl">
+              <p className="text-muted-foreground dark:text-white/40 text-sm">No pending tasks.</p>
             </div>
           ) : (
             <div className="space-y-4">
               {pendingTasks.map((task: any) => (
-                <Card key={task.id} className="bg-[#111] border-white/10 shadow-sm">
+                <Card key={task.id} className="bg-card dark:bg-[#111] border-border dark:border-white/10 shadow-sm">
                   <CardContent className="p-5 flex items-center justify-between">
                     <div>
-                      <h3 className="text-2xl font-bold text-white mb-1">Room {task.room?.number || '??'}</h3>
-                      <p className="text-xs text-white/50">{task.title}</p>
+                      <h3 className="text-2xl font-bold text-foreground dark:text-white mb-1">Room {task.room?.number || '??'}</h3>
+                      <p className="text-xs text-muted-foreground dark:text-white/50">{task.title}</p>
                     </div>
                     <button 
                       onClick={() => updateTaskMutation.mutate({ id: task.id, status: 'IN_PROGRESS' })}
-                      className="bg-white hover:bg-slate-200 text-black font-bold py-3 px-6 rounded-xl text-sm active:scale-95 transition-all"
+                      className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3 px-6 rounded-xl text-sm active:scale-95 transition-all shadow-sm"
                     >
                       Start
                     </button>
@@ -161,15 +161,15 @@ export default function MobileHousekeepingBoard() {
 
         {/* COMPLETED TASKS */}
         {completedTasks.length > 0 && (
-          <section className="opacity-60">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-amber-500 mb-3 flex items-center gap-2">
+          <section className="opacity-80">
+            <h2 className="text-xs font-bold uppercase tracking-widest text-amber-600 dark:text-amber-500 mb-3 flex items-center gap-2">
               <AlertTriangle className="w-4 h-4" /> Awaiting Inspection ({completedTasks.length})
             </h2>
             <div className="space-y-3">
               {completedTasks.map((task: any) => (
-                <div key={task.id} className="p-4 bg-white/5 border border-white/5 rounded-xl flex justify-between items-center">
-                  <span className="text-lg font-bold text-white">Room {task.room?.number}</span>
-                  <span className="text-xs text-amber-500 font-bold">Pending</span>
+                <div key={task.id} className="p-4 bg-card dark:bg-white/5 border border-border dark:border-white/5 rounded-xl flex justify-between items-center shadow-sm">
+                  <span className="text-lg font-bold text-foreground dark:text-white">Room {task.room?.number}</span>
+                  <span className="text-xs text-amber-600 dark:text-amber-500 font-bold">Pending</span>
                 </div>
               ))}
             </div>

@@ -142,7 +142,7 @@ export default function ForensicAuditTimeline() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#090A0C]">
+      <div className="flex items-center justify-center min-h-screen bg-background dark:bg-[#090A0C]">
         <PremiumSpinner size="lg" text="Loading Forensic Cryptographic Timeline..." />
       </div>
     )
@@ -158,7 +158,7 @@ export default function ForensicAuditTimeline() {
             onClick={() => { setNextCursor(null); setHasMore(false); loadAuditLogs() }} 
             variant="outline" 
             size="sm" 
-            className="border-[#1E2227] bg-[#121417] text-zinc-300 hover:text-white hover:bg-[#181A1D] font-mono text-xs h-9"
+            className="border-border dark:border-[#1E2227] bg-card dark:bg-[#121417] text-foreground dark:text-zinc-300 hover:text-foreground dark:hover:text-white hover:bg-muted dark:hover:bg-[#181A1D] font-mono text-xs h-9"
           >
             <RefreshCw className="w-3.5 h-3.5 mr-2" /> Force Refresh
           </Button>
@@ -166,7 +166,7 @@ export default function ForensicAuditTimeline() {
             onClick={() => router.push('/admin/dashboard')} 
             variant="outline" 
             size="sm" 
-            className="border-[#1E2227] bg-[#121417] text-zinc-300 hover:text-white hover:bg-[#181A1D] font-mono text-xs h-9"
+            className="border-border dark:border-[#1E2227] bg-card dark:bg-[#121417] text-foreground dark:text-zinc-300 hover:text-foreground dark:hover:text-white hover:bg-muted dark:hover:bg-[#181A1D] font-mono text-xs h-9"
           >
             <LayoutDashboard className="w-3.5 h-3.5 mr-2" /> Dashboard
           </Button>
@@ -177,42 +177,42 @@ export default function ForensicAuditTimeline() {
         
         {/* Left Column: Scope & Security Card */}
         <div className="lg:col-span-3 space-y-6">
-          <Card className="bg-[#121417] border border-[#1E2227] rounded-xl shadow-none">
-            <CardHeader className="border-b border-[#1E2227] pb-3">
-              <CardTitle className="text-xs uppercase tracking-widest font-mono text-zinc-400 flex items-center gap-2">
-                <SlidersHorizontal className="w-3.5 h-3.5 text-zinc-400" /> Auditing Scope
+          <Card className="bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] rounded-xl shadow-none">
+            <CardHeader className="border-b border-border dark:border-[#1E2227] pb-3">
+              <CardTitle className="text-xs uppercase tracking-widest font-mono text-muted-foreground dark:text-zinc-400 flex items-center gap-2">
+                <SlidersHorizontal className="w-3.5 h-3.5 text-muted-foreground dark:text-zinc-400" /> Auditing Scope
               </CardTitle>
-              <CardDescription className="text-zinc-500 text-xs">Filter trail metrics sequentially</CardDescription>
+              <CardDescription className="text-muted-foreground dark:text-zinc-500 text-xs">Filter trail metrics sequentially</CardDescription>
             </CardHeader>
             <CardContent className="pt-4 space-y-4">
               
               {/* Search input */}
               <div className="relative">
-                <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                <Search className="w-3.5 h-3.5 text-muted-foreground dark:text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input 
                   type="text" 
                   placeholder="Filter by actor, details..." 
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
-                  className="w-full bg-[#181A1D] border border-[#2B3037] text-xs text-zinc-200 placeholder:text-zinc-500 rounded-lg pl-9 pr-3 py-2 font-mono focus:outline-none focus:border-zinc-500 transition-colors"
+                  className="w-full bg-background dark:bg-[#181A1D] border border-input dark:border-[#2B3037] text-xs text-foreground dark:text-zinc-200 placeholder:text-muted-foreground dark:placeholder:text-zinc-500 rounded-lg pl-9 pr-3 py-2 font-mono focus:outline-none focus:border-ring dark:focus:border-zinc-500 transition-colors"
                 />
               </div>
 
               {/* Action Filters List */}
               <div className="space-y-1 pt-1">
-                <p className="text-[10px] uppercase tracking-wider font-mono text-zinc-500 mb-2">Category Filter</p>
+                <p className="text-[10px] uppercase tracking-wider font-mono text-muted-foreground dark:text-zinc-500 mb-2">Category Filter</p>
                 {uniqueActions.map(act => (
                   <button
                     key={act}
                     onClick={() => setActionFilter(act)}
                     className={`w-full text-left text-xs px-3 py-2 rounded-lg flex items-center justify-between border transition-all font-mono ${
                       actionFilter === act 
-                        ? 'bg-[#181A1D] border-[#2B3037] text-white font-semibold' 
-                        : 'bg-transparent border-transparent text-zinc-400 hover:text-zinc-200 hover:bg-[#16181B]'
+                        ? 'bg-muted dark:bg-[#181A1D] border-border dark:border-[#2B3037] text-foreground dark:text-white font-semibold' 
+                        : 'bg-transparent border-transparent text-muted-foreground dark:text-zinc-400 hover:text-foreground dark:hover:text-zinc-200 hover:bg-muted/50 dark:hover:bg-[#16181B]'
                     }`}
                   >
                     <span>{act.replace(/_/g, ' ')}</span>
-                    <Badge className="bg-[#141619] border border-[#1E2227] text-[10px] text-zinc-400 font-mono">
+                    <Badge className="bg-muted/40 dark:bg-[#141619] border border-border dark:border-[#1E2227] text-[10px] text-muted-foreground dark:text-zinc-400 font-mono">
                       {act === 'ALL' ? logs.length : logs.filter(l => l.action === act).length}
                     </Badge>
                   </button>
@@ -223,12 +223,12 @@ export default function ForensicAuditTimeline() {
           </Card>
 
           {/* Forensic Integrity card */}
-          <Card className="bg-[#121417] border border-[#1E2227] rounded-xl p-5 shadow-none space-y-3">
-            <div className="flex items-center gap-2.5 text-emerald-400">
+          <Card className="bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] rounded-xl p-5 shadow-none space-y-3">
+            <div className="flex items-center gap-2.5 text-emerald-500 dark:text-emerald-400">
               <Shield className="w-5 h-5" />
-              <h4 className="font-semibold text-xs text-zinc-200 font-mono uppercase tracking-wider">Governance Shield Active</h4>
+              <h4 className="font-semibold text-xs text-foreground dark:text-zinc-200 font-mono uppercase tracking-wider">Governance Shield Active</h4>
             </div>
-            <p className="text-xs text-zinc-400 leading-relaxed font-sans">
+            <p className="text-xs text-muted-foreground dark:text-zinc-400 leading-relaxed font-sans">
               Every action taken within receptionist desks, manager consoles, billing pipelines, and kitchen tickets is registered in an immutable cryptographic audit ledger.
             </p>
           </Card>
@@ -236,27 +236,27 @@ export default function ForensicAuditTimeline() {
 
         {/* Right Column: Timeline Stream */}
         <div className="lg:col-span-9">
-          <Card className="bg-[#121417] border border-[#1E2227] rounded-xl shadow-none min-h-[500px]">
-            <CardHeader className="border-b border-[#1E2227] pb-4 flex flex-row items-center justify-between">
+          <Card className="bg-card dark:bg-[#121417] border border-border dark:border-[#1E2227] rounded-xl shadow-none min-h-[500px]">
+            <CardHeader className="border-b border-border dark:border-[#1E2227] pb-4 flex flex-row items-center justify-between">
               <div>
-                <CardTitle className="text-sm font-semibold text-zinc-100 flex items-center gap-2 font-mono uppercase tracking-wider">
-                  <Activity className="w-4 h-4 text-emerald-400" /> Live Audit Stream
+                <CardTitle className="text-sm font-semibold text-foreground dark:text-zinc-100 flex items-center gap-2 font-mono uppercase tracking-wider">
+                  <Activity className="w-4 h-4 text-emerald-500 dark:text-emerald-400" /> Live Audit Stream
                 </CardTitle>
-                <CardDescription className="text-zinc-500 text-xs mt-0.5 font-sans">A chronological cryptographic timeline displaying real-time platform mutations.</CardDescription>
+                <CardDescription className="text-muted-foreground dark:text-zinc-500 text-xs mt-0.5 font-sans">A chronological cryptographic timeline displaying real-time platform mutations.</CardDescription>
               </div>
-              <Badge className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono text-xs">
+              <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-mono text-xs">
                 {filteredLogs.length} Records Found
               </Badge>
             </CardHeader>
             <CardContent className="pt-6">
               
               {filteredLogs.length === 0 ? (
-                <div className="text-center py-20 text-zinc-500 text-xs flex flex-col items-center gap-3">
-                  <AlertCircle className="w-8 h-8 text-zinc-600" />
+                <div className="text-center py-20 text-muted-foreground dark:text-zinc-500 text-xs flex flex-col items-center gap-3">
+                  <AlertCircle className="w-8 h-8 text-muted-foreground dark:text-zinc-600" />
                   <span className="font-mono">No forensic records matching query found in audit trail indexes.</span>
                 </div>
               ) : (
-                <div className="relative border-l border-[#1E2227] ml-4 pl-7 space-y-5 pb-4">
+                <div className="relative border-l border-border dark:border-[#1E2227] ml-4 pl-7 space-y-5 pb-4">
                   {filteredLogs.map((log) => {
                     const isExpanded = expandedLogId === log.id
                     const isRollingBack = rollbackLoadingId === log.id
@@ -265,36 +265,36 @@ export default function ForensicAuditTimeline() {
                       <div key={log.id} className="relative group">
                         
                         {/* Timeline node */}
-                        <span className="absolute -left-[38px] top-2 flex items-center justify-center w-5 h-5 rounded-full bg-[#121417] border border-[#2B3037] group-hover:border-zinc-400 transition-colors">
-                          <Clock className="w-3 h-3 text-zinc-500 group-hover:text-zinc-200 transition-colors" />
+                        <span className="absolute -left-[38px] top-2 flex items-center justify-center w-5 h-5 rounded-full bg-card dark:bg-[#121417] border border-border dark:border-[#2B3037] group-hover:border-foreground/40 dark:group-hover:border-zinc-400 transition-colors">
+                          <Clock className="w-3 h-3 text-muted-foreground dark:text-zinc-500 group-hover:text-foreground dark:group-hover:text-zinc-200 transition-colors" />
                         </span>
 
-                        <div className="p-4 bg-[#141619] border border-[#1E2227] hover:border-[#2B3037] rounded-xl transition-all flex flex-col gap-3">
+                        <div className="p-4 bg-muted/20 dark:bg-[#141619] border border-border dark:border-[#1E2227] hover:border-border/80 dark:hover:border-[#2B3037] rounded-xl transition-all flex flex-col gap-3">
                           
                           {/* Header section */}
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#1E2227] pb-2.5">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border dark:border-[#1E2227] pb-2.5">
                             <div className="flex items-center gap-2.5">
                               <Badge className={`text-[10px] tracking-wider uppercase font-mono px-2 py-0.5 ${getActionBadgeColor(log.action)}`}>
                                 {log.action.replace(/_/g, ' ')}
                               </Badge>
-                              <span className="text-xs text-zinc-400 font-mono flex items-center gap-1.5">
-                                <User className="w-3 h-3 text-zinc-500" /> {log.actor}
+                              <span className="text-xs text-muted-foreground dark:text-zinc-400 font-mono flex items-center gap-1.5">
+                                <User className="w-3 h-3 text-muted-foreground dark:text-zinc-500" /> {log.actor}
                               </span>
                             </div>
-                            <span className="text-[11px] text-zinc-500 font-mono">
+                            <span className="text-[11px] text-muted-foreground dark:text-zinc-500 font-mono">
                               {new Date(log.createdAt).toLocaleString()}
                             </span>
                           </div>
 
                           {/* Body snippet */}
                           <div className="flex items-start justify-between gap-4">
-                            <p className="text-xs text-zinc-300 leading-relaxed flex-1">
-                              System registered action <strong className="text-white font-mono">[{log.action}]</strong> executed by host <code className="text-zinc-400 bg-[#181A1D] border border-[#2B3037] px-1.5 py-0.5 rounded font-mono text-[11px]">{log.details?.ip || '127.0.0.1'}</code>
+                            <p className="text-xs text-muted-foreground dark:text-zinc-300 leading-relaxed flex-1">
+                              System registered action <strong className="text-foreground dark:text-white font-mono">[{log.action}]</strong> executed by host <code className="text-foreground/80 dark:text-zinc-400 bg-muted dark:bg-[#181A1D] border border-border dark:border-[#2B3037] px-1.5 py-0.5 rounded font-mono text-[11px]">{log.details?.ip || '127.0.0.1'}</code>
                             </p>
                             
                             <button
                               onClick={() => setExpandedLogId(isExpanded ? null : log.id)}
-                              className="text-zinc-400 hover:text-white transition-colors flex items-center gap-1 text-xs font-mono"
+                              className="text-muted-foreground dark:text-zinc-400 hover:text-foreground dark:hover:text-white transition-colors flex items-center gap-1 text-xs font-mono"
                             >
                               <span>Inspector</span>
                               {isExpanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
@@ -303,20 +303,20 @@ export default function ForensicAuditTimeline() {
 
                           {/* Expanded JSON viewer inspector */}
                           {isExpanded && (
-                            <div className="mt-2 bg-[#090A0C] p-3.5 border border-[#1E2227] font-mono text-xs text-zinc-300 whitespace-pre-wrap overflow-x-auto rounded-lg max-h-[300px]">
+                            <div className="mt-2 bg-muted/40 dark:bg-[#090A0C] p-3.5 border border-border dark:border-[#1E2227] font-mono text-xs text-foreground dark:text-zinc-300 whitespace-pre-wrap overflow-x-auto rounded-lg max-h-[300px]">
                               {formatDetails(log.details)}
                             </div>
                           )}
 
                           {/* Rollback Trigger buttons */}
-                          <div className="flex items-center justify-between border-t border-[#1E2227] pt-2.5 mt-1">
-                            <span className="text-[10px] text-zinc-500 font-mono">ID: {log.id}</span>
+                          <div className="flex items-center justify-between border-t border-border dark:border-[#1E2227] pt-2.5 mt-1">
+                            <span className="text-[10px] text-muted-foreground dark:text-zinc-500 font-mono">ID: {log.id}</span>
                             {log.action !== 'STATE_ROLLBACK' && (
                               <Button
                                 onClick={() => triggerRollback(log.id, log.action)}
                                 disabled={isRollingBack}
                                 size="sm"
-                                className="bg-white hover:bg-zinc-200 text-black font-semibold text-xs font-mono uppercase tracking-wider h-7 px-3 rounded-md"
+                                className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs font-mono uppercase tracking-wider h-7 px-3 rounded-md"
                               >
                                 {isRollingBack ? (
                                   <>
@@ -346,7 +346,7 @@ export default function ForensicAuditTimeline() {
                     onClick={() => loadAuditLogs(nextCursor ?? undefined)}
                     disabled={loadingMore}
                     variant="outline"
-                    className="border-[#1E2227] bg-[#121417] text-zinc-300 hover:text-white hover:bg-[#181A1D] font-mono text-xs px-6 h-9"
+                    className="border-border dark:border-[#1E2227] bg-card dark:bg-[#121417] text-foreground dark:text-zinc-300 hover:text-foreground dark:hover:text-white hover:bg-muted dark:hover:bg-[#181A1D] font-mono text-xs px-6 h-9"
                   >
                     {loadingMore ? (
                       <><RefreshCw className="w-3.5 h-3.5 mr-2 animate-spin" /> Loading more records...</>
@@ -358,7 +358,7 @@ export default function ForensicAuditTimeline() {
               )}
 
               {!hasMore && logs.length > 0 && (
-                <p className="text-center text-xs text-zinc-600 pt-4 pb-2 font-mono tracking-wider">— End of audit trail —</p>
+                <p className="text-center text-xs text-muted-foreground dark:text-zinc-600 pt-4 pb-2 font-mono tracking-wider">— End of audit trail —</p>
               )}
 
             </CardContent>
